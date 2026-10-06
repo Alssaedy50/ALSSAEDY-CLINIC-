@@ -10,6 +10,9 @@
     --font-scale: 1;
     --receipt-font-family: 'Cairo', sans-serif;
     --receipt-font-weight: 700;
+    --receipt-body-scale: 1;
+    --receipt-heading-scale: 1;
+    --receipt-title-scale: 1;
 }
 
 [data-theme="modern"] {
@@ -349,3 +352,8 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
  .footer-meta-line{flex-direction:column;gap:6px}.footer-address{text-align:center;width:100%}.footer-phones{width:100%;white-space:nowrap!important;line-height:1.35;padding:4px 7px;overflow:visible}
 }
 @media print{.ar-date-flow{direction:rtl!important;unicode-bidi:isolate!important}}
+
+/* 2026-10-07 typography controls: independent, proportional, and print-safe. */
+.setting-help{font-size:8.5px;color:#64748b;line-height:1.45;margin:2px 0 7px}
+.compact-type-row{grid-template-columns:38px 1fr 38px;margin-top:3px}
+.date-setting-note{margin-top:7px;padding:6px 7px;border:1px dashed #cbd5e1;border-radius:5px;background:#fff;font-size:8.5px;line-height:1.5;color:#475569}
