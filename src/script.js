@@ -120,7 +120,8 @@ function localISODate() {\n    const now = new Date();\n    const offset = now.g
     const date = document.getElementById('digitalDate').value || localISODate();
     const receiptNo = document.getElementById('digitalReceiptNo').value || '---';
 
-    const msg = `*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*
+    const msg = `*سند قبض مالي - ALSSAEDY CLINIC FOR DENTISTRY*
+د/.صلاح الدين السعيدي
 رقم السند: ${receiptNo}
 التاريخ: ${date}
 المريض: ${clientName}
@@ -130,8 +131,8 @@ function localISODate() {\n    const now = new Date();\n    const offset = now.g
 المتبقي: ${balance} ريال يمني
 ------------------------------
 شكراً لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.
-ريمة - كسمة - عزلة الضبارة
-+967 716 339 366`;
+ريمة – كسمة – عزلة الضبارة
++967 716 339 366 | +967 739 550 138 | +967 775 956 520`;
 
     if (navigator.share) {
         navigator.share({
@@ -140,6 +141,6 @@ function localISODate() {\n    const now = new Date();\n    const offset = now.g
         }).catch(() => {});
     } else {
         const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-        window.open(waUrl, '_blank');
+        window.open(waUrl, '_blank', 'noopener,noreferrer');
     }
 }
