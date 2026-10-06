@@ -38,6 +38,34 @@ function setSize(size) {
     localStorage.setItem('alssaedy_receipt_size', size);
 }
 
+function setReceiptFont(fontFamily) {
+    document.documentElement.style.setProperty('--receipt-font-family', fontFamily);
+    localStorage.setItem('alssaedy_font_family', fontFamily);
+    const el=document.getElementById('fontFamilySelect'); if(el) el.value=fontFamily;
+}
+function setReceiptScale(scale) {
+    const safe=Math.min(1.35, Math.max(0.85, Number(scale)||1));
+    document.documentElement.style.setProperty('--font-scale', safe);
+    localStorage.setItem('alssaedy_font_scale', String(safe));
+    const el=document.getElementById('fontSizeValue'); if(el) el.textContent=Math.round(safe*100)+'%';
+}
+function adjustReceiptFont(direction) {
+    const current=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-scale')) || 1;
+    setReceiptScale(current + direction*0.05);
+}
+function setReceiptColor(color) {
+    if(!/^#[0-9a-fA-F]{6}$/.test(color)) return;
+    document.documentElement.style.setProperty('--primary', color);
+    document.documentElement.style.setProperty('--teal', color);
+    localStorage.setItem('alssaedy_receipt_color', color);
+    const el=document.getElementById('accentColorInput'); if(el) el.value=color;
+}
+function setReceiptWeight(weight) {
+    const safe=weight>=800?800:700;
+    document.documentElement.style.setProperty('--receipt-font-weight', String(safe));
+    localStorage.setItem('alssaedy_receipt_weight', String(safe));
+}
+
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     document.getElementById('themeClassic').classList.toggle('active', theme === 'classic');
@@ -162,6 +190,14 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         } catch(e) {}
     }
+
+    const savedFont = localStorage.getItem('alssaedy_font_family');
+    if (savedFont) setReceiptFont(savedFont);
+    setReceiptScale(localStorage.getItem('alssaedy_font_scale') || 1);
+    const savedColor = localStorage.getItem('alssaedy_receipt_color');
+    if (savedColor) setReceiptColor(savedColor);
+    const savedWeight = localStorage.getItem('alssaedy_receipt_weight');
+    if (savedWeight) setReceiptWeight(savedWeight);
 
     const savedSize = localStorage.getItem('alssaedy_receipt_size');
     setSize(SIZE_PROFILES[savedSize] ? savedSize : 'a5');
