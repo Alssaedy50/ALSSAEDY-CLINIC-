@@ -186,7 +186,7 @@ public class MainActivity extends Activity {
 
         private Uri writeTextToDownloads(String content, String fileName, String mimeType) throws Exception {
             String safeName = (fileName == null || fileName.trim().isEmpty() ? "ALSSAEDY_Clinic_Transactions.json" : fileName)
-                    .replaceAll("[^A-Za-z0-9_.\-\u0600-\u06FF]", "_");
+                    .replaceAll("[^A-Za-z0-9_.\u0600-\u06FF-]", "_");
 
             ContentValues values = new ContentValues();
             values.put(MediaStore.Downloads.DISPLAY_NAME, safeName);
