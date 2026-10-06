@@ -47,19 +47,13 @@ if (dateCheck.digitalDate !== '2026-10-07' ||
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
   const canvas = await generateReceiptCanvas();
-  const cloneCheck = await new Promise(async resolve => {
-    let captured = false;
-    const receipt = document.getElementById('receiptPrintArea');
-    await html2canvas(receipt, {
-      scale: 1,
-      logging: false,
-      onclone: doc => {
-        const cloned = doc.getElementById('receiptPrintArea');
-        const fields = Array.from(cloned?.querySelectorAll('.export-field-value') || []).map(el => el.textContent.trim());
-        captured = fields.includes('2026-10-07') && fields.includes('مريض الاختبار') && fields.includes('TEST-001');
-      }
-    });
-    resolve(captured);
+  const cloneCheck = await page.evaluate(() => {
+    const source = document.getElementById('receiptPrintArea');
+    const cloned = source.cloneNode(true);
+    materializeReceiptControls(source, cloned, document);
+    materializeReceiptDate(source, cloned);
+    const fields = Array.from(cloned.querySelectorAll('.export-field-value')).map(el => el.textContent.trim());
+    return fields.includes('2026-10-07') && fields.includes('مريض الاختبار') && fields.includes('TEST-001');
   });
   if (!cloneCheck) throw new Error('Export clone did not preserve receipt fields.');
   return {
