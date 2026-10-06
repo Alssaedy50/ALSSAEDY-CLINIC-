@@ -37,7 +37,7 @@ async function initSync(){setSyncStatus(navigator.onLine?'جارٍ فحص الب
 
 const RECEIPT_LANGUAGE={
  ar:{
-  receipt_title:'سند قبض',receipt_no_label:'رقم السند',date_label:'التاريخ',
+  receipt_title:'سند قبض',receipt_no_label:'رقم السند',date_label:'التاريخ',doc_name:'د/.صلاح الدين السعيدي',doc_spec:'لطب وجراحة الفم والأسنان',clinic_en:'ALSSAEDY CLINIC FOR DENTISTRY',doc_en:'Dr. Salahaldeen Alssaedy',
   client_name_label:'استلمنا من السيد / ة',client_phone_label:'رقم الهاتف',
   paid_label:'المبلغ المدفوع',currency_label:'ر.ي',words_label:'مبلغاً وقدره كتابة',
   currency_end:'ريالاً يمنياً فقط لا غير.',payment_label:'طريقة الدفع',cash_label:'نقداً',
@@ -52,7 +52,7 @@ const RECEIPT_LANGUAGE={
   thank_msg:'شكرًا لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.'
  },
  en:{
-  receipt_title:'RECEIPT VOUCHER',receipt_no_label:'Receipt No.',date_label:'Date',
+  receipt_title:'RECEIPT VOUCHER',receipt_no_label:'Receipt No.',date_label:'Date',doc_name:'Dr. Salahaldeen Alssaedy',doc_spec:'Dentistry and Oral Surgery',clinic_en:'ALSSAEDY CLINIC FOR DENTISTRY',doc_en:'Dr. Salahaldeen Alssaedy',
   client_name_label:'Received from',client_phone_label:'Phone',
   paid_label:'Amount Paid',currency_label:'YER',words_label:'Amount in words',
   currency_end:'Yemeni Riyals only.',payment_label:'Payment Method',cash_label:'Cash',
@@ -75,6 +75,19 @@ function setLanguage(language,persist=true){
  document.getElementById('btnLangAr')?.classList.toggle('active',lang==='ar');
  document.getElementById('btnLangEn')?.classList.toggle('active',lang==='en');
  const dict=RECEIPT_LANGUAGE[lang];
+ const placeholders={
+  digitalReceiptNo:lang==='en'?'Example: 001':'مثال: 001',
+  digitalClientName:lang==='en'?'Patient full name':'اسم المريض الثلاثي',
+  digitalClientPhone:lang==='en'?'+967 7XX XXX XXX':'مثال: 777 000 000',
+  digitalPaidAmount:lang==='en'?'0':'0',
+  digitalTafqeet:lang==='en'?'Example: Fifteen thousand Yemeni riyals only':'مثال: خمسة عشر ألف ريال يمني فقط لا غير',
+  digitalPayRef:lang==='en'?'Transaction number':'رقم العملية',
+  digitalTooth:lang==='en'?'Example: Tooth 16 / Upper Right':'مثال: السن 16 / الفك العلوي الأيمن',
+  digitalTotal:lang==='en'?'0':'0'
+ };
+ Object.entries(placeholders).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.placeholder=value});
+ document.querySelector('.date-ar')?.style.setProperty('display',lang==='ar'?'inline':'none');
+ document.querySelector('.date-en')?.style.setProperty('display',lang==='en'?'inline':'none');
  Object.entries(dict).forEach(([key,value])=>{
   const el=document.querySelector('.editable[data-key="'+CSS.escape(key)+'"]');
   if(el)el.textContent=value;
