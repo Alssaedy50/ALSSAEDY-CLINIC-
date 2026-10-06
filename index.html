@@ -6,7 +6,7 @@
     <title>سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="logo_data.js"></script>
@@ -272,6 +272,38 @@
                     </div>
                     <button type="button" class="tool-btn wide mt-2" onclick="resetOfficialLogo()">🔄 استعادة الشعار المعتمد</button>
                     <input type="file" id="logoUploader" accept="image/*,.svg" style="display:none;" onchange="uploadLogo(event)">
+                </div>
+
+                <div class="setting-card typography-card">
+                    <h4>🔤 الخط وحجم النص</h4>
+                    <label class="setting-label" for="fontFamilySelect">نوع الخط</label>
+                    <select id="fontFamilySelect" class="setting-select" onchange="setReceiptFont(this.value)">
+                        <option value="'Cairo', sans-serif">Cairo — رسمي وواضح</option>
+                        <option value="'Tajawal', sans-serif">Tajawal — مريح للهاتف</option>
+                        <option value="'Noto Kufi Arabic', sans-serif">Noto Kufi Arabic — حديث</option>
+                        <option value="'IBM Plex Sans Arabic', sans-serif">IBM Plex Sans Arabic — احترافي</option>
+                        <option value="Tahoma, Arial, sans-serif">Tahoma — بسيط</option>
+                    </select>
+                    <label class="setting-label">حجم الخط</label>
+                    <div class="font-control-row">
+                        <button type="button" class="font-step" onclick="adjustReceiptFont(-1)">−</button>
+                        <output id="fontSizeValue">100%</output>
+                        <button type="button" class="font-step" onclick="adjustReceiptFont(1)">+</button>
+                    </div>
+                    <label class="setting-label" for="accentColorInput">اللون الرئيسي</label>
+                    <div class="color-control-row">
+                        <input type="color" id="accentColorInput" value="#073b63" onchange="setReceiptColor(this.value)">
+                        <div class="color-presets">
+                            <button type="button" style="--swatch:#073b63" onclick="setReceiptColor('#073b63')" aria-label="كحلي"></button>
+                            <button type="button" style="--swatch:#0f766e" onclick="setReceiptColor('#0f766e')" aria-label="تركواز"></button>
+                            <button type="button" style="--swatch:#7c3aed" onclick="setReceiptColor('#7c3aed')" aria-label="بنفسجي"></button>
+                            <button type="button" style="--swatch:#334155" onclick="setReceiptColor('#334155')" aria-label="رمادي"></button>
+                        </div>
+                    </div>
+                    <div class="grid-btns two compact-settings">
+                        <button type="button" class="tool-btn" onclick="setReceiptWeight(700)">متوسط</button>
+                        <button type="button" class="tool-btn" onclick="setReceiptWeight(800)">عريض</button>
+                    </div>
                 </div>
 
                 <div class="setting-card">
