@@ -20,8 +20,9 @@ async function generateReceiptCanvas() {
     await document.fonts.ready;
     const receipt = document.getElementById('receiptPrintArea');
     const profile = getSizeProfile();
-    document.documentElement.style.setProperty('--export-width', profile.width);
-    document.documentElement.style.setProperty('--export-height', profile.height === 'auto' ? 'auto' : profile.height);
+    const exportBox = getExportBox(profile);
+    document.documentElement.style.setProperty('--export-width', exportBox.width);
+    document.documentElement.style.setProperty('--export-height', exportBox.height);
     return withCaptureState(() => {
         document.body.classList.add('exporting-receipt');
         return html2canvas(receipt, {
@@ -49,7 +50,7 @@ async function downloadReceiptPDF() {
         document.documentElement.style.setProperty('--export-width', exportBox.width);
         document.documentElement.style.setProperty('--export-height', exportBox.height);
         const options = {
-            margin: profile.pdfFormat === 'a5' ? 0 : 0,
+            margin: [2, 2, 2, 2],
             filename: 'سند_قبض_' + recNo + '.pdf',
             image: { type: 'png' },
             html2canvas: { scale: 4, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', imageTimeout: 15000 },
