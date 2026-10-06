@@ -8,6 +8,8 @@
     --bg-strip: #f8fafc;
     --accent-red: #b91c1c;
     --font-scale: 1;
+    --receipt-font-family: 'Cairo', sans-serif;
+    --receipt-font-weight: 700;
 }
 
 [data-theme="modern"] {
@@ -234,3 +236,88 @@ body {
 /* Responsive/accessibility safeguards */
 .btn-save:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
 @media screen and (max-width:760px){.nav-container{flex-wrap:wrap;justify-content:center}.nav-brand{width:100%;justify-content:center}.nav-controls{width:100%;justify-content:center;flex-wrap:wrap}.quick-action-bar{flex-wrap:wrap;gap:5px;justify-content:center}.quick-btns-row{flex-wrap:wrap;justify-content:center}.floating-action-dock{gap:2px;padding:3px 4px}.dock-btn{padding:5px 6px}}
+/* Mobile-first receipt presentation and user typography controls */
+.receipt-paper{font-family:var(--receipt-font-family)}
+.setting-label{display:block;font-size:9px;font-weight:800;color:#475569;margin:7px 0 4px}
+.setting-select{width:100%;border:1px solid #cbd5e1;border-radius:6px;background:#fff;padding:7px 8px;font-family:inherit;font-size:10px;font-weight:700;color:#0f172a}
+.font-control-row{display:grid;grid-template-columns:42px 1fr 42px;gap:6px;align-items:center;margin-top:6px}
+.font-control-row output{text-align:center;font-size:10px;font-weight:900;color:var(--primary)}
+.font-step{height:32px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;font-size:18px;font-weight:900;cursor:pointer}
+.color-control-row{display:flex;align-items:center;gap:8px}
+.color-control-row input[type=color]{width:42px;height:34px;padding:2px;border:1px solid #cbd5e1;border-radius:6px;background:#fff}
+.color-presets{display:flex;gap:6px;align-items:center}
+.color-presets button{width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:var(--swatch);box-shadow:0 0 0 1px #cbd5e1;cursor:pointer}
+.compact-settings{margin-top:7px}
+.receipt-paper *{font-family:inherit}
+
+/* Do not scale an A5 sheet down on phones. Use a readable responsive receipt instead. */
+@media screen and (max-width:700px){
+    body{background:#f1f5f9}
+    .site-bg-overlay{display:none}
+    .site-navbar{position:sticky}
+    .nav-container{padding:8px 10px}
+    .brand-title{font-size:13px}
+    .brand-badge{font-size:9px}
+    .btn-pill,.btn-tool{font-size:11px;padding:7px 9px}
+    .page-canvas-wrapper{padding:10px 12px 92px}
+    .quick-action-bar{max-width:none;margin-bottom:10px;padding:8px}
+    .quick-title{font-size:11px}
+    .q-btn{font-size:10.5px;padding:7px 9px}
+    .receipt-paper{
+        transform:none!important;width:100%!important;max-width:none!important;
+        min-height:0!important;height:auto!important;padding:14px 13px 12px!important;
+        border-radius:10px;box-shadow:0 5px 20px rgba(15,23,42,.14)
+    }
+    .receipt-header{padding-bottom:8px;gap:7px}
+    .header-doc h2{font-size:15px}.header-doc p{font-size:11px}
+    .header-logo-wrap{width:72px;height:72px;flex:0 0 72px}
+    .header-clinic h2{font-size:11px}.header-clinic p{font-size:10px}
+    .receipt-title-box{margin:9px 0 8px}.title-strip{gap:8px;width:100%}
+    .strip-wing{width:24px}.main-voucher-title{font-size:20px}
+    .meta-data-strip{padding:8px 9px;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+    .meta-cell,.custom-radio-item{font-size:12px}
+    .meta-label,.row-label{font-size:12px}
+    .section-patient,.section-services,.section-ledger{margin-bottom:8px}
+    .row-flex{margin-bottom:8px;gap:5px;min-height:32px}
+    .paid-hero-bar{padding:8px 9px;gap:7px;margin:7px 0}
+    .paid-title{font-size:14px}.paid-numeric{font-size:17px!important;width:130px}.paid-unit{font-size:11px}
+    .payment-options-group{gap:12px;margin:0 5px}.radio-circle{width:17px;height:17px}.radio-dot{width:7px;height:7px}
+    .services-banner{font-size:12px;padding:7px 9px}
+    .services-grid-matrix{grid-template-columns:1fr 1fr;gap:7px 8px;padding:9px}
+    .custom-check-item{font-size:11px;white-space:normal;line-height:1.35}
+    .check-box-icon{width:17px;height:17px;flex:0 0 17px}.check-mark{font-size:11px}
+    .tooth-location-row{padding:7px 9px;min-height:36px}
+    .ledger-grid-wrap{grid-template-columns:1fr!important;gap:7px}
+    .ledger-box{padding:8px 9px}.ledger-header{font-size:12px;margin-bottom:4px}
+    .ledger-field{max-width:130px;font-size:13px}.currency-label{font-size:11px}
+    .section-signatures{margin-bottom:8px;padding:0 2px;gap:7px}
+    .sig-title{font-size:11px}.sig-draw-line{margin-top:24px}.sig-stamp-center{width:32%}
+    .stamp-frame{height:58px}.stamp-frame span{font-size:9px;text-align:center;padding:4px}
+    .receipt-footer{padding-top:8px}.footer-blessing{font-size:11px;line-height:1.5}
+    .footer-meta-line{font-size:10px;flex-direction:column;gap:5px}.footer-phones{white-space:normal;line-height:1.4}
+    .live-input{font-size:12px;padding:3px 4px}
+    .floating-action-dock{bottom:max(8px,env(safe-area-inset-bottom));width:calc(100vw - 12px);border-radius:16px;gap:3px;padding:5px}
+    .dock-btn{flex:1;justify-content:center;padding:8px 4px;border-radius:11px}
+    .dock-icon{font-size:14px}.dock-text{font-size:10px}
+    .settings-drawer{width:min(360px,94vw)}
+}
+
+/* Export mode overrides mobile presentation so PNG/PDF remain exact physical size. */
+body.exporting-receipt .receipt-paper{
+    transform:none!important;border-radius:0!important;box-shadow:none!important;
+    width:var(--export-width)!important;max-width:none!important;
+    min-height:var(--export-height)!important;height:var(--export-height)!important;
+    padding:6mm 8mm 4mm!important
+}
+body.exporting-receipt .header-logo-wrap{width:54px;height:54px}
+body.exporting-receipt .header-doc h2{font-size:13px}.exporting-receipt .header-doc p{font-size:9px}
+body.exporting-receipt .header-clinic h2{font-size:10px}.exporting-receipt .header-clinic p{font-size:8.5px}
+body.exporting-receipt .main-voucher-title{font-size:15px}
+body.exporting-receipt .meta-label,body.exporting-receipt .row-label{font-size:9.5px}
+body.exporting-receipt .paid-title{font-size:11px}
+body.exporting-receipt .services-banner{font-size:9.5px}
+body.exporting-receipt .custom-check-item{font-size:9px}
+body.exporting-receipt .ledger-header{font-size:9.5px}
+body.exporting-receipt .sig-title{font-size:9.5px}
+body.exporting-receipt .footer-blessing{font-size:9px}
+body.exporting-receipt .footer-meta-line{font-size:8px}
