@@ -70,6 +70,7 @@
 <button type="button" class="receipt-action" onclick="toggleActionPanel('printActions')"><span class="action-icon">🖨</span><strong>الطباعة</strong><small>طباعة احترافية بالمقاس المحدد</small></button>
 <button type="button" class="receipt-action" onclick="toggleActionPanel('downloadActions')"><span class="action-icon">↓</span><strong>التحميل</strong><small>صورة أو ملف بأعلى جودة</small></button>
 </nav>
+<div id="syncStatus" class="sync-status" role="status" aria-live="polite">محفوظ محليًا</div>
 <section class="no-print action-panels">
 <div class="action-panel" id="shareActions" hidden><div class="panel-title"><strong>المشاركة</strong><button onclick="toggleActionPanel('shareActions',false)">×</button></div><div class="panel-grid">
 <button class="panel-option" onclick="shareReceiptText()"><span>💬</span><b>مشاركة نص</b><small>بيانات السند كنص</small></button>
