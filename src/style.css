@@ -25,6 +25,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Cairo', sans-serif;
     background-color: #0b1329;
@@ -34,7 +39,6 @@ body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     position: relative;
-    overflow-x: hidden;
 }
 
 .site-bg-overlay {
@@ -45,13 +49,14 @@ body {
     pointer-events: none;
 }
 
+/* شريط التصفح العلوي */
 .site-navbar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(15, 23, 42, 0.94);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
@@ -60,19 +65,18 @@ body {
 .nav-container {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 10px 16px;
+    padding: 8px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 .nav-brand { display: flex; align-items: center; gap: 8px; }
-.brand-title { color: #f8fafc; font-weight: 800; font-size: 13px; }
-.brand-badge { background: var(--teal); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 12px; }
-
-.nav-controls { display: flex; align-items: center; gap: 8px; }
+.brand-title { color: #f8fafc; font-weight: 800; font-size: 12px; }
+.brand-badge { background: var(--teal); color: #fff; font-size: 8.5px; font-weight: 700; padding: 2px 7px; border-radius: 12px; }
+.nav-controls { display: flex; align-items: center; gap: 6px; }
 
 .mode-pill { background: rgba(255,255,255,0.08); padding: 3px; border-radius: 20px; display: flex; gap: 2px; }
 .btn-pill {
@@ -80,7 +84,7 @@ body {
     border: none;
     color: #94a3b8;
     padding: 5px 12px;
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 700;
     border-radius: 16px;
     cursor: pointer;
@@ -93,33 +97,74 @@ body {
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.15);
     color: #f1f5f9;
-    padding: 6px 12px;
-    font-size: 10.5px;
+    padding: 5px 10px;
+    font-size: 10px;
     font-weight: 700;
     border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
 }
 
+/* شريط الإدخال السريع للسند الرقمي */
+.digital-quick-bar {
+    position: fixed;
+    top: 50px;
+    left: 0;
+    right: 0;
+    z-index: 95;
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px 12px;
+    display: none;
+}
+[data-mode="digital"] .digital-quick-bar { display: block; }
+
+.quick-bar-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.quick-item { display: flex; gap: 6px; }
+.quick-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #f8fafc;
+    padding: 4px 8px;
+    font-size: 9.5px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.quick-btn.clear-btn { background: rgba(185, 28, 28, 0.25); border-color: rgba(185, 28, 28, 0.4); }
+.quick-tip { color: #94a3b8; font-size: 8.5px; font-weight: 600; }
+
+/* حاوية عرض السند والتجاوب على شاشات الهاتف */
 .page-canvas-wrapper {
     position: relative;
     z-index: 10;
     display: flex;
     justify-content: center;
-    padding-top: 80px;
-    padding-bottom: 120px;
+    padding-top: 75px;
+    padding-bottom: 95px;
     min-height: 100vh;
 }
+[data-mode="digital"] .page-canvas-wrapper { padding-top: 105px; }
 
 .receipt-paper {
     background: #ffffff;
     position: relative;
     border-radius: 6px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
 }
 
 [data-size="a5"] .receipt-paper {
@@ -146,6 +191,22 @@ body {
 [data-size="thermal"] .sig-column, [data-size="thermal"] .sig-stamp-center { width: 95%; }
 [data-size="thermal"] .ledger-container { flex-direction: column; gap: 4px; }
 
+/* تجاوب الهاتف (عرض السند كاملاً بدون قطع) */
+@media screen and (max-width: 600px) {
+    .page-canvas-wrapper {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+    [data-size="a5"] .receipt-paper {
+        max-width: 100vw;
+        width: 100%;
+        height: auto;
+        min-height: calc(100vw * 1.414);
+        padding: 5mm 6mm 4mm 6mm;
+    }
+}
+
+/* العلامة المائية */
 .watermark-layer {
     position: absolute;
     inset: 0;
@@ -153,7 +214,7 @@ body {
     opacity: 0.045;
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 40%;
+    background-size: 42%;
     z-index: 0;
 }
 body.hide-watermark .watermark-layer { display: none !important; }
@@ -164,6 +225,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
     z-index: 1;
 }
 
+/* الترويسة */
 .receipt-header {
     display: flex;
     justify-content: space-between;
@@ -171,8 +233,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
     border-bottom: 2.2px solid var(--primary);
     padding-bottom: 5px;
 }
-
-.header-doc h2 { font-size: 14px; font-weight: 900; color: var(--primary); line-height: 1.2; }
+.header-doc h2 { font-size: 13.5px; font-weight: 900; color: var(--primary); line-height: 1.2; }
 .header-doc p { font-size: 9.5px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
 
 .header-logo-wrap {
@@ -185,14 +246,29 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .clinic-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
 
 .header-clinic { font-family: inherit; text-align: left; }
-.header-clinic h2 { font-size: 11px; font-weight: 800; color: var(--primary); line-height: 1.2; }
+.header-clinic h2 { font-size: 10.5px; font-weight: 800; color: var(--primary); line-height: 1.2; }
 .header-clinic p { font-size: 9px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
 
+/* معالجة تشوه العنوان: إزالة letter-spacing نهائياً وضبط الحروف العربية */
 .receipt-title-box { text-align: center; margin: 4px 0 3px 0; }
-.title-strip { display: inline-flex; align-items: center; gap: 12px; }
+.title-strip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
 .strip-wing { height: 1.5px; width: 35px; background: var(--primary); opacity: 0.6; }
-.title-strip h1 { font-size: 16.5px; font-weight: 900; color: var(--primary); letter-spacing: -0.2px; }
+.main-voucher-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--primary);
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    text-rendering: geometricPrecision;
+    font-feature-settings: "liga" 1;
+}
 
+/* شريط البيانات والتاريخ */
 .meta-data-strip {
     display: flex;
     justify-content: space-between;
@@ -216,6 +292,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .ref-dots { min-width: 105px; }
 .flex-1 { flex: 1; margin: 0 4px; }
 
+/* بيانات المريض والمبلغ */
 .section-patient { margin-bottom: 4px; }
 .row-flex { display: flex; align-items: center; margin-bottom: 5px; }
 
@@ -233,12 +310,14 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .paid-blank-line { border-bottom: 2px solid var(--primary); width: 145px; height: 18px; }
 .paid-unit { font-weight: 700; color: var(--text-muted); font-size: 10px; }
 .tafqeet-closing { font-size: 9.5px; color: var(--text-muted); font-weight: 600; }
+.tafqeet-text { color: var(--primary) !important; font-weight: 700; }
 
 .pay-opts-row { font-size: 10px; }
 .radio-box { display: flex; align-items: center; margin-right: 12px; gap: 4px; font-weight: 700; cursor: pointer; }
 .check-square { width: 12px; height: 12px; border: 1.5px solid var(--primary); border-radius: 2px; background: #fff; display: inline-block; }
 .ref-label { margin-right: 18px; }
 
+/* الخدمات السنية وتسهيل الضغط عليها باللمس */
 .section-services {
     border: 1.2px solid var(--border-soft);
     border-radius: 6px;
@@ -259,7 +338,16 @@ body.hide-watermark .watermark-layer { display: none !important; }
     padding: 6px 10px;
     background: #ffffff;
 }
-.srv-label { display: flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 600; cursor: pointer; }
+.srv-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px;
+    user-select: none;
+}
 .tooth-location-row {
     display: flex;
     align-items: center;
@@ -268,6 +356,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
     background: #fafafa;
 }
 
+/* الشريط المالي المحاسبي المدمج */
 .section-ledger { margin-bottom: 5px; }
 .ledger-container {
     display: flex;
@@ -295,6 +384,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .balance-val { color: var(--accent-red) !important; }
 .balance-curr { color: var(--accent-red) !important; }
 
+/* التوثيق والختم */
 .section-signatures {
     display: flex;
     justify-content: space-between;
@@ -317,6 +407,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
 }
 .stamp-frame span { font-size: 8.5px; color: #94a3b8; font-weight: 700; }
 
+/* التذييل */
 .receipt-footer {
     border-top: 1.8px solid var(--primary);
     padding-top: 4px;
@@ -332,6 +423,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
 }
 .footer-phones span { font-weight: 700; }
 
+/* الحقول التفاعلية */
 .live-input {
     border: none;
     border-bottom: 1.5px solid var(--primary);
@@ -345,24 +437,27 @@ body.hide-watermark .watermark-layer { display: none !important; }
 }
 .num-input { width: 85px; }
 .paid-numeric { width: 135px; font-size: 13.5px; font-weight: 900; }
+.bold-field { font-weight: 800; }
 
 [data-mode="manual"] .digital-only { display: none !important; }
 [data-mode="digital"] .manual-only { display: none !important; }
 
+/* شريط الإجراءات العائم المحسن في الأسفل (Dock) */
 .floating-action-dock {
     position: fixed;
-    bottom: 16px;
+    bottom: 12px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 100;
-    background: rgba(15, 23, 42, 0.94);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 30px;
-    padding: 6px 14px;
+    padding: 6px 12px;
     display: flex;
-    gap: 8px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    gap: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    max-width: 95vw;
 }
 
 .dock-btn {
@@ -376,16 +471,18 @@ body.hide-watermark .watermark-layer { display: none !important; }
     gap: 6px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
+    white-space: nowrap;
 }
 .dock-icon { font-size: 13px; }
-.dock-text { font-size: 10.5px; font-weight: 700; }
+.dock-text { font-size: 10px; font-weight: 700; }
 .dock-btn:hover { background: rgba(255,255,255,0.12); }
 .dock-btn:active { transform: scale(0.95); }
 
 .btn-share { background: #10b981; color: #fff; }
 .btn-share:hover { background: #059669; }
 
+/* الدرج والنوافذ */
 .settings-panel { display: none; position: fixed; inset: 0; z-index: 200; }
 .settings-panel.open { display: block; }
 .settings-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
@@ -421,7 +518,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .scale-badge { font-size: 10.5px; font-weight: 800; }
 .edit-action { background: #f59e0b; color: #fff; border: none; padding: 8px; }
 
-.modal-screen { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.55); align-items: center; justify-content: center; }
+.modal-screen { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
 .modal-screen.open { display: flex; }
 .modal-box { background: #fff; padding: 22px; border-radius: 14px; width: 340px; max-width: 92vw; position: relative; text-align: center; }
 .modal-wide { width: 440px; }
@@ -443,16 +540,41 @@ body.hide-watermark .watermark-layer { display: none !important; }
 
 body.is-editing .editable { outline: 2px dashed #f59e0b !important; background-color: #fffbeb !important; cursor: text; }
 
-@page { size: A5 portrait; margin: 0; }
+/* إخفاء الـ Placeholders أثناء الالتقاط بالصورة لمنع تشوه النصوص */
+body.is-capturing input::placeholder { color: transparent !important; }
+
+/* قواعد الطباعة الصحيحة لتفادي الشاشة البيضاء والتعطل */
+@page {
+    size: A5 portrait;
+    margin: 0;
+}
+
 @media print {
-    body { background: #ffffff !important; padding: 0 !important; }
-    .site-bg-overlay, .no-print { display: none !important; }
-    .page-canvas-wrapper { padding: 0 !important; }
+    html, body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+    .site-bg-overlay, .no-print, .digital-quick-bar, .floating-action-dock {
+        display: none !important;
+    }
+    .page-canvas-wrapper {
+        padding: 0 !important;
+        min-height: auto !important;
+        display: block !important;
+    }
     .receipt-paper {
         box-shadow: none !important;
         width: 148mm !important;
         height: 210mm !important;
+        max-width: 148mm !important;
         padding: 8mm 10mm 6mm 10mm !important;
         border-radius: 0 !important;
+        margin: 0 auto !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
     }
 }

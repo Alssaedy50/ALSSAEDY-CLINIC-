@@ -6,7 +6,7 @@
     <title>سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="logo_data.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -15,12 +15,12 @@
 
     <div class="site-bg-overlay"></div>
 
-    <!-- شريط التصفح العلوي -->
+    <!-- شريط التصفح والتحكم المتجاوب -->
     <header class="no-print site-navbar">
         <div class="nav-container">
             <div class="nav-brand">
                 <span class="brand-title">عيادة د/ صلاح الدين السعيدي</span>
-                <span class="brand-badge">نظام السندات المالي</span>
+                <span class="brand-badge">نظام السندات</span>
             </div>
             <div class="nav-controls">
                 <div class="mode-pill">
@@ -33,7 +33,19 @@
         </div>
     </header>
 
-    <!-- لوحة الإعدادات الجانبية -->
+    <!-- شريط الإدخال السريع الذكي (للسند الرقمي) -->
+    <div class="no-print digital-quick-bar" id="digitalQuickBar">
+        <div class="quick-bar-container">
+            <div class="quick-item">
+                <button type="button" class="quick-btn" onclick="setTodayDate()">📅 تاريخ اليوم</button>
+                <button type="button" class="quick-btn" onclick="generateNextReceiptNo()">🔢 رقم جديد</button>
+                <button type="button" class="quick-btn clear-btn" onclick="clearReceiptInputs()">🧹 تفريغ السند</button>
+            </div>
+            <span class="quick-tip">⚡ إدخال المبالغ يحدّث التفقيط والمتبقي تلقائياً</span>
+        </div>
+    </div>
+
+    <!-- الدرج الجانبي للإعدادات -->
     <aside class="no-print settings-panel" id="settingsPanel">
         <div class="settings-backdrop" onclick="toggleDrawer(false)"></div>
         <div class="settings-drawer">
@@ -47,7 +59,7 @@
             
             <div class="drawer-body">
                 <div class="setting-card">
-                    <h4>📐 مقاس الوثيقة</h4>
+                    <h4>📐 مقاس الوثيقة والطباعة</h4>
                     <div class="grid-btns three">
                         <button type="button" class="tool-btn active" id="btnSizeA5" onclick="setSize('a5')">A5 (الدفاتر)</button>
                         <button type="button" class="tool-btn" id="btnSizeA4" onclick="setSize('a4')">A4 مكتبي</button>
@@ -67,7 +79,7 @@
                 <div class="setting-card">
                     <h4>✍️ نوع الخط والحجم</h4>
                     <select id="fontSelect" class="custom-select" onchange="setFont(this.value)">
-                        <option value="'Cairo', sans-serif">خط Cairo (الافتراضي الرسمي)</option>
+                        <option value="'Cairo', sans-serif">خط Cairo (المعتمد الرسمي)</option>
                         <option value="'Tajawal', sans-serif">خط Tajawal الحديث</option>
                         <option value="'IBM Plex Sans Arabic', sans-serif">خط IBM Plex المكتبي</option>
                     </select>
@@ -101,7 +113,7 @@
         <div class="receipt-paper" id="receiptPrintArea">
             <div class="watermark-layer" id="watermarkLayer"></div>
 
-            <!-- ترويسة السند -->
+            <!-- الترويسة الرسمية -->
             <header class="receipt-header">
                 <div class="header-doc">
                     <h2 class="editable" data-key="doc_name">د/.صلاح الدين السعيدي</h2>
@@ -120,7 +132,7 @@
             <div class="receipt-title-box">
                 <div class="title-strip">
                     <span class="strip-wing"></span>
-                    <h1 class="editable" data-key="receipt_title">سند قبض مالي</h1>
+                    <h1 class="editable main-voucher-title" data-key="receipt_title">سند قبض مالي</h1>
                     <span class="strip-wing"></span>
                 </div>
             </div>
@@ -130,7 +142,7 @@
                 <div class="meta-cell">
                     <span class="meta-label editable" data-key="receipt_no_lbl">رقم السند:</span>
                     <span class="manual-only write-dots num-dots"></span>
-                    <input type="text" class="digital-only live-input num-input" id="digReceiptNo" placeholder="REC-001">
+                    <input type="text" class="digital-only live-input num-input" id="digReceiptNo" placeholder="">
                 </div>
                 <div class="meta-cell">
                     <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
@@ -150,20 +162,20 @@
                 <div class="row-flex">
                     <span class="row-label editable" data-key="client_lbl">استلمنا من السيد / ة:</span>
                     <span class="manual-only write-dots flex-1"></span>
-                    <input type="text" class="digital-only live-input flex-1" id="digClientName" placeholder="اسم المريض الثلاثي">
+                    <input type="text" class="digital-only live-input flex-1 bold-field" id="digClientName" placeholder="">
                 </div>
 
                 <div class="paid-hero-bar">
                     <span class="paid-title editable" data-key="paid_lbl">المبلغ المدفوع:</span>
                     <div class="manual-only paid-blank-line"></div>
-                    <input type="number" class="digital-only live-input paid-numeric" id="digPaid" placeholder="0" oninput="calculateLedger()">
+                    <input type="number" class="digital-only live-input paid-numeric" id="digPaid" placeholder="" oninput="calculateLedger()">
                     <span class="paid-unit editable" data-key="curr_lbl">ريال يمني</span>
                 </div>
 
                 <div class="row-flex">
                     <span class="row-label editable" data-key="tafqeet_lbl">مبلغاً وقدره (كتابة):</span>
                     <span class="manual-only write-dots flex-1"></span>
-                    <input type="text" class="digital-only live-input flex-1" id="digTafqeet" placeholder="المبلغ كتابة بالريال">
+                    <input type="text" class="digital-only live-input flex-1 tafqeet-text" id="digTafqeet" placeholder="">
                     <span class="manual-only tafqeet-closing editable" data-key="tafqeet_end">ريالاً يمنياً فقط لا غير.</span>
                 </div>
 
@@ -173,7 +185,7 @@
                     <label class="radio-box"><span class="check-square manual-only"></span><input type="radio" class="digital-only" name="payMethod" value="محفظة / تحويل"> محفظة / تحويل بنكي</label>
                     <span class="row-label ref-label editable" data-key="ref_lbl">المرجع:</span>
                     <span class="manual-only write-dots ref-dots"></span>
-                    <input type="text" class="digital-only live-input ref-dots" id="digRef" placeholder="رقم العملية">
+                    <input type="text" class="digital-only live-input ref-dots" id="digRef" placeholder="">
                 </div>
             </section>
 
@@ -185,7 +197,7 @@
                     <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="حشوات وتجميل"> حشوات وتجميل</label>
                     <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="علاج عصب وجذور"> علاج عصب وجذور</label>
                     <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="خلع وجراحة"> خلع وجراحة</label>
-                    <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="تنظيف ولثة"> تنظيف وتجليح لثة</label>
+                    <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="تنظيف وتجليح لثة"> تنظيف وتجليح لثة</label>
                     <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="تركيبات أسنان"> تركيبات أسنان</label>
                     <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="تقويم أسنان"> تقويم أسنان</label>
                     <label class="srv-label"><span class="check-square manual-only"></span><input type="checkbox" class="digital-only srv-check" value="أشعة تشخيصية"> أشعة تشخيصية</label>
@@ -194,7 +206,7 @@
                 <div class="tooth-location-row">
                     <span class="row-label editable" data-key="tooth_lbl">رقم السن أو الموضع:</span>
                     <span class="manual-only write-dots flex-1"></span>
-                    <input type="text" class="digital-only live-input flex-1" id="digTooth" placeholder="مثال: الضرس العلوي الأيمن">
+                    <input type="text" class="digital-only live-input flex-1" id="digTooth" placeholder="">
                 </div>
             </section>
 
@@ -202,26 +214,26 @@
             <section class="section-ledger">
                 <div class="ledger-container">
                     <div class="ledger-box">
-                        <span class="ledger-header editable" data-key="tot_lbl">إجمالي الحساب</span>
+                        <span class="ledger-header editable" data-key="tot_lbl">إجمالي الحساب:</span>
                         <div class="ledger-content">
                             <span class="manual-only write-dots ledger-field"></span>
-                            <input type="number" class="digital-only live-input ledger-field" id="digTotal" placeholder="0" oninput="calculateLedger()">
+                            <input type="number" class="digital-only live-input ledger-field" id="digTotal" placeholder="" oninput="calculateLedger()">
                             <span class="currency-label">ريال</span>
                         </div>
                     </div>
                     <div class="ledger-box">
-                        <span class="ledger-header editable" data-key="cur_paid_lbl">المدفوع حالياً</span>
+                        <span class="ledger-header editable" data-key="cur_paid_lbl">المدفوع حالياً:</span>
                         <div class="ledger-content">
                             <span class="manual-only write-dots ledger-field"></span>
-                            <input type="number" class="digital-only live-input ledger-field" id="digPaidTable" placeholder="0" readonly>
+                            <input type="number" class="digital-only live-input ledger-field" id="digPaidTable" placeholder="" readonly>
                             <span class="currency-label">ريال</span>
                         </div>
                     </div>
                     <div class="ledger-box balance-highlight">
-                        <span class="ledger-header balance-header editable" data-key="bal_lbl">المتبقي</span>
+                        <span class="ledger-header balance-header editable" data-key="bal_lbl">المتبقي:</span>
                         <div class="ledger-content">
                             <span class="manual-only write-dots ledger-field"></span>
-                            <input type="number" class="digital-only live-input ledger-field balance-val" id="digBalance" placeholder="0" readonly>
+                            <input type="number" class="digital-only live-input ledger-field balance-val" id="digBalance" placeholder="" readonly>
                             <span class="currency-label balance-curr">ريال</span>
                         </div>
                     </div>
@@ -260,7 +272,7 @@
         </div>
     </main>
 
-    <!-- شريط الإجراءات العائم السفلي (Dock) -->
+    <!-- شريط الإجراءات السفلي (Dock) -->
     <footer class="no-print floating-action-dock">
         <button type="button" class="dock-btn btn-save" onclick="saveReceiptLocally()">
             <span class="dock-icon">💾</span>
@@ -270,7 +282,7 @@
             <span class="dock-icon">🖼️</span>
             <span class="dock-text">تحميل صورة</span>
         </button>
-        <button type="button" class="dock-btn btn-print" onclick="window.print()">
+        <button type="button" class="dock-btn btn-print" onclick="triggerPrint()">
             <span class="dock-icon">🖨️</span>
             <span class="dock-text">طباعة / PDF</span>
         </button>
@@ -285,7 +297,7 @@
         <div class="modal-box">
             <button class="modal-close" type="button" onclick="closeShareModal()">×</button>
             <h3>مشاركة السند مع المريض</h3>
-            <p>اختر الوسيلة المناسبة للإرسال المباشر:</p>
+            <p>اختر الوسيلة المناسبة للإرسال الفوري:</p>
             <div class="modal-options">
                 <button type="button" class="opt-card" onclick="shareReceiptImage()">
                     <span class="opt-icon">🖼️</span>

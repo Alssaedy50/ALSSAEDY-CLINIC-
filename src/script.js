@@ -1,3 +1,60 @@
+// الشعار الرسمي الافتراضي المعتمد
+const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
+
+// محرك التفقيط المالي بالريال اليمني (Auto-Tafqeet)
+function tafqeetRial(number) {
+    if (isNaN(number) || number <= 0) return '';
+    number = Math.floor(number);
+
+    const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة',
+                  'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+    const tens = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+    const hundreds = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+
+    function convertGroup(n) {
+        let h = Math.floor(n / 100);
+        let rem = n % 100;
+        let parts = [];
+        if (h > 0) parts.push(hundreds[h]);
+        if (rem > 0) {
+            if (rem < 20) {
+                parts.push(ones[rem]);
+            } else {
+                let o = rem % 10;
+                let t = Math.floor(rem / 10);
+                if (o > 0) parts.push(ones[o] + ' و' + tens[t]);
+                else parts.push(tens[t]);
+            }
+        }
+        return parts.join(' و');
+    }
+
+    let parts = [];
+    let millions = Math.floor(number / 1000000);
+    let thousands = Math.floor((number % 1000000) / 1000);
+    let rest = number % 1000;
+
+    if (millions > 0) {
+        if (millions === 1) parts.push('مليون');
+        else if (millions === 2) parts.push('مليونان');
+        else if (millions >= 3 && millions <= 10) parts.push(convertGroup(millions) + ' ملايين');
+        else parts.push(convertGroup(millions) + ' مليون');
+    }
+
+    if (thousands > 0) {
+        if (thousands === 1) parts.push('ألف');
+        else if (thousands === 2) parts.push('ألفان');
+        else if (thousands >= 3 && thousands <= 10) parts.push(convertGroup(thousands) + ' آلاف');
+        else parts.push(convertGroup(thousands) + ' ألف');
+    }
+
+    if (rest > 0) {
+        parts.push(convertGroup(rest));
+    }
+
+    return parts.join(' و') + ' ريال يمني فقط لا غير';
+}
+
 function toggleDrawer(open) {
     document.getElementById('settingsPanel').classList.toggle('open', open);
 }
@@ -7,8 +64,9 @@ function setMode(mode) {
     document.getElementById('btnModeManual').classList.toggle('active', mode === 'manual');
     document.getElementById('btnModeDigital').classList.toggle('active', mode === 'digital');
     
-    if (mode === 'digital' && !document.getElementById('digDate').value) {
-        document.getElementById('digDate').value = new Date().toISOString().split('T')[0];
+    if (mode === 'digital') {
+        if (!document.getElementById('digDate').value) setTodayDate();
+        if (!document.getElementById('digReceiptNo').value) generateNextReceiptNo();
     }
 }
 
@@ -37,6 +95,32 @@ function adjustFontSize(delta) {
     document.getElementById('fontScaleLabel').innerText = currentScale + '%';
 }
 
+// أدوات الإدخال السريع
+function setTodayDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('digDate').value = today;
+}
+
+function generateNextReceiptNo() {
+    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    let nextNum = history.length + 1;
+    document.getElementById('digReceiptNo').value = 'REC-' + String(nextNum).padStart(3, '0');
+}
+
+function clearReceiptInputs() {
+    if (confirm('هل تريد تفريغ حقول السند الحالية؟')) {
+        document.getElementById('digClientName').value = '';
+        document.getElementById('digPaid').value = '';
+        document.getElementById('digTotal').value = '';
+        document.getElementById('digPaidTable').value = '';
+        document.getElementById('digBalance').value = '';
+        document.getElementById('digTafqeet').value = '';
+        document.getElementById('digRef').value = '';
+        document.getElementById('digTooth').value = '';
+        document.querySelectorAll('.srv-check').forEach(cb => cb.checked = false);
+    }
+}
+
 function uploadLogo(event) {
     const file = event.target.files[0];
     if (file) {
@@ -56,8 +140,7 @@ function applyLogo(url) {
 
 function resetOfficialLogo() {
     localStorage.removeItem('alssaedy_custom_logo');
-    const defaultLogo = window.OFFICIAL_LOGO_DATA || 'logo.png';
-    applyLogo(defaultLogo);
+    applyLogo(OFFICIAL_LOGO_URL);
     alert('تمت استعادة الشعار الرسمي المعتمد للعيادة بنجاح.');
 }
 
@@ -85,22 +168,46 @@ function toggleEditMode() {
     }
 }
 
+// حساب المبالغ والتفقيط التلقائي الفوري
 function calculateLedger() {
-    const paid = parseFloat(document.getElementById('digPaid').value) || 0;
+    const paidVal = document.getElementById('digPaid').value;
+    const paid = parseFloat(paidVal) || 0;
     const total = parseFloat(document.getElementById('digTotal').value) || 0;
-    document.getElementById('digPaidTable').value = paid;
-    document.getElementById('digBalance').value = Math.max(0, total - paid);
+    
+    document.getElementById('digPaidTable').value = paid ? paid : '';
+    document.getElementById('digBalance').value = (total || paid) ? Math.max(0, total - paid) : '';
+
+    // التفقيط التلقائي فور كتابة المبلغ المدفوع
+    if (paid > 0) {
+        document.getElementById('digTafqeet').value = tafqeetRial(paid);
+    }
 }
 
+// تشغيل الطباعة بطريقة موثوقة في جميع المتصفحات
+function triggerPrint() {
+    window.focus();
+    setTimeout(() => {
+        window.print();
+    }, 150);
+}
+
+// توليد صورة نقية خالية من تشوهات النصوص
 async function generateReceiptCanvas() {
+    document.body.classList.add('is-capturing');
+    await document.fonts.ready;
     const receipt = document.getElementById('receiptPrintArea');
-    return await html2canvas(receipt, {
-        scale: 3,
+    
+    const canvas = await html2canvas(receipt, {
+        scale: 2.8,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        letterRendering: false
     });
+    
+    document.body.classList.remove('is-capturing');
+    return canvas;
 }
 
 async function downloadReceiptImage() {
@@ -109,7 +216,7 @@ async function downloadReceiptImage() {
         const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
         const link = document.createElement('a');
         link.download = `سند_قبض_${recNo}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
+        link.href = canvas.toDataURL('image/png', 0.95);
         link.click();
     } catch(e) {
         alert('تعذر إنشاء الصورة: ' + e.message);
@@ -132,10 +239,18 @@ function getReceiptText() {
     const date = document.getElementById('digDate').value || new Date().toISOString().split('T')[0];
     const recNo = document.getElementById('digReceiptNo').value || '---';
 
+    // جمع الخدمات المحددة
+    let selectedServices = [];
+    document.querySelectorAll('.srv-check:checked').forEach(cb => {
+        selectedServices.push(cb.value);
+    });
+    let srvText = selectedServices.length ? `الخدمات: ${selectedServices.join('، ')}` : '';
+
     return `*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*
 رقم السند: ${recNo}
 التاريخ: ${date}
 المريض: ${name}
+${srvText}
 -----------------------------
 المبلغ المدفوع: ${paid} ريال يمني
 إجمالي الحساب: ${total} ريال يمني
@@ -169,9 +284,9 @@ async function shareReceiptImage() {
                 });
             } else {
                 downloadReceiptImage();
-                setTimeout(shareWhatsAppText, 1200);
+                setTimeout(shareWhatsAppText, 1000);
             }
-        }, 'image/png', 1.0);
+        }, 'image/png', 0.95);
     } catch(e) {
         shareWhatsAppText();
     }
@@ -185,6 +300,7 @@ function copyReceiptText() {
     }).catch(() => { alert(text); });
 }
 
+// السجل المحلي
 function saveReceiptLocally() {
     const recNo = document.getElementById('digReceiptNo').value || ('REC-' + Math.floor(100 + Math.random()*900));
     const record = {
@@ -245,6 +361,7 @@ function loadReceipt(id) {
     document.getElementById('digClientName').value = item.name;
     document.getElementById('digPaid').value = item.paid;
     document.getElementById('digTotal').value = item.total;
+    document.getElementById('digPaidTable').value = item.paid;
     document.getElementById('digBalance').value = item.balance;
     document.getElementById('digTooth').value = item.tooth;
     document.getElementById('digTafqeet').value = item.tafqeet;
@@ -269,9 +386,8 @@ function clearAllHistory() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    const defaultLogo = window.OFFICIAL_LOGO_DATA || 'logo.png';
     const customLogo = localStorage.getItem('alssaedy_custom_logo');
-    applyLogo(customLogo || defaultLogo);
+    applyLogo(customLogo || OFFICIAL_LOGO_URL);
 
     const savedTexts = localStorage.getItem('alssaedy_texts');
     if (savedTexts) {
