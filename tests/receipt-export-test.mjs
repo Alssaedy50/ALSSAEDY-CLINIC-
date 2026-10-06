@@ -40,7 +40,7 @@ const result = await page.evaluate(async () => {
   };
 });
 
-const base64 = result.dataUrl.replace(/^data:image\\/png;base64,/, '');
+const base64 = result.dataUrl.split(',')[1];
 const pngPath = '/tmp/alssaedy-receipt-export.png';
 fs.writeFileSync(pngPath, Buffer.from(base64, 'base64'));
 
