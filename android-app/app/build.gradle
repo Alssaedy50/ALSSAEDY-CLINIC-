@@ -8,6 +8,7 @@ tasks.register("prepareWebAssets", Copy) {
         include "index.html"
         include "logo.png"
         include "logo_data.js"
+        include "android-app-bridge.js"
         include "css/**"
         include "js/**"
         include "assets/**"
