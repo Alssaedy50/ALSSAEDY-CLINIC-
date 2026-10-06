@@ -1,0 +1,61 @@
+plugins { id 'com.android.application' }
+
+def webOutput = layout.buildDirectory.dir("generated/web-assets")
+def resOutput = layout.buildDirectory.dir("generated/android-res")
+
+tasks.register("prepareWebAssets", Copy) {
+    from(rootProject.projectDir.parentFile) {
+        include "index.html"
+        include "logo.png"
+        include "logo_data.js"
+        include "android-app-bridge.js"
+        include "css/**"
+        include "js/**"
+        include "assets/**"
+    }
+    into(webOutput.map { it.dir("web") })
+}
+
+tasks.register("prepareAndroidResources", Copy) {
+    from(rootProject.projectDir.parentFile) {
+        include "logo.png"
+    }
+    into(resOutput.map { it.dir("drawable") })
+    rename { "clinic_logo.png" }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("prepareWebAssets", "prepareAndroidResources")
+}
+
+android {
+    namespace "com.alssaedy.clinic"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.alssaedy.clinic"
+        minSdk 29
+        targetSdk 35
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    sourceSets {
+        main {
+            assets.srcDir(webOutput)
+            res.srcDir(resOutput)
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
