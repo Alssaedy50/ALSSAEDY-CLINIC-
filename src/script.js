@@ -98,7 +98,7 @@ function cloneForExport(){
 function createExportMount(){
  const d=exportDimensions(),mount=document.createElement('div');
  mount.dataset.size=document.body.dataset.size||'a5';mount.dataset.orientation=document.body.dataset.orientation||'portrait';mount.dataset.mode=document.body.dataset.mode||'manual';mount.dataset.theme=document.body.dataset.theme||'classic';
- mount.style.cssText='position:fixed;left:-100000px;top:0;width:'+d.width+'mm;height:'+d.height+'mm;background:#fff;overflow:hidden;z-index:-1;direction:rtl';
+ mount.style.cssText='position:fixed;left:0;top:0;width:'+d.width+'mm;height:'+d.height+'mm;background:#fff;overflow:hidden;z-index:1;opacity:0;pointer-events:none;direction:rtl';
  const node=cloneForExport();node.style.width=d.width+'mm';node.style.height=d.height+'mm';node.style.margin='0';node.style.boxShadow='none';node.style.border='0';
  mount.appendChild(node);document.body.appendChild(mount);return{mount,node,d};
 }
@@ -107,7 +107,7 @@ async function receiptPNG(type='png'){
  try{
   await waitForImages(node);
   const r=node.getBoundingClientRect(),width=Math.max(1,Math.ceil(r.width)),height=Math.max(1,Math.ceil(r.height));
-  const canvas=await html2canvas(node,{scale:4,useCORS:true,allowTaint:false,backgroundColor:'#fff',width,height,windowWidth:width,windowHeight:height,scrollX:0,scrollY:0});
+  if(typeof html2canvas!=='function')throw new Error('html2canvas unavailable'); const canvas=await html2canvas(node,{scale:3,useCORS:true,allowTaint:false,backgroundColor:'#fff',width,height,windowWidth:width,windowHeight:height,scrollX:0,scrollY:0});
   return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Canvas export failed')),type==='jpeg'?'image/jpeg':'image/png',1));
  }finally{mount.remove()}
 }
@@ -116,7 +116,7 @@ async function buildPDFBlob(){
  const {mount,node,d}=createExportMount();
  try{
   await waitForImages(node);
-  const opt={margin:0,filename:'ALSSAEDY-Receipt.pdf',image:{type:'png',quality:1},html2canvas:{scale:4,useCORS:true,allowTaint:false,backgroundColor:'#fff',scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:[d.width,d.height],orientation:d.orientation,compress:true}};
+  const opt={margin:0,filename:'ALSSAEDY-Receipt.pdf',image:{type:'png',quality:1},html2canvas:{scale:3,useCORS:true,allowTaint:false,backgroundColor:'#fff',scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:[d.width,d.height],orientation:d.orientation,compress:true}};
   return await html2pdf().set(opt).from(node).toPdf().outputPdf('blob');
  }finally{mount.remove()}
 }
