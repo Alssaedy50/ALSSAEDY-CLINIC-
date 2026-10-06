@@ -1,11 +1,14 @@
+<<<<<<< HEAD
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
 // الشعار الرسمي الافتراضي المعتمد
+=======
+>>>>>>> dccf769 (fix: real PDF file download engine, clean visual radio/checkboxes, responsive mobile layout, and auto-tafqeet)
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
 
-// محرك التفقيط المالي بالريال اليمني (Auto-Tafqeet)
+// محرك التفقيط المالي بالريال اليمني
 function tafqeetRial(number) {
     if (isNaN(number) || number <= 0) return '';
     number = Math.floor(number);
@@ -99,6 +102,7 @@ function adjustFontSize(delta) {
     document.getElementById('fontScaleLabel').innerText = currentScale + '%';
 }
 
+<<<<<<< HEAD
 // أدوات الإدخال السريع
 function localDateISO() {
     const d = new Date();
@@ -122,6 +126,8 @@ function nextReceiptNumber() {
     localStorage.setItem('alssaedy_next_receipt_no', String(next));
     return 'REC-' + String(next).padStart(3, '0');
 }
+=======
+>>>>>>> dccf769 (fix: real PDF file download engine, clean visual radio/checkboxes, responsive mobile layout, and auto-tafqeet)
 function setTodayDate() {
     document.getElementById('digDate').value = localDateISO();
 }
@@ -130,12 +136,38 @@ function generateNextReceiptNo() {
 }
 
 function clearReceiptInputs() {
+<<<<<<< HEAD
     if (!confirm('هل تريد تفريغ حقول السند الحالية؟')) return;
     document.getElementById('digReceiptNo').value = nextReceiptNumber();
     setTodayDate();
     ['digClientName','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id => document.getElementById(id).value = '');
     document.querySelectorAll('.srv-check').forEach(cb => cb.checked = false);
     document.querySelectorAll('input[name="payMethod"]').forEach(radio => radio.checked = radio.value === 'نقداً');
+=======
+    if (confirm('هل تريد تفريغ حقول السند الحالية؟')) {
+        document.getElementById('digClientName').value = '';
+        document.getElementById('digPaid').value = '';
+        document.getElementById('digTotal').value = '';
+        document.getElementById('digPaidTable').value = '';
+        document.getElementById('digBalance').value = '';
+        document.getElementById('digTafqeet').value = '';
+        document.getElementById('digRef').value = '';
+        document.getElementById('digTooth').value = '';
+        document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
+    }
+>>>>>>> dccf769 (fix: real PDF file download engine, clean visual radio/checkboxes, responsive mobile layout, and auto-tafqeet)
+}
+
+// التحكم بخيارات الدفع النقية
+function setPayMethod(method) {
+    document.getElementById('selectedPayMethod').value = method;
+    document.getElementById('radCash').classList.toggle('active', method === 'نقداً');
+    document.getElementById('radBank').classList.toggle('active', method !== 'نقداً');
+}
+
+// التحكم بالخدمات السنية النقية
+function toggleService(element, serviceName) {
+    element.classList.toggle('active');
 }
 
 function uploadLogo(event) {
@@ -185,7 +217,6 @@ function toggleEditMode() {
     }
 }
 
-// حساب المبالغ والتفقيط التلقائي الفوري
 function calculateLedger() {
     const paidVal = document.getElementById('digPaid').value;
     const paid = parseFloat(paidVal) || 0;
@@ -194,21 +225,44 @@ function calculateLedger() {
     document.getElementById('digPaidTable').value = paid ? paid : '';
     document.getElementById('digBalance').value = (total || paid) ? (total - paid) : '';
 
-    // التفقيط التلقائي فور كتابة المبلغ المدفوع
     if (paid > 0) {
         document.getElementById('digTafqeet').value = tafqeetRial(paid);
     }
 }
 
-// تشغيل الطباعة بطريقة موثوقة في جميع المتصفحات
-function triggerPrint() {
+// تنزيل ملف PDF حقيقي فوري A5 للموبايل والكمبيوتر
+async function downloadReceiptPDF() {
+    const receipt = document.getElementById('receiptPrintArea');
+    const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
+    
+    document.body.classList.add('is-capturing');
+    await document.fonts.ready;
+
+    const opt = {
+        margin: 0,
+        filename: `سند_قبض_${recNo}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 3, useCORS: true, letterRendering: false },
+        jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(receipt).save().then(() => {
+        document.body.classList.remove('is-capturing');
+    }).catch(err => {
+        document.body.classList.remove('is-capturing');
+        alert('حدث خطأ أثناء تنزيل PDF: ' + err.message);
+    });
+}
+
+// تشغيل الطباعة الفعلية بطريقة متوافقة
+function triggerNativePrint() {
     window.focus();
     setTimeout(() => {
         window.print();
-    }, 150);
+    }, 200);
 }
 
-// توليد صورة نقية خالية من تشوهات النصوص
+// توليد صورة عالية الدقة خالية من الرموز المشوهة
 async function generateReceiptCanvas() {
     document.body.classList.add('is-capturing');
     await document.fonts.ready;
@@ -255,6 +309,7 @@ function getReceiptText() {
     const balance = document.getElementById('digBalance').value || '0';
     const date = document.getElementById('digDate').value || localDateISO();
     const recNo = document.getElementById('digReceiptNo').value || '---';
+<<<<<<< HEAD
     const payment = document.querySelector('input[name="payMethod"]:checked')?.value || 'نقداً';
     const ref = document.getElementById('digRef').value || '';
     const tooth = document.getElementById('digTooth').value || '';
@@ -266,6 +321,28 @@ function getReceiptText() {
     if (ref) lines.push('مرجع التحويل: ' + ref);
     lines.push('-----------------------------', 'شكرًا لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.', 'ريمة – كسمة – عزلة الضبارة', '+967 716 339 366 • +967 739 550 138 • +967 775 956 520');
     return lines.join('\n');
+=======
+
+    let selectedServices = [];
+    document.querySelectorAll('.custom-check-item.active').forEach(item => {
+        selectedServices.push(item.innerText.trim());
+    });
+    let srvText = selectedServices.length ? `الخدمات: ${selectedServices.join('، ')}` : '';
+
+    return `*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*
+رقم السند: ${recNo}
+التاريخ: ${date}
+المريض: ${name}
+${srvText}
+-----------------------------
+المبلغ المدفوع: ${paid} ريال يمني
+إجمالي الحساب: ${total} ريال يمني
+المتبقي: ${balance} ريال يمني
+-----------------------------
+شكراً لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.
+ريمة - كسمة - عزلة الضبارة
++967 716 339 366`;
+>>>>>>> dccf769 (fix: real PDF file download engine, clean visual radio/checkboxes, responsive mobile layout, and auto-tafqeet)
 }
 function shareWhatsAppText() {
     closeShareModal();
@@ -306,7 +383,6 @@ function copyReceiptText() {
     }).catch(() => { alert(text); });
 }
 
-// السجل المحلي
 function saveReceiptLocally() {
     const recNoInput = document.getElementById('digReceiptNo').value.trim();
     const recNo = recNoInput || nextReceiptNumber();
