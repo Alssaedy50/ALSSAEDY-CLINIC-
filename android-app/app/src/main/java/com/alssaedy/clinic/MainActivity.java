@@ -89,18 +89,39 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void printReceipt() {
+            printReceipt("a5");
+        }
+
+        @JavascriptInterface
+        public void printReceipt(String size) {
             runOnUiThread(() -> {
                 PrintManager printManager = (PrintManager) getSystemService(PRINT_SERVICE);
                 PrintDocumentAdapter adapter = webView.createPrintDocumentAdapter("ALSSAEDY-Receipt");
+                PrintAttributes.MediaSize mediaSize = getPrintMediaSize(size);
                 printManager.print(
                     "ALSSAEDY-Receipt",
                     adapter,
                     new PrintAttributes.Builder()
-                        .setMediaSize(PrintAttributes.MediaSize.ISO_A5)
+                        .setMediaSize(mediaSize)
                         .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                        .setResolution(new PrintAttributes.Resolution("alssaedy", "ALSSAEDY", 300, 300))
                         .build()
                 );
             });
+        }
+
+        private PrintAttributes.MediaSize getPrintMediaSize(String size) {
+            if ("a4".equalsIgnoreCase(size)) return PrintAttributes.MediaSize.ISO_A4;
+            if ("thermal".equalsIgnoreCase(size)) {
+                // Android PrintAttributes uses mils (1/1000 inch): 80 x 240 mm.
+                return new PrintAttributes.MediaSize(
+                    "ALSSAEDY_THERMAL_80MM",
+                    "80mm Thermal",
+                    3150,
+                    9449
+                );
+            }
+            return PrintAttributes.MediaSize.ISO_A5;
         }
 
         @JavascriptInterface
@@ -141,6 +162,50 @@ public class MainActivity extends Activity {
             } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, "تعذر حفظ الصورة.", Toast.LENGTH_SHORT).show());
             }
+        }
+
+        @JavascriptInterface
+        public void saveTransactionsFile(String content, String fileName, String mimeType) {
+            try {
+                Uri uri = writeTextToDownloads(content, fileName, mimeType);
+                if (uri != null) {
+                    runOnUiThread(() -> Toast.makeText(
+                        MainActivity.this,
+                        "تم حفظ ملف سجل المعاملات في مجلد التنزيلات.",
+                        Toast.LENGTH_LONG
+                    ).show());
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(
+                    MainActivity.this,
+                    "تعذر حفظ ملف سجل المعاملات.",
+                    Toast.LENGTH_SHORT
+                ).show());
+            }
+        }
+
+        private Uri writeTextToDownloads(String content, String fileName, String mimeType) throws Exception {
+            String safeName = (fileName == null || fileName.trim().isEmpty() ? "ALSSAEDY_Clinic_Transactions.json" : fileName)
+                    .replaceAll("[^A-Za-z0-9_.\-\u0600-\u06FF]", "_");
+
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, safeName);
+            values.put(MediaStore.Downloads.MIME_TYPE, mimeType == null ? "application/octet-stream" : mimeType);
+            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/ALSSAEDY Clinic");
+            values.put(MediaStore.Downloads.IS_PENDING, 1);
+
+            Uri collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            Uri uri = getContentResolver().insert(collection, values);
+            if (uri == null) return null;
+
+            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                out.write((content == null ? "" : content).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
+
+            values.clear();
+            values.put(MediaStore.Downloads.IS_PENDING, 0);
+            getContentResolver().update(uri, values, null, null);
+            return uri;
         }
 
         @JavascriptInterface
