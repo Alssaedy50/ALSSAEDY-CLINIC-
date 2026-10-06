@@ -26,13 +26,44 @@ await page.evaluate(() => {
   const method = document.getElementById('selectedPayMethod');
   if (method) method.value = 'نقداً';
   if (typeof calculateLedger === 'function') calculateLedger();
+  if (typeof syncReceiptDateFromInput === 'function') syncReceiptDateFromInput();
 });
 
 await page.waitForTimeout(500);
 
+const dateCheck = await page.evaluate(() => ({
+  digitalDate: document.getElementById('digDate')?.value || '',
+  paperDay: document.getElementById('paperDateDay')?.textContent || '',
+  paperMonth: document.getElementById('paperDateMonth')?.textContent || '',
+  paperYear: document.getElementById('paperDateYear')?.textContent || ''
+}));
+if (dateCheck.digitalDate !== '2026-10-07' ||
+    dateCheck.paperDay !== '07' ||
+    dateCheck.paperMonth !== '10' ||
+    dateCheck.paperYear !== '2026 م') {
+  throw new Error('Receipt date synchronization failed: ' + JSON.stringify(dateCheck));
+}
+
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
   const canvas = await generateReceiptCanvas();
+  const cloneCheck = await new Promise(async resolve => {
+    let captured = false;
+    const receipt = document.getElementById('receiptPrintArea');
+    await html2canvas(receipt, {
+      scale: 1,
+      logging: false,
+      onclone: doc => {
+        const cloned = doc.getElementById('receiptPrintArea');
+        const date = cloned?.querySelector('#digDate')?.value || '';
+        const name = cloned?.querySelector('#digClientName')?.value || '';
+        const rec = cloned?.querySelector('#digReceiptNo')?.value || '';
+        captured = date === '2026-10-07' && name === 'مريض الاختبار' && rec === 'TEST-001';
+      }
+    });
+    resolve(captured);
+  });
+  if (!cloneCheck) throw new Error('Export clone did not preserve receipt fields.');
   return {
     width: canvas.width,
     height: canvas.height,
