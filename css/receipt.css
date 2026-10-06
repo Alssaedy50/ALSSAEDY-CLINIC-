@@ -379,3 +379,29 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
   .receipt-header .header-logo-wrap{width:62px!important;height:62px!important;}
   .date-sequence{font-size:9px!important;direction:ltr!important;unicode-bidi:isolate!important;}
 }
+
+/* FINAL PAPER DATE + LOGO CONTROL — isolated feature branch. */
+.receipt-paper .date-container{gap:6px!important;align-items:baseline!important;}
+.receipt-paper .date-sequence{
+  direction:ltr!important;unicode-bidi:isolate!important;
+  display:inline-block!important;white-space:nowrap!important;
+  font-size:10px!important;line-height:1.15!important;
+  font-weight:700!important;letter-spacing:0!important;
+  color:var(--primary)!important;
+  min-width:82px!important;
+}
+.receipt-paper .header-logo-wrap{
+  width:calc(62px * var(--logo-scale,1))!important;
+  height:calc(62px * var(--logo-scale,1))!important;
+  justify-self:center!important;align-self:center!important;
+  margin:0 auto!important;
+}
+.receipt-paper .clinic-logo{
+  width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;
+  object-fit:contain!important;
+}
+@media print{
+ .receipt-paper .date-sequence{font-size:10px!important;line-height:1.15!important;}
+ .receipt-paper .header-logo-wrap{width:calc(62px * var(--logo-scale,1))!important;height:calc(62px * var(--logo-scale,1))!important;}
+}
