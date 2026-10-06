@@ -1,7 +1,6 @@
-// الشعار الرسمي الافتراضي المعتمد
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
 
-// محرك التفقيط المالي بالريال اليمني (Auto-Tafqeet)
+// محرك التفقيط المالي بالريال اليمني
 function tafqeetRial(number) {
     if (isNaN(number) || number <= 0) return '';
     number = Math.floor(number);
@@ -95,7 +94,6 @@ function adjustFontSize(delta) {
     document.getElementById('fontScaleLabel').innerText = currentScale + '%';
 }
 
-// أدوات الإدخال السريع
 function setTodayDate() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('digDate').value = today;
@@ -117,8 +115,20 @@ function clearReceiptInputs() {
         document.getElementById('digTafqeet').value = '';
         document.getElementById('digRef').value = '';
         document.getElementById('digTooth').value = '';
-        document.querySelectorAll('.srv-check').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
     }
+}
+
+// التحكم بخيارات الدفع النقية
+function setPayMethod(method) {
+    document.getElementById('selectedPayMethod').value = method;
+    document.getElementById('radCash').classList.toggle('active', method === 'نقداً');
+    document.getElementById('radBank').classList.toggle('active', method !== 'نقداً');
+}
+
+// التحكم بالخدمات السنية النقية
+function toggleService(element, serviceName) {
+    element.classList.toggle('active');
 }
 
 function uploadLogo(event) {
@@ -168,7 +178,6 @@ function toggleEditMode() {
     }
 }
 
-// حساب المبالغ والتفقيط التلقائي الفوري
 function calculateLedger() {
     const paidVal = document.getElementById('digPaid').value;
     const paid = parseFloat(paidVal) || 0;
@@ -177,21 +186,44 @@ function calculateLedger() {
     document.getElementById('digPaidTable').value = paid ? paid : '';
     document.getElementById('digBalance').value = (total || paid) ? Math.max(0, total - paid) : '';
 
-    // التفقيط التلقائي فور كتابة المبلغ المدفوع
     if (paid > 0) {
         document.getElementById('digTafqeet').value = tafqeetRial(paid);
     }
 }
 
-// تشغيل الطباعة بطريقة موثوقة في جميع المتصفحات
-function triggerPrint() {
+// تنزيل ملف PDF حقيقي فوري A5 للموبايل والكمبيوتر
+async function downloadReceiptPDF() {
+    const receipt = document.getElementById('receiptPrintArea');
+    const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
+    
+    document.body.classList.add('is-capturing');
+    await document.fonts.ready;
+
+    const opt = {
+        margin: 0,
+        filename: `سند_قبض_${recNo}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 3, useCORS: true, letterRendering: false },
+        jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(receipt).save().then(() => {
+        document.body.classList.remove('is-capturing');
+    }).catch(err => {
+        document.body.classList.remove('is-capturing');
+        alert('حدث خطأ أثناء تنزيل PDF: ' + err.message);
+    });
+}
+
+// تشغيل الطباعة الفعلية بطريقة متوافقة
+function triggerNativePrint() {
     window.focus();
     setTimeout(() => {
         window.print();
-    }, 150);
+    }, 200);
 }
 
-// توليد صورة نقية خالية من تشوهات النصوص
+// توليد صورة عالية الدقة خالية من الرموز المشوهة
 async function generateReceiptCanvas() {
     document.body.classList.add('is-capturing');
     await document.fonts.ready;
@@ -239,10 +271,9 @@ function getReceiptText() {
     const date = document.getElementById('digDate').value || new Date().toISOString().split('T')[0];
     const recNo = document.getElementById('digReceiptNo').value || '---';
 
-    // جمع الخدمات المحددة
     let selectedServices = [];
-    document.querySelectorAll('.srv-check:checked').forEach(cb => {
-        selectedServices.push(cb.value);
+    document.querySelectorAll('.custom-check-item.active').forEach(item => {
+        selectedServices.push(item.innerText.trim());
     });
     let srvText = selectedServices.length ? `الخدمات: ${selectedServices.join('، ')}` : '';
 
@@ -300,7 +331,6 @@ function copyReceiptText() {
     }).catch(() => { alert(text); });
 }
 
-// السجل المحلي
 function saveReceiptLocally() {
     const recNo = document.getElementById('digReceiptNo').value || ('REC-' + Math.floor(100 + Math.random()*900));
     const record = {
