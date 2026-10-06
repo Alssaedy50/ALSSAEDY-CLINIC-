@@ -202,4 +202,5 @@ function restoreSavedState(){
   const current=localStorage.getItem(STORAGE_KEY),legacy=localStorage.getItem('alssaedy_receipt_state_v7');
   const s=JSON.parse(current||legacy||'null');
   if(s)applyStateObject(s);
- }catch(e){console.error('Saved state restore failed',e)} 
+ }catch(e){console.error('Saved state restore failed',e)}
+}
