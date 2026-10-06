@@ -1,3 +1,7 @@
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
 // الشعار الرسمي الافتراضي المعتمد
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
 
@@ -96,29 +100,42 @@ function adjustFontSize(delta) {
 }
 
 // أدوات الإدخال السريع
-function setTodayDate() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('digDate').value = today;
+function localDateISO() {
+    const d = new Date();
+    const offset = d.getTimezoneOffset();
+    return new Date(d.getTime() - offset * 60000).toISOString().slice(0, 10);
 }
-
+function readHistory() {
+    try {
+        const value = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+        return Array.isArray(value) ? value : [];
+    } catch (e) { return []; }
+}
+function nextReceiptNumber() {
+    const history = readHistory();
+    const stored = parseInt(localStorage.getItem('alssaedy_next_receipt_no') || '0', 10);
+    const maxExisting = history.reduce((max, item) => {
+        const match = String(item?.recNo || '').match(/^REC-(\d+)$/);
+        return match ? Math.max(max, parseInt(match[1], 10)) : max;
+    }, 0);
+    const next = Math.max(stored, maxExisting) + 1;
+    localStorage.setItem('alssaedy_next_receipt_no', String(next));
+    return 'REC-' + String(next).padStart(3, '0');
+}
+function setTodayDate() {
+    document.getElementById('digDate').value = localDateISO();
+}
 function generateNextReceiptNo() {
-    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
-    let nextNum = history.length + 1;
-    document.getElementById('digReceiptNo').value = 'REC-' + String(nextNum).padStart(3, '0');
+    document.getElementById('digReceiptNo').value = nextReceiptNumber();
 }
 
 function clearReceiptInputs() {
-    if (confirm('هل تريد تفريغ حقول السند الحالية؟')) {
-        document.getElementById('digClientName').value = '';
-        document.getElementById('digPaid').value = '';
-        document.getElementById('digTotal').value = '';
-        document.getElementById('digPaidTable').value = '';
-        document.getElementById('digBalance').value = '';
-        document.getElementById('digTafqeet').value = '';
-        document.getElementById('digRef').value = '';
-        document.getElementById('digTooth').value = '';
-        document.querySelectorAll('.srv-check').forEach(cb => cb.checked = false);
-    }
+    if (!confirm('هل تريد تفريغ حقول السند الحالية؟')) return;
+    document.getElementById('digReceiptNo').value = nextReceiptNumber();
+    setTodayDate();
+    ['digClientName','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id => document.getElementById(id).value = '');
+    document.querySelectorAll('.srv-check').forEach(cb => cb.checked = false);
+    document.querySelectorAll('input[name="payMethod"]').forEach(radio => radio.checked = radio.value === 'نقداً');
 }
 
 function uploadLogo(event) {
@@ -175,7 +192,7 @@ function calculateLedger() {
     const total = parseFloat(document.getElementById('digTotal').value) || 0;
     
     document.getElementById('digPaidTable').value = paid ? paid : '';
-    document.getElementById('digBalance').value = (total || paid) ? Math.max(0, total - paid) : '';
+    document.getElementById('digBalance').value = (total || paid) ? (total - paid) : '';
 
     // التفقيط التلقائي فور كتابة المبلغ المدفوع
     if (paid > 0) {
@@ -236,31 +253,20 @@ function getReceiptText() {
     const paid = document.getElementById('digPaid').value || '0';
     const total = document.getElementById('digTotal').value || '0';
     const balance = document.getElementById('digBalance').value || '0';
-    const date = document.getElementById('digDate').value || new Date().toISOString().split('T')[0];
+    const date = document.getElementById('digDate').value || localDateISO();
     const recNo = document.getElementById('digReceiptNo').value || '---';
-
-    // جمع الخدمات المحددة
-    let selectedServices = [];
-    document.querySelectorAll('.srv-check:checked').forEach(cb => {
-        selectedServices.push(cb.value);
-    });
-    let srvText = selectedServices.length ? `الخدمات: ${selectedServices.join('، ')}` : '';
-
-    return `*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*
-رقم السند: ${recNo}
-التاريخ: ${date}
-المريض: ${name}
-${srvText}
------------------------------
-المبلغ المدفوع: ${paid} ريال يمني
-إجمالي الحساب: ${total} ريال يمني
-المتبقي: ${balance} ريال يمني
------------------------------
-شكراً لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.
-ريمة - كسمة - عزلة الضبارة
-+967 716 339 366`;
+    const payment = document.querySelector('input[name="payMethod"]:checked')?.value || 'نقداً';
+    const ref = document.getElementById('digRef').value || '';
+    const tooth = document.getElementById('digTooth').value || '';
+    const services = [...document.querySelectorAll('.srv-check:checked')].map(cb => cb.value);
+    const lines = ['*سند قبض - عيادة الدكتور صلاح الدين السعيدي*', 'رقم السند: ' + recNo, 'التاريخ: ' + date, 'المريض: ' + name];
+    if (services.length) lines.push('الخدمات: ' + services.join('، '));
+    if (tooth) lines.push('رقم السن أو الموضع: ' + tooth);
+    lines.push('-----------------------------', 'المبلغ المدفوع: ' + paid + ' ريال يمني', 'إجمالي الحساب: ' + total + ' ريال يمني', 'المتبقي: ' + balance + ' ريال يمني', 'طريقة الدفع: ' + payment);
+    if (ref) lines.push('مرجع التحويل: ' + ref);
+    lines.push('-----------------------------', 'شكرًا لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.', 'ريمة – كسمة – عزلة الضبارة', '+967 716 339 366 • +967 739 550 138 • +967 775 956 520');
+    return lines.join('\n');
 }
-
 function shareWhatsAppText() {
     closeShareModal();
     const text = getReceiptText();
@@ -302,28 +308,33 @@ function copyReceiptText() {
 
 // السجل المحلي
 function saveReceiptLocally() {
-    const recNo = document.getElementById('digReceiptNo').value || ('REC-' + Math.floor(100 + Math.random()*900));
+    const recNoInput = document.getElementById('digReceiptNo').value.trim();
+    const recNo = recNoInput || nextReceiptNumber();
     const record = {
-        id: Date.now(),
-        recNo: recNo,
-        date: document.getElementById('digDate').value || new Date().toISOString().split('T')[0],
+        id: Date.now(), recNo,
+        date: document.getElementById('digDate').value || localDateISO(),
         name: document.getElementById('digClientName').value || 'مريض بدون اسم',
         paid: document.getElementById('digPaid').value || '0',
         total: document.getElementById('digTotal').value || '0',
         balance: document.getElementById('digBalance').value || '0',
         tooth: document.getElementById('digTooth').value || '',
-        tafqeet: document.getElementById('digTafqeet').value || ''
+        tafqeet: document.getElementById('digTafqeet').value || '',
+        paymentMethod: document.querySelector('input[name="payMethod"]:checked')?.value || 'نقداً',
+        ref: document.getElementById('digRef').value || '',
+        services: [...document.querySelectorAll('.srv-check:checked')].map(cb => cb.value)
     };
-
-    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    const history = readHistory();
+    if (history.some(item => item.recNo === record.recNo)) {
+        record.recNo = nextReceiptNumber();
+        document.getElementById('digReceiptNo').value = record.recNo;
+    }
     history.unshift(record);
     localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
     updateHistoryCount();
     alert('تم حفظ السند في السجل المحلي بنجاح.');
 }
-
 function updateHistoryCount() {
-    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    const history = readHistory();
     const badge = document.getElementById('historyCount');
     if (badge) badge.innerText = history.length;
 }
@@ -339,8 +350,8 @@ function renderHistory() {
     container.innerHTML = history.map(item => `
         <div class="history-entry">
             <div>
-                <strong>${item.name} (${item.recNo})</strong>
-                <small>التاريخ: ${item.date} | المدفوع: ${item.paid} ريال | المتبقي: ${item.balance} ريال</small>
+                <strong>${escapeHTML(item.name)} (${escapeHTML(item.recNo)})</strong>
+                <small>التاريخ: ${escapeHTML(item.date)} | المدفوع: ${escapeHTML(item.paid)} ريال | المتبقي: ${escapeHTML(item.balance)} ريال</small>
             </div>
             <div class="history-entry-btns">
                 <button type="button" onclick="loadReceipt(${item.id})">📥 استرجاع</button>
@@ -363,14 +374,17 @@ function loadReceipt(id) {
     document.getElementById('digTotal').value = item.total;
     document.getElementById('digPaidTable').value = item.paid;
     document.getElementById('digBalance').value = item.balance;
-    document.getElementById('digTooth').value = item.tooth;
-    document.getElementById('digTafqeet').value = item.tafqeet;
+    document.getElementById('digTooth').value = item.tooth || '';
+    document.getElementById('digTafqeet').value = item.tafqeet || '';
+    document.getElementById('digRef').value = item.ref || '';
+    document.querySelectorAll('input[name="payMethod"]').forEach(radio => radio.checked = radio.value === (item.paymentMethod || 'نقداً'));
+    document.querySelectorAll('.srv-check').forEach(cb => cb.checked = Array.isArray(item.services) && item.services.includes(cb.value));
     calculateLedger();
     closeHistoryModal();
 }
 
 function deleteReceipt(id) {
-    let history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    let history = readHistory();
     history = history.filter(r => r.id !== id);
     localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
     renderHistory();
@@ -399,4 +413,6 @@ window.addEventListener('DOMContentLoaded', () => {
         } catch(e){}
     }
     updateHistoryCount();
+    if (!document.getElementById('digDate').value) setTodayDate();
+    if (!document.getElementById('digReceiptNo').value) generateNextReceiptNo();
 });
