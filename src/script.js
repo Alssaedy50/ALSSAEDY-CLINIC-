@@ -172,11 +172,18 @@ async function migrateLegacyAssets(){
  const bg=watermark?.style.backgroundImage||'',m=bg.match(/^url\(["']?(data:[^"')]+)["']?\)$/i);
  if(m){try{const blob=await (await fetch(m[1])).blob();await saveLocalAsset('background',blob)}catch(e){}}
 }
+async function assetToObjectURL(value){
+ if(!value)return '';
+ if(value instanceof Blob)return URL.createObjectURL(value);
+ if(typeof value==='string'&&/^data:/i.test(value)){try{return URL.createObjectURL(await (await fetch(value)).blob())}catch(e){return ''}}
+ if(typeof value==='string'&&/^blob:/i.test(value))return value;
+ return '';
+}
 async function loadLocalAssets(){
  const logo=await loadLocalAsset('logo'),bg=await loadLocalAsset('background');
  const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');
- if(logo&&l){const u=URL.createObjectURL(logo instanceof Blob?logo:new Blob([logo]));l.src=u;l.dataset.objectUrl=u}
- if(bg&&w){const u=URL.createObjectURL(bg instanceof Blob?bg:new Blob([bg]));w.style.backgroundImage='url("' + u + '")';w.dataset.objectUrl=u}
+ if(logo&&l){const u=await assetToObjectURL(logo);if(u){l.src=u;l.dataset.objectUrl=u}}
+ if(bg&&w){const u=await assetToObjectURL(bg);if(u){w.style.backgroundImage='url("' + u + '")';w.dataset.objectUrl=u}}
 }
 async function bootTheme(){try{await migrateLegacyAssets();await loadLocalAssets()}catch(e){console.info('Local asset restore unavailable')}finally{bootstrapDone=true}}
 function applyStateObject(s){
@@ -190,4 +197,10 @@ function applyStateObject(s){
   calculateFinancials(false);
  }catch(e){console.error('State restore failed',e)}
 }
-function restoreSavedState(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(s)applyStateObject(s)}catch(e){console.error('Saved state restore failed',e)}}
+function restoreSavedState(){
+ try{
+  const current=localStorage.getItem(STORAGE_KEY),legacy=localStorage.getItem('alssaedy_receipt_state_v7');
+  const s=JSON.parse(current||legacy||'null');
+  if(s)applyStateObject(s);
+ }catch(e){console.error('Saved state restore failed',e)}
+}catch(e){console.error('Saved state restore failed',e)}}
