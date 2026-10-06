@@ -357,3 +357,18 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 .setting-help{font-size:8.5px;color:#64748b;line-height:1.45;margin:2px 0 7px}
 .compact-type-row{grid-template-columns:38px 1fr 38px;margin-top:3px}
 .date-setting-note{margin-top:7px;padding:6px 7px;border:1px dashed #cbd5e1;border-radius:5px;background:#fff;font-size:8.5px;line-height:1.5;color:#475569}
+
+
+/* FINAL DATE + ACTION DOCK — 2026-10-07 */
+.floating-action-dock {
+    background: rgba(15, 23, 42, 0.94) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+.dock-btn {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.dock-btn:hover {
+    background: rgba(255, 255, 255, 0.18) !important;
+}
