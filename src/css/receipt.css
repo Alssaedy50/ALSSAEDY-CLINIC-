@@ -8,8 +8,8 @@
     justify-content: space-between;
     width: 100%;
     max-width: 148mm;
-    min-height: 205mm;
-    padding: 7mm 9mm 5mm 9mm;
+    min-height: 202mm;
+    padding: 6mm 8mm 4mm 8mm;
     box-sizing: border-box;
 }
 
@@ -44,14 +44,14 @@ body.hide-watermark .watermark-layer { display: none !important; }
     justify-content: space-between;
     align-items: center;
     border-bottom: 2.2px solid var(--primary);
-    padding-bottom: 4px;
+    padding-bottom: 3px;
 }
 .header-doc h2 { font-size: 13px; font-weight: 900; color: var(--primary); line-height: 1.2; }
 .header-doc p { font-size: 9px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
 
 .header-logo-wrap {
-    width: 56px;
-    height: 56px;
+    width: 54px;
+    height: 54px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -62,11 +62,11 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .header-clinic h2 { font-size: 10px; font-weight: 800; color: var(--primary); line-height: 1.2; }
 .header-clinic p { font-size: 8.5px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
 
-.receipt-title-box { text-align: center; margin: 3px 0; }
+.receipt-title-box { text-align: center; margin: 2px 0; }
 .title-strip { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
 .strip-wing { height: 1.5px; width: 30px; background: var(--primary); opacity: 0.6; }
 .main-voucher-title {
-    font-size: 15.5px;
+    font-size: 15px;
     font-weight: 900;
     color: var(--primary);
     letter-spacing: 0 !important;
@@ -78,12 +78,12 @@ body.hide-watermark .watermark-layer { display: none !important; }
     align-items: center;
     background: var(--bg-strip);
     border: 1px solid var(--border-soft);
-    border-radius: 6px;
+    border-radius: 5px;
     padding: 3px 8px;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 .meta-cell { display: flex; align-items: center; gap: 4px; }
-.meta-label, .row-label { font-weight: 700; color: var(--primary); font-size: 10px; white-space: nowrap; }
+.meta-label, .row-label { font-weight: 700; color: var(--primary); font-size: 9.5px; white-space: nowrap; }
 
 .ar-date-flow { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--line-border); }
 .date-blank { display: inline-block; width: 24px; height: 15px; border-bottom: 1.5px dashed var(--line-border); }
@@ -95,8 +95,8 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .ref-dots { min-width: 90px; }
 .flex-1 { flex: 1; margin: 0 4px; }
 
-.section-patient { margin-bottom: 4px; }
-.row-flex { display: flex; align-items: center; margin-bottom: 4px; }
+.section-patient { margin-bottom: 3px; }
+.row-flex { display: flex; align-items: center; margin-bottom: 3px; }
 
 .paid-hero-bar {
     background: var(--bg-strip);
@@ -106,7 +106,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 4px 0;
+    margin: 3px 0;
 }
 .paid-title { font-weight: 900; color: var(--primary); font-size: 11px; }
 .paid-blank-line { border-bottom: 2px solid var(--primary); width: 130px; height: 16px; }
@@ -114,8 +114,9 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .tafqeet-closing { font-size: 9px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
 .tafqeet-text { color: var(--primary) !important; font-weight: 700; }
 
+/* خيارات الدفع الرسومية النقية لمنع الرمز 0 في الصورة */
 .pay-opts-row { font-size: 9.5px; display: flex; align-items: center; }
-.payment-options-group { display: flex; align-items: center; gap: 8px; margin-right: 6px; margin-left: 6px; }
+.payment-options-group { display: flex; align-items: center; gap: 10px; margin: 0 8px; }
 .custom-radio-item {
     display: flex;
     align-items: center;
@@ -128,7 +129,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 1.5px solid var(--primary);
+    border: 1.6px solid var(--primary);
     background: #fff;
     display: flex;
     align-items: center;
@@ -141,13 +142,13 @@ body.hide-watermark .watermark-layer { display: none !important; }
     background: transparent;
 }
 .custom-radio-item.active .radio-dot { background: var(--primary); }
-.ref-label { margin-right: 12px; }
+.ref-label { margin-right: 10px; }
 
 .section-services {
     border: 1.2px solid var(--border-soft);
     border-radius: 5px;
     overflow: hidden;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 .services-banner {
     background: var(--primary);
@@ -159,8 +160,8 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .services-grid-matrix {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 4px 6px;
-    padding: 5px 8px;
+    gap: 3px 6px;
+    padding: 4px 8px;
     background: #ffffff;
 }
 .custom-check-item {
@@ -190,13 +191,13 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .tooth-location-row {
     display: flex;
     align-items: center;
-    padding: 3px 8px;
+    padding: 2px 8px;
     border-top: 1px dashed var(--border-soft);
     background: #fafafa;
 }
 
-/* حل مشكلة اقتطاع خانة المتبقي عبر CSS Grid ثلاثي الأعمدة متساوي النسب */
-.section-ledger { margin-bottom: 4px; width: 100%; }
+/* الشريط المالي المحاسبي بنظام CSS Grid لضمان عدم خروج خانة المتبقي */
+.section-ledger { margin-bottom: 3px; width: 100%; }
 .ledger-grid-wrap {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -228,11 +229,11 @@ body.hide-watermark .watermark-layer { display: none !important; }
 }
 .sig-column { text-align: center; width: 32%; }
 .sig-title { font-size: 9.5px; font-weight: 700; color: var(--primary); }
-.sig-draw-line { border-bottom: 1.5px dashed var(--line-border); margin-top: 20px; }
+.sig-draw-line { border-bottom: 1.5px dashed var(--line-border); margin-top: 18px; }
 
 .sig-stamp-center { width: 30%; }
 .stamp-frame {
-    height: 44px;
+    height: 42px;
     border: 1.5px dashed var(--primary);
     border-radius: 5px;
     display: flex;
