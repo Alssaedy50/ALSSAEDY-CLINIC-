@@ -66,6 +66,94 @@ function saveReceiptLocally() {
     alert('تم حفظ السند في السجل المحلي بنجاح.');
 }
 
+
+function getAllReceiptHistory() {
+    return safeHistory().slice();
+}
+
+function csvEscape(value) {
+    const text = String(value ?? '');
+    return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function buildTransactionsExport(format) {
+    const history = getAllReceiptHistory();
+    const exportedAt = new Date().toISOString();
+    const clinic = 'ALSSAEDY CLINIC FOR DENTISTRY';
+
+    if (format === 'csv') {
+        const headers = [
+            'ID','Receipt No','Date','Patient Name','Patient Phone','Paid',
+            'Total','Balance','Change','Tooth / Location','Amount in Words',
+            'Payment Method','Reference','Services','Mode','Size','Exported At'
+        ];
+        const rows = history.map(item => [
+            item.id,item.recNo,item.date,item.name,item.patientPhone,item.paid,
+            item.total,item.balance,item.change,item.tooth,item.tafqeet,
+            item.payMethod,item.ref,Array.isArray(item.services) ? item.services.join(' | ') : '',
+            item.mode,item.size,exportedAt
+        ]);
+        // UTF-8 BOM makes Arabic display correctly in Excel and mobile spreadsheet apps.
+        return '\uFEFF' + [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\r\n');
+    }
+
+    return JSON.stringify({
+        schema: 'ALSSAEDY_CLINIC_TRANSACTIONS',
+        schemaVersion: 1,
+        clinic,
+        exportedAt,
+        count: history.length,
+        receipts: history
+    }, null, 2);
+}
+
+function downloadTextFile(filename, content, mimeType) {
+    if (window.Android && typeof Android.saveTransactionsFile === 'function') {
+        Android.saveTransactionsFile(content, filename, mimeType);
+        return;
+    }
+    const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function exportTransactionsFile(format) {
+    const history = getAllReceiptHistory();
+    if (!history.length) {
+        alert('لا توجد سندات محفوظة لتصديرها حتى الآن.');
+        return;
+    }
+    const stamp = getLocalDateISO().replace(/-/g, '');
+    if (format === 'csv') {
+        downloadTextFile(
+            'ALSSAEDY_Clinic_Transactions_' + stamp + '.csv',
+            buildTransactionsExport('csv'),
+            'text/csv'
+        );
+        alert('تم تجهيز ملف سجل المعاملات بصيغة CSV.');
+        return;
+    }
+    downloadTextFile(
+        'ALSSAEDY_Clinic_Transactions_' + stamp + '.json',
+        buildTransactionsExport('json'),
+        'application/json'
+    );
+    alert('تم تجهيز النسخة الاحتياطية الكاملة للسندات بصيغة JSON.');
+}
+
+function getTransactionsSummary() {
+    const history = getAllReceiptHistory();
+    const totalPaid = history.reduce((sum, item) => sum + (Number(item.paid) || 0), 0);
+    return { count: history.length, totalPaid };
+}
+
 function updateHistoryCount() {
     const badge = document.getElementById('historyCount');
     if (badge) badge.innerText = safeHistory().length;
