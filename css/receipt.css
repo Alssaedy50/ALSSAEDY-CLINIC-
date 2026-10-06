@@ -301,3 +301,7 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .date-suffix{unicode-bidi:isolate;white-space:nowrap;}
 .manual-payment-options .custom-radio-item{cursor:default;}
 .ledger-content .currency-label{flex:0 0 auto;white-space:nowrap;}
+
+/* Footer contact line: keep all clinic numbers on one horizontal line. */
+.footer-phones{white-space:nowrap!important;display:block;flex:0 0 auto;}
+@media screen and (max-width:700px){.footer-phones{white-space:nowrap!important;display:block;overflow:visible;}}
