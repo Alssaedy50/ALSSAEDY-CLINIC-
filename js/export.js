@@ -103,7 +103,7 @@ function getReceiptText() {
         .map(item => item.innerText.replace('✓','').trim());
     const srvText = services.length ? 'الخدمات: ' + services.join('، ') : '';
     const refText = ref ? '\nالمرجع: ' + ref : '';
-    const patientPhoneText = patientPhone ? '\nرقم المريض / واتساب: ' + patientPhone : '';
+    const patientPhoneText = patientPhone ? '\nرقم الهاتف: ' + patientPhone : '';
     const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + change + ' ريال يمني' : '';
     return '*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*\n' +
         'رقم السند: ' + recNo + '\n' +
@@ -117,7 +117,7 @@ function getReceiptText() {
         'المتبقي: ' + balance + ' ريال يمني' + changeText + '\n' +
         '-----------------------------\n' +
         'شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.\n' +
-        'ريمة - كسمة - عزلة الضبارة\n' +
+        'ريمة – كسمة – عزلة الضبارة\n' +
         'هاتف العيادة: +967 716 339 366 | +967 739 550 138 | +967 775 956 520';
 }
 
