@@ -15,16 +15,79 @@ function withCaptureState(callback) {
     return Promise.resolve(callback()).finally(() => document.body.classList.remove('is-capturing'));
 }
 
+function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument) {
+    // Android WebView/html2canvas can render the form control chrome but omit the
+    // live .value property. Convert visible controls into ordinary text elements
+    // inside html2canvas's cloned document so the exported PNG contains the data.
+    const sourceControls = Array.from(sourceReceipt.querySelectorAll('input, textarea, select'));
+    const clonedControls = Array.from(clonedReceipt.querySelectorAll('input, textarea, select'));
+
+    clonedControls.forEach((control, index) => {
+        const source = sourceControls[index];
+        if (!source) return;
+
+        const type = String(source.getAttribute('type') || '').toLowerCase();
+        const computed = window.getComputedStyle(source);
+        if (type === 'hidden' || source.id === 'hiddenDatePicker' ||
+            computed.display === 'none' || computed.visibility === 'hidden' ||
+            Number(computed.opacity) === 0) {
+            return;
+        }
+
+        let value = '';
+        if (source.tagName === 'SELECT') {
+            value = source.options[source.selectedIndex]?.textContent || '';
+        } else {
+            value = source.value ?? '';
+        }
+
+        const span = clonedDocument.createElement('span');
+        span.className = control.className + ' export-field-value';
+        span.textContent = String(value);
+        if (control.id) span.id = control.id + '-export';
+        if (control.getAttribute('dir')) span.setAttribute('dir', control.getAttribute('dir'));
+
+        // Preserve the sizing/layout classes from the original input.
+        // These inline rules only normalize the replacement from form-control
+        // semantics to a normal text node; the existing project CSS remains
+        // responsible for fonts, colors, borders and widths.
+        span.style.display = 'inline-block';
+        span.style.boxSizing = 'border-box';
+        span.style.whiteSpace = 'pre-wrap';
+        span.style.overflowWrap = 'anywhere';
+        span.style.verticalAlign = 'middle';
+        span.style.minHeight = '15px';
+
+        control.replaceWith(span);
+    });
+}
+
 async function generateReceiptCanvas() {
     ensureLibraries();
     await document.fonts.ready;
+
     const receipt = document.getElementById('receiptPrintArea');
+    if (!receipt) throw new Error('منطقة السند غير موجودة.');
+
     const profile = getSizeProfile();
     const exportBox = getExportBox(profile);
     document.documentElement.style.setProperty('--export-width', exportBox.width);
     document.documentElement.style.setProperty('--export-height', exportBox.height);
+
     return withCaptureState(() => {
         document.body.classList.add('exporting-receipt');
+
+        const captureWidth = Math.max(
+            document.documentElement.clientWidth || 0,
+            receipt.scrollWidth || 0,
+            receipt.offsetWidth || 0
+        );
+        const captureHeight = Math.max(
+            document.documentElement.clientHeight || 0,
+            receipt.scrollHeight || 0,
+            receipt.offsetHeight || 0
+        );
+
         return html2canvas(receipt, {
             scale: 4,
             useCORS: true,
@@ -32,7 +95,14 @@ async function generateReceiptCanvas() {
             backgroundColor: '#ffffff',
             logging: false,
             letterRendering: true,
-            imageTimeout: 15000
+            imageTimeout: 15000,
+            windowWidth: captureWidth,
+            windowHeight: captureHeight,
+            onclone: (clonedDocument) => {
+                const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
+                if (!clonedReceipt) return;
+                materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
+            }
         });
     }).finally(() => document.body.classList.remove('exporting-receipt'));
 }
