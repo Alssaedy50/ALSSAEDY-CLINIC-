@@ -82,3 +82,18 @@ html,body{margin:0!important;padding:0!important;background:#fff!important}.no-p
 }
 
 .receipt-actions{width:min(760px,calc(100% - 24px));margin:18px auto 8px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.receipt-action{border:1px solid #dbe4ee;border-radius:14px;background:#fff;padding:13px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;box-shadow:0 7px 20px #0f172a12;color:#122033}.receipt-action .action-icon{font-size:24px;line-height:1}.receipt-action strong{font-size:13px}.receipt-action small{font-size:9px;color:#64748b;text-align:center}.action-panels{width:min(760px,calc(100% - 24px));margin:0 auto 26px}.action-panel{border:1px solid #dbe4ee;background:#fff;border-radius:14px;padding:12px;box-shadow:0 10px 30px #0f172a12}.panel-title{display:flex;justify-content:space-between;align-items:center;padding:3px 3px 10px;color:var(--primary)}.panel-title button{border:0;background:#f1f5f9;border-radius:8px;width:30px;height:30px;font-size:18px}.panel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.panel-option{border:1px solid #e2e8f0;border-radius:11px;background:#f8fafc;padding:12px 10px;display:grid;grid-template-columns:32px 1fr;grid-template-rows:auto auto;text-align:right;cursor:pointer}.panel-option span{grid-row:1/3;font-size:22px;align-self:center;text-align:center}.panel-option b{font-size:11px}.panel-option small{font-size:8.5px;color:#64748b;line-height:1.5}.action-status{font-size:9px;color:#475569;margin-top:8px}.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}@media(max-width:700px){.receipt-actions{gap:6px}.receipt-action{padding:10px 5px}.receipt-action .action-icon{font-size:21px}.receipt-action strong{font-size:10px}.receipt-action small{font-size:7px}.panel-grid{grid-template-columns:1fr}.action-panels{width:calc(100% - 16px)}}@media print{.receipt-actions,.action-panels{display:none!important}}
+/* Final visual separation: screen controls vs physical receipt */
+.voucher-title{position:relative;justify-content:center;text-align:center}
+.voucher-title>div:first-child{text-align:center;margin-inline:auto}
+.voucher-title .title-mark{position:absolute;inset-inline-end:1px;bottom:5px}
+@media screen and (max-width:700px){
+ .receipt-wrapper{justify-content:flex-start;align-items:flex-start;padding-inline:10px;overflow-x:auto}
+ .receipt-container{flex:none}
+}
+@media screen and (min-width:701px){
+ .receipt-wrapper{align-items:flex-start}
+}
+@media print{
+ .receipt-wrapper{display:block!important;overflow:visible!important;padding:0!important}
+ .receipt-container{transform:none!important;margin:0!important;box-shadow:none!important}
+}
