@@ -146,6 +146,15 @@ async function buildPDFBlob(){
   return await html2pdf().set(opt).from(node).toPdf().outputPdf('blob');
  }finally{mount.remove()}
 }
+async function shareReceiptImage(){
+ closeShareMenu();closeActionPanels();
+ try{
+  const blob=await receiptPNG('png'),file=new File([blob],'ALSSAEDY-Receipt.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'سند قبض - عيادة السعيدي'});return}
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  alert('تم إنشاء صورة السند. اخترها من قائمة مشاركة الجهاز لإرسالها عبر WhatsApp.');
+ }catch(e){console.error(e);alert('تعذر إنشاء أو مشاركة صورة السند.')}
+}
 function toggleActionPanel(id,force){document.querySelectorAll('.action-panel').forEach(x=>{if(x.id!==id)x.hidden=true});const p=document.getElementById(id);if(!p)return;p.hidden=typeof force==='boolean'?!force:!p.hidden}
 function closeActionPanels(){document.querySelectorAll('.action-panel').forEach(x=>x.hidden=true)}
 function printReceipt(){closeActionPanels();requestAnimationFrame(()=>window.print())}
