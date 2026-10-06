@@ -15,6 +15,15 @@ function withCaptureState(callback) {
     return Promise.resolve(callback()).finally(() => document.body.classList.remove('is-capturing'));
 }
 
+function materializeReceiptDate(sourceReceipt, clonedReceipt) {
+    const source = sourceReceipt.querySelector('#digDate');
+    const cloned = clonedReceipt.querySelector('#digDate');
+    if (!source || !cloned) return;
+    const value = String(source.value || '').trim();
+    cloned.value = value;
+    cloned.setAttribute('value', value);
+  }
+
 function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument) {
     // Android WebView/html2canvas can render the form control chrome but omit the
     // live .value property. Convert visible controls into ordinary text elements
@@ -102,6 +111,7 @@ async function generateReceiptCanvas() {
                 const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
                 if (!clonedReceipt) return;
                 materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
+                materializeReceiptDate(receipt, clonedReceipt);
             }
         });
     }).finally(() => document.body.classList.remove('exporting-receipt'));
