@@ -92,6 +92,10 @@ function formatReceiptDate(value) {
     return m ? m[3] + '/' + m[2] + '/' + m[1] + ' م' : String(value || '');
 }
 
+function bidiIsolate(value) {
+    return '\u2068' + String(value ?? '') + '\u2069';
+}
+
 function getReceiptText() {
     const name = document.getElementById('digClientName')?.value || 'المريض الكريم';
     const patientPhoneRaw = document.getElementById('digPatientPhone')?.value || '';
@@ -108,23 +112,28 @@ function getReceiptText() {
     const services = Array.from(document.querySelectorAll('.custom-check-item.active'))
         .map(item => item.innerText.replace('✓','').trim());
     const srvText = services.length ? 'الخدمات: ' + services.join('، ') : '';
-    const refText = ref ? '\nالمرجع: ' + ref : '';
-    const patientPhoneText = patientPhone ? '\nرقم الهاتف: ' + patientPhone : '';
-    const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + change + ' ريال يمني' : '';
+    const refText = ref ? '\nالمرجع: ' + bidiIsolate(ref) : '';
+    const patientPhoneText = patientPhone ? '\nرقم الهاتف: ' + bidiIsolate(patientPhone) : '';
+    const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + bidiIsolate(change) + ' ريال يمني' : '';
+    const clinicPhones = [
+        '+967 716 339 366',
+        '+967 739 550 138',
+        '+967 775 956 520'
+    ].map(bidiIsolate).join(' • ');
     return '*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*\n' +
-        'رقم السند: ' + recNo + '\n' +
-        'التاريخ: ' + date + '\n' +
+        'رقم السند: ' + bidiIsolate(recNo) + '\n' +
+        'التاريخ: ' + bidiIsolate(date) + '\n' +
         'المريض: ' + name + patientPhoneText + '\n' +
         srvText + (srvText ? '\n' : '') +
         'طريقة الدفع: ' + method + refText + '\n' +
         '-----------------------------\n' +
-        'المبلغ المدفوع: ' + paid + ' ريال يمني\n' +
-        'إجمالي الحساب: ' + total + ' ريال يمني\n' +
-        'المتبقي: ' + balance + ' ريال يمني' + changeText + '\n' +
+        'المبلغ المدفوع: ' + bidiIsolate(paid) + ' ريال يمني\n' +
+        'إجمالي الحساب: ' + bidiIsolate(total) + ' ريال يمني\n' +
+        'المتبقي: ' + bidiIsolate(balance) + ' ريال يمني' + changeText + '\n' +
         '-----------------------------\n' +
         'شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.\n' +
         'ريمة – كسمة – عزلة الضبارة\n' +
-        'هاتف العيادة: +967 716 339 366 | +967 739 550 138 | +967 775 956 520';
+        'هاتف العيادة: ' + clinicPhones;
 }
 
 function shareWhatsAppText() {

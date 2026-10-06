@@ -308,11 +308,18 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 
 /* 2026-10-07 final visual corrections: isolated date, official border, footer phone flex. */
 .receipt-paper{border:2px solid #073b63;outline:1px solid #cbd5e1;outline-offset:-4px;border-radius:4px;box-sizing:border-box;}
-.date-container{display:inline-flex;align-items:center;gap:4px;direction:rtl;white-space:nowrap;}
-.date-slot{min-width:28px;width:28px;height:15px;border-bottom:1.5px dashed #64748b;display:inline-block;direction:ltr;unicode-bidi:isolate;}
-.date-slash{direction:ltr;unicode-bidi:isolate;}
-.date-year{direction:ltr;unicode-bidi:isolate;font-weight:700;white-space:nowrap;}
-.footer-phones{display:flex;justify-content:center;align-items:center;gap:10px;white-space:nowrap!important;direction:ltr;unicode-bidi:isolate;font-family:monospace,sans-serif;font-size:8.5px;font-weight:700;color:#073b63;flex:0 0 auto;}
-.footer-phones .phone-separator{color:#94a3b8;font-weight:700;}
-
-.date-sequence{display:inline-flex;flex-direction:row;align-items:center;gap:4px;direction:rtl;white-space:nowrap}.date-container{display:inline-flex;align-items:center;gap:5px;direction:rtl;white-space:nowrap}.date-sequence .date-slot{width:25px;min-width:25px;height:15px;border-bottom:1.5px dashed #64748b;display:inline-block}.date-sequence .date-slash{direction:ltr}.date-sequence .date-year{direction:ltr;font-weight:800;white-space:nowrap}.footer-meta-line{flex-direction:column;justify-content:center;gap:3px;text-align:center}.footer-address{white-space:nowrap;width:100%;text-align:center}.footer-phones{width:100%;justify-content:center;overflow:visible;padding:2px 0;border:0;background:transparent;font-size:8.5px;line-height:1.2}.receipt-header{min-height:64px;padding:4px 2px 5px}.header-doc h2{font-size:14px}.header-doc p{font-size:9.5px}.header-clinic h2{font-size:10.5px}.header-clinic p{font-size:9px}.main-voucher-title{font-size:16px;font-weight:900}
+/* Arabic date: label remains RTL, date sequence itself is an isolated LTR island. */
+.date-container{display:inline-flex!important;align-items:center!important;gap:5px!important;direction:rtl!important;unicode-bidi:normal!important;white-space:nowrap!important;}
+.date-sequence{display:inline-flex!important;flex:0 0 auto!important;flex-direction:row!important;align-items:center!important;gap:4px!important;direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;}
+.date-sequence .date-slot{width:25px!important;min-width:25px!important;height:15px!important;border-bottom:1.5px dashed #64748b!important;display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;}
+.date-sequence .date-slash{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;}
+.date-sequence .date-year{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;white-space:nowrap!important;}
+/* Official footer: one address line + one isolated LTR phone line. */
+.footer-meta-line{flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:3px!important;text-align:center!important;}
+.footer-address{white-space:nowrap!important;width:100%!important;text-align:center!important;unicode-bidi:isolate!important;direction:rtl!important;}
+.footer-phones{display:inline-flex!important;width:auto!important;max-width:100%!important;justify-content:center!important;align-items:center!important;gap:10px!important;white-space:nowrap!important;overflow:visible!important;direction:ltr!important;unicode-bidi:isolate!important;font-family:monospace,sans-serif!important;font-size:8.5px!important;font-weight:800!important;color:#073b63!important;padding:2px 0!important;border:0!important;background:transparent!important;flex:0 0 auto!important;}
+.footer-phones span{direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;}
+.footer-phones .phone-separator{color:#94a3b8!important;font-weight:900!important;}
+@media screen and (max-width:700px){
+  .footer-phones{max-width:none!important;overflow:visible!important;}
+}
