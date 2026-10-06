@@ -4,30 +4,25 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام سندات القبض - عيادة الدكتور صلاح الدين السعيدي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-mode="manual" data-size="a5" data-theme="classic">
-<header class="no-print app-toolbar">
-<div class="toolbar-section"><span class="tool-title">نوع السند:</span><div class="btn-group">
-<button type="button" class="tool-btn active" id="btnModeManual" onclick="setMode('manual')">📋 دفتر ورقي</button>
-<button type="button" class="tool-btn" id="btnModeDigital" onclick="setMode('digital')">💻 سند إلكتروني</button></div></div>
-<div class="toolbar-section"><span class="tool-title">المقاس:</span><div class="btn-group">
-<button type="button" class="tool-btn active" id="btnSizeA5" onclick="setSize('a5')">A5</button>
-<button type="button" class="tool-btn" id="btnSizeA4" onclick="setSize('a4')">A4</button>
-<button type="button" class="tool-btn" id="btnSizeThermal" onclick="setSize('thermal')">80mm</button></div></div>
-<div class="toolbar-section"><span class="tool-title">المظهر:</span><div class="btn-group">
-<button type="button" class="tool-btn theme-btn active" data-theme="classic">كحلي رسمي</button>
-<button type="button" class="tool-btn theme-btn" data-theme="modern">تركواز طبي</button>
-<button type="button" class="tool-btn theme-btn" data-theme="mono">اقتصادي</button></div>
-<label class="custom-bg-label">🖼️ خلفية<input type="file" id="bgUploader" accept="image/*" aria-label="رفع خلفية أو علامة مائية"></label></div>
-<div class="toolbar-section actions-group">
-<button type="button" class="action-btn edit-btn" id="btnEdit" onclick="toggleEditMode()">✏️ تعديل النصوص</button>
-<button type="button" class="action-btn logo-btn" onclick="triggerLogoUpload()">🖼️ الشعار</button>
-<input type="file" id="logoUploader" accept="image/*" hidden aria-label="رفع شعار العيادة">
-<button type="button" class="action-btn share-btn" onclick="openShareMenu()">📲 مشاركة</button>
-<button type="button" class="action-btn print-btn" onclick="printReceipt()">🖨️ طباعة / PDF</button></div>
-</header>
+<button type="button" class="no-print menu-toggle" onclick="toggleSettingsPanel()" aria-label="فتح إعدادات السند">☰ <span>إعدادات السند</span></button>
+<aside class="no-print settings-panel" id="settingsPanel" aria-hidden="true">
+<div class="settings-backdrop" onclick="toggleSettingsPanel(false)"></div>
+<div class="settings-drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+<div class="settings-head"><div><span class="settings-kicker">ALSSAEDY CLINIC</span><h2 id="settingsTitle">إعدادات السند</h2></div><button type="button" class="drawer-close" onclick="toggleSettingsPanel(false)" aria-label="إغلاق">×</button></div>
+<div class="settings-scroll">
+<section class="settings-group"><h3>نوع السند</h3><div class="control-grid two"><button type="button" class="tool-btn active" id="btnModeManual" onclick="setMode('manual')">📋 دفتر ورقي</button><button type="button" class="tool-btn" id="btnModeDigital" onclick="setMode('digital')">💻 سند إلكتروني</button></div></section>
+<section class="settings-group"><h3>المقاس والاتجاه</h3><div class="control-grid three"><button type="button" class="tool-btn active" id="btnSizeA5" onclick="setSize('a5')">A5</button><button type="button" class="tool-btn" id="btnSizeA4" onclick="setSize('a4')">A4</button><button type="button" class="tool-btn" id="btnSizeThermal" onclick="setSize('thermal')">80mm</button></div><div class="control-grid two orientation-controls"><button type="button" class="tool-btn active" id="btnPortrait" onclick="setOrientation('portrait')">↕ عمودي</button><button type="button" class="tool-btn" id="btnLandscape" onclick="setOrientation('landscape')">↔ أفقي</button></div></section>
+<section class="settings-group"><h3>المظهر</h3><div class="control-grid three"><button type="button" class="tool-btn theme-btn active" data-theme="classic">كحلي رسمي</button><button type="button" class="tool-btn theme-btn" data-theme="modern">تركواز طبي</button><button type="button" class="tool-btn theme-btn" data-theme="mono">اقتصادي</button></div></section>
+<section class="settings-group"><h3>الخط</h3><select id="fontFamilyControl" class="setting-select" aria-label="نوع الخط"><option value="Cairo">Cairo</option><option value="Tajawal">Tajawal</option><option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option><option value="Noto Kufi Arabic">Noto Kufi Arabic</option></select><div class="font-size-row"><button type="button" class="tool-btn" onclick="adjustFontSize(-1)">A−</button><input id="fontSizeControl" type="range" min="85" max="120" value="100" step="5" aria-label="حجم الخط"><button type="button" class="tool-btn" onclick="adjustFontSize(1)">A+</button></div></section>
+<section class="settings-group"><h3>لون النص</h3><div class="color-row"><button type="button" class="color-swatch" style="--sw:#122033" onclick="setTextColor('#122033')" aria-label="كحلي داكن"></button><button type="button" class="color-swatch" style="--sw:#073b63" onclick="setTextColor('#073b63')" aria-label="كحلي"></button><button type="button" class="color-swatch" style="--sw:#0f766e" onclick="setTextColor('#0f766e')" aria-label="تركواز داكن"></button><button type="button" class="color-swatch" style="--sw:#334155" onclick="setTextColor('#334155')" aria-label="رمادي"></button><button type="button" class="color-swatch" style="--sw:#111827" onclick="setTextColor('#111827')" aria-label="أسود"></button><input id="textColorControl" type="color" value="#122033" aria-label="لون مخصص" onchange="setTextColor(this.value)"></div></section>
+<section class="settings-group"><h3>الشعار والخلفية</h3><div class="settings-actions"><button type="button" class="action-btn logo-btn" onclick="triggerLogoUpload()">🖼️ تغيير الشعار</button><label class="custom-bg-label">🖼️ تغيير الخلفية<input type="file" id="bgUploader" accept="image/*" aria-label="رفع خلفية أو علامة مائية"></label></div><p class="settings-note">الشعار والخلفية الافتراضيان محفوظان داخل ملفات الموقع.</p></section>
+<section class="settings-group"><h3>التحرير</h3><button type="button" class="action-btn edit-btn wide" id="btnEdit" onclick="toggleEditMode()">✏️ تعديل النصوص</button></section>
+<section class="settings-group"><h3>الإخراج</h3><div class="settings-actions"><button type="button" class="action-btn share-btn" onclick="openShareMenu();toggleSettingsPanel(false)">📲 مشاركة</button><button type="button" class="action-btn print-btn" onclick="printReceipt();toggleSettingsPanel(false)">🖨️ طباعة</button><button type="button" class="action-btn pdf-btn" onclick="downloadPDF();toggleSettingsPanel(false)">⬇️ تحميل PDF</button></div><p class="settings-note">تحميل PDF يستخدم محرك الطباعة في المتصفح للحفاظ على أعلى جودة ومقاسات A5/A4/80mm.</p></section>
+</div></div></aside>
 <main class="receipt-wrapper"><div class="receipt-container" id="receiptPrintArea">
 <div class="watermark-layer" id="watermarkLayer" aria-hidden="true"></div>
 <header class="receipt-header">
