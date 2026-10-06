@@ -96,7 +96,21 @@ async function shareReceiptImage(){
  }catch(e){alert('تعذر إنشاء صورة السند.')}
 }
 function printReceipt(){window.print()}
-function shareReceiptPDF(){closeShareMenu();setTimeout(()=>window.print(),120)}
+async function shareReceiptPDF(){
+ closeShareMenu();
+ if(typeof html2pdf==='undefined'){window.print();return}
+ try{
+  const element=cloneForExport();
+  const size=document.body.dataset.size||'a5';
+  const formats={a5:[148,210],a4:[210,297],thermal:[80,190]};
+  const format=formats[size]||formats.a5;
+  const opt={margin:0,filename:'ALSSAEDY-Receipt.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format,orientation:'portrait'}};
+  const pdfBlob=await html2pdf().set(opt).from(element).toPdf().outputPdf('blob');
+  const file=new File([pdfBlob],'ALSSAEDY-Receipt.pdf',{type:'application/pdf'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'سند قبض - عيادة السعيدي'});return}
+  const url=URL.createObjectURL(pdfBlob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+ }catch(e){console.error(e);window.print()}
+}
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeShareMenu()});
 window.addEventListener('DOMContentLoaded',()=>{
  document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.theme)));
