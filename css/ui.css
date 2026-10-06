@@ -339,6 +339,9 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 .footer-address{unicode-bidi:isolate}
 .footer-phones{direction:ltr;unicode-bidi:isolate;text-align:center;font-variant-numeric:tabular-nums}
 @media screen and (max-width:700px){
+ .patient-contact-row .row-label{white-space:nowrap}
+ .patient-contact-row .patient-phone-input{min-width:0}
+ .payment-manual-dots{min-width:85px}
  .ledger-grid-wrap{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
  .ledger-box{min-width:0;padding:8px 5px}.ledger-header{overflow-wrap:anywhere}.ledger-content{gap:3px;min-width:0}.ledger-field{min-width:0;max-width:100%!important}.currency-label{font-size:10px}
  .site-navbar{position:sticky;top:0}.page-canvas-wrapper{padding-top:12px!important}
