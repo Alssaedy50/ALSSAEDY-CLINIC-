@@ -230,3 +230,7 @@ body {
 .history-entry small { font-size: 8.5px; color: var(--text-muted); }
 .history-entry-btns { display: flex; gap: 4px; }
 .history-entry-btns button { padding: 2px 5px; font-size: 8.5px; border-radius: 4px; border: 1px solid #cbd5e1; cursor: pointer; font-family: inherit; }
+
+/* Responsive/accessibility safeguards */
+.btn-save:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+@media screen and (max-width:760px){.nav-container{flex-wrap:wrap;justify-content:center}.nav-brand{width:100%;justify-content:center}.nav-controls{width:100%;justify-content:center;flex-wrap:wrap}.quick-action-bar{flex-wrap:wrap;gap:5px;justify-content:center}.quick-btns-row{flex-wrap:wrap;justify-content:center}.floating-action-dock{gap:2px;padding:3px 4px}.dock-btn{padding:5px 6px}}
