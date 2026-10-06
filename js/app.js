@@ -50,21 +50,37 @@ function setReceiptFont(fontFamily) {
     const el=document.getElementById('fontFamilySelect'); if(el) el.value=fontFamily;
 }
 function setReceiptScale(scale) {
-    const safe=Math.min(1.35, Math.max(0.85, Number(scale)||1));
+    const safe=Math.min(1.2, Math.max(0.9, Number(scale)||1));
     document.documentElement.style.setProperty('--font-scale', safe);
-    const receipt=document.getElementById('receiptPrintArea');
-    if(receipt){
-        receipt.querySelectorAll('*').forEach(el=>{
-            if(!el.dataset.baseFontSize){
-                const px=parseFloat(getComputedStyle(el).fontSize);
-                if(Number.isFinite(px)) el.dataset.baseFontSize=String(px);
-            }
-            const base=parseFloat(el.dataset.baseFontSize);
-            if(Number.isFinite(base)) el.style.fontSize=(base*safe)+'px';
-        });
-    }
+    document.documentElement.style.setProperty('--receipt-body-scale', safe);
+    document.documentElement.style.setProperty('--receipt-heading-scale', safe);
+    document.documentElement.style.setProperty('--receipt-title-scale', safe);
     localStorage.setItem('alssaedy_font_scale', String(safe));
     const el=document.getElementById('fontSizeValue'); if(el) el.textContent=Math.round(safe*100)+'%';
+    updateTypographyOutputs();
+}
+function getTextScale(type){
+    const key = type === 'heading' ? 'alssaedy_heading_scale' : type === 'title' ? 'alssaedy_title_scale' : 'alssaedy_body_scale';
+    const fallback = type === 'heading' ? 1 : type === 'title' ? 1 : 1;
+    return Math.min(1.2, Math.max(0.9, Number(localStorage.getItem(key)) || fallback));
+}
+function setReceiptTextSize(type, scale){
+    const safe=Math.min(1.2, Math.max(0.9, Number(scale)||1));
+    const cssVar=type === 'heading' ? '--receipt-heading-scale' : type === 'title' ? '--receipt-title-scale' : '--receipt-body-scale';
+    const key=type === 'heading' ? 'alssaedy_heading_scale' : type === 'title' ? 'alssaedy_title_scale' : 'alssaedy_body_scale';
+    document.documentElement.style.setProperty(cssVar, safe);
+    localStorage.setItem(key, String(safe));
+    updateTypographyOutputs();
+}
+function adjustReceiptTextSize(type,direction){
+    setReceiptTextSize(type, getTextScale(type) + direction*0.05);
+}
+function updateTypographyOutputs(){
+    const map={body:'bodyFontSizeValue',heading:'headingFontSizeValue',title:'titleFontSizeValue'};
+    Object.keys(map).forEach(type=>{
+        const el=document.getElementById(map[type]);
+        if(el) el.textContent=Math.round(getTextScale(type)*100)+'%';
+    });
 }
 function adjustReceiptFont(direction) {
     const current=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-scale')) || 1;
@@ -220,6 +236,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('alssaedy_font_family');
     if (savedFont) setReceiptFont(savedFont);
     setReceiptScale(localStorage.getItem('alssaedy_font_scale') || 1);
+    setReceiptTextSize('body', localStorage.getItem('alssaedy_body_scale') || 1);
+    setReceiptTextSize('heading', localStorage.getItem('alssaedy_heading_scale') || 1);
+    setReceiptTextSize('title', localStorage.getItem('alssaedy_title_scale') || 1);
     const savedColor = localStorage.getItem('alssaedy_receipt_color');
     if (savedColor) setReceiptColor(savedColor);
     const savedWeight = localStorage.getItem('alssaedy_receipt_weight');
