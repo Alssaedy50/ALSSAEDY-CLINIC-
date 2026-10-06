@@ -267,3 +267,14 @@ body.hide-watermark .watermark-layer { display: none !important; }
 [data-mode="digital"] .manual-only { display: none !important; }
 body.is-editing .editable { outline: 2px dashed #f59e0b !important; background-color: #fffbeb !important; cursor: text; }
 body.is-capturing input::placeholder { color: transparent !important; }
+
+/* Production physical-size profiles */
+html[data-size="a5"] .receipt-paper{width:148mm;max-width:148mm;min-height:210mm;height:210mm}
+html[data-size="a4"] .receipt-paper{width:210mm;max-width:210mm;min-height:297mm;height:297mm}
+html[data-size="thermal"] .receipt-paper{width:80mm;max-width:80mm;min-height:0;height:auto;padding:5mm 4mm}
+html[data-size="a4"] .receipt-header h2{font-size:18px} html[data-size="a4"] .main-voucher-title{font-size:22px}
+html[data-size="thermal"] .receipt-header{flex-wrap:wrap} html[data-size="thermal"] .receipt-header .header-clinic{width:100%;text-align:center}
+html[data-size="thermal"] .services-grid-matrix{grid-template-columns:1fr 1fr} html[data-size="thermal"] .ledger-grid-wrap{grid-template-columns:1fr}
+html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[data-size="thermal"] .paid-hero-bar,html[data-size="thermal"] .pay-opts-row{flex-wrap:wrap}
+@media screen and (max-width:700px){.receipt-paper{transform-origin:top center;flex-shrink:0}html[data-size="a4"] .receipt-paper{transform:scale(calc((100vw - 16px)/793.7))}html[data-size="a5"] .receipt-paper{transform:scale(calc((100vw - 16px)/559.4))}html[data-size="thermal"] .receipt-paper{transform:none;width:min(80mm,calc(100vw - 16px));max-width:calc(100vw - 16px)}}
+.live-input:invalid{border-bottom-color:#b91c1c}
