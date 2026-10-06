@@ -1,4 +1,4 @@
-const STORAGE_KEY='alssaedy_receipt_state_v5';
+const STORAGE_KEY='alssaedy_receipt_state_v6';
 let isEditing=false;
 
 function localISODate(){const now=new Date(),offset=now.getTimezoneOffset();return new Date(now.getTime()-offset*60000).toISOString().slice(0,10)}
@@ -6,13 +6,13 @@ function getState(){
  const inputs={};document.querySelectorAll('.live-input').forEach(el=>{if(el.id)inputs[el.id]=el.value});
  const checks=Array.from(document.querySelectorAll('.check-interactive')).map(el=>({name:el.name||'',value:el.value||'',checked:el.checked}));
  const texts={};document.querySelectorAll('.editable').forEach(el=>{if(el.dataset.key)texts[el.dataset.key]=el.textContent});
- return {version:5,mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts,logo:document.getElementById('clinicLogoImg')?.src||'',watermark:document.getElementById('watermarkLayer')?.style.backgroundImage||''}
+ return {version:6,orientation:document.body.dataset.orientation||'portrait',fontFamily:getComputedStyle(document.documentElement).getPropertyValue('--receipt-font').trim()||'Cairo',fontScale:getComputedStyle(document.documentElement).getPropertyValue('--font-scale').trim()||'1',textColor:getComputedStyle(document.documentElement).getPropertyValue('--custom-text').trim()||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts,logo:document.getElementById('clinicLogoImg')?.src||'',watermark:document.getElementById('watermarkLayer')?.style.backgroundImage||''}
 }
 function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getState()))}catch(e){console.error('Unable to save receipt state:',e)}}
 function applySavedState(){
  let state;try{state=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch(e){return}
- if(!state||![4,5].includes(state.version))return;
- if(state.mode)setMode(state.mode,false);if(state.size)setSize(state.size,false);if(state.theme)setTheme(state.theme,false);
+ if(!state||![4,5,6].includes(state.version))return;
+ if(state.mode)setMode(state.mode,false);if(state.size)setSize(state.size,false);if(state.theme)setTheme(state.theme,false);if(state.orientation)setOrientation(state.orientation,false);if(state.fontFamily)setFontFamily(state.fontFamily,false);if(state.fontScale)setFontScale(Number.parseFloat(state.fontScale)||1,false);if(state.textColor)setTextColor(state.textColor,false);
  Object.entries(state.inputs||{}).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value});
  const checks=document.querySelectorAll('.check-interactive');(state.checks||[]).forEach((saved,i)=>{if(checks[i])checks[i].checked=!!saved.checked});
  Object.entries(state.texts||{}).forEach(([key,value])=>{const el=document.querySelector('.editable[data-key="'+CSS.escape(key)+'"]');if(el)el.textContent=value});
@@ -25,6 +25,12 @@ function applySavedState(){
 function setMode(mode,persist=true){document.body.dataset.mode=mode;document.getElementById('btnModeManual').classList.toggle('active',mode==='manual');document.getElementById('btnModeDigital').classList.toggle('active',mode==='digital');if(mode==='digital'){const d=document.getElementById('digitalDate');if(d&&!d.value)d.value=localISODate()}if(persist)saveState()}
 function setSize(size,persist=true){document.body.dataset.size=size;document.body.style.page=size==='a5'?'receipt-a5':size==='a4'?'receipt-a4':'receipt-thermal';['a5','a4','thermal'].forEach(s=>document.getElementById('btnSize'+s[0].toUpperCase()+s.slice(1)).classList.toggle('active',s===size));if(persist)saveState()}
 function setTheme(theme,persist=true){document.body.dataset.theme=theme;document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));if(persist)saveState()}
+function toggleSettingsPanel(force){const p=document.getElementById('settingsPanel');const open=typeof force==='boolean'?force:!p.classList.contains('open');p.classList.toggle('open',open);p.setAttribute('aria-hidden',String(!open))}
+function setOrientation(value,persist=true){const orientation=value==='landscape'?'landscape':'portrait';document.body.dataset.orientation=orientation;document.getElementById('btnPortrait')?.classList.toggle('active',orientation==='portrait');document.getElementById('btnLandscape')?.classList.toggle('active',orientation==='landscape');if(persist)saveState()}
+function setFontFamily(font,persist=true){const allowed=['Cairo','Tajawal','IBM Plex Sans Arabic','Noto Kufi Arabic'];if(!allowed.includes(font))font='Cairo';document.documentElement.style.setProperty('--receipt-font',font+', sans-serif');const c=document.getElementById('fontFamilyControl');if(c)c.value=font;if(persist)saveState()}
+function setFontScale(scale,persist=true){const value=Math.min(1.2,Math.max(.85,Number(scale)||1));document.documentElement.style.setProperty('--font-scale',String(value));const c=document.getElementById('fontSizeControl');if(c)c.value=Math.round(value*100);if(persist)saveState()}
+function adjustFontSize(step){setFontScale((Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-scale'))||1)+step*.05)}
+function setTextColor(color,persist=true){if(!/^#[0-9a-f]{6}$/i.test(color))return;document.documentElement.style.setProperty('--custom-text',color);const c=document.getElementById('textColorControl');if(c)c.value=color;if(persist)saveState()}
 function toggleEditMode(){
  isEditing=!isEditing;document.body.classList.toggle('is-editing',isEditing);
  const btn=document.getElementById('btnEdit');btn.textContent=isEditing?'💾 حفظ التعديلات':'✏️ تعديل النصوص';btn.style.background=isEditing?'#059669':'#f59e0b';
@@ -32,7 +38,7 @@ function toggleEditMode(){
  if(!isEditing)saveState();
 }
 function triggerLogoUpload(){document.getElementById('logoUploader')?.click()}
-function uploadLogo(event){const file=event.target.files?.[0];if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=e=>{document.getElementById('clinicLogoImg').src=e.target.result;setDefaultWatermark();saveState()};reader.readAsDataURL(file)}
+function uploadLogo(event){const file=event.target.files?.[0];if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=e=>{document.getElementById('clinicLogoImg').src=e.target.result;document.getElementById('watermarkLayer').style.backgroundImage='url("'+e.target.result+'")';saveState()};reader.readAsDataURL(file)}
 function uploadBackground(event){const file=event.target.files?.[0];if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=e=>{document.getElementById('watermarkLayer').style.backgroundImage='url("'+e.target.result+'")';saveState()};reader.readAsDataURL(file)}
 function setDefaultWatermark(){const layer=document.getElementById('watermarkLayer');if(!layer||layer.style.backgroundImage)return;layer.style.backgroundImage='url("../assets/Saedy_Dental_Logo.svg")'}
 function calculateFinancials(persist=true){const paid=Number.parseFloat(document.getElementById('digitalPaidAmount').value)||0,total=Number.parseFloat(document.getElementById('digitalTotal').value)||0;document.getElementById('digitalPaidTable').value=paid;document.getElementById('digitalBalance').value=total-paid;if(persist)saveState()}
@@ -70,32 +76,29 @@ function cloneForExport(){
  return clone;
 }
 async function receiptPNG(){
- const node=cloneForExport(),rect=document.getElementById('receiptPrintArea').getBoundingClientRect();
- const width=Math.max(1,Math.round(rect.width)),height=Math.max(1,Math.round(rect.height)),scale=2;
+ const source=document.getElementById('receiptPrintArea'),node=cloneForExport();
+ const rect=source.getBoundingClientRect(),width=Math.max(1,Math.round(rect.width)),height=Math.max(1,Math.round(rect.height));
  node.style.width=width+'px';node.style.height=height+'px';node.style.margin='0';node.style.boxShadow='none';node.style.border='0';
- const css=[...document.styleSheets].map(sheet=>{try{return [...sheet.cssRules].map(r=>r.cssText).join('\n')}catch(e){return''}}).join('\n');
- const html=node.outerHTML.replace(/<img([^>]+)src="\.\.\/assets\/([^"]+)"/g,(m,a,f)=>'<img'+a+'src="'+new URL('../assets/'+f,location.href).href+'"');
- const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="'+(width*scale)+'" height="'+(height*scale)+'" viewBox="0 0 '+width+' '+height+'"><foreignObject width="100%" height="100%"><style>'+css.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</style><div xmlns="http://www.w3.org/1999/xhtml">'+html+'</div></foreignObject></svg>';
- const blob=new Blob([svg],{type:'image/svg+xml'}),url=URL.createObjectURL(blob);
+ const holder=document.createElement('div');holder.style.cssText='position:fixed;left:-100000px;top:0;width:'+width+'px;height:'+height+'px;background:#fff;z-index:-1';holder.appendChild(node);document.body.appendChild(holder);
  try{
-   const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url});
-   const canvas=document.createElement('canvas');canvas.width=width*scale;canvas.height=height*scale;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  if(typeof html2canvas!=='undefined'){
+   const canvas=await html2canvas(node,{scale:4,useCORS:true,allowTaint:false,backgroundColor:'#fff',width,height,windowWidth:width,windowHeight:height});
    return await new Promise(resolve=>canvas.toBlob(resolve,'image/png',1));
- }finally{URL.revokeObjectURL(url)}
+  }
+  throw new Error('html2canvas unavailable');
+ }finally{holder.remove()}
 }
 async function shareReceiptImage(){
  closeShareMenu();
  try{
-   setTimeout(async()=>{
-    try{
-     const blob=await receiptPNG();const file=new File([blob],'ALSSAEDY-Receipt.png',{type:'image/png'});
-     if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'سند قبض - عيادة السعيدي'});return}
-     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ALSSAEDY-Receipt.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    }catch(e){alert('تعذر إنشاء/مشاركة صورة السند على هذا المتصفح. يمكنك استخدام الطباعة ثم حفظ PDF.')}
-   },0);
- }catch(e){alert('تعذر إنشاء صورة السند.')}
+  const blob=await receiptPNG();const file=new File([blob],'ALSSAEDY-Receipt.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'سند قبض - عيادة السعيدي'});return}
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  alert('تم إنشاء صورة عالية الدقة. اختر WhatsApp من مشاركة الجهاز إذا ظهر، أو أرفق الصورة يدويًا.');
+ }catch(e){console.error(e);alert('تعذر إنشاء صورة السند على هذا المتصفح.')}
 }
 function printReceipt(){window.print()}
+function downloadPDF(){window.print()}
 async function shareReceiptPDF(){
  closeShareMenu();
  if(typeof html2pdf==='undefined'){window.print();return}
@@ -114,8 +117,10 @@ async function shareReceiptPDF(){
 window.addEventListener('keydown',e=>{if(e.key==='Escape')closeShareMenu()});
 window.addEventListener('DOMContentLoaded',()=>{
  document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.theme)));
+ document.getElementById('fontFamilyControl')?.addEventListener('change',e=>setFontFamily(e.target.value));
+ document.getElementById('fontSizeControl')?.addEventListener('input',e=>setFontScale(Number(e.target.value)/100));
  const logo=document.getElementById('logoUploader'),bg=document.getElementById('bgUploader');logo?.addEventListener('change',uploadLogo);bg?.addEventListener('change',uploadBackground);
- applySavedState();setDefaultWatermark();
+ applySavedState();setDefaultWatermark();if(!document.body.dataset.orientation)setOrientation('portrait',false);
  document.querySelectorAll('.live-input').forEach(el=>{el.addEventListener('input',()=>{if(el.id==='digitalPaidAmount'||el.id==='digitalTotal')calculateFinancials(false);saveState()});el.addEventListener('change',saveState)});
  document.querySelectorAll('.check-interactive').forEach(el=>el.addEventListener('change',saveState));
  document.querySelectorAll('.editable').forEach(el=>{
