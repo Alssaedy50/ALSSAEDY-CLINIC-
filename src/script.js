@@ -188,7 +188,7 @@ async function shareReceiptPDF(){
   alert('تم إنشاء ملف PDF. اختره من قائمة مشاركة الجهاز لإرساله عبر WhatsApp.');
  }catch(e){console.error(e);alert('تعذر مشاركة ملف PDF.')}
 }
-window.addEventListener('keydown',e=>{if(e.key==='Escape')closeShareMenu()});window.addEventListener('online',()=>{setSyncStatus('تم الاتصال — جاري المزامنة…');syncNow()});window.addEventListener('offline',()=>setSyncStatus('غير متصل — محفوظ محليًا'));
+window.addEventListener('keydown',e=>{if(e.key==='Escape')closeShareMenu()});window.addEventListener('online',async()=>{setSyncStatus('تم الاتصال — جاري المزامنة…');await syncLocalAssets();await syncNow()});window.addEventListener('offline',()=>setSyncStatus('غير متصل — محفوظ محليًا'));
 window.addEventListener('DOMContentLoaded',()=>{
  document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.theme)));
  document.getElementById('fontFamilyControl')?.addEventListener('change',e=>setFontFamily(e.target.value));
