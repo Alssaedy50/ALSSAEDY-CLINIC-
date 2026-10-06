@@ -55,10 +55,8 @@ const result = await page.evaluate(async () => {
       logging: false,
       onclone: doc => {
         const cloned = doc.getElementById('receiptPrintArea');
-        const date = cloned?.querySelector('#digDate')?.value || '';
-        const name = cloned?.querySelector('#digClientName')?.value || '';
-        const rec = cloned?.querySelector('#digReceiptNo')?.value || '';
-        captured = date === '2026-10-07' && name === 'مريض الاختبار' && rec === 'TEST-001';
+        const fields = Array.from(cloned?.querySelectorAll('.export-field-value') || []).map(el => el.textContent.trim());
+        captured = fields.includes('2026-10-07') && fields.includes('مريض الاختبار') && fields.includes('TEST-001');
       }
     });
     resolve(captured);
