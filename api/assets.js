@@ -1,4 +1,5 @@
 import { get, put } from '@vercel/blob';
+import { Readable } from 'node:stream';
 
 const ALLOWED = new Set(['logo', 'background']);
 const MAX_BYTES = 5000000;
@@ -15,7 +16,7 @@ export default async function handler(req, res) {
       try {
         const result = await get(path, { access:'private', token:process.env.BLOB_READ_WRITE_TOKEN, useCache:false });
         if (!result?.stream) return res.status(404).end();
-        return new Response(result.stream, { status:200, headers:{'Content-Type':result.blob?.contentType || 'application/octet-stream','Cache-Control':'no-store'} });
+        res.statusCode=200;res.setHeader('Content-Type',result.blob?.contentType || 'application/octet-stream');res.setHeader('Cache-Control','no-store');return Readable.fromWeb(result.stream).pipe(res);
       } catch (error) {
         if (error?.status === 404 || /not found|404/i.test(String(error?.message || ''))) return res.status(404).end();
         throw error;
