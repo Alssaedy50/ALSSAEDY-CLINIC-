@@ -9,9 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="logo_data.js"></script>
-    <link rel="stylesheet" href="css/ui.css?v=20261007_10">
-    <link rel="stylesheet" href="css/receipt.css?v=20261007_10">
-    <link rel="stylesheet" href="css/print.css?v=20261007_10">
+    <link rel="stylesheet" href="css/ui.css?v=20261007_11">
+    <link rel="stylesheet" href="css/receipt.css?v=20261007_11">
+    <link rel="stylesheet" href="css/print.css?v=20261007_11">
 </head>
 <body data-mode="manual">
 
@@ -80,13 +80,7 @@
                 <div class="meta-cell">
                     <div class="manual-only date-container" aria-label="التاريخ">
                         <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
-                        <span class="date-sequence" dir="ltr" aria-label="يوم / شهر / سنة">
-                            <bdi class="date-slot" dir="ltr" aria-hidden="true"></bdi>
-                            <bdi class="date-slash" dir="ltr">/</bdi>
-                            <bdi class="date-slot" dir="ltr" aria-hidden="true"></bdi>
-                            <bdi class="date-slash" dir="ltr">/</bdi>
-                            <bdi class="date-year" dir="ltr">202_م</bdi>
-                        </span>
+                        <span class="date-sequence editable" data-key="date_manual_display" dir="ltr" aria-label="تاريخ السند: يوم / شهر / سنة">__/__/202_م</span>
                     </div>
                     <input type="date" class="digital-only live-input" id="digDate">
                 </div>
@@ -294,7 +288,8 @@
                 </div>
 
                 <div class="setting-card typography-card">
-                    <h4>🔤 الخط وحجم النص</h4>
+                    <h4>🔤 الخط وحجم النص والتناسق</h4>
+                    <p class="setting-help">يمكن ضبط النص العادي والعناوين وعنوان السند بشكل مستقل، وتحفظ الإعدادات تلقائياً.</p>
                     <label class="setting-label" for="fontFamilySelect">نوع الخط</label>
                     <select id="fontFamilySelect" class="setting-select" onchange="setReceiptFont(this.value)">
                         <option value="'Cairo', sans-serif">Cairo — رسمي وواضح</option>
@@ -309,6 +304,25 @@
                         <output id="fontSizeValue">100%</output>
                         <button type="button" class="font-step" onclick="adjustReceiptFont(1)">+</button>
                     </div>
+                    <label class="setting-label">حجم النص العادي</label>
+                    <div class="font-control-row compact-type-row">
+                        <button type="button" class="font-step" onclick="adjustReceiptTextSize('body',-1)">−</button>
+                        <output id="bodyFontSizeValue">100%</output>
+                        <button type="button" class="font-step" onclick="adjustReceiptTextSize('body',1)">+</button>
+                    </div>
+                    <label class="setting-label">حجم العناوين والحقول</label>
+                    <div class="font-control-row compact-type-row">
+                        <button type="button" class="font-step" onclick="adjustReceiptTextSize('heading',-1)">−</button>
+                        <output id="headingFontSizeValue">100%</output>
+                        <button type="button" class="font-step" onclick="adjustReceiptTextSize('heading',1)">+</button>
+                    </div>
+                    <label class="setting-label">حجم عنوان السند</label>
+                    <div class="font-control-row compact-type-row">
+                        <button type="button" class="font-step" onclick="adjustReceiptTextSize('title',-1)">−</button>
+                        <output id="titleFontSizeValue">100%</output>
+                        <button type="button" class="font-step" onclick="adjustReceiptTextSize('title',1)">+</button>
+                    </div>
+                    <div class="date-setting-note">📅 تاريخ الورق قابل للتعديل من زر «تفعيل التعديل المباشر» أعلاه، مع بقاء التنسيق <bdi dir="ltr">__/__/202_م</bdi>.</div>
                     <label class="setting-label" for="accentColorInput">اللون الرئيسي</label>
                     <div class="color-control-row">
                         <input type="color" id="accentColorInput" value="#073b63" onchange="setReceiptColor(this.value)">
