@@ -9,9 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="logo_data.js"></script>
-    <link rel="stylesheet" href="css/ui.css?v=20261006_06">
-    <link rel="stylesheet" href="css/receipt.css?v=20261006_06">
-    <link rel="stylesheet" href="css/print.css?v=20261006_06">
+    <link rel="stylesheet" href="css/ui.css?v=20261007_07">
+    <link rel="stylesheet" href="css/receipt.css?v=20261007_07">
+    <link rel="stylesheet" href="css/print.css?v=20261007_07">
 </head>
 <body data-mode="manual">
 
@@ -80,11 +80,7 @@
                 <div class="meta-cell">
                     <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
                     <div class="manual-only ar-date-flow" dir="rtl" aria-label="التاريخ">
-                        <bdi class="date-blank" title="اليوم"></bdi>
-                        <bdi class="slash" dir="ltr">/</bdi>
-                        <bdi class="date-blank" title="الشهر"></bdi>
-                        <bdi class="slash" dir="ltr">/</bdi>
-                        <bdi class="year-block" dir="ltr">202_ <span dir="rtl">م</span></bdi>
+                        <bdo dir="ltr" class="date-ltr-flow">_____ / _____ / 202_</bdo><span class="date-suffix"> م</span>
                     </div>
                     <input type="date" class="digital-only live-input" id="digDate">
                 </div>
@@ -98,7 +94,7 @@
                 </div>
 
                 <div class="row-flex patient-contact-row">
-                    <span class="row-label editable" data-key="patient_phone_lbl">رقم المريض / واتساب:</span>
+                    <span class="row-label editable" data-key="patient_phone_lbl">رقم الهاتف:</span>
                     <span class="manual-only write-dots flex-1"></span>
                     <input type="tel" class="digital-only live-input flex-1 patient-phone-input" id="digPatientPhone" inputmode="tel" autocomplete="tel" placeholder="">
                 </div>
@@ -120,7 +116,16 @@
                 <!-- في الدفتر الورقي يكتب المستلم طريقة الدفع بالقلم؛ خيارات الدفع تظهر للسند الرقمي فقط. -->
                 <div class="row-flex pay-opts-row">
                     <span class="row-label editable" data-key="pay_method_lbl">طريقة الدفع:</span>
-                    <span class="manual-only write-dots flex-1 payment-manual-dots"></span>
+                    <div class="manual-only payment-options-group manual-payment-options">
+                        <div class="custom-radio-item">
+                            <span class="radio-circle"><span class="radio-dot"></span></span>
+                            <span class="radio-label">نقداً</span>
+                        </div>
+                        <div class="custom-radio-item">
+                            <span class="radio-circle"><span class="radio-dot"></span></span>
+                            <span class="radio-label">محفظة / تحويل بنكي</span>
+                        </div>
+                    </div>
                     <div class="digital-only payment-options-group">
                         <div class="custom-radio-item active" id="optCash" onclick="setPayMethod('نقداً')">
                             <span class="radio-circle"><span class="radio-dot"></span></span>
