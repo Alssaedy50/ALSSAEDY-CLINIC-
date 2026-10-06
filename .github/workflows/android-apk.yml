@@ -6,6 +6,9 @@ on:
       - main
       - android-app-full-20261007
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
