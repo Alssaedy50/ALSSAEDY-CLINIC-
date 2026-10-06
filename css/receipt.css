@@ -50,8 +50,8 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .header-doc p { font-size: 9px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
 
 .header-logo-wrap {
-    width: 54px;
-    height: 54px;
+    width: 62px;
+    height: 62px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -85,7 +85,9 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .meta-cell { display: flex; align-items: center; gap: 4px; }
 .meta-label, .row-label { font-weight: 700; color: var(--primary); font-size: 9.5px; white-space: nowrap; }
 
-.ar-date-flow { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--line-border); }
+.ar-date-flow { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; color: var(--line-border); font-size: 10px !important; }
+.ar-date-flow .date-blank,.ar-date-flow .slash,.ar-date-flow .year-block { font-size: 10px !important; line-height: 1; }
+.year-block bdo { font-size: 10px !important; }
 .date-blank { display: inline-block; width: 24px; height: 15px; border-bottom: 1.5px dashed var(--line-border); }
 .slash { font-size: 10px; font-weight: 700; color: var(--line-border); }
 .year-block { font-weight: 700; }
@@ -116,7 +118,9 @@ body.hide-watermark .watermark-layer { display: none !important; }
 
 /* خيارات الدفع الرسومية النقية لمنع الرمز 0 في الصورة */
 .pay-opts-row { font-size: 9.5px; display: flex; align-items: center; }
-.payment-options-group { display: flex; align-items: center; gap: 10px; margin: 0 8px; }
+.payment-options-group { display: flex; align-items: center; gap: 12px; margin: 0 10px; flex: 0 0 auto; }
+.pay-opts-row .ref-label { margin-right: 16px; }
+.pay-opts-row .ref-dots { margin-right: 4px; }
 .custom-radio-item {
     display: flex;
     align-items: center;
@@ -208,14 +212,14 @@ body.hide-watermark .watermark-layer { display: none !important; }
     background: var(--bg-strip);
     border: 1.2px solid var(--border-soft);
     border-radius: 5px;
-    padding: 3px 6px;
+    padding: 5px 6px 6px;
     text-align: center;
     box-sizing: border-box;
 }
-.ledger-header { display: block; font-size: 9.5px; font-weight: 800; color: var(--primary); margin-bottom: 2px; }
-.ledger-content { display: flex; align-items: center; justify-content: center; gap: 3px; }
+.ledger-header { display: block; font-size: 9.5px; font-weight: 800; color: var(--primary); margin-bottom: 5px; line-height: 1.15; }
+.ledger-content { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 18px; }
 .ledger-field { width: 100%; max-width: 65px; text-align: center; }
-.currency-label { font-size: 9px; color: var(--text-muted); font-weight: 700; }
+.currency-label { font-size: 9.5px; color: var(--text-muted); font-weight: 800; white-space: nowrap; }
 
 .balance-highlight { border-color: rgba(185, 28, 28, 0.4); background: #fef2f2; }
 .balance-header, .balance-val, .balance-curr { color: var(--accent-red) !important; }
@@ -240,13 +244,18 @@ body.hide-watermark .watermark-layer { display: none !important; }
     align-items: center;
     justify-content: center;
 }
-.stamp-frame span { font-size: 8px; color: #94a3b8; font-weight: 700; }
+.stamp-frame span { display:block; width:100%; text-align:center; font-size: 8px; color: #94a3b8; font-weight: 700; }
 
 .receipt-footer { border-top: 1.6px solid var(--primary); padding-top: 3px; text-align: center; }
 .footer-blessing { font-size: 9px; font-weight: 800; color: var(--primary); margin-bottom: 1px; }
 .footer-meta-line { display: flex; justify-content: space-between; font-size: 8px; color: var(--text-muted); font-weight: 600; }
-.footer-phones { white-space: nowrap; direction: ltr; }
-.footer-phones span { font-weight: 700; }
+.footer-phones {
+    white-space: nowrap; direction: ltr; font-size: 10.5px; font-weight: 800;
+    color: var(--primary); letter-spacing: .1px;
+    padding: 2px 7px; border: 1px solid var(--border-soft); border-radius: 4px;
+    background: #fff;
+}
+.footer-phones span { font-weight: 900; }
 
 .live-input {
     border: none;
