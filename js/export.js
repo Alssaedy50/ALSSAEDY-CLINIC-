@@ -1,3 +1,11 @@
+function getExportBox(profile) {
+    // Keep a precise 2mm printable safety margin while filling the selected paper.
+    if (profile.pdfFormat === 'a5') return { width: '144mm', height: '206mm' };
+    if (profile.pdfFormat === 'a4') return { width: '206mm', height: '293mm' };
+    if (Array.isArray(profile.pdfFormat)) return { width: '76mm', height: 'auto' };
+    return { width: profile.width, height: profile.height === 'auto' ? 'auto' : profile.height };
+}
+
 function ensureLibraries() {
     if (typeof html2canvas !== 'function') throw new Error('مكتبة إنشاء الصور غير متاحة. تحقق من الاتصال بالإنترنت.');
 }
@@ -37,8 +45,9 @@ async function downloadReceiptPDF() {
         await document.fonts.ready;
         document.body.classList.add('is-capturing');
         document.body.classList.add('exporting-receipt');
-        document.documentElement.style.setProperty('--export-width', profile.width);
-        document.documentElement.style.setProperty('--export-height', profile.height === 'auto' ? 'auto' : profile.height);
+        const exportBox = getExportBox(profile);
+        document.documentElement.style.setProperty('--export-width', exportBox.width);
+        document.documentElement.style.setProperty('--export-height', exportBox.height);
         const options = {
             margin: profile.pdfFormat === 'a5' ? 0 : 0,
             filename: 'سند_قبض_' + recNo + '.pdf',
