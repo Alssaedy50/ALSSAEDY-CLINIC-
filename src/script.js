@@ -110,7 +110,7 @@ function toggleEditMode() {
     isEditing = !isEditing;
     document.body.classList.toggle('is-editing', isEditing);
     const btn = document.getElementById('btnEdit');
-    btn.textContent = isEditing ? '💾 حفظ التعديلات' : '✏️ تعديل النصوص والشعار';
+    btn.textContent = isEditing ? '💾 حفظ التعديلات' : '✏️ تعديل النصوص';
     btn.style.background = isEditing ? '#10b981' : '#f59e0b';
     document.querySelectorAll('.editable').forEach((el) => {
         el.setAttribute('contenteditable', isEditing ? 'true' : 'false');
@@ -120,7 +120,8 @@ function toggleEditMode() {
 }
 
 function triggerLogoUpload() {
-    if (isEditing) document.getElementById('logoUploader').click();
+    const uploader = document.getElementById('logoUploader');
+    if (uploader) uploader.click();
 }
 
 function uploadLogo(event) {
@@ -196,6 +197,11 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.theme-btn').forEach((button) => {
         button.addEventListener('click', () => setTheme(button.dataset.theme));
     });
+
+    const logoUploader = document.getElementById('logoUploader');
+    const bgUploader = document.getElementById('bgUploader');
+    if (logoUploader) logoUploader.addEventListener('change', uploadLogo);
+    if (bgUploader) bgUploader.addEventListener('change', uploadBackground);
 
     applySavedState();
 
