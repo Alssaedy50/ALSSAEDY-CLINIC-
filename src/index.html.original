@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="format-detection" content="telephone=no">
+
+<title>ALSSAEDY CLINIC — Receipt Voucher</title>
+
+<style>
+/* =========================================================
+   ALSSAEDY CLINIC — A5 RECEIPT VOUCHER
+   Print target: 148 × 210 mm
+   ========================================================= */
+
+@page {
+    size: A5 portrait;
+    margin: 0;
+}
+
+:root {
+    --navy: #073b63;
+    --navy-dark: #062f50;
+    --teal: #079db5;
+    --teal-dark: #087f98;
+    --cyan-soft: #eaf7fa;
+    --blue-soft: #eef5f9;
+    --line: #b9dce5;
+    --line-dark: #79b8c7;
+    --text: #183247;
+    --muted: #607582;
+    --white: #ffffff;
+    --black: #111111;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #dfe5e8;
+    color: var(--text);
+    font-family:
+        "Noto Sans Arabic",
+        "Noto Kufi Arabic",
+        "Cairo",
+        "Tahoma",
+        Arial,
+        sans-serif;
+}
+
+body {
+    direction: rtl;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+/* =========================================================
+   APPLICATION UI
+   ========================================================= */
+
+.app-toolbar {
+    width: 148mm;
+    margin: 12px auto;
+    padding: 10px 14px;
+    background: #ffffff;
+    border: 1px solid #d3dde1;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    direction: ltr;
+    box-shadow: 0 4px 18px rgba(0,0,0,.06);
+}
+
+.toolbar-title {
+    direction: rtl;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 13px;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 7px;
+}
+
+.toolbar-btn {
+    border: 0;
+    border-radius: 7px;
+    padding: 8px 13px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.btn-primary {
+    background: var(--navy);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--cyan-soft);
+    color: var(--navy);
+}
+
+.receipt-wrapper {
+    width: 148mm;
+    margin: 0 auto 20px;
+}
+
+/* =========================================================
+   A5 PAGE
+   ========================================================= */
+
+.receipt {
+    width: 148mm;
+    min-height: 210mm;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+
+    padding:
+        8mm
+        8.5mm
+        7mm
+        8.5mm;
+
+    box-shadow: 0 8px 30px rgba(0,0,0,.13);
+}
+
+/* Fine print-safe inner boundary */
+.receipt::before {
+    content: "";
+    position: absolute;
+    inset: 5mm;
+    border: 0.22mm solid #d8e7eb;
+    border-radius: 2.2mm;
+    pointer-events: none;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.header {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 31mm 1fr;
+    align-items: center;
+    gap: 4mm;
+    min-height: 28mm;
+    padding-bottom: 3.5mm;
+    border-bottom: 0.35mm solid var(--line-dark);
+}
+
+.header-brand {
+    line-height: 1.3;
+}
+
+.header-brand.ar {
+    text-align: right;
+    direction: rtl;
+}
+
+.header-brand.en {
+    text-align: left;
+    direction: ltr;
+}
+
+.doctor-name {
+    color: var(--navy);
+    font-size: 4.15mm;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.doctor-specialty {
+    color: var(--teal-dark);
+    font-size: 2.65mm;
+    font-weight: 600;
+    margin-top: 1.2mm;
+    white-space: nowrap;
+}
+
+.clinic-name {
+    color: var(--navy);
+    font-size: 3.05mm;
+    font-weight: 800;
+    letter-spacing: .15mm;
+    white-space: nowrap;
+}
+
+.doctor-name-en {
+    color: var(--teal-dark);
+    font-size: 2.65mm;
+    font-weight: 600;
+    margin-top: 1.2mm;
+    white-space: nowrap;
+}
+
+.logo-box {
+    width: 31mm;
+    height: 27mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.title-area {
+    text-align: center;
+    padding: 3.2mm 0 2.6mm;
+}
+
+.title-ar {
+    color: var(--navy);
+    font-size: 7.2mm;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -.1mm;
+}
+
+.title-en {
+    color: var(--navy);
+    font-family:
+        "Montserrat",
+        "Inter",
+        Arial,
+        sans-serif;
+    direction: ltr;
+    font-size: 4.2mm;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: .65mm;
+    margin-top: 1.5mm;
+}
+
+/* =========================================================
+   META
+   ========================================================= */
+
+.meta-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3mm;
+    margin-bottom: 2.5mm;
+}
+
+.field-box {
+    min-height: 9mm;
+    border: 0.3mm solid var(--line);
+    border-radius: 2mm;
+    background: var(--blue-soft);
+    padding: 1.6mm 2.2mm;
+}
+
+.field-line {
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+    min-height: 5.5mm;
+}
+
+.label-ar {
+    font-size: 2.65mm;
+    font-weight: 800;
+    color: var(--navy);
+    white-space: nowrap;
+}
+
+.label-en {
+    font-family: Arial, sans-serif;
+    direction: ltr;
+    font-size: 2.35mm;
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+}
+
+.inline-input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    border-bottom: 0.25mm solid var(--line-dark);
+    outline: 0;
+    background: transparent;
+    padding: 0 1mm;
+    color: var(--black);
+    font-size: 2.7mm;
+    font-weight: 600;
+    text-align: center;
+    direction: ltr;
+}
+
+.date-input {
+    direction: ltr;
+}
+
+/* =========================================================
+   PATIENT
+   ========================================================= */
+
+.patient-box {
+    margin-bottom: 2.5mm;
+    border: 0.3mm solid var(--line);
+    border-radius: 2mm;
+    padding: 1.7mm 2.2mm;
+}
+
+.patient-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 3mm;
+}
+
+.patient-input {
+    border: 0;
+    border-bottom: 0.3mm solid var(--line-dark);
+    outline: 0;
+    min-width: 0;
+    padding: 1mm;
+    font-size: 3mm;
+    font-weight: 600;
+    text-align: right;
+    direction: rtl;
+}
+
+/* =========================================================
+   PAID AMOUNT
+   ========================================================= */
+
+.amount-box {
+    border: 0.45mm solid var(--teal);
+    border-radius: 2.5mm;
+    background:
+        linear-gradient(
+            90deg,
+            #f6fcfd 0%,
+            #eaf8fa 50%,
+            #f6fcfd 100%
+        );
+    padding: 2.5mm 3mm;
+    margin-bottom: 2.5mm;
+}
+
+.amount-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3mm;
+}
+
+.amount-label {
+    color: var(--navy);
+    font-size: 3.3mm;
+    font-weight: 900;
+}
+
+.amount-label-en {
+    direction: ltr;
+    font-family: Arial, sans-serif;
+    font-size: 2.65mm;
+    font-weight: 800;
+    color: var(--teal-dark);
+}
+
+.amount-input-row {
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+    margin-top: 1.5mm;
+}
+
+.amount-input {
+    flex: 1;
+    min-width: 0;
+    height: 10mm;
+    border: 0;
+    border-bottom: 0.45mm solid var(--navy);
+    outline: 0;
+    background: transparent;
+    font-family: Arial, sans-serif;
+    font-size: 6.2mm;
+    font-weight: 900;
+    color: var(--navy);
+    text-align: center;
+    direction: ltr;
+}
+
+.currency {
+    color: var(--navy);
+    font-size: 4.3mm;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   AMOUNT WORDS / PAYMENT
+   ========================================================= */
+
+.two-column {
+    display: grid;
+    grid-template-columns: 1.25fr .9fr;
+    gap: 3mm;
+    margin-bottom: 2.5mm;
+}
+
+.words-box,
+.payment-box {
+    border: 0.3mm solid var(--line);
+    border-radius: 2mm;
+    padding: 1.7mm 2.2mm;
+}
+
+.words-input {
+    width: 100%;
+    margin-top: 1.5mm;
+    border: 0;
+    border-bottom: 0.25mm solid var(--line-dark);
+    outline: 0;
+    background: transparent;
+    padding: 1mm;
+    font-size: 2.65mm;
+    direction: rtl;
+    text-align: right;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.3mm;
+    margin-top: 1.5mm;
+}
+
+.check-option {
+    display: flex;
+    align-items: center;
+    gap: 1.7mm;
+    font-size: 2.5mm;
+    cursor: pointer;
+}
+
+.check-option input {
+    appearance: none;
+    width: 3.5mm;
+    height: 3.5mm;
+    border: 0.3mm solid var(--navy);
+    border-radius: .8mm;
+    margin: 0;
+    background: #fff;
+    flex: 0 0 auto;
+}
+
+.check-option input:checked {
+    background: var(--navy);
+    box-shadow: inset 0 0 0 .8mm white;
+}
+
+.payment-en {
+    font-family: Arial, sans-serif;
+    direction: ltr;
+    font-size: 2.2mm;
+    color: var(--muted);
+}
+
+/* =========================================================
+   SECTION HEADERS
+   ========================================================= */
+
+.section {
+    margin-bottom: 2.5mm;
+}
+
+.section-title {
+    min-height: 7.5mm;
+    background: var(--teal-dark);
+    color: #ffffff;
+    border-radius: 1.8mm 1.8mm 0 0;
+    padding: 1.3mm 2.5mm;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3mm;
+}
+
+.section-title-ar {
+    font-size: 3mm;
+    font-weight: 900;
+}
+
+.section-title-en {
+    direction: ltr;
+    font-family: Arial, sans-serif;
+    font-size: 2.5mm;
+    font-weight: 800;
+}
+
+.section-body {
+    border: 0.3mm solid var(--line);
+    border-top: 0;
+    border-radius: 0 0 1.8mm 1.8mm;
+}
+
+/* =========================================================
+   SERVICES
+   ========================================================= */
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 1.5mm;
+}
+
+.service {
+    min-height: 9mm;
+    display: flex;
+    align-items: center;
+    gap: 1.5mm;
+    padding: 1.2mm 1.5mm;
+    border-left: 0.2mm solid #d2e7eb;
+    border-bottom: 0.2mm solid #d2e7eb;
+}
+
+.service:nth-child(3n) {
+    border-left: 0;
+}
+
+.service:nth-last-child(-n+3) {
+    border-bottom: 0;
+}
+
+.service input {
+    appearance: none;
+    width: 3.7mm;
+    height: 3.7mm;
+    border: 0.3mm solid var(--navy);
+    border-radius: .7mm;
+    flex: 0 0 auto;
+    background: white;
+}
+
+.service input:checked {
+    background: var(--navy);
+    box-shadow: inset 0 0 0 .8mm white;
+}
+
+.service-text {
+    line-height: 1.1;
+}
+
+.service-ar {
+    display: block;
+    font-size: 2.35mm;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.service-en {
+    display: block;
+    direction: ltr;
+    font-family: Arial, sans-serif;
+    font-size: 1.75mm;
+    color: var(--muted);
+    margin-top: .5mm;
+}
+
+.other-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2mm;
+    padding: 1.5mm 2.2mm;
+    border-top: 0.2mm solid #d2e7eb;
+}
+
+.other-input {
+    width: 100%;
+    border: 0;
+    border-bottom: 0.25mm solid var(--line-dark);
+    outline: 0;
+    font-size: 2.5mm;
+    background: transparent;
+}
+
+.tooth-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    align-items: center;
+    gap: 2mm;
+    padding: 1.7mm 2.2mm;
+    background: var(--blue-soft);
+    border-top: 0.25mm solid var(--line);
+}
+
+.tooth-input {
+    width: 100%;
+    border: 0;
+    border-bottom: 0.25mm solid var(--line-dark);
+    background: transparent;
+    outline: 0;
+    text-align: center;
+    direction: ltr;
+    font-family: Arial, sans-serif;
+    font-size: 2.6mm;
+}
+
+/* =========================================================
+   FINANCIAL SUMMARY
+   ========================================================= */
+
+.financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    direction: rtl;
+}
+
+.financial-table th,
+.financial-table td {
+    border-bottom: 0.2mm solid var(--line);
+    padding: 1.45mm 2.2mm;
+    font-size: 2.5mm;
+}
+
+.financial-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.financial-table th {
+    background: var(--blue-soft);
+    color: var(--navy);
+    font-weight: 900;
+}
+
+.financial-table td:first-child,
+.financial-table th:first-child {
+    text-align: right;
+}
+
+.financial-table td:last-child,
+.financial-table th:last-child {
+    text-align: center;
+    width: 42%;
+}
+
+.financial-input {
+    width: 100%;
+    border: 0;
+    border-bottom: 0.25mm solid var(--line-dark);
+    background: transparent;
+    outline: 0;
+    text-align: center;
+    direction: ltr;
+    font-family: Arial, sans-serif;
+    font-size: 2.7mm;
+    font-weight: 700;
+}
+
+.balance-row td {
+    background: #f3fafb;
+    color: var(--navy);
+    font-weight: 900;
+}
+
+/* =========================================================
+   SIGNATURE / STAMP
+   ========================================================= */
+
+.signature-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr .9fr;
+    gap: 3mm;
+    border: 0.3mm solid var(--line);
+    border-radius: 2mm;
+    padding: 2.3mm;
+    margin-bottom: 2.5mm;
+    min-height: 22mm;
+}
+
+.signature-cell {
+    min-width: 0;
+    text-align: center;
+    position: relative;
+}
+
+.signature-cell + .signature-cell {
+    border-right: 0.2mm solid var(--line);
+}
+
+.signature-label {
+    font-size: 2.35mm;
+    font-weight: 800;
+    color: var(--navy);
+}
+
+.signature-line {
+    width: 85%;
+    margin: 9mm auto 0;
+    border-bottom: 0.25mm solid var(--navy);
+}
+
+.stamp {
+    min-height: 16mm;
+    border: 0.3mm dashed var(--line-dark);
+    border-radius: 1.5mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--teal-dark);
+    font-size: 2.2mm;
+    font-weight: 700;
+}
+
+.stamp-en {
+    direction: ltr;
+    font-family: Arial, sans-serif;
+    display: block;
+    margin-top: 1mm;
+    font-size: 1.9mm;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.footer {
+    text-align: center;
+    color: var(--navy);
+}
+
+.thanks {
+    background: var(--blue-soft);
+    border-radius: 1.5mm;
+    padding: 1.5mm 2mm;
+    font-size: 2.25mm;
+    font-weight: 700;
+    margin-bottom: 1.8mm;
+}
+
+.footer-info {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 3mm;
+    align-items: center;
+}
+
+.footer-address,
+.footer-phone {
+    font-size: 2mm;
+    line-height: 1.45;
+}
+
+.footer-label {
+    display: block;
+    color: var(--teal-dark);
+    font-weight: 900;
+    margin-bottom: .5mm;
+}
+
+.phone-line {
+    direction: ltr;
+    font-family: Arial, sans-serif;
+    font-weight: 700;
+    white-space: nowrap;
+    font-size: 1.95mm;
+}
+
+/* =========================================================
+   PRINT / BLACK & WHITE
+   ========================================================= */
+
+@media print {
+
+    html,
+    body {
+        width: 148mm;
+        height: 210mm;
+        background: #ffffff;
+    }
+
+    .app-toolbar {
+        display: none !important;
+    }
+
+    .receipt-wrapper {
+        width: 148mm;
+        margin: 0;
+    }
+
+    .receipt {
+        width: 148mm;
+        height: 210mm;
+        min-height: 210mm;
+        margin: 0;
+        box-shadow: none;
+        page-break-after: avoid;
+    }
+
+    input {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Black-and-white / monochrome printer friendly */
+@media print and (monochrome) {
+
+    .receipt {
+        color: #000 !important;
+    }
+
+    .section-title {
+        background: #222 !important;
+    }
+
+    .amount-box {
+        background: #fff !important;
+        border-color: #000 !important;
+    }
+
+    .field-box,
+    .words-box,
+    .payment-box,
+    .patient-box,
+    .signature-area {
+        background: #fff !important;
+    }
+
+    .label-ar,
+    .label-en,
+    .amount-label,
+    .amount-label-en,
+    .section-title-ar,
+    .section-title-en,
+    .footer {
+        color: #000 !important;
+    }
+
+    .service input,
+    .check-option input {
+        border-color: #000 !important;
+    }
+}
+
+/* Small-screen editing */
+@media screen and (max-width: 700px) {
+
+    body {
+        background: #e9eef0;
+    }
+
+    .app-toolbar {
+        width: calc(100vw - 20px);
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-actions {
+        width: 100%;
+    }
+
+    .toolbar-btn {
+        flex: 1;
+    }
+
+    .receipt-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        padding: 0 5px;
+    }
+
+    .receipt {
+        width: 148mm;
+        min-width: 148mm;
+        margin: 0 auto 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =======================================================
+     TOOLBAR — SCREEN ONLY
+     ======================================================= -->
+
+<div class="app-toolbar">
+
+    <div class="toolbar-title">
+        ALSSAEDY CLINIC — Receipt System
+    </div>
+
+    <div class="toolbar-actions">
+
+        <button
+            class="toolbar-btn btn-secondary"
+            type="button"
+            id="clearBtn">
+            مسح الحقول
+        </button>
+
+        <button
+            class="toolbar-btn btn-primary"
+            type="button"
+            id="printBtn">
+            🖨 طباعة / PDF
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =======================================================
+     RECEIPT
+     ======================================================= -->
+
+<div class="receipt-wrapper">
+
+<main class="receipt" id="receipt">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="header-brand ar">
+
+            <div class="doctor-name">
+                د/.صلاح الدين السعيدي
+            </div>
+
+            <div class="doctor-specialty">
+                لطب وجراحة الفم والأسنان
+            </div>
+
+        </div>
+
+        <div class="logo-box">
+
+            <img
+                src="../assets/Saedy_Dental_Logo.svg"
+                alt="ALSSAEDY CLINIC Logo">
+
+        </div>
+
+        <div class="header-brand en">
+
+            <div class="clinic-name">
+                ALSSAEDY CLINIC FOR DENTISTRY
+            </div>
+
+            <div class="doctor-name-en">
+                Dr. Salahaldeen Alssaedy
+            </div>
+
+        </div>
+
+    </header>
+
+    <!-- TITLE -->
+
+    <section class="title-area">
+
+        <div class="title-ar">
+            سند قبض
+        </div>
+
+        <div class="title-en">
+            RECEIPT VOUCHER
+        </div>
+
+    </section>
+
+    <!-- RECEIPT NUMBER + DATE -->
+
+    <section class="meta-row">
+
+        <div class="field-box">
+
+            <div class="field-line">
+
+                <span class="label-ar">
+                    رقم السند
+                </span>
+
+                <span class="label-en">
+                    No.:
+                </span>
+
+                <input
+                    id="receiptNo"
+                    class="inline-input"
+                    type="text"
+                    inputmode="numeric"
+                    aria-label="Receipt Number">
+
+            </div>
+
+        </div>
+
+        <div class="field-box">
+
+            <div class="field-line">
+
+                <span class="label-ar">
+                    التاريخ:
+                </span>
+
+                <input
+                    id="receiptDate"
+                    class="inline-input date-input"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="____ / ____ / ______ م"
+                    aria-label="Date">
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- PATIENT -->
+
+    <section class="patient-box">
+
+        <div class="patient-row">
+
+            <span class="label-ar">
+                استلمنا من السيد:
+            </span>
+
+            <input
+                id="patientName"
+                class="patient-input"
+                type="text"
+                autocomplete="off"
+                aria-label="Patient Name">
+
+        </div>
+
+    </section>
+
+    <!-- PAID AMOUNT -->
+
+    <section class="amount-box">
+
+        <div class="amount-header">
+
+            <div>
+                <span class="amount-label">
+                    المبلغ المدفوع
+                </span>
+
+                <span class="amount-label-en">
+                    Paid Amount
+                </span>
+            </div>
+
+            <span class="currency">
+                ر.ي
+            </span>
+
+        </div>
+
+        <div class="amount-input-row">
+
+            <input
+                id="paidAmount"
+                class="amount-input"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                placeholder="0">
+
+        </div>
+
+    </section>
+
+    <!-- WORDS + PAYMENT METHOD -->
+
+    <section class="two-column">
+
+        <div class="words-box">
+
+            <div>
+                <span class="label-ar">
+                    المبلغ كتابةً:
+                </span>
+            </div>
+
+            <input
+                id="amountWords"
+                class="words-input"
+                type="text"
+                aria-label="Amount in Words">
+
+        </div>
+
+        <div class="payment-box">
+
+            <div>
+
+                <span class="label-ar">
+                    طريقة الدفع
+                </span>
+
+                <span class="label-en">
+                    Payment Method:
+                </span>
+
+            </div>
+
+            <div class="payment-options">
+
+                <label class="check-option">
+
+                    <input
+                        type="checkbox"
+                        name="paymentMethod"
+                        value="cash">
+
+                    <span>نقدًا</span>
+
+                    <span class="payment-en">Cash</span>
+
+                </label>
+
+                <label class="check-option">
+
+                    <input
+                        type="checkbox"
+                        name="paymentMethod"
+                        value="transfer">
+
+                    <span>محفظة / تحويل بنكي</span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- TRANSFER REFERENCE -->
+
+    <section class="patient-box">
+
+        <div class="patient-row">
+
+            <span class="label-ar">
+                مرجع التحويل / اسم المرسل:
+            </span>
+
+            <input
+                id="transferReference"
+                class="patient-input"
+                type="text"
+                aria-label="Transfer Reference">
+
+        </div>
+
+    </section>
+
+    <!-- DENTAL SERVICES -->
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <span class="section-title-ar">
+                تفاصيل الخدمة العلاجية
+            </span>
+
+            <span class="section-title-en">
+                DENTAL SERVICE DETAILS
+            </span>
+
+        </div>
+
+        <div class="section-body">
+
+            <div class="services-grid">
+
+                <label class="service">
+                    <input type="checkbox" value="examination">
+                    <span class="service-text">
+                        <span class="service-ar">كشف ومعاينة</span>
+                        <span class="service-en">Examination</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="fillings">
+                    <span class="service-text">
+                        <span class="service-ar">حشوات وتجميل</span>
+                        <span class="service-en">Fillings &amp; Cosmetic</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="root">
+                    <span class="service-text">
+                        <span class="service-ar">علاج جذور وعصب</span>
+                        <span class="service-en">Root Canal &amp; Nerve</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="extraction">
+                    <span class="service-text">
+                        <span class="service-ar">خلع وجراحة</span>
+                        <span class="service-en">Extraction &amp; Surgery</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="cleaning">
+                    <span class="service-text">
+                        <span class="service-ar">تنظيف ولثة</span>
+                        <span class="service-en">Cleaning &amp; Gum</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="prosthetics">
+                    <span class="service-text">
+                        <span class="service-ar">تركيبات</span>
+                        <span class="service-en">Prosthetics</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="orthodontics">
+                    <span class="service-text">
+                        <span class="service-ar">تقويم</span>
+                        <span class="service-en">Orthodontics</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="xray">
+                    <span class="service-text">
+                        <span class="service-ar">أشعة</span>
+                        <span class="service-en">X-Ray</span>
+                    </span>
+                </label>
+
+                <label class="service">
+                    <input type="checkbox" value="other">
+                    <span class="service-text">
+                        <span class="service-ar">أخرى</span>
+                        <span class="service-en">Other</span>
+                    </span>
+                </label>
+
+            </div>
+
+            <div class="other-row">
+
+                <span class="label-ar">
+                    أخرى:
+                </span>
+
+                <input
+                    id="otherService"
+                    class="other-input"
+                    type="text">
+
+            </div>
+
+            <div class="tooth-row">
+
+                <span class="label-ar">
+                    رقم السن / الموضع
+                </span>
+
+                <input
+                    id="toothNo"
+                    class="tooth-input"
+                    type="text"
+                    inputmode="text">
+
+                <span class="label-en">
+                    Tooth No.:
+                </span>
+
+                <input
+                    class="tooth-input"
+                    type="text"
+                    aria-label="Tooth number English">
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- FINANCIAL SUMMARY -->
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <span class="section-title-ar">
+                ملخص الحساب
+            </span>
+
+            <span class="section-title-en">
+                FINANCIAL SUMMARY
+            </span>
+
+        </div>
+
+        <div class="section-body">
+
+            <table class="financial-table">
+
+                <thead>
+
+                    <tr>
+                        <th>البيان</th>
+                        <th>المبلغ</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+                            <strong>إجمالي الحساب</strong>
+                            <span class="label-en">Total</span>
+                        </td>
+
+                        <td>
+
+                            <input
+                                id="totalAmount"
+                                class="financial-input"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                inputmode="decimal"
+                                placeholder="0">
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>
+                            <strong>المدفوع حاليًا</strong>
+                            <span class="label-en">Paid</span>
+                        </td>
+
+                        <td>
+
+                            <input
+                                id="summaryPaid"
+                                class="financial-input"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                inputmode="decimal"
+                                placeholder="0"
+                                readonly>
+
+                        </td>
+
+                    </tr>
+
+                    <tr class="balance-row">
+
+                        <td>
+                            <strong>المتبقي</strong>
+                            <span class="label-en">Balance</span>
+                        </td>
+
+                        <td>
+
+                            <input
+                                id="balanceAmount"
+                                class="financial-input"
+                                type="number"
+                                readonly>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- SIGNATURE / STAMP -->
+
+    <section class="signature-area">
+
+        <div class="signature-cell">
+
+            <div class="signature-label">
+                المستلم / الكاشير:
+            </div>
+
+            <div class="signature-line"></div>
+
+        </div>
+
+        <div class="signature-cell">
+
+            <div class="signature-label">
+                التوقيع:
+            </div>
+
+            <div class="signature-line"></div>
+
+        </div>
+
+        <div class="signature-cell">
+
+            <div class="stamp">
+
+                ختم العيادة
+
+                <span class="stamp-en">
+                    Clinic Stamp
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+        <div class="thanks">
+            شكرًا لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.
+        </div>
+
+        <div class="footer-info">
+
+            <div class="footer-address">
+
+                <span class="footer-label">
+                    العنوان
+                </span>
+
+                ريمة – كسمة – عزلة الضبارة
+
+            </div>
+
+            <div class="footer-phone">
+
+                <span class="footer-label">
+                    تواصل معنا عبر الأرقام التالية
+                </span>
+
+                <div class="phone-line">
+                    Tel: +967 716 339 366 &nbsp;|&nbsp;
+                    +967 739 550 138 &nbsp;|&nbsp;
+                    +967 775 956 520
+                </div>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+</main>
+
+</div>
+
+<script>
+/* =========================================================
+   ALSSAEDY RECEIPT — APPLICATION LOGIC
+   ========================================================= */
+
+(function () {
+
+    "use strict";
+
+    const $ = (id) => document.getElementById(id);
+
+    const paidAmount = $("paidAmount");
+    const totalAmount = $("totalAmount");
+    const summaryPaid = $("summaryPaid");
+    const balanceAmount = $("balanceAmount");
+    const printBtn = $("printBtn");
+    const clearBtn = $("clearBtn");
+
+    function numberValue(input) {
+        const value = parseFloat(input.value);
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    function updateFinancials() {
+
+        const paid = numberValue(paidAmount);
+        const total = numberValue(totalAmount);
+
+        summaryPaid.value = paid ? paid : "";
+        balanceAmount.value = Math.max(total - paid, 0);
+
+    }
+
+    paidAmount.addEventListener("input", updateFinancials);
+    totalAmount.addEventListener("input", updateFinancials);
+
+    printBtn.addEventListener("click", function () {
+
+        updateFinancials();
+
+        window.print();
+
+    });
+
+    clearBtn.addEventListener("click", function () {
+
+        const confirmed = window.confirm(
+            "هل تريد مسح جميع بيانات السند؟"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        document
+            .querySelectorAll("input")
+            .forEach(function (input) {
+
+                if (
+                    input.type === "checkbox" ||
+                    input.type === "radio"
+                ) {
+                    input.checked = false;
+                } else if (!input.readOnly) {
+                    input.value = "";
+                }
+
+            });
+
+        updateFinancials();
+
+    });
+
+    /* Prevent selecting more than one payment method */
+    document
+        .querySelectorAll('input[name="paymentMethod"]')
+        .forEach(function (checkbox) {
+
+            checkbox.addEventListener("change", function () {
+
+                if (!this.checked) {
+                    return;
+                }
+
+                document
+                    .querySelectorAll(
+                        'input[name="paymentMethod"]'
+                    )
+                    .forEach(function (other) {
+
+                        if (other !== checkbox) {
+                            other.checked = false;
+                        }
+
+                    });
+
+            });
+
+        });
+
+    updateFinancials();
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام سندات القبض - عيادة الدكتور صلاح الدين السعيدي</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-mode="manual" data-size="a5" data-theme="classic">
+
+    <!-- لوحة التحكم العلوية (لا تظهر في الطباعة) -->
+    <header class="no-print app-toolbar">
+        <div class="toolbar-section">
+            <span class="tool-title">نوع السند:</span>
+            <div class="btn-group">
+                <button type="button" class="tool-btn active" id="btnModeManual" onclick="setMode('manual')">📋 دفتر ورقي (للمطبعة)</button>
+                <button type="button" class="tool-btn" id="btnModeDigital" onclick="setMode('digital')">💻 سند إلكتروني (رقمي)</button>
+            </div>
+        </div>
+
+        <div class="toolbar-section">
+            <span class="tool-title">المقاس:</span>
+            <div class="btn-group">
+                <button type="button" class="tool-btn active" id="btnSizeA5" onclick="setSize('a5')">A5 (دفاتر)</button>
+                <button type="button" class="tool-btn" id="btnSizeA4" onclick="setSize('a4')">A4 (كامل)</button>
+                <button type="button" class="tool-btn" id="btnSizeThermal" onclick="setSize('thermal')">80mm (حراري)</button>
+            </div>
+        </div>
+
+        <div class="toolbar-section">
+            <span class="tool-title">المظهر:</span>
+            <div class="btn-group">
+                <button type="button" class="tool-btn active" onclick="setTheme('classic')">كحلي رسمي</button>
+                <button type="button" class="tool-btn" onclick="setTheme('modern')">تركواز طبي</button>
+                <button type="button" class="tool-btn" onclick="setTheme('mono')">أبيض/أسود (اقتصادي)</button>
+            </div>
+            <label class="custom-bg-label">
+                📷 خلفية/علامة:
+                <input type="file" id="bgUploader" accept="image/*" onchange="uploadBackground(event)">
+            </label>
+        </div>
+
+        <div class="toolbar-section actions-group">
+            <button type="button" class="action-btn edit-btn" id="btnEdit" onclick="toggleEditMode()">✏️ تعديل النصوص والشعار</button>
+            <input type="file" id="logoUploader" accept="image/*" style="display:none;" onchange="uploadLogo(event)">
+            <button type="button" class="action-btn share-btn" id="btnShare" onclick="shareReceipt()">📲 مشاركة السند للعميل</button>
+            <button type="button" class="action-btn print-btn" onclick="window.print()">🖨️ طباعة / تصدير PDF</button>
+        </div>
+    </header>
+
+    <!-- حاوية السند الرئيسية -->
+    <main class="receipt-wrapper">
+        <div class="receipt-container" id="receiptPrintArea">
+            <div class="watermark-layer" id="watermarkLayer"></div>
+
+            <!-- رأس السند -->
+            <header class="receipt-header">
+                <div class="doctor-meta">
+                    <h2 class="editable" data-key="doc_name">د/.صلاح الدين السعيدي</h2>
+                    <p class="editable" data-key="doc_spec">لطب وجراحة الفم والأسنان</p>
+                </div>
+                <div class="logo-area" onclick="triggerLogoUpload()" title="انقر لتغيير الشعار">
+                    <img src="../assets/Saedy_Dental_Logo.svg" alt="شعار العيادة" id="clinicLogoImg" class="clinic-logo">
+                    <span class="logo-hint no-print">تغيير الشعار</span>
+                </div>
+                <div class="clinic-meta" dir="ltr">
+                    <h2 class="editable" data-key="clinic_en">ALSSAEDY CLINIC FOR DENTISTRY</h2>
+                    <p class="editable" data-key="doc_en">Dr. Salahaldeen Alssaedy</p>
+                </div>
+            </header>
+
+            <!-- شريط العنوان -->
+            <div class="voucher-title">
+                <h1>سند قبض</h1>
+                <span dir="ltr">RECEIPT VOUCHER</span>
+            </div>
+
+            <!-- بيانات الفاتورة ورقمها والتاريخ المحسن -->
+            <div class="meta-row">
+                <div class="meta-item">
+                    <span class="label">رقم السند:</span>
+                    <span class="manual-only write-line" style="min-width: 100px;"></span>
+                    <input type="text" class="digital-only live-input" id="digitalReceiptNo" placeholder="REC-001">
+                </div>
+                <div class="meta-item date-item">
+                    <span class="label">التاريخ:</span>
+                    <!-- التاريخ المحسن للدفتر الورقي بمعمارية معزولة -->
+                    <div class="manual-only clean-date-boxes" dir="ltr">
+                        <span class="date-sep">202</span><span class="date-slot-sm"></span>
+                        <span class="date-sep">/</span>
+                        <span class="date-slot"></span>
+                        <span class="date-sep">/</span>
+                        <span class="date-slot"></span>
+                    </div>
+                    <!-- التاريخ التفاعلي للسند الرقمي -->
+                    <input type="date" class="digital-only live-input" id="digitalDate">
+                </div>
+            </div>
+
+            <!-- بيانات المستلم والمبلغ -->
+            <section class="details-section">
+                <div class="field-row">
+                    <span class="field-label">استلمنا من السيد / ة:</span>
+                    <span class="manual-only write-line flex-fill"></span>
+                    <input type="text" class="digital-only live-input flex-fill" id="digitalClientName" placeholder="اسم المريض الثلاثي">
+                </div>
+
+                <div class="amount-card">
+                    <div class="amount-number-box">
+                        <span class="amount-tag">المبلغ المدفوع:</span>
+                        <div class="manual-only blank-box"></div>
+                        <input type="number" class="digital-only live-input bold-number" id="digitalPaidAmount" placeholder="0" oninput="calculateFinancials()">
+                        <span class="currency">ريال يمني (YER)</span>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <span class="field-label">مبلغاً وقدره (كتابة):</span>
+                    <span class="manual-only write-line flex-fill"></span>
+                    <input type="text" class="digital-only live-input flex-fill" id="digitalTafqeet" placeholder="مثال: خمسة عشر ألف ريال يمني فقط لا غير">
+                    <span class="manual-only currency-end">ريالاً يمنياً فقط لا غير.</span>
+                </div>
+
+                <div class="payment-method-row">
+                    <span class="field-label">طريقة الدفع:</span>
+                    <label class="check-item">
+                        <input type="checkbox" class="digital-only check-interactive">
+                        <span class="box-check manual-only"></span> نقداً <span class="en-sub" dir="ltr">(Cash)</span>
+                    </label>
+                    <label class="check-item">
+                        <input type="checkbox" class="digital-only check-interactive">
+                        <span class="box-check manual-only"></span> محفظة / بنك
+                    </label>
+                    <span class="field-label ref-label">المرجع:</span>
+                    <span class="manual-only write-line flex-fill"></span>
+                    <input type="text" class="digital-only live-input flex-fill" id="digitalPayRef" placeholder="رقم العملية الحسابية">
+                </div>
+            </section>
+
+            <!-- الخدمات السنية الـ 9 -->
+            <section class="services-panel">
+                <div class="section-title">
+                    <span>تفاصيل الخدمة العلاجية</span>
+                    <span dir="ltr" class="en-title">(DENTAL SERVICE DETAILS)</span>
+                </div>
+                <div class="services-grid">
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> كشف ومعاينة <span class="en-sub" dir="ltr">(Exam)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> حشوات وتجميل <span class="en-sub" dir="ltr">(Fillings)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> علاج عصب <span class="en-sub" dir="ltr">(Endo)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> خلع وجراحة <span class="en-sub" dir="ltr">(Surgery)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> تنظيف ولثة <span class="en-sub" dir="ltr">(Scaling)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> تركيبات <span class="en-sub" dir="ltr">(Prostho)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> تقويم <span class="en-sub" dir="ltr">(Ortho)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> أشعة <span class="en-sub" dir="ltr">(X-Ray)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> أخرى <span class="en-sub" dir="ltr">(Other)</span></div>
+                </div>
+                <div class="service-extra">
+                    <span class="extra-label">رقم السن / الموضع <span class="en-sub" dir="ltr">(Tooth No.)</span>:</span>
+                    <span class="manual-only write-line flex-fill"></span>
+                    <input type="text" class="digital-only live-input flex-fill" id="digitalTooth" placeholder="مثال: #16 Upper Right">
+                </div>
+            </section>
+
+            <!-- ملخص الحساب المالي -->
+            <section class="finance-panel">
+                <table class="finance-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 58%;">البيان <span class="en-sub-head" dir="ltr">(Description)</span></th>
+                            <th style="width: 42%;">المبلغ بالريال اليمني <span class="en-sub-head" dir="ltr">(Amount YER)</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>إجمالي الحساب <span class="en-sub-table" dir="ltr">(Total)</span></td>
+                            <td class="manual-only blank-cell"></td>
+                            <td class="digital-only"><input type="number" class="live-input num-cell" id="digitalTotal" placeholder="0" oninput="calculateFinancials()"></td>
+                        </tr>
+                        <tr>
+                            <td>المدفوع حالياً <span class="en-sub-table" dir="ltr">(Paid)</span></td>
+                            <td class="manual-only blank-cell"></td>
+                            <td class="digital-only"><input type="number" class="live-input num-cell" id="digitalPaidTable" placeholder="0" readonly></td>
+                        </tr>
+                        <tr>
+                            <td>المتبقي <span class="en-sub-table" dir="ltr">(Balance)</span></td>
+                            <td class="manual-only blank-cell"></td>
+                            <td class="digital-only"><input type="number" class="live-input num-cell balance-field" id="digitalBalance" placeholder="0" readonly></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- التواقيع والختم -->
+            <section class="auth-section">
+                <div class="auth-box">
+                    <span class="auth-title">المستلم / الحسابات</span>
+                    <div class="auth-line"></div>
+                </div>
+                <div class="auth-box stamp-container">
+                    <span class="stamp-label">ختم العيادة الرسمي</span>
+                </div>
+                <div class="auth-box">
+                    <span class="auth-title">توقيع الإدارة</span>
+                    <div class="auth-line"></div>
+                </div>
+            </section>
+
+            <!-- تذييل السند -->
+            <footer class="receipt-footer">
+                <div class="thank-you editable" data-key="thank_msg">شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية</div>
+                <div class="footer-details">
+                    <div class="address editable" data-key="clinic_addr">ريمة – كسمة – عزلة الضبارة</div>
+                    <div class="phones editable" data-key="clinic_phones" dir="ltr">
+                        <span>+967 716 339 366</span> &bull; 
+                        <span>+967 739 550 138</span> &bull; 
+                        <span>+967 775 956 520</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
