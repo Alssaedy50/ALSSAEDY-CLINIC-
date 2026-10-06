@@ -44,6 +44,15 @@ function setSize(size) {
     localStorage.setItem('alssaedy_receipt_size', size);
 }
 
+function getLogoScale(){ return Math.min(1.35, Math.max(0.75, Number(localStorage.getItem('alssaedy_logo_scale')) || 1)); }
+function setLogoScale(scale){
+  const safe=Math.min(1.35, Math.max(0.75, Number(scale)||1));
+  document.documentElement.style.setProperty('--logo-scale', safe);
+  localStorage.setItem('alssaedy_logo_scale', String(safe));
+  const el=document.getElementById('logoSizeValue'); if(el) el.textContent=Math.round(safe*100)+'%';
+}
+function adjustLogoSize(direction){ setLogoScale(getLogoScale()+direction*0.05); }
+
 function setReceiptFont(fontFamily) {
     document.documentElement.style.setProperty('--receipt-font-family', fontFamily);
     localStorage.setItem('alssaedy_font_family', fontFamily);
@@ -236,6 +245,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('alssaedy_font_family');
     if (savedFont) setReceiptFont(savedFont);
     setReceiptScale(localStorage.getItem('alssaedy_font_scale') || 1);
+    setLogoScale(localStorage.getItem('alssaedy_logo_scale') || 1);
     setReceiptTextSize('body', localStorage.getItem('alssaedy_body_scale') || 1);
     setReceiptTextSize('heading', localStorage.getItem('alssaedy_heading_scale') || 1);
     setReceiptTextSize('title', localStorage.getItem('alssaedy_title_scale') || 1);
