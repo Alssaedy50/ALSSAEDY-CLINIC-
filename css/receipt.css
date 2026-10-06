@@ -99,8 +99,8 @@ body.hide-watermark .watermark-layer { display: none !important; }
 
 .section-patient { margin-bottom: 3px; }
 .row-flex { display: flex; align-items: center; margin-bottom: 3px; }
-.patient-contact-row .patient-phone-input { direction: ltr; unicode-bidi: isolate; text-align: left; font-variant-numeric: tabular-nums; }
-.payment-manual-dots { min-width: 105px; }
+.patient-contact-row .patient-phone-input { direction: ltr; unicode-bidi: isolate; text-align: left; font-variant-numeric: tabular-nums; max-width: 140px; width: 140px; flex: 0 1 140px; }
+.manual-payment-options { margin: 0 10px; }
 
 
 .paid-hero-bar {
@@ -220,7 +220,7 @@ body.hide-watermark .watermark-layer { display: none !important; }
     box-sizing: border-box;
 }
 .ledger-header { display: block; font-size: 9.5px; font-weight: 800; color: var(--primary); margin-bottom: 5px; line-height: 1.15; }
-.ledger-content { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 18px; }
+.ledger-content { display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 18px; direction: rtl; }
 .ledger-field { width: 100%; max-width: 65px; text-align: center; }
 .currency-label { font-size: 9.5px; color: var(--text-muted); font-weight: 800; white-space: nowrap; }
 
@@ -294,3 +294,10 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .ledger-grid-wrap{grid-template-columns:repeat(3,minmax(0,1fr))}
 .ledger-box{min-width:0}.section-signatures{direction:rtl}.section-signatures .sig-column{direction:rtl}
 .footer-meta-line{align-items:center}.footer-address{unicode-bidi:isolate}.footer-phones{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+
+/* 2026-10-07 typography and print corrections */
+.ar-date-flow{white-space:nowrap!important;direction:rtl!important;unicode-bidi:isolate;}
+.date-ltr-flow{direction:ltr!important;unicode-bidi:bidi-override;white-space:nowrap;}
+.date-suffix{unicode-bidi:isolate;white-space:nowrap;}
+.manual-payment-options .custom-radio-item{cursor:default;}
+.ledger-content .currency-label{flex:0 0 auto;white-space:nowrap;}
