@@ -6,13 +6,11 @@
     <title>سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="logo_data.js"></script>
-    <link rel="stylesheet" href="css/ui.css?v=20261006_01">
-    <link rel="stylesheet" href="css/receipt.css?v=20261006_01">
-    <link rel="stylesheet" href="css/print.css?v=20261006_01">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body data-mode="manual">
 
@@ -30,7 +28,7 @@
                     <button type="button" class="btn-pill active" id="btnModeManual" onclick="setMode('manual')">📋 دفتر ورقي</button>
                     <button type="button" class="btn-pill" id="btnModeDigital" onclick="setMode('digital')">💻 سند رقمي</button>
                 </div>
-                <button type="button" class="btn-tool" onclick="toggleDrawer(true)">⚙ الخيارات</button>
+                <button type="button" class="btn-tool" onclick="toggleDrawer(true)">⚙️ الخيارات</button>
                 <button type="button" class="btn-tool" onclick="openHistoryModal()">📂 السجل (<span id="historyCount">0</span>)</button>
             </div>
         </div>
@@ -39,21 +37,21 @@
     <!-- منطقة العمل الرئيسية المتجاوبة مع الهاتف -->
     <main class="page-canvas-wrapper">
 
-        <!-- شريط الإدخال السريع المدمج الظاهر فورياً عند اختيار السند الرقمي -->
-        <div class="no-print quick-action-bar" id="quickActionBar">
-            <span class="quick-title">⚡ تعبئة سريعة:</span>
-            <div class="quick-btns-row">
+        <!-- شريط الإدخال السريع للسند الرقمي -->
+        <div class="no-print quick-action-banner" id="quickActionBanner">
+            <div class="quick-banner-title">⚡ أدوات التعبئة السريعة:</div>
+            <div class="quick-banner-btns">
                 <button type="button" class="q-btn" onclick="setTodayDate()">📅 تاريخ اليوم</button>
                 <button type="button" class="q-btn" onclick="generateNextReceiptNo()">🔢 رقم تسلسلي</button>
-                <button type="button" class="q-btn q-clear" onclick="clearReceiptInputs()">🧹 تفريغ</button>
+                <button type="button" class="q-btn q-clear" onclick="clearReceiptInputs()">🧹 تفريغ الحقول</button>
             </div>
         </div>
 
-        <!-- ورقة السند المحاسبية الرسمية بمقاس A5 -->
+        <!-- ورقة السند الرسمية بمقاس A5 المحكم -->
         <div class="receipt-paper" id="receiptPrintArea">
             <div class="watermark-layer" id="watermarkLayer"></div>
 
-            <!-- الترويسة المعتمدة للعيادة -->
+            <!-- ترويسة السند الرسمية -->
             <header class="receipt-header">
                 <div class="header-doc">
                     <h2 class="editable" data-key="doc_name">د/.صلاح الدين السعيدي</h2>
@@ -68,7 +66,7 @@
                 </div>
             </header>
 
-            <!-- عنوان السند المؤطر -->
+            <!-- عنوان السند المؤطر دون تقطع حروف -->
             <div class="receipt-title-box">
                 <div class="title-strip">
                     <span class="strip-wing"></span>
@@ -77,7 +75,7 @@
                 </div>
             </div>
 
-            <!-- شريط الرقم والتاريخ العربي المحكم -->
+            <!-- رقم السند والتاريخ العربي السليم -->
             <div class="meta-data-strip">
                 <div class="meta-cell">
                     <span class="meta-label editable" data-key="receipt_no_lbl">رقم السند:</span>
@@ -91,7 +89,7 @@
                         <span class="slash">/</span>
                         <span class="date-blank" title="الشهر"></span>
                         <span class="slash">/</span>
-                        <span class="year-block"><bdo dir="ltr">202_</bdo> م</span>
+                        <span class="year-block">202<span class="year-blank"></span> م</span>
                     </div>
                     <input type="date" class="digital-only live-input" id="digDate">
                 </div>
@@ -119,19 +117,17 @@
                     <span class="manual-only tafqeet-closing editable" data-key="tafqeet_end">ريالاً يمنياً فقط لا غير.</span>
                 </div>
 
-                <!-- خيارات الدفع برسم بصري نقي لمنع ظهور رقم الصفر 0 نهائياً -->
+                <!-- خيارات الدفع برسم هندسي نقي لمنع ظهور رمز 0 في الصورة -->
                 <div class="row-flex pay-opts-row">
                     <span class="row-label editable" data-key="pay_method_lbl">طريقة الدفع:</span>
-                    <div class="payment-options-group">
-                        <div class="custom-radio-item active" id="optCash" onclick="setPayMethod('نقداً')">
-                            <span class="radio-circle"><span class="radio-dot"></span></span>
-                            <span class="radio-label">نقداً</span>
-                        </div>
-                        <div class="custom-radio-item" id="optBank" onclick="setPayMethod('محفظة / تحويل بنكي')">
-                            <span class="radio-circle"><span class="radio-dot"></span></span>
-                            <span class="radio-label">محفظة / تحويل بنكي</span>
-                        </div>
-                    </div>
+                    <label class="custom-radio-item" onclick="setPayMethod('نقداً')">
+                        <span class="radio-indicator active" id="radCash"></span>
+                        <span class="radio-text">نقداً</span>
+                    </label>
+                    <label class="custom-radio-item" onclick="setPayMethod('محفظة / تحويل بنكي')">
+                        <span class="radio-indicator" id="radBank"></span>
+                        <span class="radio-text">محفظة / تحويل بنكي</span>
+                    </label>
                     <input type="hidden" id="selectedPayMethod" value="نقداً">
                     <span class="row-label ref-label editable" data-key="ref_lbl">المرجع:</span>
                     <span class="manual-only write-dots ref-dots"></span>
@@ -139,19 +135,19 @@
                 </div>
             </section>
 
-            <!-- تفاصيل الخدمات العلاجية -->
+            <!-- تفاصيل الخدمات السنية بمربعات اختيار بصرية نقية -->
             <section class="section-services">
                 <div class="services-banner editable" data-key="services_head">تفاصيل الخدمة العلاجية المقدمة</div>
                 <div class="services-grid-matrix">
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>كشف ومعاينة</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>حشوات وتجميل</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>علاج عصب وجذور</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>خلع وجراحة</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>تنظيف وتجليح لثة</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>تركيبات أسنان</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>تقويم أسنان</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>أشعة تشخيصية</span></div>
-                    <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>أخرى</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'كشف ومعاينة')"><span class="check-box-icon"></span><span>كشف ومعاينة</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'حشوات وتجميل')"><span class="check-box-icon"></span><span>حشوات وتجميل</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'علاج عصب وجذور')"><span class="check-box-icon"></span><span>علاج عصب وجذور</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'خلع وجراحة')"><span class="check-box-icon"></span><span>خلع وجراحة</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'تنظيف وتجليح لثة')"><span class="check-box-icon"></span><span>تنظيف وتجليح لثة</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'تركيبات أسنان')"><span class="check-box-icon"></span><span>تركيبات أسنان</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'تقويم أسنان')"><span class="check-box-icon"></span><span>تقويم أسنان</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'أشعة تشخيصية')"><span class="check-box-icon"></span><span>أشعة تشخيصية</span></div>
+                    <div class="custom-check-item" onclick="toggleService(this, 'أخرى')"><span class="check-box-icon"></span><span>أخرى</span></div>
                 </div>
                 <div class="tooth-location-row">
                     <span class="row-label editable" data-key="tooth_lbl">رقم السن أو الموضع:</span>
@@ -160,9 +156,9 @@
                 </div>
             </section>
 
-            <!-- الصناديق المالية بنظام CSS Grid لضمان بقاء خانة المتبقي داخل الورقة -->
+            <!-- الشريط المالي المحاسبي المدمج -->
             <section class="section-ledger">
-                <div class="ledger-grid-wrap">
+                <div class="ledger-container">
                     <div class="ledger-box">
                         <span class="ledger-header editable" data-key="tot_lbl">إجمالي الحساب:</span>
                         <div class="ledger-content">
@@ -190,7 +186,7 @@
                 </div>
             </section>
 
-            <!-- التوثيق والتواقيع والختم -->
+            <!-- التوثيق والتواقيع والختم الرسمي -->
             <section class="section-signatures">
                 <div class="sig-column">
                     <span class="sig-title editable" data-key="rec_by_lbl">المستلم / الحسابات</span>
@@ -207,7 +203,7 @@
                 </div>
             </section>
 
-            <!-- التذييل الرسمي -->
+            <!-- التذييل الرسمي المعتمد -->
             <footer class="receipt-footer">
                 <p class="footer-blessing editable" data-key="thank_msg">شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية</p>
                 <div class="footer-meta-line">
@@ -222,25 +218,25 @@
         </div>
     </main>
 
-    <!-- شريط الإجراءات السفلي (Dock) المتناسق مع شاشات الهواتف -->
+    <!-- شريط الإجراءات العائم السفلي المطور -->
     <footer class="no-print floating-action-dock">
-        <button type="button" class="dock-btn btn-save" onclick="saveReceiptLocally()" title="حفظ بالسجل">
+        <button type="button" class="dock-btn" onclick="saveReceiptLocally()">
             <span class="dock-icon">💾</span>
             <span class="dock-text">حفظ</span>
         </button>
-        <button type="button" class="dock-btn btn-img" onclick="downloadReceiptImage()" title="تحميل صورة">
+        <button type="button" class="dock-btn" onclick="downloadReceiptImage()">
             <span class="dock-icon">🖼️</span>
             <span class="dock-text">صورة</span>
         </button>
-        <button type="button" class="dock-btn btn-pdf" onclick="downloadReceiptPDF()" title="تنزيل ملف PDF">
+        <button type="button" class="dock-btn dock-btn-pdf" onclick="downloadReceiptPDF()">
             <span class="dock-icon">📥</span>
-            <span class="dock-text">ملف PDF</span>
+            <span class="dock-text">تنزيل PDF</span>
         </button>
-        <button type="button" class="dock-btn btn-print" onclick="triggerNativePrint()" title="طباعة فورية">
+        <button type="button" class="dock-btn" onclick="triggerNativePrint()">
             <span class="dock-icon">🖨️</span>
             <span class="dock-text">طباعة</span>
         </button>
-        <button type="button" class="dock-btn btn-share" onclick="openShareModal()" title="إرسال عبر واتساب">
+        <button type="button" class="dock-btn btn-share" onclick="openShareModal()">
             <span class="dock-icon">📲</span>
             <span class="dock-text">إرسال</span>
         </button>
@@ -278,6 +274,20 @@
                 </div>
 
                 <div class="setting-card">
+                    <h4>✍️ نوع الخط والحجم</h4>
+                    <select id="fontSelect" class="custom-select" onchange="setFont(this.value)">
+                        <option value="'Cairo', sans-serif">خط Cairo (المعتمد الرسمي)</option>
+                        <option value="'Tajawal', sans-serif">خط Tajawal الحديث</option>
+                        <option value="'IBM Plex Sans Arabic', sans-serif">خط IBM Plex المكتبي</option>
+                    </select>
+                    <div class="scale-row">
+                        <button type="button" class="tool-btn" onclick="adjustFontSize(-1)">A−</button>
+                        <span id="fontScaleLabel" class="scale-badge">100%</span>
+                        <button type="button" class="tool-btn" onclick="adjustFontSize(1)">A+</button>
+                    </div>
+                </div>
+
+                <div class="setting-card">
                     <h4>🖼️ الشعار والعلامة المائية</h4>
                     <div class="grid-btns two">
                         <button type="button" class="tool-btn" onclick="document.getElementById('logoUploader').click()">تغيير الشعار</button>
@@ -295,25 +305,25 @@
         </div>
     </aside>
 
-    <!-- نافذة المشاركة الفورية -->
+    <!-- نافذة المشاركة المنبثقة -->
     <div class="no-print modal-screen" id="shareModal">
         <div class="modal-box">
             <button class="modal-close" type="button" onclick="closeShareModal()">×</button>
             <h3>مشاركة السند مع المريض</h3>
-            <p>اختر الوسيلة المناسبة للإرسال الفوري:</p>
+            <p>اختر الوسيلة المناسبة للإرسال المباشر:</p>
             <div class="modal-options">
                 <button type="button" class="opt-card" onclick="shareReceiptImage()">
                     <span class="opt-icon">🖼️</span>
                     <div>
                         <strong>مشاركة كصورة مباشرة</strong>
-                        <small>إرسال صورة واضحة للواتساب</small>
+                        <small>إرسال صورة واضحة للواتساب مباشرة</small>
                     </div>
                 </button>
                 <button type="button" class="opt-card" onclick="shareWhatsAppText()">
                     <span class="opt-icon">💬</span>
                     <div>
                         <strong>إرسال ملخص واتساب</strong>
-                        <small>إرسال الفاتورة الحسابية كنص مفصل</small>
+                        <small>إرسال الفاتورة المحاسبية كنص مفصل</small>
                     </div>
                 </button>
                 <button type="button" class="opt-card" onclick="copyReceiptText()">
@@ -339,10 +349,6 @@
         </div>
     </div>
 
-    <!-- وحدات جافاسكريبت المستقلة -->
-    <script src="js/tafqeet.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
