@@ -27,6 +27,7 @@ function setMode(mode) {
     // Paper mode is a handwriting template: no digital payment selection is carried into it.
     if (mode === 'manual') {
         setPayMethod('');
+        syncPaperDate(document.getElementById('digDate')?.value || getLocalDateISO());
     } else {
         if (!document.getElementById('digDate').value) setTodayDate();
         if (!document.getElementById('digReceiptNo').value) generateNextReceiptNo();
@@ -132,8 +133,32 @@ function getLocalDateISO() {
     return y + '-' + m + '-' + d;
 }
 
+function syncPaperDate(dateValue) {
+    const match = String(dateValue || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const day = document.getElementById('paperDateDay');
+    const month = document.getElementById('paperDateMonth');
+    const year = document.getElementById('paperDateYear');
+    if (!match) {
+        if (day) day.textContent = '';
+        if (month) month.textContent = '';
+        if (year) year.textContent = '202__ م';
+        return;
+    }
+    if (day) day.textContent = match[3];
+    if (month) month.textContent = match[2];
+    if (year) year.textContent = match[1] + ' م';
+}
+
 function setTodayDate() {
-    document.getElementById('digDate').value = getLocalDateISO();
+    const value = getLocalDateISO();
+    const input = document.getElementById('digDate');
+    if (input) input.value = value;
+    syncPaperDate(value);
+}
+
+function syncReceiptDateFromInput() {
+    const input = document.getElementById('digDate');
+    if (input) syncPaperDate(input.value);
 }
 
 function generateNextReceiptNo() {
@@ -260,6 +285,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedTheme) setTheme(savedTheme);
     if (localStorage.getItem('alssaedy_watermark') === 'off') document.body.classList.add('hide-watermark');
 
+    syncPaperDate(document.getElementById('digDate')?.value || getLocalDateISO());
+    const dateInput = document.getElementById('digDate');
+    if (dateInput) dateInput.addEventListener('input', syncReceiptDateFromInput);
     updateHistoryCount();
     updateActionAvailability();
 });
