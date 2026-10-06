@@ -1,15 +1,22 @@
 @page {
-    size: A5 portrait;
-    margin: 0;
+    size: A5 portrait !important;
+    margin: 0mm !important;
 }
 
 @media print {
+    *, *::before, *::after {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
     html, body {
         background: #ffffff !important;
-        padding: 0 !important;
         margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
         height: 100% !important;
+        max-height: 100vh !important;
         overflow: hidden !important;
+        page-break-inside: avoid !important;
     }
     .site-bg-overlay, .no-print, .quick-action-bar, .floating-action-dock, .settings-panel, .modal-screen {
         display: none !important;
@@ -17,18 +24,22 @@
     .page-canvas-wrapper {
         padding: 0 !important;
         margin: 0 !important;
-        display: block !important;
-        min-height: auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+        height: 100% !important;
     }
     .receipt-paper {
+        border: none !important;
         box-shadow: none !important;
-        width: 148mm !important;
-        height: 198mm !important;
-        max-width: 148mm !important;
-        max-height: 198mm !important;
-        padding: 5mm 8mm 3mm 8mm !important;
+        width: 144mm !important;
+        max-width: 144mm !important;
+        height: 196mm !important;
+        max-height: 196mm !important;
+        padding: 4mm 6mm 2mm 6mm !important;
         margin: 0 auto !important;
         page-break-after: avoid !important;
+        page-break-before: avoid !important;
         page-break-inside: avoid !important;
     }
 }

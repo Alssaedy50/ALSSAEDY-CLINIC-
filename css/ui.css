@@ -95,10 +95,10 @@ body {
     font-family: inherit;
 }
 
-/* شريط الإدخال السريع الظاهر فوق السند */
+/* شريط التعبئة السريعة يظهر بموضعه الصحيح دون أي احتجاب */
 .quick-action-bar {
     display: none;
-    background: rgba(30, 41, 59, 0.95);
+    background: rgba(30, 41, 59, 0.98);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
     padding: 6px 12px;
@@ -132,14 +132,13 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 58px;
+    padding-top: 60px;
     padding-bottom: 85px;
     padding-left: 8px;
     padding-right: 8px;
     min-height: 100vh;
 }
 
-/* شريط الإجراءات السفلي (Dock) */
 .floating-action-dock {
     position: fixed;
     bottom: 8px;
