@@ -1,6 +1,23 @@
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
 
 // محرك التفقيط المالي بالريال اليمني
+function escapeHTML(value){
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function localDateISO(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function tafqeetRial(number) {
     if (isNaN(number) || number <= 0) return '';
     number = Math.floor(number);
@@ -184,7 +201,7 @@ function calculateLedger() {
     const total = parseFloat(document.getElementById('digTotal').value) || 0;
     
     document.getElementById('digPaidTable').value = paid ? paid : '';
-    document.getElementById('digBalance').value = (total || paid) ? Math.max(0, total - paid) : '';
+    document.getElementById('digBalance').value = (total || paid) ? (total - paid) : '';
 
     if (paid > 0) {
         document.getElementById('digTafqeet').value = tafqeetRial(paid);

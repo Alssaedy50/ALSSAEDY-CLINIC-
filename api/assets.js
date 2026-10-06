@@ -5,7 +5,7 @@ const ALLOWED = new Set(['logo', 'background']);
 const MAX_BYTES = 5000000;
 const MIME = new Set(['image/png','image/jpeg','image/webp','image/gif','image/svg+xml']);
 
-function keyFrom(req){return new URL(req.url).searchParams.get('key') || ''}
+function keyFrom(req){return new URL(req.url, `https://${req.headers?.host || 'localhost'}`).searchParams.get('key') || ''}
 
 export default async function handler(req, res) {
   try {
