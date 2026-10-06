@@ -309,7 +309,7 @@ body.exporting-receipt .receipt-paper{
     min-height:var(--export-height)!important;height:var(--export-height)!important;
     padding:6mm 8mm 4mm!important
 }
-body.exporting-receipt .header-logo-wrap{width:54px;height:54px}
+body.exporting-receipt .header-logo-wrap{width:62px;height:62px}
 body.exporting-receipt .header-doc h2{font-size:13px}.exporting-receipt .header-doc p{font-size:9px}
 body.exporting-receipt .header-clinic h2{font-size:10px}.exporting-receipt .header-clinic p{font-size:8.5px}
 body.exporting-receipt .main-voucher-title{font-size:15px}
@@ -321,3 +321,10 @@ body.exporting-receipt .ledger-header{font-size:9.5px}
 body.exporting-receipt .sig-title{font-size:9.5px}
 body.exporting-receipt .footer-blessing{font-size:9px}
 body.exporting-receipt .footer-meta-line{font-size:8px}
+body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px 6px;}
+@media screen and (max-width:700px){
+  .footer-phones{font-size:11px!important;font-weight:900;line-height:1.5;padding:4px 7px;}
+  .footer-meta-line{align-items:center;}
+  .pay-opts-row .ref-label{margin-right:10px;}
+  .pay-opts-row .payment-options-group{gap:10px;margin:0 4px;}
+}
