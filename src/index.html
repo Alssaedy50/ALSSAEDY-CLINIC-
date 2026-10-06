@@ -44,7 +44,8 @@
         </div>
 
         <div class="toolbar-section actions-group">
-            <button type="button" class="action-btn edit-btn" id="btnEdit" onclick="toggleEditMode()">✏️ تعديل النصوص والشعار</button>
+            <button type="button" class="action-btn edit-btn" id="btnEdit" onclick="toggleEditMode()">✏️ تعديل النصوص</button>
+            <button type="button" class="action-btn logo-btn" id="btnLogoUpload" onclick="triggerLogoUpload()">🖼️ تغيير الشعار</button>
             <input type="file" id="logoUploader" accept="image/*" style="display:none;" aria-label="رفع شعار العيادة">
             <button type="button" class="action-btn share-btn" id="btnShare" onclick="shareReceipt()">📲 مشاركة السند للعميل</button>
             <button type="button" class="action-btn print-btn" onclick="window.print()">🖨️ طباعة / تصدير PDF</button>
@@ -132,7 +133,7 @@
                     </label>
                     <label class="check-item">
                         <input type="radio" class="digital-only check-interactive" name="paymentMethod" value="wallet-bank" aria-label="محفظة أو بنك">
-                        <span class="box-check manual-only"></span> محفظة / بنك
+                        <span class="box-check manual-only"></span> محفظة / تحويل بنكي
                     </label>
                     <span class="field-label ref-label">المرجع:</span>
                     <span class="manual-only write-line flex-fill"></span>
@@ -149,7 +150,7 @@
                 <div class="services-grid">
                     <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> كشف ومعاينة <span class="en-sub" dir="ltr">(Exam)</span></div>
                     <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> حشوات وتجميل <span class="en-sub" dir="ltr">(Fillings)</span></div>
-                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> علاج عصب <span class="en-sub" dir="ltr">(Endo)</span></div>
+                    <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> علاج جذور وعصب <span class="en-sub" dir="ltr">(Endo)</span></div>
                     <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> خلع وجراحة <span class="en-sub" dir="ltr">(Surgery)</span></div>
                     <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> تنظيف ولثة <span class="en-sub" dir="ltr">(Scaling)</span></div>
                     <div class="service-box"><input type="checkbox" class="digital-only check-interactive"><span class="box-check manual-only"></span> تركيبات <span class="en-sub" dir="ltr">(Prostho)</span></div>
@@ -202,27 +203,30 @@
             <!-- التواقيع والختم -->
             <section class="auth-section">
                 <div class="auth-box">
-                    <span class="auth-title">المستلم / الحسابات</span>
+                    <span class="auth-title">المستلم</span>
                     <div class="auth-line"></div>
                 </div>
                 <div class="auth-box stamp-container">
                     <span class="stamp-label">ختم العيادة الرسمي</span>
                 </div>
                 <div class="auth-box">
-                    <span class="auth-title">توقيع الإدارة</span>
+                    <span class="auth-title">التوقيع</span>
                     <div class="auth-line"></div>
                 </div>
             </section>
 
             <!-- تذييل السند -->
             <footer class="receipt-footer">
-                <div class="thank-you editable" data-key="thank_msg">شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية</div>
+                <div class="thank-you editable" data-key="thank_msg">شكرًا لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية</div>
                 <div class="footer-details">
-                    <div class="address editable" data-key="clinic_addr">ريمة – كسمة – عزلة الضبارة</div>
-                    <div class="phones editable" data-key="clinic_phones" dir="ltr">
-                        <span>+967 716 339 366</span> &bull; 
-                        <span>+967 739 550 138</span> &bull; 
-                        <span>+967 775 956 520</span>
+                    <div class="address-row">
+                        <span class="footer-label">العنوان:</span>
+                        <span class="address editable" data-key="clinic_addr">ريمة – كسمة – عزلة الضبارة</span>
+                    </div>
+                    <div class="phones editable" data-key="clinic_phones" dir="ltr" aria-label="أرقام التواصل">
+                        <span class="phone-item">+967 716 339 366</span>
+                        <span class="phone-item">+967 739 550 138</span>
+                        <span class="phone-item">+967 775 956 520</span>
                     </div>
                 </div>
             </footer>
