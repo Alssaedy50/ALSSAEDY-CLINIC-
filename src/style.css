@@ -1,174 +1,478 @@
-:root{--primary:#073b63;--primary-dark:#052640;--teal:#079db5;--text:#122033;--muted:#64748b;--line:#94a3b8;--border:#d6e0e9;--soft:#f4f8fb;--paper:#fff}
-[data-theme="modern"]{--primary:#0f766e;--primary-dark:#115e59;--teal:#0d9488;--border:#ccebe7;--soft:#f0fbf9}
-[data-theme="mono"]{--primary:#18181b;--primary-dark:#09090b;--teal:#27272a;--border:#b8b8bd;--soft:#fafafa}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%}
-body{font-family:Cairo,sans-serif;background:#dfe7ee;color:var(--text);padding:10px;font-size:10.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-button,input{font:inherit}
-button{cursor:pointer}
-.app-toolbar{max-width:1100px;margin:0 auto 12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:9px;justify-content:center;align-items:center;box-shadow:0 6px 18px #00000012}
-.toolbar-section{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.tool-title{font-weight:800;color:var(--primary);font-size:10px}
-.btn-group{display:flex;gap:4px;flex-wrap:wrap}
-.tool-btn,.action-btn{border:1px solid #cbd5e1;border-radius:7px;padding:6px 9px;background:#f8fafc;color:#334155;font-weight:700;font-size:10px}
-.tool-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.action-btn{border:0;color:#fff}
-.edit-btn{background:#f59e0b}.logo-btn{background:#6366f1}.share-btn{background:#059669}.print-btn{background:var(--primary)}
-.custom-bg-label{padding:5px 8px;border:1px dashed #94a3b8;border-radius:7px;color:#334155;font-weight:700;font-size:9.5px;cursor:pointer}.custom-bg-label input{display:none}
-.receipt-wrapper{display:flex;justify-content:center;overflow:auto;padding-bottom:20px}
-.receipt-container{position:relative;background:var(--paper);width:148mm;height:210mm;padding:7mm 8mm 5mm;border:1px solid #d7e0e8;box-shadow:0 8px 24px #00000022;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
-[data-size="a4"] .receipt-container{width:210mm;height:297mm;padding:13mm 15mm 10mm;font-size:13px}
-[data-size="thermal"] .receipt-container{width:80mm;min-height:190mm;height:auto;padding:4mm;font-size:9px;box-shadow:none}
-.watermark-layer{position:absolute;inset:0;pointer-events:none;opacity:.055;background-repeat:no-repeat;background-position:center;background-size:48% auto;background-origin:padding-box;z-index:0}
-.receipt-container>*:not(.watermark-layer){position:relative;z-index:1}
-.receipt-header{display:grid;grid-template-columns:1fr 62px 1fr;align-items:center;gap:9px;padding-bottom:7px;border-bottom:2px solid var(--primary)}
-.doctor-meta{text-align:right}.doctor-meta h2,.clinic-meta h2{font-size:13px;line-height:1.25;color:var(--primary);font-weight:800}.doctor-meta p{font-size:9px;color:#475569;font-weight:600;margin-top:2px}
-.clinic-meta{text-align:left;font-family:Montserrat,sans-serif}.clinic-meta h2{font-size:10px}.clinic-meta p{font-size:8.5px;color:#475569;margin-top:2px}
-.logo-area{width:62px;height:62px;border:1px solid var(--border);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}.clinic-logo{width:56px;height:56px;max-width:100%;max-height:100%;object-fit:contain;display:block}.logo-hint{position:absolute;bottom:-13px;white-space:nowrap;font-size:7px;color:var(--teal);display:none}
-.voucher-title{display:flex;align-items:end;justify-content:space-between;border-bottom:1px solid var(--border);padding:5px 1px 4px}.voucher-title h1{font-size:18px;line-height:1;color:var(--primary);font-weight:800}.voucher-title span{display:block;font:700 8px Montserrat,sans-serif;color:var(--teal);letter-spacing:1.3px;margin-top:3px}.title-mark{font:700 7px Montserrat,sans-serif;color:#94a3b8;letter-spacing:1px}
-.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:5px}.meta-card{display:flex;align-items:center;gap:6px;min-height:27px;padding:4px 7px;border:1px solid var(--border);border-radius:6px;background:var(--soft)}.label,.field-label{font-weight:800;color:var(--primary);white-space:nowrap;font-size:9.5px}.write-line{display:inline-block;border-bottom:1.5px dashed #64748b;height:15px}.flex-fill{flex:1;margin:0 4px}.clean-date-boxes{display:inline-flex;align-items:center;gap:3px;direction:ltr}.date-slot{width:25px;height:15px;border-bottom:1.5px dashed #64748b}.date-slot-sm{width:13px;height:15px;border-bottom:1.5px dashed #64748b}
-.details-section{margin-top:4px}.field-row{display:flex;align-items:center;min-height:25px;margin-bottom:3px}.amount-card{margin:4px 0;padding:6px 10px;border:1.8px solid var(--primary);border-radius:8px;background:linear-gradient(135deg,var(--soft),#fff)}.amount-number-box{display:flex;align-items:center;gap:7px}.amount-tag{font-size:10px;font-weight:800;color:var(--primary)}.blank-box{width:140px;height:21px;border-bottom:2px solid var(--primary)}.currency,.currency-end{font-size:8.5px;color:#475569;font-weight:700}.payment-method-row{display:flex;align-items:center;gap:7px;min-height:25px;font-size:9px}.check-item{display:flex;align-items:center;gap:4px;font-weight:700}.box-check{width:11px;height:11px;border:1.4px solid var(--primary);border-radius:2px;background:#fff}.en-sub{font:600 7.5px Montserrat,sans-serif;color:#64748b}.ref-label{margin-right:3px}
-.services-panel{border:1.2px solid var(--border);border-radius:7px;overflow:hidden;margin-top:4px}.section-title{display:flex;justify-content:space-between;align-items:center;background:var(--primary);color:#fff;padding:4px 8px;font-size:9px;font-weight:800}.en-title{font:600 7px Montserrat,sans-serif}.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px 7px;padding:5px 8px;background:#fff}.service-box{display:flex;align-items:center;gap:4px;min-height:17px;font-size:8.7px;font-weight:700}.service-extra{display:flex;align-items:center;padding:3px 8px;border-top:1px dashed var(--border);background:var(--soft)}.extra-label{font-size:8.5px;font-weight:800;color:var(--primary)}
-.finance-panel{margin-top:4px}.finance-summary{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:5px}.finance-item{min-height:44px;border:1px solid var(--border);border-radius:7px;background:#fff;padding:5px 7px;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;align-items:center}.finance-item.total{border-top:3px solid var(--primary)}.finance-item.paid{border-top:3px solid var(--teal)}.finance-item.balance{border-top:3px solid #d97706;background:var(--soft)}.finance-label{font-size:8.8px;font-weight:800;color:var(--text)}.finance-en{font:700 6.5px Montserrat,sans-serif;color:#94a3b8;grid-column:2;grid-row:1}.finance-input{grid-column:1/2;width:100%;min-width:0;height:22px;border:0;border-bottom:1.5px solid var(--primary);background:transparent;text-align:left;font:800 13px Montserrat,sans-serif;color:var(--primary);outline:none}.finance-currency{grid-column:2;grid-row:2;font:700 7px Montserrat,sans-serif;color:#64748b}.finance-blank{grid-column:1;height:20px;border-bottom:1.5px solid var(--primary)}.balance-field{color:#b45309!important}
-.auth-section{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:7px;align-items:end;margin-top:5px}.auth-box{text-align:center;min-height:37px}.auth-title{font-size:8.8px;font-weight:800;color:var(--primary)}.auth-line{border-bottom:1.4px dashed #64748b;margin-top:15px}.stamp-container{border:1.4px dashed var(--primary);border-radius:6px;display:flex;align-items:center;justify-content:center}.stamp-label{font-size:7.5px;color:#64748b;font-weight:800}
-.receipt-footer{border-top:1.5px solid var(--primary);padding-top:4px;margin-top:4px;text-align:center}.thank-you{font-size:8.2px;font-weight:800;color:var(--primary);margin-bottom:4px}.footer-details{display:flex;flex-direction:column;gap:4px}.address-row{display:flex;justify-content:center;align-items:center;gap:4px;font-size:7.8px;font-weight:700}.footer-label{color:var(--primary);font-weight:800}.phones{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;direction:ltr}.phone-item{display:flex;justify-content:center;align-items:center;min-height:20px;padding:2px 3px;border:1px solid #cbd5e1;border-radius:5px;background:#f8fafc;color:var(--primary);font:700 8px Montserrat,sans-serif;white-space:nowrap}
-.live-input{border:0;border-bottom:1.5px solid var(--primary);outline:none;background:transparent;font-family:Cairo,sans-serif;font-size:9.5px;font-weight:700;color:var(--primary);padding:2px 4px;min-width:0}.bold-number{width:145px;height:27px;font:800 15px Montserrat,sans-serif}.num-cell{width:100%}
-[data-mode="manual"] .digital-only{display:none!important}[data-mode="digital"] .manual-only{display:none!important}
-body.is-editing .editable{outline:2px dashed #f59e0b!important;background:#fffbeb!important;cursor:text;border-radius:3px}
-body.is-editing .editable:hover{outline-color:var(--teal)!important}
-body.is-editing .logo-hint{display:block!important}
-.share-modal{position:fixed;inset:0;background:#0f172a99;display:none;align-items:center;justify-content:center;padding:20px;z-index:100}.share-modal.open{display:flex}.share-dialog{width:min(440px,100%);background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 60px #0006;position:relative;text-align:right}.share-close{position:absolute;left:12px;top:8px;border:0;background:transparent;font-size:28px;color:#64748b}.share-dialog h2{color:var(--primary);font-size:18px}.share-dialog p{color:#64748b;font-size:11px;margin:6px 0 14px}.share-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.share-option{border:1px solid var(--border);background:var(--soft);border-radius:10px;padding:13px 7px;display:flex;flex-direction:column;gap:5px;align-items:center;color:var(--primary)}.share-option strong{font-size:12px}.share-option small{font-size:8px;color:#64748b}.share-note{text-align:center;min-height:18px!important;color:var(--teal)!important}
-@media screen and (max-width:700px){body{padding:6px}.app-toolbar{justify-content:flex-start}.toolbar-section{width:100%}.receipt-wrapper{justify-content:flex-start}.share-options{grid-template-columns:1fr}.phones{grid-template-columns:1fr}.phone-item{min-height:25px;font-size:10px}}
-@media print{
-html,body{margin:0!important;padding:0!important;background:#fff!important}.no-print{display:none!important}.receipt-wrapper{display:block;padding:0;overflow:visible}.receipt-container{width:148mm!important;height:210mm!important;margin:0!important;padding:7mm 8mm 5mm!important;box-shadow:none!important;border:0!important;break-inside:avoid;page-break-inside:avoid}.receipt-container *{print-color-adjust:exact;-webkit-print-color-adjust:exact}body[data-size="a4"] .receipt-container{width:210mm!important;height:297mm!important;padding:13mm 15mm 10mm!important}body[data-size="thermal"] .receipt-container{width:80mm!important;height:190mm!important;min-height:190mm!important;padding:4mm!important}.editable{outline:none!important;background:transparent!important}.phone-item{background:#fff!important;border-color:#64748b!important;color:#111827!important}
-}
-@page receipt-a5-portrait{size:A5 portrait;margin:0}@page receipt-a5-landscape{size:A5 landscape;margin:0}@page receipt-a4-portrait{size:A4 portrait;margin:0}@page receipt-a4-landscape{size:A4 landscape;margin:0}@page receipt-thermal{size:80mm 190mm;margin:0}
-
-/* Settings drawer + typography + orientation refinement */
-:root{--receipt-font:Cairo,sans-serif;--font-scale:1;--custom-text:#122033}
-.receipt-container{font-family:var(--receipt-font);font-size:calc(10.5px * var(--font-scale));color:var(--custom-text)}
-.receipt-container .doctor-meta h2,.receipt-container .clinic-meta h2,.receipt-container .voucher-title h1,.receipt-container .label,.receipt-container .field-label,.receipt-container .amount-tag,.receipt-container .extra-label,.receipt-container .finance-label,.receipt-container .auth-title,.receipt-container .footer-label,.receipt-container .thank-you{color:var(--custom-text)}
-.write-line,.finance-blank,.auth-line{border-bottom-style:dotted}
-.menu-toggle{position:fixed;top:14px;right:14px;z-index:90;border:0;border-radius:10px;padding:9px 13px;background:var(--primary);color:#fff;font-weight:800;box-shadow:0 8px 22px #0003}
-.menu-toggle span{font-size:10px}
-.settings-panel{position:fixed;inset:0;z-index:200;display:none}
-.settings-panel.open{display:block}
-.settings-backdrop{position:absolute;inset:0;background:#0f172a99}
-.settings-drawer{position:absolute;top:0;right:0;width:min(390px,92vw);height:100%;background:#fff;box-shadow:-18px 0 50px #0003;display:flex;flex-direction:column}
-.settings-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 14px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
-.settings-head h2{font-size:19px}.settings-kicker{font:700 8px Montserrat,sans-serif;letter-spacing:1.2px;opacity:.75}
-.drawer-close{border:0;background:#ffffff18;color:#fff;border-radius:8px;width:34px;height:34px;font-size:24px}
-.settings-scroll{overflow:auto;padding:13px 15px 30px}
-.settings-group{padding:12px 0;border-bottom:1px solid #e2e8f0}
-.settings-group:last-child{border-bottom:0}.settings-group h3{font-size:11px;color:var(--primary);margin-bottom:8px}
-.control-grid{display:grid;gap:6px}.control-grid.two{grid-template-columns:1fr 1fr}.control-grid.three{grid-template-columns:repeat(3,1fr)}
-.settings-group .tool-btn{width:100%;min-height:35px}.orientation-controls{margin-top:6px}
-.setting-select{width:100%;height:38px;border:1px solid #cbd5e1;border-radius:8px;padding:0 9px;background:#fff;color:#1e293b;font-weight:700}
-.font-size-row{display:grid;grid-template-columns:48px 1fr 48px;gap:7px;align-items:center;margin-top:7px}.font-size-row input{width:100%}
-.color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.color-swatch{width:29px;height:29px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #cbd5e1;background:var(--sw)}.color-row input{width:36px;height:32px;padding:0;border:0;background:transparent}
-.settings-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.settings-actions .action-btn{min-height:38px;padding:7px 6px}.settings-actions .custom-bg-label{display:flex;align-items:center;justify-content:center;text-align:center}.action-btn.wide{width:100%;min-height:40px}.pdf-btn{background:#7c3aed!important;color:#fff}
-.settings-note{font-size:8.5px;color:#64748b;line-height:1.6;margin-top:7px}
-[data-orientation="landscape"][data-size="a5"] .receipt-container{width:210mm;height:148mm}
-[data-orientation="landscape"][data-size="a4"] .receipt-container{width:297mm;height:210mm}
-[data-orientation="portrait"] .receipt-container{height:210mm}
-[data-orientation="landscape"][data-size="thermal"] .receipt-container{width:80mm;height:190mm}
-@media screen and (max-width:700px){.menu-toggle{top:8px;right:8px}.settings-drawer{width:min(360px,94vw)}.settings-actions{grid-template-columns:1fr 1fr}.settings-actions .custom-bg-label{grid-column:1/-1}.receipt-wrapper{padding-top:48px}}
-@media print{
-.menu-toggle,.settings-panel{display:none!important}
-[data-orientation="landscape"][data-size="a5"] .receipt-container{width:210mm!important;height:148mm!important;padding:6mm 7mm 4mm!important}
-[data-orientation="landscape"][data-size="a4"] .receipt-container{width:297mm!important;height:210mm!important;padding:10mm 12mm 8mm!important}
-[data-orientation="portrait"][data-size="a5"] .receipt-container{width:148mm!important;height:210mm!important}
-[data-orientation="portrait"][data-size="a4"] .receipt-container{width:210mm!important;height:297mm!important}
+:root {
+    --primary: #073b63;
+    --primary-light: #0b4e82;
+    --teal: #079db5;
+    --text: #0f172a;
+    --line: #334155;
+    --border-grid: #94a3b8;
+    --bg-strip: #f1f5f9;
 }
 
-.sync-status{width:min(760px,calc(100% - 24px));margin:10px auto 0;text-align:center;font-size:9px;font-weight:800;color:#0f766e;min-height:18px}.sync-status:empty{display:none}
-.receipt-actions{width:min(760px,calc(100% - 24px));margin:18px auto 8px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.receipt-action{border:1px solid #dbe4ee;border-radius:14px;background:#fff;padding:13px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;box-shadow:0 7px 20px #0f172a12;color:#122033}.receipt-action .action-icon{font-size:24px;line-height:1}.receipt-action strong{font-size:13px}.receipt-action small{font-size:9px;color:#64748b;text-align:center}.action-panels{width:min(760px,calc(100% - 24px));margin:0 auto 26px}.action-panel{border:1px solid #dbe4ee;background:#fff;border-radius:14px;padding:12px;box-shadow:0 10px 30px #0f172a12}.panel-title{display:flex;justify-content:space-between;align-items:center;padding:3px 3px 10px;color:var(--primary)}.panel-title button{border:0;background:#f1f5f9;border-radius:8px;width:30px;height:30px;font-size:18px}.panel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.panel-option{border:1px solid #e2e8f0;border-radius:11px;background:#f8fafc;padding:12px 10px;display:grid;grid-template-columns:32px 1fr;grid-template-rows:auto auto;text-align:right;cursor:pointer}.panel-option span{grid-row:1/3;font-size:22px;align-self:center;text-align:center}.panel-option b{font-size:11px}.panel-option small{font-size:8.5px;color:#64748b;line-height:1.5}.action-status{font-size:9px;color:#475569;margin-top:8px}.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}@media(max-width:700px){.receipt-actions{gap:6px}.receipt-action{padding:10px 5px}.receipt-action .action-icon{font-size:21px}.receipt-action strong{font-size:10px}.receipt-action small{font-size:7px}.panel-grid{grid-template-columns:1fr}.action-panels{width:calc(100% - 16px)}}@media print{.receipt-actions,.action-panels{display:none!important}}
-/* Final visual separation: screen controls vs physical receipt */
-.voucher-title{position:relative;justify-content:center;text-align:center}
-.voucher-title>div:first-child{text-align:center;margin-inline:auto}
-.voucher-title .title-mark{position:absolute;inset-inline-end:1px;bottom:5px}
-@media screen and (max-width:700px){
- .receipt-wrapper{justify-content:flex-start;align-items:flex-start;padding-inline:10px;overflow-x:auto}
- .receipt-container{flex:none}
-}
-@media screen and (min-width:701px){
- .receipt-wrapper{align-items:flex-start}
-}
-@media print{
- .receipt-wrapper{display:block!important;overflow:visible!important;padding:0!important}
- .receipt-container{transform:none!important;margin:0!important;box-shadow:none!important}
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-/* NCR A5 print polish */
-.voucher-title .title-mark{display:none!important}
-.meta-card{background:#fff!important;border-color:#475569}
-.amount-card{background:#fff;border-color:var(--primary);border-radius:5px}
-.amount-number-box{position:relative;padding-left:38px;min-height:26px}
-.amount-number-box .currency{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:var(--primary);white-space:nowrap}
-.clean-date-boxes{min-width:116px;justify-content:flex-start;direction:ltr!important;unicode-bidi:isolate;padding:1px 0}
-.clean-date-boxes .date-slot{width:25px;height:18px}
-.clean-date-boxes .date-slot-sm{width:18px;height:18px}
-.clean-date-boxes .year-prefix{letter-spacing:0;direction:ltr;unicode-bidi:isolate}
-.finance-summary{display:grid;grid-template-columns:1fr;gap:0;border:1.5px solid #475569;border-radius:5px;overflow:hidden;background:#fff}
-.finance-item{min-height:32px;border:0!important;border-bottom:1px solid #64748b!important;border-radius:0;background:#fff!important;padding:5px 8px;display:grid;grid-template-columns:1fr 90px 46px;grid-template-rows:1fr;align-items:center;column-gap:8px}
-.finance-item:last-child{border-bottom:0!important}
-.finance-item.total,.finance-item.paid,.finance-item.balance{border-top:0!important}
-.finance-label{font-size:9.2px}
-.finance-en{grid-column:3;grid-row:1;text-align:left}
-.finance-input,.finance-blank{grid-column:2;grid-row:1;height:23px}
-.finance-currency{grid-column:3;grid-row:1;font-size:7px}
-.finance-blank{border-bottom:1.5px solid var(--primary)}
-.finance-input{text-align:center}
-.auth-section{grid-template-columns:1fr 1.35fr 1fr;gap:8px;margin-top:6px}
-.auth-box{min-height:52px}
-.stamp-container{min-height:52px;border-width:1.5px}
-.auth-line{margin-top:24px;border-bottom-color:#475569}
-.watermark-layer{opacity:.02}
-@media print{
- .watermark-layer{opacity:0!important}
- .receipt-container{padding:6.5mm 7mm 4.5mm!important;border:0!important}
- .meta-card{background:#fff!important;border-color:#475569!important}
- .amount-card{background:#fff!important}
- .services-panel,.finance-summary{border-color:#475569!important}
- .section-title{background:#073b63!important}
- .finance-item{border-bottom-color:#475569!important}
- .auth-box,.stamp-container{min-height:54px}
- .receipt-footer{margin-top:3px;padding-top:3px}
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #cbd5e1;
+    color: var(--text);
+    padding: 12px;
+    font-size: 11px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }
 
-/* Final Arabic-first receipt language + compact financial strip */
-.language-controls .tool-btn{min-height:34px}
-.clean-date-boxes{direction:rtl!important;unicode-bidi:isolate;display:flex;align-items:center;justify-content:flex-start;gap:4px;min-width:150px}
-.clean-date-boxes .date-slot{width:25px;height:18px;border-bottom:1.5px dashed #64748b;display:inline-block}
-.clean-date-boxes .year-prefix{white-space:nowrap;direction:rtl;unicode-bidi:isolate}
-.en-sub,.en-title,.finance-en{display:none!important}
-.finance-summary{display:grid!important;grid-template-columns:1fr!important;gap:0!important;border:1px solid #cbd5e1!important;border-radius:4px!important;overflow:hidden!important;background:#fff!important}
-.finance-item{min-height:22px!important;height:22px!important;border:0!important;border-bottom:1px solid #e2e8f0!important;border-radius:0!important;background:#fff!important;padding:2px 7px!important;display:grid!important;grid-template-columns:1fr 88px 30px!important;grid-template-rows:1fr!important;align-items:center!important;column-gap:6px!important}
-.finance-item:last-child{border-bottom:0!important}
-.finance-label{font-size:8.5px!important;font-weight:800!important}
-.finance-blank{grid-column:2!important;grid-row:1!important;height:15px!important;border-bottom:1px dotted #64748b!important}
-.finance-input{grid-column:2!important;grid-row:1!important;height:18px!important;border:0!important;border-bottom:1px dotted var(--primary)!important;text-align:center!important;font-size:10px!important}
-.finance-currency{grid-column:3!important;grid-row:1!important;font:800 7px Cairo,sans-serif!important;color:#475569!important;text-align:left!important}
-@media print{
- .receipt-container{width:148mm!important;height:210mm!important;padding:6.5mm 7mm 4.5mm!important;overflow:hidden!important}
- .finance-item{min-height:22px!important;height:22px!important}
- .finance-summary{border-color:#94a3b8!important}
+/* لوحة التحكم العلوية */
+.app-toolbar {
+    max-width: 148mm;
+    margin: 0 auto 12px;
+    background: #ffffff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
 }
-body[data-language="en"] .arabic-only{display:none!important}
-body[data-language="ar"] .english-only{display:none!important}
 
-.date-en{display:none;direction:ltr;unicode-bidi:isolate}
-body[data-language="en"] .date-ar{display:none!important}
-body[data-language="en"] .date-en{display:inline!important}
-body[data-language="ar"] .date-ar{display:inline!important}
-body[data-language="ar"] .date-en{display:none!important}
-body[data-language="en"] .receipt-container{direction:ltr}
-body[data-language="en"] .receipt-header{direction:ltr}
-body[data-language="en"] .details-section,
-body[data-language="en"] .services-panel,
-body[data-language="en"] .finance-panel,
-body[data-language="en"] .auth-section,
-body[data-language="en"] .receipt-footer{direction:ltr}
-body[data-language="en"] .field-row,
-body[data-language="en"] .payment-method-row,
-body[data-language="en"] .service-extra{direction:ltr}
+.toolbar-brand {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.toolbar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.mode-switch, .action-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-tool, .btn-action {
+    border: 1px solid var(--border-grid);
+    background: #f8fafc;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-tool.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+}
+
+.share-wa {
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+}
+
+.print-doc {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+}
+
+/* حاوية السند */
+.receipt-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.receipt-container {
+    width: 148mm;
+    height: 210mm;
+    background: #ffffff;
+    padding: 8mm 10mm 6mm 10mm;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* الترويسة الرسمية */
+.receipt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 5px;
+}
+
+.meta-doc h2 {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.meta-doc p {
+    font-size: 9.5px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.meta-logo {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clinic-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.meta-clinic {
+    font-family: 'Cairo', sans-serif;
+    text-align: left;
+}
+
+.meta-clinic h2 {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.meta-clinic p {
+    font-size: 9px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.voucher-title {
+    text-align: center;
+    margin: 4px 0 2px 0;
+}
+
+.voucher-title h1 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+/* رقم السند والتاريخ العربي السليم */
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.meta-block {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.meta-label, .field-label {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 10.5px;
+    white-space: nowrap;
+}
+
+.ar-date-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--line);
+    font-weight: 700;
+}
+
+.date-slot {
+    display: inline-block;
+    width: 28px;
+    height: 15px;
+    border-bottom: 1.5px dashed var(--line);
+}
+
+.date-slot-sm {
+    display: inline-block;
+    width: 14px;
+    height: 15px;
+    border-bottom: 1.5px dashed var(--line);
+}
+
+.date-slash {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--line);
+}
+
+.dot-line {
+    border-bottom: 1.5px dashed var(--line);
+    display: inline-block;
+    height: 15px;
+}
+
+.receipt-no-line { min-width: 85px; }
+.ref-line { min-width: 100px; }
+.flex-fill { flex: 1; margin: 0 5px; }
+
+/* بيانات المريض والمبلغ */
+.patient-section {
+    margin-bottom: 4px;
+}
+
+.field-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.paid-bar {
+    background: var(--bg-strip);
+    border: 1.5px solid var(--primary);
+    border-radius: 5px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 5px 0;
+}
+
+.paid-label {
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 11px;
+}
+
+.paid-blank-line {
+    border-bottom: 2px solid var(--primary);
+    width: 130px;
+    height: 18px;
+}
+
+.currency-tag {
+    font-weight: 700;
+    color: #475569;
+    font-size: 10px;
+}
+
+.field-suffix {
+    font-size: 9.5px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.payment-methods {
+    font-size: 10px;
+}
+
+.check-opt {
+    display: flex;
+    align-items: center;
+    margin-right: 12px;
+    gap: 4px;
+    font-weight: 700;
+}
+
+.box-check {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--primary);
+    border-radius: 2px;
+    background: #ffffff;
+    display: inline-block;
+}
+
+.mr-ref { margin-right: 16px; }
+
+/* تفاصيل الخدمات السنية */
+.services-panel {
+    border: 1.2px solid var(--border-grid);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.services-title {
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px 6px;
+    padding: 5px 8px;
+    background: #ffffff;
+}
+
+.srv-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9.5px;
+    font-weight: 600;
+}
+
+.tooth-field {
+    display: flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-top: 1px dashed var(--border-grid);
+    background: #ffffff;
+}
+
+/* الشريط المالي المحاسبي المدمج */
+.ledger-strip {
+    background: var(--bg-strip);
+    border: 1.2px solid var(--border-grid);
+    border-radius: 5px;
+    padding: 5px 12px;
+    margin-bottom: 5px;
+}
+
+.ledger-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ledger-col {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ledger-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.ledger-line {
+    width: 80px;
+}
+
+.ledger-curr {
+    font-size: 9px;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.balance-tag {
+    color: #b91c1c;
+}
+
+.balance-val {
+    color: #b91c1c !important;
+}
+
+/* التوثيق والختم */
+.auth-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 4px;
+    padding: 0 2px;
+}
+
+.auth-box {
+    text-align: center;
+    width: 32%;
+}
+
+.auth-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.auth-signature-line {
+    border-bottom: 1.5px dashed var(--line);
+    margin-top: 22px;
+}
+
+.stamp-container {
+    width: 30%;
+    height: 46px;
+    border: 1.5px dashed var(--primary);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stamp-container span {
+    font-size: 8.5px;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+/* التذييل الرسمي */
+.receipt-footer {
+    border-top: 1.5px solid var(--primary);
+    padding-top: 3px;
+    text-align: center;
+}
+
+.thank-you {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 2px;
+}
+
+.footer-contacts {
+    display: flex;
+    justify-content: space-between;
+    font-size: 8.5px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.phones span {
+    font-weight: 700;
+}
+
+/* حقول الإدخال الرقمية */
+.live-input {
+    border: none;
+    border-bottom: 1.5px solid var(--primary);
+    outline: none;
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px;
+    padding: 1px 4px;
+    background: transparent;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.receipt-no-input { width: 85px; }
+.paid-val-input { width: 120px; font-size: 13px; font-weight: 800; }
+
+[data-mode="manual"] .digital-only { display: none !important; }
+[data-mode="digital"] .manual-only { display: none !important; }
+
+/* وضع الطباعة الصارم A5 */
+@media print {
+    body { background: #ffffff; padding: 0; }
+    .no-print { display: none !important; }
+    .receipt-wrapper { padding: 0; }
+    .receipt-container {
+        box-shadow: none !important;
+        width: 148mm;
+        height: 210mm;
+        padding: 6mm 8mm 5mm 8mm;
+    }
+}
