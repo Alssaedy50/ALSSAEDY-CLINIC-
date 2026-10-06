@@ -8,7 +8,7 @@ function setMode(mode) {
     
     // إذا كان إلكتروني، نضع تاريخ اليوم تلقائياً
     if (mode === 'digital' && !document.getElementById('digitalDate').value) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = localISODate();
         document.getElementById('digitalDate').value = today;
     }
 }
@@ -107,17 +107,17 @@ function calculateFinancials() {
     const total = parseFloat(document.getElementById('digitalTotal').value) || 0;
     
     document.getElementById('digitalPaidTable').value = paid;
-    const balance = Math.max(0, total - paid);
+    const balance = total - paid;
     document.getElementById('digitalBalance').value = balance;
 }
 
 // مشاركة السند عبر واتساب أو النظام المدمج
-function shareReceipt() {
+function localISODate() {\n    const now = new Date();\n    const offset = now.getTimezoneOffset();\n    return new Date(now.getTime() - offset * 60000).toISOString().slice(0, 10);\n}\n\nfunction shareReceipt() {
     const clientName = document.getElementById('digitalClientName').value || 'العميل الكريم';
     const paidAmount = document.getElementById('digitalPaidAmount').value || '0';
     const totalAmount = document.getElementById('digitalTotal').value || '0';
     const balance = document.getElementById('digitalBalance').value || '0';
-    const date = document.getElementById('digitalDate').value || new Date().toISOString().split('T')[0];
+    const date = document.getElementById('digitalDate').value || localISODate();
     const receiptNo = document.getElementById('digitalReceiptNo').value || '---';
 
     const msg = `*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*
