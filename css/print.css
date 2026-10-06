@@ -20,3 +20,7 @@ html[data-size="thermal"] .receipt-paper{width:80mm!important;min-width:80mm!imp
 }
 @page{size:148mm 210mm;margin:0!important}
 @page:first{margin:0!important}
+@media print{
+  .receipt-paper .date-sequence{font-size:9px!important;line-height:1!important;font-weight:700!important;}
+  .receipt-paper .main-voucher-title{font-size:calc(15px * var(--receipt-title-scale))!important;}
+}
