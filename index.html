@@ -80,7 +80,7 @@
                 <div class="meta-cell">
                     <div class="manual-only date-container" aria-label="التاريخ">
                         <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
-                        <span class="date-sequence editable" data-key="date_manual_display" dir="ltr" aria-label="تاريخ السند: يوم / شهر / سنة">__/__/202_م</span>
+                        <span class="date-sequence editable" data-key="date_manual_display" dir="ltr" aria-label="تاريخ السند: يوم / شهر / سنة">يوم/شهر/202_م</span>
                     </div>
                     <input type="date" class="digital-only live-input" id="digDate">
                 </div>
@@ -287,6 +287,15 @@
                     <input type="file" id="logoUploader" accept="image/*,.svg" style="display:none;" onchange="uploadLogo(event)">
                 </div>
 
+                <div class="setting-card logo-size-card">
+                    <h4>🖼️ حجم الشعار</h4>
+                    <p class="setting-help">تحكم مستقل بحجم الشعار مع الحفاظ على تمركزه وعدم التأثير على بيانات السند.</p>
+                    <div class="font-control-row compact-type-row">
+                        <button type="button" class="font-step" onclick="adjustLogoSize(-1)">−</button>
+                        <output id="logoSizeValue">100%</output>
+                        <button type="button" class="font-step" onclick="adjustLogoSize(1)">+</button>
+                    </div>
+                </div>
                 <div class="setting-card typography-card">
                     <h4>🔤 الخط وحجم النص والتناسق</h4>
                     <p class="setting-help">يمكن ضبط النص العادي والعناوين وعنوان السند بشكل مستقل، وتحفظ الإعدادات تلقائياً.</p>
