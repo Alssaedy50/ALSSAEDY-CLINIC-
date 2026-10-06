@@ -11,14 +11,21 @@ async function generateReceiptCanvas() {
     ensureLibraries();
     await document.fonts.ready;
     const receipt = document.getElementById('receiptPrintArea');
-    return withCaptureState(() => html2canvas(receipt, {
-        scale: 2.8,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        letterRendering: false
-    }));
+    const profile = getSizeProfile();
+    document.documentElement.style.setProperty('--export-width', profile.width);
+    document.documentElement.style.setProperty('--export-height', profile.height === 'auto' ? 'auto' : profile.height);
+    return withCaptureState(() => {
+        document.body.classList.add('exporting-receipt');
+        return html2canvas(receipt, {
+            scale: 4,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: false,
+            letterRendering: true,
+            imageTimeout: 15000
+        });
+    }).finally(() => document.body.classList.remove('exporting-receipt'));
 }
 
 async function downloadReceiptPDF() {
@@ -29,11 +36,14 @@ async function downloadReceiptPDF() {
         const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
         await document.fonts.ready;
         document.body.classList.add('is-capturing');
+        document.body.classList.add('exporting-receipt');
+        document.documentElement.style.setProperty('--export-width', profile.width);
+        document.documentElement.style.setProperty('--export-height', profile.height === 'auto' ? 'auto' : profile.height);
         const options = {
             margin: profile.pdfFormat === 'a5' ? 0 : 0,
             filename: 'سند_قبض_' + recNo + '.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2.8, useCORS: true, backgroundColor: '#ffffff' },
+            html2canvas: { scale: 4, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', imageTimeout: 15000 },
             jsPDF: { unit: 'mm', format: profile.pdfFormat, orientation: profile.orientation }
         };
         await html2pdf().set(options).from(receipt).save();
@@ -41,6 +51,7 @@ async function downloadReceiptPDF() {
         alert('حدث خطأ أثناء تنزيل ملف PDF: ' + err.message);
     } finally {
         document.body.classList.remove('is-capturing');
+        document.body.classList.remove('exporting-receipt');
     }
 }
 
