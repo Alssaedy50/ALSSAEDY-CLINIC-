@@ -46,6 +46,17 @@ function setReceiptFont(fontFamily) {
 function setReceiptScale(scale) {
     const safe=Math.min(1.35, Math.max(0.85, Number(scale)||1));
     document.documentElement.style.setProperty('--font-scale', safe);
+    const receipt=document.getElementById('receiptPrintArea');
+    if(receipt){
+        receipt.querySelectorAll('*').forEach(el=>{
+            if(!el.dataset.baseFontSize){
+                const px=parseFloat(getComputedStyle(el).fontSize);
+                if(Number.isFinite(px)) el.dataset.baseFontSize=String(px);
+            }
+            const base=parseFloat(el.dataset.baseFontSize);
+            if(Number.isFinite(base)) el.style.fontSize=(base*safe)+'px';
+        });
+    }
     localStorage.setItem('alssaedy_font_scale', String(safe));
     const el=document.getElementById('fontSizeValue'); if(el) el.textContent=Math.round(safe*100)+'%';
 }
