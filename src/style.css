@@ -98,3 +98,40 @@ html,body{margin:0!important;padding:0!important;background:#fff!important}.no-p
  .receipt-wrapper{display:block!important;overflow:visible!important;padding:0!important}
  .receipt-container{transform:none!important;margin:0!important;box-shadow:none!important}
 }
+
+/* NCR A5 print polish */
+.voucher-title .title-mark{display:none!important}
+.meta-card{background:#fff!important;border-color:#475569}
+.amount-card{background:#fff;border-color:var(--primary);border-radius:5px}
+.amount-number-box{position:relative;padding-left:38px;min-height:26px}
+.amount-number-box .currency{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:10px;font-weight:800;color:var(--primary);white-space:nowrap}
+.clean-date-boxes{min-width:116px;justify-content:flex-start;direction:ltr!important;unicode-bidi:isolate;padding:1px 0}
+.clean-date-boxes .date-slot{width:25px;height:18px}
+.clean-date-boxes .date-slot-sm{width:18px;height:18px}
+.clean-date-boxes .year-prefix{letter-spacing:0;direction:ltr;unicode-bidi:isolate}
+.finance-summary{display:grid;grid-template-columns:1fr;gap:0;border:1.5px solid #475569;border-radius:5px;overflow:hidden;background:#fff}
+.finance-item{min-height:32px;border:0!important;border-bottom:1px solid #64748b!important;border-radius:0;background:#fff!important;padding:5px 8px;display:grid;grid-template-columns:1fr 90px 46px;grid-template-rows:1fr;align-items:center;column-gap:8px}
+.finance-item:last-child{border-bottom:0!important}
+.finance-item.total,.finance-item.paid,.finance-item.balance{border-top:0!important}
+.finance-label{font-size:9.2px}
+.finance-en{grid-column:3;grid-row:1;text-align:left}
+.finance-input,.finance-blank{grid-column:2;grid-row:1;height:23px}
+.finance-currency{grid-column:3;grid-row:1;font-size:7px}
+.finance-blank{border-bottom:1.5px solid var(--primary)}
+.finance-input{text-align:center}
+.auth-section{grid-template-columns:1fr 1.35fr 1fr;gap:8px;margin-top:6px}
+.auth-box{min-height:52px}
+.stamp-container{min-height:52px;border-width:1.5px}
+.auth-line{margin-top:24px;border-bottom-color:#475569}
+.watermark-layer{opacity:.02}
+@media print{
+ .watermark-layer{opacity:0!important}
+ .receipt-container{padding:6.5mm 7mm 4.5mm!important;border:0!important}
+ .meta-card{background:#fff!important;border-color:#475569!important}
+ .amount-card{background:#fff!important}
+ .services-panel,.finance-summary{border-color:#475569!important}
+ .section-title{background:#073b63!important}
+ .finance-item{border-bottom-color:#475569!important}
+ .auth-box,.stamp-container{min-height:54px}
+ .receipt-footer{margin-top:3px;padding-top:3px}
+}
