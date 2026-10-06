@@ -626,3 +626,97 @@ body.is-editing .logo-hint {
         box-shadow: none !important;
     }
 }
+
+/* طباعة احترافية */
+@page receipt-a5 {
+    size: A5 portrait;
+    margin: 0;
+}
+@page receipt-a4 {
+    size: A4 portrait;
+    margin: 0;
+}
+@page receipt-thermal {
+    size: 80mm 190mm;
+    margin: 0;
+}
+
+@media print {
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+    }
+    body {
+        page: receipt-a5;
+    }
+    body[data-size="a4"] {
+        page: receipt-a4;
+    }
+    body[data-size="thermal"] {
+        page: receipt-thermal;
+    }
+    .receipt-wrapper {
+        display: block;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+    .receipt-container {
+        width: 148mm !important;
+        height: 210mm !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 8mm 9mm 6mm !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    body[data-size="a4"] .receipt-container {
+        width: 210mm !important;
+        height: 297mm !important;
+        padding: 14mm 16mm 12mm !important;
+    }
+    body[data-size="thermal"] .receipt-container {
+        width: 80mm !important;
+        height: 190mm !important;
+        min-height: 190mm !important;
+        padding: 4mm !important;
+    }
+    .editable {
+        outline: none !important;
+        background: transparent !important;
+    }
+    input {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    body {
+        padding: 6px;
+    }
+    .app-toolbar {
+        justify-content: flex-start;
+    }
+    .toolbar-section {
+        width: 100%;
+    }
+    .btn-group {
+        flex-wrap: wrap;
+    }
+    .receipt-wrapper {
+        justify-content: flex-start;
+    }
+    .receipt-container {
+        flex: 0 0 auto;
+    }
+}
+
+button:focus-visible,
+input:focus-visible,
+.logo-area:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+}
