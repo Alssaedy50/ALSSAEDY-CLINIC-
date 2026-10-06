@@ -1,3 +1,6 @@
+// تثبيت مسار الشعار الرسمي الدائم
+const OFFICIAL_LOGO_SRC = "Saedy_Dental_Logo.svg";
+
 function toggleDrawer(open) {
     document.getElementById('settingsPanel').classList.toggle('open', open);
 }
@@ -37,16 +40,23 @@ function adjustFontSize(delta) {
     document.getElementById('fontScaleLabel').innerText = currentScale + '%';
 }
 
+// تثبيت واستعادة الشعار
 function uploadLogo(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('clinicLogoImg').src = e.target.result;
-            localStorage.setItem('alssaedy_logo', e.target.result);
+            localStorage.setItem('alssaedy_custom_logo', e.target.result);
         };
         reader.readAsDataURL(file);
     }
+}
+
+function resetOfficialLogo() {
+    localStorage.removeItem('alssaedy_custom_logo');
+    document.getElementById('clinicLogoImg').src = OFFICIAL_LOGO_SRC;
+    alert('تمت استعادة الشعار الرسمي الافتراضي للعيادة بنجاح.');
 }
 
 function uploadBg(event) {
@@ -81,22 +91,7 @@ function toggleEditMode() {
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    const savedTexts = localStorage.getItem('alssaedy_texts');
-    if (savedTexts) {
-        try {
-            const data = JSON.parse(savedTexts);
-            document.querySelectorAll('.editable').forEach(el => {
-                if (data[el.dataset.key]) el.innerText = data[el.dataset.key];
-            });
-        } catch(e){}
-    }
-    const savedLogo = localStorage.getItem('alssaedy_logo');
-    if (savedLogo) document.getElementById('clinicLogoImg').src = savedLogo;
-    const savedBg = localStorage.getItem('alssaedy_bg');
-    if (savedBg) document.getElementById('watermarkLayer').style.backgroundImage = `url('${savedBg}')`;
-});
-
+// الحساب المالي
 function calculateLedger() {
     const paid = parseFloat(document.getElementById('digPaid').value) || 0;
     const total = parseFloat(document.getElementById('digTotal').value) || 0;
@@ -104,8 +99,39 @@ function calculateLedger() {
     document.getElementById('digBalance').value = Math.max(0, total - paid);
 }
 
+// توليد صورة عالية الدقة 300 DPI
+async function generateReceiptCanvas() {
+    const receipt = document.getElementById('receiptPrintArea');
+    return await html2canvas(receipt, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+    });
+}
+
+async function downloadReceiptImage() {
+    try {
+        const canvas = await generateReceiptCanvas();
+        const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
+        const link = document.createElement('a');
+        link.download = `سند_قبض_${recNo}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+    } catch(e) {
+        alert('تعذر إنشاء الصورة: ' + e.message);
+    }
+}
+
+// النوافذ والمشاركة
 function openShareModal() { document.getElementById('shareModal').classList.add('open'); }
 function closeShareModal() { document.getElementById('shareModal').classList.remove('open'); }
+function openHistoryModal() {
+    renderHistory();
+    document.getElementById('historyModal').classList.add('open');
+}
+function closeHistoryModal() { document.getElementById('historyModal').classList.remove('open'); }
 
 function getReceiptText() {
     const name = document.getElementById('digClientName').value || 'العميل الكريم';
@@ -129,18 +155,146 @@ function getReceiptText() {
 +967 716 339 366`;
 }
 
-function shareWhatsApp() {
+function shareWhatsAppText() {
     closeShareModal();
     const text = getReceiptText();
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+async function shareReceiptImage() {
+    closeShareModal();
+    try {
+        const canvas = await generateReceiptCanvas();
+        canvas.toBlob(async (blob) => {
+            if (!blob) return shareWhatsAppText();
+            const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
+            const file = new File([blob], `سند_قبض_${recNo}.png`, { type: 'image/png' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'سند قبض مالي',
+                    text: getReceiptText()
+                });
+            } else {
+                downloadReceiptImage();
+                setTimeout(shareWhatsAppText, 1000);
+            }
+        }, 'image/png', 1.0);
+    } catch(e) {
+        shareWhatsAppText();
+    }
 }
 
 function copyReceiptText() {
     closeShareModal();
     const text = getReceiptText();
     navigator.clipboard.writeText(text).then(() => {
-        alert('تم نسخ بيانات السند بنجاح!');
-    }).catch(() => {
-        alert(text);
-    });
+        alert('تم نسخ بيانات السند إلى الحافظة بنجاح.');
+    }).catch(() => { alert(text); });
 }
+
+// نظام الحفظ المحلي وسجل الفواتير
+function saveReceiptLocally() {
+    const recNo = document.getElementById('digReceiptNo').value || ('REC-' + Math.floor(100 + Math.random()*900));
+    const record = {
+        id: Date.now(),
+        recNo: recNo,
+        date: document.getElementById('digDate').value || new Date().toISOString().split('T')[0],
+        name: document.getElementById('digClientName').value || 'مريض بدون اسم',
+        paid: document.getElementById('digPaid').value || '0',
+        total: document.getElementById('digTotal').value || '0',
+        balance: document.getElementById('digBalance').value || '0',
+        tooth: document.getElementById('digTooth').value || '',
+        tafqeet: document.getElementById('digTafqeet').value || ''
+    };
+
+    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    history.unshift(record);
+    localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
+    updateHistoryCount();
+    alert('تم حفظ السند في السجل المحلي بنجاح.');
+}
+
+function updateHistoryCount() {
+    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    const badge = document.getElementById('historyCount');
+    if (badge) badge.innerText = history.length;
+}
+
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    const container = document.getElementById('historyList');
+    if (!history.length) {
+        container.innerHTML = '<p style="text-align:center; padding:15px; color:#64748b; font-size:11px;">لا توجد سندات محفوظة حتى الآن.</p>';
+        return;
+    }
+
+    container.innerHTML = history.map(item => `
+        <div class="history-item">
+            <div class="history-item-info">
+                <strong>${item.name} (${item.recNo})</strong>
+                <small>التاريخ: ${item.date} | المدفوع: ${item.paid} ريال | المتبقي: ${item.balance} ريال</small>
+            </div>
+            <div class="history-item-btns">
+                <button type="button" onclick="loadReceipt(${item.id})">📥 استرجاع</button>
+                <button type="button" onclick="deleteReceipt(${item.id})" style="color:#b91c1c;">✕</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadReceipt(id) {
+    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    const item = history.find(r => r.id === id);
+    if (!item) return;
+
+    setMode('digital');
+    document.getElementById('digReceiptNo').value = item.recNo;
+    document.getElementById('digDate').value = item.date;
+    document.getElementById('digClientName').value = item.name;
+    document.getElementById('digPaid').value = item.paid;
+    document.getElementById('digTotal').value = item.total;
+    document.getElementById('digBalance').value = item.balance;
+    document.getElementById('digTooth').value = item.tooth;
+    document.getElementById('digTafqeet').value = item.tafqeet;
+    calculateLedger();
+    closeHistoryModal();
+}
+
+function deleteReceipt(id) {
+    let history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    history = history.filter(r => r.id !== id);
+    localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
+    renderHistory();
+    updateHistoryCount();
+}
+
+function clearAllHistory() {
+    if (confirm('هل أنت متأكد من رغبتك في حذف كامل سجل السندات المحفوظة؟')) {
+        localStorage.removeItem('alssaedy_receipts_history');
+        renderHistory();
+        updateHistoryCount();
+    }
+}
+
+// التهيئة عند التحميل
+window.addEventListener('DOMContentLoaded', () => {
+    // استعادة الشعار الرسمي المعتمد
+    const customLogo = localStorage.getItem('alssaedy_custom_logo');
+    document.getElementById('clinicLogoImg').src = customLogo || OFFICIAL_LOGO_SRC;
+
+    const savedBg = localStorage.getItem('alssaedy_bg');
+    if (savedBg) document.getElementById('watermarkLayer').style.backgroundImage = `url('${savedBg}')`;
+
+    const savedTexts = localStorage.getItem('alssaedy_texts');
+    if (savedTexts) {
+        try {
+            const data = JSON.parse(savedTexts);
+            document.querySelectorAll('.editable').forEach(el => {
+                if (data[el.dataset.key]) el.innerText = data[el.dataset.key];
+            });
+        } catch(e){}
+    }
+    updateHistoryCount();
+});
