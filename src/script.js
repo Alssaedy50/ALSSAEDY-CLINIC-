@@ -1,4 +1,6 @@
-const STORAGE_KEY='alssaedy_receipt_state_v6';
+const STORAGE_KEY='alssaedy_receipt_state_v7';
+const THEME_SYNC_KEY='alssaedy_theme_cache_v1';
+const THEME_API=(window.ALSSAEDY_THEME_API||'/api/theme');
 let isEditing=false;
 
 function localISODate(){const now=new Date(),offset=now.getTimezoneOffset();return new Date(now.getTime()-offset*60000).toISOString().slice(0,10)}
@@ -8,20 +10,7 @@ function getState(){
  const texts={};document.querySelectorAll('.editable').forEach(el=>{if(el.dataset.key)texts[el.dataset.key]=el.textContent});
  return {version:6,orientation:document.body.dataset.orientation||'portrait',fontFamily:document.documentElement.dataset.fontFamily||'Cairo',fontScale:document.documentElement.dataset.fontScale||'1',textColor:document.documentElement.dataset.textColor||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts,logo:document.getElementById('clinicLogoImg')?.src||'',watermark:document.getElementById('watermarkLayer')?.style.backgroundImage||''}
 }
-function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getState()))}catch(e){console.error('Unable to save receipt state:',e)}}
-function applySavedState(){
- let state;try{state=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch(e){return}
- if(!state||![4,5,6].includes(state.version))return;
- if(state.mode)setMode(state.mode,false);if(state.size)setSize(state.size,false);if(state.theme)setTheme(state.theme,false);if(state.orientation)setOrientation(state.orientation,false);if(state.fontFamily)setFontFamily(state.fontFamily,false);if(state.fontScale)setFontScale(Number.parseFloat(state.fontScale)||1,false);if(state.textColor)setTextColor(state.textColor,false);
- Object.entries(state.inputs||{}).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value});
- const checks=document.querySelectorAll('.check-interactive');(state.checks||[]).forEach((saved,i)=>{if(checks[i])checks[i].checked=!!saved.checked});
- Object.entries(state.texts||{}).forEach(([key,value])=>{const el=document.querySelector('.editable[data-key="'+CSS.escape(key)+'"]');if(el)el.textContent=value});
- const logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');
- if(state.logo&&logo)logo.src=state.logo;
- if(state.watermark&&watermark)watermark.style.backgroundImage=state.watermark;
- setDefaultWatermark();
- calculateFinancials(false);
-}
+function saveState(){try{const state=getState();localStorage.setItem(STORAGE_KEY,JSON.stringify(state));localStorage.setItem(THEME_SYNC_KEY,JSON.stringify({updatedAt:Date.now(),state}))}catch(e){console.error('Unable to save receipt state:',e)}}
 function setMode(mode,persist=true){document.body.dataset.mode=mode;document.getElementById('btnModeManual').classList.toggle('active',mode==='manual');document.getElementById('btnModeDigital').classList.toggle('active',mode==='digital');if(mode==='digital'){const d=document.getElementById('digitalDate');if(d&&!d.value)d.value=localISODate()}if(persist)saveState()}
 function setSize(size,persist=true){document.body.dataset.size=size;const orientation=document.body.dataset.orientation||'portrait';document.body.style.page=size==='thermal'?'receipt-thermal':size+'-'+orientation;['a5','a4','thermal'].forEach(s=>document.getElementById('btnSize'+s[0].toUpperCase()+s.slice(1)).classList.toggle('active',s===size));if(persist)saveState()}
 function setTheme(theme,persist=true){document.body.dataset.theme=theme;document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));if(persist)saveState()}
@@ -75,28 +64,8 @@ function cloneForExport(){
  clone.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));
  return clone;
 }
-async function receiptPNG(){
- const source=document.getElementById('receiptPrintArea'),node=cloneForExport();
- const rect=source.getBoundingClientRect(),width=Math.max(1,Math.round(rect.width)),height=Math.max(1,Math.round(rect.height));
- node.style.width=width+'px';node.style.height=height+'px';node.style.margin='0';node.style.boxShadow='none';node.style.border='0';
- const holder=document.createElement('div');holder.style.cssText='position:fixed;left:-100000px;top:0;width:'+width+'px;height:'+height+'px;background:#fff;z-index:-1';holder.appendChild(node);document.body.appendChild(holder);
- try{
-  if(typeof html2canvas!=='undefined'){
-   const canvas=await html2canvas(node,{scale:4,useCORS:true,allowTaint:false,backgroundColor:'#fff',width,height,windowWidth:width,windowHeight:height});
-   return await new Promise(resolve=>canvas.toBlob(resolve,'image/png',1));
-  }
-  throw new Error('html2canvas unavailable');
- }finally{holder.remove()}
-}
-async function shareReceiptImage(){
- closeShareMenu();
- try{
-  const blob=await receiptPNG();const file=new File([blob],'ALSSAEDY-Receipt.png',{type:'image/png'});
-  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'سند قبض - عيادة السعيدي'});return}
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
-  alert('تم إنشاء صورة عالية الدقة. اختر WhatsApp من مشاركة الجهاز إذا ظهر، أو أرفق الصورة يدويًا.');
- }catch(e){console.error(e);alert('تعذر إنشاء صورة السند على هذا المتصفح.')}
-}
+async function receiptPNG(type='png'){const source=document.getElementById('receiptPrintArea'),node=cloneForExport(),r=source.getBoundingClientRect();const width=Math.max(1,Math.round(r.width)),height=Math.max(1,Math.round(r.height));node.style.width=width+'px';node.style.height=height+'px';node.style.margin='0';node.style.boxShadow='none';node.style.border='0';const holder=document.createElement('div');holder.style.cssText='position:fixed;left:-100000px;top:0;width:'+width+'px;height:'+height+'px;background:#fff;z-index:-1';holder.appendChild(node);document.body.appendChild(holder);try{await document.fonts?.ready;const canvas=await html2canvas(node,{scale:4,useCORS:true,allowTaint:false,backgroundColor:'#fff',width,height,windowWidth:width,windowHeight:height,scrollX:0,scrollY:0});return await new Promise(resolve=>canvas.toBlob(resolve,type==='jpeg'?'image/jpeg':'image/png',1))}finally{holder.remove()}}
+async function shareReceiptImage(){closeShareMenu();closeActionPanels();try{const blob=await receiptPNG('png'),file=new File([blob],'ALSSAEDY-Receipt.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'سند قبض - عيادة السعيدي'});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);if(/Android|iPhone|iPad/i.test(navigator.userAgent))alert('تم تحميل الصورة. افتح مشاركة الجهاز واختر WhatsApp لإرسالها.')}catch(e){console.error(e);alert('تعذر إنشاء صورة السند.')}}
 function printReceipt(){window.print()}
 function downloadPDF(){window.print()}
 async function shareReceiptPDF(){
@@ -104,10 +73,7 @@ async function shareReceiptPDF(){
  if(typeof html2pdf==='undefined'){window.print();return}
  try{
   const element=cloneForExport();
-  const size=document.body.dataset.size||'a5';
-  const formats={a5:[148,210],a4:[210,297],thermal:[80,190]};
-  const format=formats[size]||formats.a5;
-  const opt={margin:0,filename:'ALSSAEDY-Receipt.pdf',image:{type:'jpeg',quality:.96},html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},jsPDF:{unit:'mm',format,orientation:'portrait'}};
+  const d=exportDimensions();const opt={margin:0,filename:'ALSSAEDY-Receipt.pdf',image:{type:'png',quality:1},html2canvas:{scale:4,useCORS:true,allowTaint:false,backgroundColor:'#fff'},jsPDF:{unit:'mm',format:[d.width,d.height],orientation:d.orientation}};
   const pdfBlob=await html2pdf().set(opt).from(element).toPdf().outputPdf('blob');
   const file=new File([pdfBlob],'ALSSAEDY-Receipt.pdf',{type:'application/pdf'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'سند قبض - عيادة السعيدي'});return}
@@ -120,7 +86,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('fontFamilyControl')?.addEventListener('change',e=>setFontFamily(e.target.value));
  document.getElementById('fontSizeControl')?.addEventListener('input',e=>setFontScale(Number(e.target.value)/100));
  const logo=document.getElementById('logoUploader'),bg=document.getElementById('bgUploader');logo?.addEventListener('change',uploadLogo);bg?.addEventListener('change',uploadBackground);
- applySavedState();setDefaultWatermark();if(!document.body.dataset.orientation)setOrientation('portrait',false);
+ applySavedState();setDefaultWatermark();loadRemoteTheme();if(!document.body.dataset.orientation)setOrientation('portrait',false);
  document.querySelectorAll('.live-input').forEach(el=>{el.addEventListener('input',()=>{if(el.id==='digitalPaidAmount'||el.id==='digitalTotal')calculateFinancials(false);saveState()});el.addEventListener('change',saveState)});
  document.querySelectorAll('.check-interactive').forEach(el=>el.addEventListener('change',saveState));
  document.querySelectorAll('.editable').forEach(el=>{
@@ -130,3 +96,6 @@ window.addEventListener('DOMContentLoaded',()=>{
  const date=document.getElementById('digitalDate');if(date&&!date.value)date.value=localISODate();
  setSize(document.body.dataset.size||'a5',false);setTheme(document.body.dataset.theme||'classic',false);calculateFinancials(false);saveState();
 });
+async function loadRemoteTheme(){try{const r=await fetch(THEME_API,{cache:'no-store'});if(!r.ok)return;const p=await r.json();const s=p?.state;if(!s)return;localStorage.setItem(STORAGE_KEY,JSON.stringify({...s,version:7}));applyStateObject(s)}catch(e){console.info('Remote theme unavailable; local state retained')}}
+function applyStateObject(s){if(s.mode)setMode(s.mode,false);if(s.size)setSize(s.size,false);if(s.theme)setTheme(s.theme,false);if(s.orientation)setOrientation(s.orientation,false);if(s.fontFamily)setFontFamily(s.fontFamily,false);if(s.fontScale)setFontScale(Number(s.fontScale)||1,false);if(s.textColor)setTextColor(s.textColor,false);Object.entries(s.inputs||{}).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.value=v});(s.checks||[]).forEach((x,i)=>{const e=document.querySelectorAll('.check-interactive')[i];if(e)e.checked=!!x.checked});Object.entries(s.texts||{}).forEach(([k,v])=>{const e=document.querySelector('.editable[data-key="'+CSS.escape(k)+'"]');if(e)e.textContent=v});const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');if(s.logo&&l)l.src=s.logo;if(s.watermark&&w)w.style.backgroundImage=s.watermark;calculateFinancials(false)}
+async function syncThemeToServer(){try{const r=await fetch(THEME_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:getState()})});if(!r.ok)throw new Error('sync failed')}catch(e){console.info('Theme sync unavailable; saved locally')}}
