@@ -33,19 +33,19 @@
         <div class="toolbar-section">
             <span class="tool-title">المظهر:</span>
             <div class="btn-group">
-                <button type="button" class="tool-btn active" onclick="setTheme('classic')">كحلي رسمي</button>
-                <button type="button" class="tool-btn" onclick="setTheme('modern')">تركواز طبي</button>
-                <button type="button" class="tool-btn" onclick="setTheme('mono')">أبيض/أسود (اقتصادي)</button>
+                <button type="button" class="tool-btn theme-btn active" data-theme="classic">كحلي رسمي</button>
+                <button type="button" class="tool-btn theme-btn" data-theme="modern">تركواز طبي</button>
+                <button type="button" class="tool-btn theme-btn" data-theme="mono">أبيض/أسود (اقتصادي)</button>
             </div>
             <label class="custom-bg-label">
                 📷 خلفية/علامة:
-                <input type="file" id="bgUploader" accept="image/*" onchange="uploadBackground(event)">
+                <input type="file" id="bgUploader" accept="image/*" aria-label="رفع خلفية أو علامة مائية">
             </label>
         </div>
 
         <div class="toolbar-section actions-group">
             <button type="button" class="action-btn edit-btn" id="btnEdit" onclick="toggleEditMode()">✏️ تعديل النصوص والشعار</button>
-            <input type="file" id="logoUploader" accept="image/*" style="display:none;" onchange="uploadLogo(event)">
+            <input type="file" id="logoUploader" accept="image/*" style="display:none;" aria-label="رفع شعار العيادة">
             <button type="button" class="action-btn share-btn" id="btnShare" onclick="shareReceipt()">📲 مشاركة السند للعميل</button>
             <button type="button" class="action-btn print-btn" onclick="window.print()">🖨️ طباعة / تصدير PDF</button>
         </div>
@@ -112,7 +112,7 @@
                     <div class="amount-number-box">
                         <span class="amount-tag">المبلغ المدفوع:</span>
                         <div class="manual-only blank-box"></div>
-                        <input type="number" class="digital-only live-input bold-number" id="digitalPaidAmount" placeholder="0" oninput="calculateFinancials()">
+                        <input type="number" class="digital-only live-input bold-number" id="digitalPaidAmount" placeholder="0" inputmode="decimal" aria-label="المبلغ المدفوع">
                         <span class="currency">ريال يمني (YER)</span>
                     </div>
                 </div>
@@ -127,11 +127,11 @@
                 <div class="payment-method-row">
                     <span class="field-label">طريقة الدفع:</span>
                     <label class="check-item">
-                        <input type="checkbox" class="digital-only check-interactive">
+                        <input type="radio" class="digital-only check-interactive" name="paymentMethod" value="cash" aria-label="نقداً">
                         <span class="box-check manual-only"></span> نقداً <span class="en-sub" dir="ltr">(Cash)</span>
                     </label>
                     <label class="check-item">
-                        <input type="checkbox" class="digital-only check-interactive">
+                        <input type="radio" class="digital-only check-interactive" name="paymentMethod" value="wallet-bank" aria-label="محفظة أو بنك">
                         <span class="box-check manual-only"></span> محفظة / بنك
                     </label>
                     <span class="field-label ref-label">المرجع:</span>
@@ -177,17 +177,21 @@
                         <tr>
                             <td>إجمالي الحساب <span class="en-sub-table" dir="ltr">(Total)</span></td>
                             <td class="manual-only blank-cell"></td>
-                            <td class="digital-only"><input type="number" class="live-input num-cell" id="digitalTotal" placeholder="0" oninput="calculateFinancials()"></td>
+                            <td class="digital-only"><input type="number" class="digital-only live-input num-cell" id="digitalTotal" placeholder="0" inputmode="decimal"></td>
                         </tr>
                         <tr>
                             <td>المدفوع حالياً <span class="en-sub-table" dir="ltr">(Paid)</span></td>
-                            <td class="manual-only blank-cell"></td>
-                            <td class="digital-only"><input type="number" class="live-input num-cell" id="digitalPaidTable" placeholder="0" readonly></td>
+                            <td>
+                                <span class="manual-only blank-cell"></span>
+                                <input type="number" class="digital-only live-input num-cell" id="digitalPaidTable" placeholder="0" readonly aria-label="المدفوع حالياً">
+                            </td>
                         </tr>
                         <tr>
                             <td>المتبقي <span class="en-sub-table" dir="ltr">(Balance)</span></td>
-                            <td class="manual-only blank-cell"></td>
-                            <td class="digital-only"><input type="number" class="live-input num-cell balance-field" id="digitalBalance" placeholder="0" readonly></td>
+                            <td>
+                                <span class="manual-only blank-cell"></span>
+                                <input type="number" class="digital-only live-input num-cell balance-field" id="digitalBalance" placeholder="0" readonly aria-label="المتبقي">
+                            </td>
                         </tr>
                     </tbody>
                 </table>
