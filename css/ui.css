@@ -372,3 +372,11 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 .dock-btn:hover {
     background: rgba(255, 255, 255, 0.18) !important;
 }
+
+/* DATA MANAGEMENT — compact professional controls */
+.data-management-card .tool-btn{min-height:32px}
+.data-management-card .setting-help{margin-bottom:8px}
+@media screen and (max-width:700px){
+  .data-management-card .grid-btns.two{grid-template-columns:1fr 1fr}
+  .data-management-card .tool-btn{font-size:10px}
+}
