@@ -2,7 +2,7 @@
     if (!window.Android) return;
 
     window.print = function () {
-        Android.printReceipt();
+        Android.printReceipt(typeof getSelectedSize === 'function' ? getSelectedSize() : 'a5');
     };
 
     window.open = function (url) {
