@@ -32,7 +32,7 @@ function toggleEditMode(){
 function triggerLogoUpload(){document.getElementById('logoUploader')?.click()}
 async function uploadLogo(event){
  const file=event.target.files?.[0];
- if(!file||!file.type.startsWith('image/')){event.target.value='';return}
+ const isImage=file&&(/^(image\/(png|jpeg|jpg|webp|gif|svg\+xml)|application\/svg\+xml)$/i.test(file.type)||/\.(png|jpe?g|webp|gif|svg)$/i.test(file.name||''));if(!isImage){event.target.value='';return}
  try{
   const url=URL.createObjectURL(file),logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');
   if(logo){logo.src=url;logo.dataset.objectUrl=url}
