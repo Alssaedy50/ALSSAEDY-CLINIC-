@@ -287,7 +287,7 @@ body {
     .custom-check-item{font-size:11px;white-space:normal;line-height:1.35}
     .check-box-icon{width:17px;height:17px;flex:0 0 17px}.check-mark{font-size:11px}
     .tooth-location-row{padding:7px 9px;min-height:36px}
-    .ledger-grid-wrap{grid-template-columns:1fr!important;gap:7px}
+    .ledger-grid-wrap{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px}
     .ledger-box{padding:8px 9px}.ledger-header{font-size:12px;margin-bottom:4px}
     .ledger-field{max-width:130px;font-size:13px}.currency-label{font-size:11px}
     .section-signatures{margin-bottom:8px;padding:0 2px;gap:7px}
@@ -328,3 +328,21 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
   .pay-opts-row .ref-label{margin-right:10px;}
   .pay-opts-row .payment-options-group{gap:10px;margin:0 4px;}
 }
+
+/* STABILITY LAYER v1 — protected receipt architecture. */
+:root{--receipt-a5-width:148mm;--receipt-a5-height:210mm;--receipt-a5-print-width:145.04mm;--receipt-a5-print-height:205.8mm}
+.receipt-paper,.receipt-paper *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ar-date-flow{direction:rtl;unicode-bidi:isolate;white-space:nowrap}
+.ar-date-flow .date-blank,.ar-date-flow .slash,.ar-date-flow .year-block{unicode-bidi:isolate}
+.sig-title[data-key="rec_by_lbl"]{unicode-bidi:isolate;white-space:nowrap}
+.footer-meta-line{align-items:center;gap:8px}
+.footer-address{unicode-bidi:isolate}
+.footer-phones{direction:ltr;unicode-bidi:isolate;text-align:center;font-variant-numeric:tabular-nums}
+@media screen and (max-width:700px){
+ .ledger-grid-wrap{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+ .ledger-box{min-width:0;padding:8px 5px}.ledger-header{overflow-wrap:anywhere}.ledger-content{gap:3px;min-width:0}.ledger-field{min-width:0;max-width:100%!important}.currency-label{font-size:10px}
+ .site-navbar{position:sticky;top:0}.page-canvas-wrapper{padding-top:12px!important}
+ .pay-opts-row{flex-wrap:wrap;row-gap:7px}.pay-opts-row .ref-label{margin-right:0}.pay-opts-row .ref-dots{flex:1 1 90px;min-width:70px}
+ .footer-meta-line{flex-direction:column;gap:6px}.footer-address{text-align:center;width:100%}.footer-phones{width:100%;white-space:normal;line-height:1.45;padding:4px 7px}
+}
+@media print{.ar-date-flow{direction:rtl!important;unicode-bidi:isolate!important}}
