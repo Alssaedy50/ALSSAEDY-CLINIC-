@@ -720,3 +720,61 @@ input:focus-visible,
     outline: 2px solid var(--teal);
     outline-offset: 2px;
 }
+
+
+/* ===== Professional receipt refinement V5 ===== */
+.app-toolbar { border: 1px solid #dbe3ec; }
+.logo-btn { background: #6366f1; color: #fff; }
+.logo-btn:hover, .edit-btn:hover, .share-btn:hover, .print-btn:hover { filter: brightness(0.96); }
+
+.receipt-container { border: 1px solid #dbe3ec; overflow: hidden; }
+.receipt-header { min-height: 56px; padding-bottom: 7px; border-bottom-width: 2.5px; }
+.logo-area { width: 58px; height: 58px; flex: 0 0 58px; border: 1px solid #dbe3ec; border-radius: 8px; background: #fff; }
+.clinic-logo { width: 52px; height: 52px; }
+.logo-area:hover { border-color: var(--teal); background: #f8fafc; }
+
+.voucher-title { margin: 5px 0 4px; padding: 3px 0; border-bottom: 1px solid #dbe3ec; }
+.voucher-title h1 { font-size: 17px; }
+
+.amount-card {
+    background: linear-gradient(180deg, #f8fbfd 0%, #eef7fa 100%);
+    border-width: 1.8px; border-radius: 7px; padding: 6px 10px; margin: 5px 0;
+}
+.bold-number { font-size: 15px; height: 25px; }
+
+.services-panel { border-width: 1.3px; border-radius: 6px; }
+.section-title { padding: 4px 8px; font-size: 9.5px; }
+.services-grid { gap: 4px 7px; padding: 5px 8px; }
+.service-box { min-height: 17px; }
+
+.finance-table { font-size: 10px; }
+.finance-table th { padding: 4px 7px; font-size: 9.5px; }
+.finance-table td { padding: 4px 7px; }
+.finance-table tbody tr:last-child td { font-weight: 800; background: #f8fafc; }
+.finance-table tbody tr:last-child td:last-child { font-size: 11px; }
+
+.auth-section { margin-top: 6px; gap: 8px; }
+.auth-box { min-height: 43px; }
+.stamp-container { min-height: 43px; }
+
+.receipt-footer { margin-top: 5px; padding-top: 5px; }
+.thank-you { font-size: 8.8px; margin-bottom: 4px; }
+.footer-details { display: flex; flex-direction: column; gap: 4px; align-items: stretch; font-size: 8.3px; }
+.address-row { display: flex; justify-content: center; align-items: center; gap: 4px; }
+.footer-label { color: var(--primary); font-weight: 800; }
+
+.phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; direction: ltr; }
+.phone-item {
+    display: flex; justify-content: center; align-items: center; min-height: 20px;
+    padding: 2px 3px; border: 1px solid #cbd5e1; border-radius: 4px;
+    background: #f8fafc; color: var(--primary); font-family: 'Montserrat', sans-serif;
+    font-size: 8.4px; font-weight: 700; white-space: nowrap;
+}
+@media screen and (max-width: 700px) {
+    .phones { grid-template-columns: 1fr; }
+    .phone-item { min-height: 25px; font-size: 10px; }
+}
+@media print {
+    .receipt-container { border: none !important; }
+    .phone-item { background: #fff !important; border-color: #64748b !important; color: #111827 !important; }
+}
