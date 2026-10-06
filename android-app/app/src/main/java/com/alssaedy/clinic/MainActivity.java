@@ -5,6 +5,8 @@ import android.app.PrintManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -109,6 +111,13 @@ public class MainActivity extends Activity {
                 intent.putExtra(Intent.EXTRA_TEXT, text == null ? "" : text);
                 startActivity(Intent.createChooser(intent, "إرسال سند القبض"));
             });
+        }
+
+        @JavascriptInterface
+        public void copyText(String text) {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("ALSSAEDY", text == null ? "" : text));
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, "تم نسخ بيانات السند إلى الحافظة.", Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
