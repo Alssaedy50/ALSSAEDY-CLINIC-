@@ -156,3 +156,19 @@ html,body{margin:0!important;padding:0!important;background:#fff!important}.no-p
 }
 body[data-language="en"] .arabic-only{display:none!important}
 body[data-language="ar"] .english-only{display:none!important}
+
+.date-en{display:none;direction:ltr;unicode-bidi:isolate}
+body[data-language="en"] .date-ar{display:none!important}
+body[data-language="en"] .date-en{display:inline!important}
+body[data-language="ar"] .date-ar{display:inline!important}
+body[data-language="ar"] .date-en{display:none!important}
+body[data-language="en"] .receipt-container{direction:ltr}
+body[data-language="en"] .receipt-header{direction:ltr}
+body[data-language="en"] .details-section,
+body[data-language="en"] .services-panel,
+body[data-language="en"] .finance-panel,
+body[data-language="en"] .auth-section,
+body[data-language="en"] .receipt-footer{direction:ltr}
+body[data-language="en"] .field-row,
+body[data-language="en"] .payment-method-row,
+body[data-language="en"] .service-extra{direction:ltr}
