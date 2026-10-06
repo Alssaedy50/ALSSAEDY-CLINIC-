@@ -1,11 +1,6 @@
-const STORAGE_KEY='alssaedy_receipt_state_v7';
-const THEME_SYNC_KEY='alssaedy_theme_cache_v1';
-const THEME_API=(window.ALSSAEDY_THEME_API||'https://alssaedy-clinic.alssaedy500.workers.dev/api/theme');
-let syncTimer=null;
-let applyingRemoteTheme=false;
+const STORAGE_KEY='alssaedy_receipt_state_v8';
 let isEditing=false;
 let bootstrapDone=false;
-const MAX_UPLOAD_BYTES=3*1024*1024;
 const ASSET_DB='alssaedy_receipt_assets_v1';
 function assetDB(){return new Promise((resolve,reject)=>{if(!window.indexedDB)return reject(new Error('IndexedDB unavailable'));const r=indexedDB.open(ASSET_DB,1);r.onupgradeneeded=()=>r.result.createObjectStore('assets');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function saveLocalAsset(key,value){try{const db=await assetDB();await new Promise((resolve,reject)=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').put(value,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){console.info('Local asset storage unavailable')}}
@@ -16,16 +11,9 @@ function getState(){
  const inputs={};document.querySelectorAll('.live-input').forEach(el=>{if(el.id)inputs[el.id]=el.value});
  const checks=Array.from(document.querySelectorAll('.check-interactive')).map(el=>({name:el.name||'',value:el.value||'',checked:el.checked}));
  const texts={};document.querySelectorAll('.editable').forEach(el=>{if(el.dataset.key)texts[el.dataset.key]=el.textContent});
- return {version:7,orientation:document.body.dataset.orientation||'portrait',fontFamily:document.documentElement.dataset.fontFamily||'Cairo',fontScale:document.documentElement.dataset.fontScale||'1',textColor:document.documentElement.dataset.textColor||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts,logo:/^data:/i.test(document.getElementById('clinicLogoImg')?.src||'')?'':(document.getElementById('clinicLogoImg')?.src||''),watermark:/data:/i.test(document.getElementById('watermarkLayer')?.style.backgroundImage||'')?'':(document.getElementById('watermarkLayer')?.style.backgroundImage||'')}
+ return {version:8,orientation:document.body.dataset.orientation||'portrait',fontFamily:document.documentElement.dataset.fontFamily||'Cairo',fontScale:document.documentElement.dataset.fontScale||'1',textColor:document.documentElement.dataset.textColor||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts};
 }
-function saveState(){
- try{
-  const state=getState(),updatedAt=Date.now();
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-  localStorage.setItem(THEME_SYNC_KEY,JSON.stringify({updatedAt,state}));
-  if(bootstrapDone){clearTimeout(syncTimer);syncTimer=setTimeout(()=>syncThemeToServer(),900)}
- }catch(e){console.error('Unable to save receipt state:',e)}
-}
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getState()))}catch(e){console.error('Unable to save receipt state:',e)}}
 function setMode(mode,persist=true){document.body.dataset.mode=mode;document.getElementById('btnModeManual').classList.toggle('active',mode==='manual');document.getElementById('btnModeDigital').classList.toggle('active',mode==='digital');if(mode==='digital'){const d=document.getElementById('digitalDate');if(d&&!d.value)d.value=localISODate()}if(persist)saveState()}
 function setSize(size,persist=true){document.body.dataset.size=size;const orientation=document.body.dataset.orientation||'portrait';document.body.style.page=size==='thermal'?'receipt-thermal':size+'-'+orientation;['a5','a4','thermal'].forEach(s=>document.getElementById('btnSize'+s[0].toUpperCase()+s.slice(1)).classList.toggle('active',s===size));if(persist)saveState()}
 function setTheme(theme,persist=true){document.body.dataset.theme=theme;document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===theme));if(persist)saveState()}
@@ -45,39 +33,25 @@ function triggerLogoUpload(){document.getElementById('logoUploader')?.click()}
 async function uploadLogo(event){
  const file=event.target.files?.[0];
  if(!file||!file.type.startsWith('image/')){event.target.value='';return}
- if(file.size>MAX_UPLOAD_BYTES){alert('حجم الشعار يتجاوز 3 MB. اختر شعارًا بحجم 3 MB أو أقل.');event.target.value='';return}
- const reader=new FileReader();
- reader.onload=async e=>{
-  const dataUrl=e.target.result,logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');
-  if(logo)logo.src=dataUrl;if(watermark)watermark.style.backgroundImage='url("'+dataUrl+'")';await saveLocalAsset('logo',dataUrl);saveState();
-  try{
-   const remoteUrl=await uploadThemeAsset(file,'logo');
-   if(remoteUrl){if(logo)logo.src=remoteUrl;if(watermark)watermark.style.backgroundImage='url("'+remoteUrl+'")';saveState()}
-  }catch(err){console.info('Remote logo sync unavailable; local logo retained')}
- };
- reader.readAsDataURL(file);
+ try{
+  const url=URL.createObjectURL(file),logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');
+  if(logo){logo.src=url;logo.dataset.objectUrl=url}
+  if(watermark){if(watermark.dataset.objectUrl)URL.revokeObjectURL(watermark.dataset.objectUrl);watermark.style.backgroundImage='url("' + url + '")';watermark.dataset.objectUrl=url}
+  await saveLocalAsset('logo',file);saveState();
+ }catch(err){console.error(err);alert('تعذر حفظ الشعار محليًا.')}
+ finally{event.target.value=''}
 }
-function uploadBackground(event){
+async function uploadBackground(event){
  const file=event.target.files?.[0];
  if(!file||!file.type.startsWith('image/')){event.target.value='';return}
- if(file.size>MAX_UPLOAD_BYTES){alert('حجم الخلفية يتجاوز 3 MB. اختر صورة بحجم 3 MB أو أقل.');event.target.value='';return}
- const reader=new FileReader();
- reader.onload=async e=>{
-  const dataUrl=e.target.result,watermark=document.getElementById('watermarkLayer');
-  if(watermark)watermark.style.backgroundImage='url("'+dataUrl+'")';await saveLocalAsset('background',dataUrl);saveState();
-  try{
-   const remoteUrl=await uploadThemeAsset(file,'background');
-   if(remoteUrl){if(watermark)watermark.style.backgroundImage='url("'+remoteUrl+'")';saveState()}
-  }catch(err){console.info('Remote background sync unavailable; local background retained')}
- };
- reader.readAsDataURL(file);
+ try{
+  const url=URL.createObjectURL(file),watermark=document.getElementById('watermarkLayer');
+  if(watermark){if(watermark.dataset.objectUrl)URL.revokeObjectURL(watermark.dataset.objectUrl);watermark.style.backgroundImage='url("' + url + '")';watermark.dataset.objectUrl=url}
+  await saveLocalAsset('background',file);saveState();
+ }catch(err){console.error(err);alert('تعذر حفظ الخلفية محليًا.')}
+ finally{event.target.value=''}
 }
-async function uploadThemeAsset(file,type){
- const r=await fetch(THEME_API.replace('/api/theme','/api/asset?type='+encodeURIComponent(type)),{method:'PUT',headers:{'Content-Type':file.type||'application/octet-stream'},body:file});
- if(!r.ok)throw new Error('asset upload failed: '+r.status);
- const data=await r.json();return data?.url||'';
-}
-function setDefaultWatermark(){const layer=document.getElementById('watermarkLayer');if(!layer||layer.style.backgroundImage)return;layer.style.backgroundImage='url("../assets/Saedy_Dental_Logo.svg")'}
+function setDefaultWatermarkfunction setDefaultWatermark(){const layer=document.getElementById('watermarkLayer');if(!layer||layer.style.backgroundImage)return;layer.style.backgroundImage='url("../assets/Saedy_Dental_Logo.svg")'}
 function calculateFinancials(persist=true){const paid=Number.parseFloat(document.getElementById('digitalPaidAmount').value)||0,total=Number.parseFloat(document.getElementById('digitalTotal').value)||0;document.getElementById('digitalPaidTable').value=paid;document.getElementById('digitalBalance').value=total-paid;if(persist)saveState()}
 function getPaymentMethod(){return document.querySelector('input[name="paymentMethod"]:checked')?.value||''}
 function receiptData(){
@@ -181,7 +155,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  document.getElementById('fontFamilyControl')?.addEventListener('change',e=>setFontFamily(e.target.value));
  document.getElementById('fontSizeControl')?.addEventListener('input',e=>setFontScale(Number(e.target.value)/100));
  const logo=document.getElementById('logoUploader'),bg=document.getElementById('bgUploader');logo?.addEventListener('change',uploadLogo);bg?.addEventListener('change',uploadBackground);
- applySavedState();setDefaultWatermark();if(!document.body.dataset.orientation)setOrientation('portrait',false);
+ restoreSavedState();setDefaultWatermark();if(!document.body.dataset.orientation)setOrientation('portrait',false);
  document.querySelectorAll('.live-input').forEach(el=>{el.addEventListener('input',()=>{if(el.id==='digitalPaidAmount'||el.id==='digitalTotal')calculateFinancials(false);saveState()});el.addEventListener('change',saveState)});
  document.querySelectorAll('.check-interactive').forEach(el=>el.addEventListener('change',saveState));
  document.querySelectorAll('.editable').forEach(el=>{
@@ -192,42 +166,28 @@ window.addEventListener('DOMContentLoaded',()=>{
  setSize(document.body.dataset.size||'a5',false);setTheme(document.body.dataset.theme||'classic',false);calculateFinancials(false);bootTheme();
 });
 
-async function migrateLegacyAssets(){const logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');if(logo?.src&&/^data:/i.test(logo.src))await saveLocalAsset('logo',logo.src);const bg=watermark?.style.backgroundImage||'';const m=bg.match(/^url\(["']?(data:[^"')]+)["']?\)$/i);if(m)await saveLocalAsset('background',m[1]);saveState()}
-async function loadLocalAssets(){const logo=await loadLocalAsset('logo'),bg=await loadLocalAsset('background');const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');if(logo&&l)l.src=logo;if(bg&&w)w.style.backgroundImage='url("'+bg+'")'}
-async function bootTheme(){try{await migrateLegacyAssets();await loadLocalAssets();await loadRemoteTheme()}finally{bootstrapDone=true}}
-async function loadRemoteTheme(){
- try{
-  const r=await fetch(THEME_API,{cache:'no-store'});if(!r.ok)return;
-  const remote=await r.json(),local=JSON.parse(localStorage.getItem(THEME_SYNC_KEY)||'null');
-  const remoteTime=Number(remote?.updatedAt||0),localTime=Number(local?.updatedAt||0);
-  if(remote?.state&&remoteTime>=localTime){
-   localStorage.setItem(STORAGE_KEY,JSON.stringify({...remote.state,version:7}));
-   localStorage.setItem(THEME_SYNC_KEY,JSON.stringify({updatedAt:remoteTime,state:remote.state}));
-   applyStateObject(remote.state);
-  }else if(local?.state&&localTime>remoteTime)await syncThemeToServer();
- }catch(e){console.info('Remote theme unavailable; local state retained')}
+async function migrateLegacyAssets(){
+ const logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');
+ if(logo?.src&&/^data:/i.test(logo.src)){try{const blob=await (await fetch(logo.src)).blob();await saveLocalAsset('logo',blob)}catch(e){}}
+ const bg=watermark?.style.backgroundImage||'',m=bg.match(/^url\(["']?(data:[^"')]+)["']?\)$/i);
+ if(m){try{const blob=await (await fetch(m[1])).blob();await saveLocalAsset('background',blob)}catch(e){}}
 }
+async function loadLocalAssets(){
+ const logo=await loadLocalAsset('logo'),bg=await loadLocalAsset('background');
+ const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');
+ if(logo&&l){const u=URL.createObjectURL(logo instanceof Blob?logo:new Blob([logo]));l.src=u;l.dataset.objectUrl=u}
+ if(bg&&w){const u=URL.createObjectURL(bg instanceof Blob?bg:new Blob([bg]));w.style.backgroundImage='url("' + u + '")';w.dataset.objectUrl=u}
+}
+async function bootTheme(){try{await migrateLegacyAssets();await loadLocalAssets()}catch(e){console.info('Local asset restore unavailable')}finally{bootstrapDone=true}}
 function applyStateObject(s){
- applyingRemoteTheme=true;
+ if(!s)return;
  try{
   if(s.mode)setMode(s.mode,false);if(s.size)setSize(s.size,false);if(s.theme)setTheme(s.theme,false);if(s.orientation)setOrientation(s.orientation,false);
   if(s.fontFamily)setFontFamily(s.fontFamily,false);if(s.fontScale)setFontScale(Number(s.fontScale)||1,false);if(s.textColor)setTextColor(s.textColor,false);
   Object.entries(s.inputs||{}).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.value=v});
   (s.checks||[]).forEach((x,i)=>{const e=document.querySelectorAll('.check-interactive')[i];if(e)e.checked=!!x.checked});
   Object.entries(s.texts||{}).forEach(([k,v])=>{const e=document.querySelector('.editable[data-key="'+CSS.escape(k)+'"]');if(e)e.textContent=v});
-  const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');
-  if(s.logo&&l)l.src=s.logo;if(s.watermark&&w)w.style.backgroundImage=s.watermark;
   calculateFinancials(false);
- }finally{applyingRemoteTheme=false}
+ }catch(e){console.error('State restore failed',e)}
 }
-async function syncThemeToServer(){
- if(applyingRemoteTheme)return;
- try{
-  const state=getState();
-  if(/^data:/i.test(state.logo||''))delete state.logo;
-  if(/^data:/i.test(state.watermark||''))delete state.watermark;
-  const updatedAt=Date.now(),r=await fetch(THEME_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({updatedAt,state})});
-  if(!r.ok)throw new Error('sync failed: '+r.status);
-  localStorage.setItem(THEME_SYNC_KEY,JSON.stringify({updatedAt,state:getState()}));
- }catch(e){console.info('Theme sync unavailable; saved locally')}
-}
+function restoreSavedState(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(s)applyStateObject(s)}catch(e){console.error('Saved state restore failed',e)}}
