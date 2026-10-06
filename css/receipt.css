@@ -412,3 +412,13 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .receipt-paper .date-sequence .date-sep{direction:ltr!important;}
 .receipt-paper .date-sequence .date-year{direction:ltr!important;}
 @media print{.receipt-paper .date-sequence{font-size:10px!important;}}
+
+
+/* FINAL DATE PRINT ISOLATION — 2026-10-07 */
+.date-cell {
+    unicode-bidi: isolate !important;
+}
+.date-cell .manual-only {
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+}
