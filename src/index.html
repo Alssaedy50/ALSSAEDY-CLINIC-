@@ -1,65 +1,132 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="classic" data-size="a5">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي</title>
+    <title>نظام سندات القبض - عيادة الدكتور صلاح الدين السعيدي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body data-mode="manual" data-size="a5">
+<body data-mode="manual">
 
-    <!-- شريط التحكم العلوي -->
-    <header class="no-print app-toolbar">
-        <div class="toolbar-brand">عيادة الدكتور صلاح الدين السعيدي — نظام السندات</div>
-        <div class="toolbar-controls">
-            <div class="mode-switch">
-                <button type="button" class="btn-tool active" id="btnModeManual" onclick="setMode('manual')">📋 دفتر ورقي للمطبعة</button>
-                <button type="button" class="btn-tool" id="btnModeDigital" onclick="setMode('digital')">💻 سند إلكتروني تفاعلي</button>
+    <!-- زر فتح الإعدادات الجانبية -->
+    <button type="button" class="no-print menu-toggle" onclick="toggleDrawer(true)" aria-label="فتح إعدادات السند">
+        ☰ <span>إعدادات السند</span>
+    </button>
+
+    <!-- الدرج الجانبي للإعدادات المتقدمة -->
+    <aside class="no-print settings-panel" id="settingsPanel">
+        <div class="settings-backdrop" onclick="toggleDrawer(false)"></div>
+        <div class="settings-drawer">
+            <div class="settings-head">
+                <div>
+                    <span class="settings-kicker">ALSSAEDY CLINIC</span>
+                    <h2>إعدادات السند</h2>
+                </div>
+                <button type="button" class="drawer-close" onclick="toggleDrawer(false)">×</button>
             </div>
-            <div class="action-buttons">
-                <button type="button" class="btn-action share-wa" onclick="shareWhatsApp()">📲 مشاركة واتساب</button>
-                <button type="button" class="btn-action print-doc" onclick="window.print()">🖨️ طباعة السند (A5)</button>
+            
+            <div class="settings-scroll">
+                <!-- نوع السند -->
+                <section class="settings-group">
+                    <h3>نوع السند</h3>
+                    <div class="control-grid two">
+                        <button type="button" class="tool-btn active" id="btnModeManual" onclick="setMode('manual')">📋 دفتر ورقي</button>
+                        <button type="button" class="tool-btn" id="btnModeDigital" onclick="setMode('digital')">💻 سند إلكتروني</button>
+                    </div>
+                </section>
+
+                <!-- المقاس -->
+                <section class="settings-group">
+                    <h3>المقاس</h3>
+                    <div class="control-grid three">
+                        <button type="button" class="tool-btn active" id="btnSizeA5" onclick="setSize('a5')">A5 (دفاتر)</button>
+                        <button type="button" class="tool-btn" id="btnSizeA4" onclick="setSize('a4')">A4</button>
+                        <button type="button" class="tool-btn" id="btnSizeThermal" onclick="setSize('thermal')">80mm</button>
+                    </div>
+                </section>
+
+                <!-- المظهر والألوان -->
+                <section class="settings-group">
+                    <h3>المظهر</h3>
+                    <div class="control-grid three">
+                        <button type="button" class="tool-btn active" id="themeClassic" onclick="setTheme('classic')">كحلي رسمي</button>
+                        <button type="button" class="tool-btn" id="themeModern" onclick="setTheme('modern')">تركواز طبي</button>
+                        <button type="button" class="tool-btn" id="themeMono" onclick="setTheme('mono')">اقتصادي</button>
+                    </div>
+                </section>
+
+                <!-- الخط وحجمه -->
+                <section class="settings-group">
+                    <h3>الخط وحجمه</h3>
+                    <select id="fontSelect" class="setting-select" onchange="setFont(this.value)">
+                        <option value="'Cairo', sans-serif">خط Cairo (الافتراضي الرسمي)</option>
+                        <option value="'Tajawal', sans-serif">خط Tajawal</option>
+                        <option value="'IBM Plex Sans Arabic', sans-serif">خط IBM Plex Sans</option>
+                    </select>
+                    <div class="font-size-row">
+                        <button type="button" class="tool-btn" onclick="adjustFontSize(-1)">A−</button>
+                        <span id="fontScaleLabel" style="font-size:10px; font-weight:700;">100%</span>
+                        <button type="button" class="tool-btn" onclick="adjustFontSize(1)">A+</button>
+                    </div>
+                </section>
+
+                <!-- الشعار والخلفية -->
+                <section class="settings-group">
+                    <h3>الشعار والعلامة المائية</h3>
+                    <div class="settings-actions">
+                        <button type="button" class="action-btn" onclick="document.getElementById('logoUploader').click()">🖼️ تغيير الشعار</button>
+                        <button type="button" class="action-btn" onclick="document.getElementById('bgUploader').click()">📷 علامة مائية</button>
+                    </div>
+                    <input type="file" id="logoUploader" accept="image/*,.svg" style="display:none;" onchange="uploadLogo(event)">
+                    <input type="file" id="bgUploader" accept="image/*,.svg" style="display:none;" onchange="uploadBg(event)">
+                </section>
+
+                <!-- التحرير المباشر -->
+                <section class="settings-group">
+                    <h3>التحرير المباشر</h3>
+                    <button type="button" class="action-btn edit-btn wide" id="btnEdit" onclick="toggleEditMode()">✏️ تعديل النصوص مباشرة</button>
+                </section>
             </div>
         </div>
-    </header>
+    </aside>
 
     <!-- حاوية السند الرئيسية -->
     <main class="receipt-wrapper">
         <div class="receipt-container" id="receiptPrintArea">
-            
+            <div class="watermark-layer" id="watermarkLayer"></div>
+
             <!-- ترويسة السند -->
             <header class="receipt-header">
                 <div class="meta-doc">
-                    <h2>د/.صلاح الدين السعيدي</h2>
-                    <p>لطب وجراحة الفم والأسنان</p>
+                    <h2 class="editable" data-key="doc_name">د/.صلاح الدين السعيدي</h2>
+                    <p class="editable" data-key="doc_spec">لطب وجراحة الفم والأسنان</p>
                 </div>
-                <div class="meta-logo">
-                    <img src="../assets/Saedy_Dental_Logo.svg" alt="شعار العيادة" class="clinic-logo">
+                <div class="meta-logo" onclick="document.getElementById('logoUploader').click()" title="انقر لتغيير الشعار">
+                    <img src="../assets/Saedy_Dental_Logo.svg" alt="شعار العيادة" id="clinicLogoImg" class="clinic-logo">
                 </div>
                 <div class="meta-clinic" dir="ltr">
-                    <h2>ALSSAEDY CLINIC FOR DENTISTRY</h2>
-                    <p>Dr. Salahaldeen Alssaedy</p>
+                    <h2 class="editable" data-key="clinic_en">ALSSAEDY CLINIC FOR DENTISTRY</h2>
+                    <p class="editable" data-key="doc_en">Dr. Salahaldeen Alssaedy</p>
                 </div>
             </header>
 
-            <!-- عنوان الوثيقة -->
+            <!-- عنوان السند -->
             <div class="voucher-title">
-                <h1>سند قبض مالي</h1>
+                <h1 class="editable" data-key="receipt_title">سند قبض مالي</h1>
             </div>
 
-            <!-- رقم السند والتاريخ العربي السليم -->
+            <!-- رقم السند والتاريخ العربي الأصيل -->
             <div class="meta-row">
                 <div class="meta-block">
-                    <span class="meta-label">رقم السند:</span>
+                    <span class="meta-label editable" data-key="receipt_no_lbl">رقم السند:</span>
                     <span class="manual-only dot-line receipt-no-line"></span>
                     <input type="text" class="digital-only live-input receipt-no-input" id="digReceiptNo" placeholder="001">
                 </div>
                 <div class="meta-block">
-                    <span class="meta-label">التاريخ:</span>
-                    <!-- تدفق عربي أصيل 100% من اليمين لليسار -->
+                    <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
                     <div class="manual-only ar-date-wrap">
                         <span class="date-slot" title="اليوم"></span>
                         <span class="date-slash">/</span>
@@ -74,38 +141,38 @@
             <!-- بيانات المريض والمبلغ -->
             <section class="patient-section">
                 <div class="field-row">
-                    <span class="field-label">استلمنا من السيد / ة:</span>
+                    <span class="field-label editable" data-key="client_lbl">استلمنا من السيد / ة:</span>
                     <span class="manual-only dot-line flex-fill"></span>
                     <input type="text" class="digital-only live-input flex-fill" id="digClientName" placeholder="اسم المريض الثلاثي">
                 </div>
 
                 <div class="paid-bar">
-                    <span class="paid-label">المبلغ المدفوع:</span>
+                    <span class="paid-label editable" data-key="paid_lbl">المبلغ المدفوع:</span>
                     <div class="manual-only paid-blank-line"></div>
                     <input type="number" class="digital-only live-input paid-val-input" id="digPaid" placeholder="0" oninput="calculateLedger()">
-                    <span class="currency-tag">ريال يمني</span>
+                    <span class="currency-tag editable" data-key="curr_lbl">ريال يمني</span>
                 </div>
 
                 <div class="field-row">
-                    <span class="field-label">مبلغاً وقدره (كتابة):</span>
+                    <span class="field-label editable" data-key="tafqeet_lbl">مبلغاً وقدره (كتابة):</span>
                     <span class="manual-only dot-line flex-fill"></span>
                     <input type="text" class="digital-only live-input flex-fill" id="digTafqeet" placeholder="المبلغ كتابة بالريال">
-                    <span class="manual-only field-suffix">ريالاً يمنياً فقط لا غير.</span>
+                    <span class="manual-only field-suffix editable" data-key="tafqeet_end">ريالاً يمنياً فقط لا غير.</span>
                 </div>
 
                 <div class="field-row payment-methods">
-                    <span class="field-label">طريقة الدفع:</span>
+                    <span class="field-label editable" data-key="pay_method_lbl">طريقة الدفع:</span>
                     <label class="check-opt"><span class="box-check manual-only"></span><input type="radio" class="digital-only" name="payMethod" checked> نقداً</label>
                     <label class="check-opt"><span class="box-check manual-only"></span><input type="radio" class="digital-only" name="payMethod"> محفظة / تحويل بنكي</label>
-                    <span class="field-label mr-ref">المرجع:</span>
+                    <span class="field-label mr-ref editable" data-key="ref_lbl">المرجع:</span>
                     <span class="manual-only dot-line ref-line"></span>
                     <input type="text" class="digital-only live-input ref-line" id="digRef" placeholder="رقم العملية الحسابية">
                 </div>
             </section>
 
-            <!-- تفاصيل الخدمات السنية (عربي كامل بدون تشويه إنجليزي) -->
+            <!-- تفاصيل الخدمات السنية (عربي كامل) -->
             <section class="services-panel">
-                <div class="services-title">تفاصيل الخدمة العلاجية المقدمة</div>
+                <div class="services-title editable" data-key="services_head">تفاصيل الخدمة العلاجية المقدمة</div>
                 <div class="services-grid">
                     <div class="srv-cell"><span class="box-check manual-only"></span><input type="checkbox" class="digital-only"> كشف ومعاينة</div>
                     <div class="srv-cell"><span class="box-check manual-only"></span><input type="checkbox" class="digital-only"> حشوات وتجميل</div>
@@ -118,7 +185,7 @@
                     <div class="srv-cell"><span class="box-check manual-only"></span><input type="checkbox" class="digital-only"> أخرى</div>
                 </div>
                 <div class="tooth-field">
-                    <span class="field-label">رقم السن أو الموضع:</span>
+                    <span class="field-label editable" data-key="tooth_lbl">رقم السن أو الموضع:</span>
                     <span class="manual-only dot-line flex-fill"></span>
                     <input type="text" class="digital-only live-input flex-fill" id="digTooth" placeholder="رقم السن أو موقع العلاج">
                 </div>
@@ -128,19 +195,19 @@
             <section class="ledger-strip">
                 <div class="ledger-row">
                     <div class="ledger-col">
-                        <span class="ledger-label">إجمالي الحساب:</span>
+                        <span class="ledger-label editable" data-key="tot_lbl">إجمالي الحساب:</span>
                         <span class="manual-only dot-line ledger-line"></span>
                         <input type="number" class="digital-only live-input ledger-line" id="digTotal" placeholder="0" oninput="calculateLedger()">
                         <span class="ledger-curr">ريال</span>
                     </div>
                     <div class="ledger-col">
-                        <span class="ledger-label">المدفوع حالياً:</span>
+                        <span class="ledger-label editable" data-key="cur_paid_lbl">المدفوع حالياً:</span>
                         <span class="manual-only dot-line ledger-line"></span>
                         <input type="number" class="digital-only live-input ledger-line" id="digPaidTable" placeholder="0" readonly>
                         <span class="ledger-curr">ريال</span>
                     </div>
                     <div class="ledger-col">
-                        <span class="ledger-label balance-tag">المتبقي:</span>
+                        <span class="ledger-label balance-tag editable" data-key="bal_lbl">المتبقي:</span>
                         <span class="manual-only dot-line ledger-line"></span>
                         <input type="number" class="digital-only live-input ledger-line balance-val" id="digBalance" placeholder="0" readonly>
                         <span class="ledger-curr">ريال</span>
@@ -151,23 +218,23 @@
             <!-- التوثيق والتواقيع والختم الرسمي -->
             <section class="auth-section">
                 <div class="auth-box">
-                    <span class="auth-title">المستلم / الحسابات</span>
+                    <span class="auth-title editable" data-key="rec_by_lbl">المستلم / الحسابات</span>
                     <div class="auth-signature-line"></div>
                 </div>
                 <div class="stamp-container">
-                    <span>ختم العيادة الرسمي</span>
+                    <span class="editable" data-key="stamp_lbl">ختم العيادة الرسمي</span>
                 </div>
                 <div class="auth-box">
-                    <span class="auth-title">توقيع الطبيب / الإدارة</span>
+                    <span class="auth-title editable" data-key="sign_lbl">توقيع الطبيب / الإدارة</span>
                     <div class="auth-signature-line"></div>
                 </div>
             </section>
 
             <!-- تذييل السند الرسمي -->
             <footer class="receipt-footer">
-                <p class="thank-you">شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية</p>
+                <p class="thank-you editable" data-key="thank_msg">شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية</p>
                 <div class="footer-contacts">
-                    <span class="address">ريمة – كسمة – عزلة الضبارة</span>
+                    <span class="address editable" data-key="addr_val">ريمة – كسمة – عزلة الضبارة</span>
                     <div class="phones" dir="ltr">
                         <span>+967 716 339 366</span> &bull; 
                         <span>+967 739 550 138</span> &bull; 
@@ -175,9 +242,46 @@
                     </div>
                 </div>
             </footer>
-
         </div>
     </main>
+
+    <!-- شريط الإجراءات السفلي الدائم -->
+    <nav class="no-print receipt-actions">
+        <button type="button" class="receipt-action" onclick="openShareModal()">
+            <span class="action-icon">↗</span>
+            <strong>المشاركة</strong>
+            <small>واتساب • نص</small>
+        </button>
+        <button type="button" class="receipt-action" onclick="window.print()">
+            <span class="action-icon">🖨</span>
+            <strong>الطباعة</strong>
+            <small>طباعة فورية / PDF</small>
+        </button>
+        <button type="button" class="receipt-action" onclick="window.print()">
+            <span class="action-icon">↓</span>
+            <strong>حفظ كـ PDF</strong>
+            <small>ملف عالي الجودة</small>
+        </button>
+    </nav>
+
+    <!-- نافذة المشاركة المنبثقة -->
+    <div class="no-print share-modal" id="shareModal">
+        <div class="share-dialog">
+            <button class="share-close" type="button" onclick="closeShareModal()">×</button>
+            <h2>مشاركة السند المالي</h2>
+            <p>اختر وسيلة المشاركة المباشرة:</p>
+            <div class="share-options">
+                <button type="button" class="share-option" onclick="shareWhatsApp()">
+                    💬 <strong>واتساب</strong>
+                    <small>إرسال ملخص السند للمريض</small>
+                </button>
+                <button type="button" class="share-option" onclick="copyReceiptText()">
+                    📋 <strong>نسخ النص</strong>
+                    <small>نسخ البيانات للحافظة</small>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
