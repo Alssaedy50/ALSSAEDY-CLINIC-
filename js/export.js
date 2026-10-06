@@ -38,31 +38,21 @@ async function generateReceiptCanvas() {
 }
 
 async function downloadReceiptPDF() {
+    // Native print is the authoritative PDF path: text stays sharp instead of becoming a raster screenshot.
     try {
-        if (typeof html2pdf !== 'function') throw new Error('مكتبة PDF غير متاحة. تحقق من الاتصال بالإنترنت.');
-        const profile = getSizeProfile();
-        const receipt = document.getElementById('receiptPrintArea');
-        const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
         await document.fonts.ready;
-        document.body.classList.add('is-capturing');
-        document.body.classList.add('exporting-receipt');
-        const exportBox = getExportBox(profile);
-        document.documentElement.style.setProperty('--export-width', exportBox.width);
-        document.documentElement.style.setProperty('--export-height', exportBox.height);
-        const options = {
-            margin: [2, 2, 2, 2],
-            filename: 'سند_قبض_' + recNo + '.pdf',
-            image: { type: 'png' },
-            html2canvas: { scale: 4, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', imageTimeout: 15000 },
-            jsPDF: { unit: 'mm', format: profile.pdfFormat, orientation: profile.orientation }
-        };
-        await html2pdf().set(options).from(receipt).save();
-    } catch (err) {
-        alert('حدث خطأ أثناء تنزيل ملف PDF: ' + err.message);
-    } finally {
-        document.body.classList.remove('is-capturing');
-        document.body.classList.remove('exporting-receipt');
-    }
+        const oldTitle=document.title;
+        const recNo=document.getElementById('digReceiptNo')?.value||'سند';
+        document.title='سند_قبض_'+recNo;
+        injectPrintPageStyle();
+        alert('سيتم فتح نافذة الطباعة. اختر «حفظ كملف PDF» ثم احفظ السند بالمقاس الظاهر.');
+        setTimeout(()=>window.print(),120);
+        window.addEventListener('afterprint',()=>{
+            document.title=oldTitle;
+            const style=document.getElementById('dynamic-print-size');
+            if(style)style.remove();
+        },{once:true});
+    }catch(err){alert('تعذر تجهيز ملف PDF للطباعة: '+err.message);}
 }
 
 function injectPrintPageStyle() {

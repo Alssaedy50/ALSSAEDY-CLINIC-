@@ -1,5 +1,7 @@
+const DESIGN_CONTRACT_VERSION='1.0';
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
 
+// Protected physical-size contract. Change only after print/export regression review.
 const SIZE_PROFILES = {
     a5: { label: 'A5', width: '148mm', height: '210mm', pdfFormat: 'a5', orientation: 'portrait', printSize: '148mm 210mm' },
     a4: { label: 'A4', width: '210mm', height: '297mm', pdfFormat: 'a4', orientation: 'portrait', printSize: '210mm 297mm' },

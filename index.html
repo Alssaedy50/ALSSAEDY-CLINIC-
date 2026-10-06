@@ -8,11 +8,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="logo_data.js"></script>
-    <link rel="stylesheet" href="css/ui.css?v=20261006_04">
-    <link rel="stylesheet" href="css/receipt.css?v=20261006_04">
-    <link rel="stylesheet" href="css/print.css?v=20261006_04">
+        <script src="logo_data.js"></script>
+    <link rel="stylesheet" href="css/ui.css?v=20261006_05">
+    <link rel="stylesheet" href="css/receipt.css?v=20261006_05">
+    <link rel="stylesheet" href="css/print.css?v=20261006_05">
 </head>
 <body data-mode="manual">
 
@@ -80,12 +79,12 @@
                 </div>
                 <div class="meta-cell">
                     <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
-                    <div class="manual-only ar-date-flow">
-                        <span class="date-blank" title="اليوم"></span>
-                        <span class="slash">/</span>
-                        <span class="date-blank" title="الشهر"></span>
-                        <span class="slash">/</span>
-                        <span class="year-block"><bdo dir="ltr">202_</bdo> م</span>
+                    <div class="manual-only ar-date-flow" dir="rtl" aria-label="التاريخ">
+                        <bdi class="date-blank" title="اليوم"></bdi>
+                        <bdi class="slash" dir="ltr">/</bdi>
+                        <bdi class="date-blank" title="الشهر"></bdi>
+                        <bdi class="slash" dir="ltr">/</bdi>
+                        <bdi class="year-block" dir="ltr">202_ <span dir="rtl">م</span></bdi>
                     </div>
                     <input type="date" class="digital-only live-input" id="digDate">
                 </div>
@@ -183,7 +182,7 @@
 
             <section class="section-signatures">
                 <div class="sig-column">
-                    <span class="sig-title editable" data-key="rec_by_lbl">المستلم / الحسابات</span>
+                    <span class="sig-title editable" data-key="rec_by_lbl" dir="rtl"><bdi>المستلم</bdi> <bdi dir="ltr">/</bdi> <bdi>الحسابات</bdi></span>
                     <div class="sig-draw-line"></div>
                 </div>
                 <div class="sig-stamp-center">
@@ -220,9 +219,9 @@
             <span class="dock-icon">🖼️</span>
             <span class="dock-text">صورة</span>
         </button>
-        <button type="button" class="dock-btn btn-pdf" onclick="downloadReceiptPDF()" title="تنزيل ملف PDF">
+        <button type="button" class="dock-btn btn-pdf" onclick="downloadReceiptPDF()" title="إنشاء PDF جاهز للطباعة">
             <span class="dock-icon">📥</span>
-            <span class="dock-text">ملف PDF</span>
+            <span class="dock-text">PDF للطباعة</span>
         </button>
         <button type="button" class="dock-btn btn-print" onclick="triggerNativePrint()" title="طباعة فورية">
             <span class="dock-icon">🖨️</span>
