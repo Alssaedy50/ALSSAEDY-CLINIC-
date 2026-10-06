@@ -11,7 +11,7 @@ function getState(){
  const inputs={};document.querySelectorAll('.live-input').forEach(el=>{if(el.id)inputs[el.id]=el.value});
  const checks=Array.from(document.querySelectorAll('.check-interactive')).map(el=>({name:el.name||'',value:el.value||'',checked:el.checked}));
  const texts={};document.querySelectorAll('.editable').forEach(el=>{if(el.dataset.key)texts[el.dataset.key]=el.textContent});
- return {version:8,orientation:document.body.dataset.orientation||'portrait',fontFamily:document.documentElement.dataset.fontFamily||'Cairo',fontScale:document.documentElement.dataset.fontScale||'1',textColor:document.documentElement.dataset.textColor||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts};
+ return {version:9,language:document.body.dataset.language||'ar',orientation:document.body.dataset.orientation||'portrait',fontFamily:document.documentElement.dataset.fontFamily||'Cairo',fontScale:document.documentElement.dataset.fontScale||'1',textColor:document.documentElement.dataset.textColor||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts};
 }
 let syncReady=false;
 let syncTimer=0;
@@ -33,6 +33,54 @@ function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getStat
 async function syncNow(){if(!syncReady||syncBusy||!navigator.onLine)return;syncBusy=true;setSyncStatus('جاري المزامنة…');try{const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local){setSyncStatus('لا توجد بيانات للمزامنة');return}const send=async baseVersion=>fetch('/api/sync',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({baseVersion,clientId:syncClientId(),state:local})});let response=await send(syncVersion());if(response.status===409){const conflict=await response.json();if(conflict.record?.state){const remoteVersion=Number(conflict.record.version)||0;applyStateObject(conflict.record.state);localStorage.setItem(STORAGE_KEY,JSON.stringify(conflict.record.state));setSyncVersion(remoteVersion);setSyncDirty(false);setSyncStatus('تمت حماية البيانات — تعارض مزامنة، تم اعتماد النسخة الأحدث ✓');return}}if(!response.ok)throw new Error('HTTP '+response.status);const result=await response.json();if(result.record?.version)setSyncVersion(result.record.version);setSyncDirty(false);setSyncStatus('تمت المزامنة ✓')}catch(e){console.warn('Receipt sync unavailable:',e);setSyncStatus(navigator.onLine?'تعذر المزامنة — ستتم المحاولة لاحقًا':'بانتظار الإنترنت')}finally{syncBusy=false}}
 async function pullSync(){if(!navigator.onLine||syncDirty())return;try{const response=await fetch('/api/sync',{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const result=await response.json();if(result.found&&result.record?.state){const remoteVersion=Number(result.record.version)||0;const localVersion=syncVersion();if(!localStorage.getItem(STORAGE_KEY)||localVersion===0||remoteVersion>localVersion){applyStateObject(result.record.state);localStorage.setItem(STORAGE_KEY,JSON.stringify(result.record.state));setSyncDirty(false)}setSyncVersion(remoteVersion);setSyncStatus('تمت المزامنة ✓')}else setSyncStatus('جاهز للمزامنة')}catch(e){console.warn('Receipt sync pull unavailable:',e);setSyncStatus('المزامنة غير متاحة حاليًا')}}
 async function initSync(){setSyncStatus(navigator.onLine?'جارٍ فحص البيانات…':'غير متصل — محفوظ محليًا');if(navigator.onLine&&syncDirty()){}else if(navigator.onLine)await pullSync();syncReady=true;if(navigator.onLine&&syncDirty())await syncNow()}
+
+
+const RECEIPT_LANGUAGE={
+ ar:{
+  receipt_title:'سند قبض',receipt_no_label:'رقم السند',date_label:'التاريخ',
+  client_name_label:'استلمنا من السيد / ة',client_phone_label:'رقم الهاتف',
+  paid_label:'المبلغ المدفوع',currency_label:'ر.ي',words_label:'مبلغاً وقدره كتابة',
+  currency_end:'ريالاً يمنياً فقط لا غير.',payment_label:'طريقة الدفع',cash_label:'نقداً',
+  wallet_label:'محفظة / تحويل بنكي',reference_label:'المرجع',services_title:'تفاصيل الخدمة العلاجية',
+  service_exam:'كشف ومعاينة',service_fillings:'حشوات وتجميل',service_endo:'علاج عصب وجذور',
+  service_surgery:'خلع وجراحة',service_scaling:'تنظيف ولثة',service_prostho:'تركيبات أسنان',
+  service_ortho:'تقويم أسنان',service_xray:'أشعة تشخيصية',service_other:'أخرى',
+  tooth_label:'رقم السن / الموضع',total_label:'إجمالي الحساب',current_paid_label:'المدفوع حالياً',
+  balance_label:'المتبقي',finance_currency:'ر.ي',finance_currency_paid:'ر.ي',finance_currency_balance:'ر.ي',
+  received_label:'المستلم',stamp_label:'ختم العيادة الرسمي',signature_label:'التوقيع',
+  address_label:'العنوان:',clinic_addr:'ريمة – كسمة – عزلة الضبارة',
+  thank_msg:'شكرًا لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.'
+ },
+ en:{
+  receipt_title:'RECEIPT VOUCHER',receipt_no_label:'Receipt No.',date_label:'Date',
+  client_name_label:'Received from',client_phone_label:'Phone',
+  paid_label:'Amount Paid',currency_label:'YER',words_label:'Amount in words',
+  currency_end:'Yemeni Riyals only.',payment_label:'Payment Method',cash_label:'Cash',
+  wallet_label:'Wallet / Bank Transfer',reference_label:'Reference',services_title:'Dental Treatment Details',
+  service_exam:'Examination',service_fillings:'Fillings & Cosmetic',service_endo:'Root Canal Treatment',
+  service_surgery:'Extraction & Surgery',service_scaling:'Cleaning & Gum Care',service_prostho:'Dental Prosthetics',
+  service_ortho:'Orthodontics',service_xray:'Diagnostic X-ray',service_other:'Other',
+  tooth_label:'Tooth No. / Site',total_label:'Total',current_paid_label:'Current Paid',
+  balance_label:'Balance',finance_currency:'YER',finance_currency_paid:'YER',finance_currency_balance:'YER',
+  received_label:'Received by',stamp_label:'Official Clinic Stamp',signature_label:'Signature',
+  address_label:'Address:',clinic_addr:'Rima – Kusmah – Al-Dhobarah',
+  thank_msg:'Thank you for your trust. We wish you continued health and well-being.'
+ }
+};
+function setLanguage(language,persist=true){
+ const lang=language==='en'?'en':'ar';
+ document.body.dataset.language=lang;
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ document.getElementById('btnLangAr')?.classList.toggle('active',lang==='ar');
+ document.getElementById('btnLangEn')?.classList.toggle('active',lang==='en');
+ const dict=RECEIPT_LANGUAGE[lang];
+ Object.entries(dict).forEach(([key,value])=>{
+  const el=document.querySelector('.editable[data-key="'+CSS.escape(key)+'"]');
+  if(el)el.textContent=value;
+ });
+ if(persist)saveState();
+}
 
 function setMode(mode,persist=true){document.body.dataset.mode=mode;document.getElementById('btnModeManual').classList.toggle('active',mode==='manual');document.getElementById('btnModeDigital').classList.toggle('active',mode==='digital');if(mode==='digital'){const d=document.getElementById('digitalDate');if(d&&!d.value)d.value=localISODate()}if(persist)saveState()}
 function setSize(size,persist=true){document.body.dataset.size=size;const orientation=document.body.dataset.orientation||'portrait';document.body.style.page=size==='thermal'?'receipt-thermal':size+'-'+orientation;['a5','a4','thermal'].forEach(s=>document.getElementById('btnSize'+s[0].toUpperCase()+s.slice(1)).classList.toggle('active',s===size));if(persist)saveState()}
@@ -106,7 +154,10 @@ function receiptData(){
 }
 function receiptText(){
  const d=receiptData();
- return '*سند قبض - ALSSAEDY CLINIC FOR DENTISTRY*\nد/.صلاح الدين السعيدي\nرقم السند: '+d.receiptNo+'\nالتاريخ: '+d.date+'\nالمريض: '+d.clientName+'\nرقم الهاتف: '+d.clientPhone+'\n------------------------------\nالمبلغ المدفوع: '+d.paid+' ريال يمني\nإجمالي الحساب: '+d.total+' ريال يمني\nالمتبقي: '+d.balance+' ريال يمني\nطريقة الدفع: '+d.method+'\nمرجع الدفع: '+d.paymentRef+'\nرقم السن/الموضع: '+d.tooth+'\nالمبلغ كتابة: '+d.words+'\n------------------------------\nشكراً لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.\nريمة – كسمة – عزلة الضبارة\n+967 716 339 366 | +967 739 550 138 | +967 775 956 520'
+ if((document.body.dataset.language||'ar')==='en'){
+  return '*RECEIPT VOUCHER - ALSSAEDY CLINIC FOR DENTISTRY*\\nDr. Salahaldeen Alssaedy\\nReceipt No.: '+d.receiptNo+'\\nDate: '+d.date+'\\nPatient: '+d.clientName+'\\nPhone: '+d.clientPhone+'\\n------------------------------\\nAmount Paid: '+d.paid+' YER\\nTotal: '+d.total+' YER\\nBalance: '+d.balance+' YER\\nPayment Method: '+d.method+'\\nPayment Reference: '+d.paymentRef+'\\nTooth No. / Site: '+d.tooth+'\\nAmount in words: '+d.words+'\\n------------------------------\\nThank you for your trust.\\nRima – Kusmah – Al-Dhobarah\\n+967 716 339 366 | +967 739 550 138 | +967 775 956 520'
+ }
+ return '*سند قبض - ALSSAEDY CLINIC FOR DENTISTRY*\\nد/.صلاح الدين السعيدي\\nرقم السند: '+d.receiptNo+'\\nالتاريخ: '+d.date+'\\nالمريض: '+d.clientName+'\\nرقم الهاتف: '+d.clientPhone+'\\n------------------------------\\nالمبلغ المدفوع: '+d.paid+' ر.ي\\nإجمالي الحساب: '+d.total+' ر.ي\\nالمتبقي: '+d.balance+' ر.ي\\nطريقة الدفع: '+d.method+'\\nمرجع الدفع: '+d.paymentRef+'\\nرقم السن/الموضع: '+d.tooth+'\\nالمبلغ كتابة: '+d.words+'\\n------------------------------\\nشكراً لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.\\nريمة – كسمة – عزلة الضبارة\\n+967 716 339 366 | +967 739 550 138 | +967 775 956 520'
 }
 function openShareMenu(){const m=document.getElementById('shareModal');m.classList.add('open');m.setAttribute('aria-hidden','false');document.getElementById('shareStatus').textContent=''}
 function closeShareMenu(){const m=document.getElementById('shareModal');m.classList.remove('open');m.setAttribute('aria-hidden','true')}
@@ -234,7 +285,7 @@ async function bootTheme(){try{await migrateLegacyAssets();await loadLocalAssets
 function applyStateObject(s){
  if(!s)return;
  try{
-  if(s.mode)setMode(s.mode,false);if(s.size)setSize(s.size,false);if(s.theme)setTheme(s.theme,false);if(s.orientation)setOrientation(s.orientation,false);
+  if(s.language)setLanguage(s.language,false);if(s.mode)setMode(s.mode,false);if(s.size)setSize(s.size,false);if(s.theme)setTheme(s.theme,false);if(s.orientation)setOrientation(s.orientation,false);
   if(s.fontFamily)setFontFamily(s.fontFamily,false);if(s.fontScale)setFontScale(Number(s.fontScale)||1,false);if(s.textColor)setTextColor(s.textColor,false);
   Object.entries(s.inputs||{}).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.value=v});
   (s.checks||[]).forEach((x,i)=>{const e=document.querySelectorAll('.check-interactive')[i];if(e)e.checked=!!x.checked});
@@ -245,7 +296,7 @@ function applyStateObject(s){
 function restoreSavedState(){
  try{
   const current=localStorage.getItem(STORAGE_KEY),legacy=localStorage.getItem('alssaedy_receipt_state_v7');
-  const s=JSON.parse(current||legacy||'null');
+  const s=JSON.parse(current||legacy||'null');if(s&&!s.language)s.language='ar';
   if(s)applyStateObject(s);
  }catch(e){console.error('Saved state restore failed',e)}
 }
