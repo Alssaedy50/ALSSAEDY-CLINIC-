@@ -323,3 +323,28 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 @media screen and (max-width:700px){
   .footer-phones{max-width:none!important;overflow:visible!important;}
 }
+
+/* 2026-10-07 final typography consistency. Keep date visually subordinate to labels. */
+.receipt-paper{font-size:calc(10px * var(--receipt-body-scale));}
+.receipt-paper .date-sequence{
+    font-size:9px!important;
+    line-height:1!important;
+    font-weight:700!important;
+    color:var(--line-border)!important;
+}
+.receipt-paper .main-voucher-title{font-size:calc(15px * var(--receipt-title-scale))!important;}
+.receipt-paper .receipt-header h2{font-size:calc(13px * var(--receipt-heading-scale));}
+.receipt-paper .receipt-header p{font-size:calc(9px * var(--receipt-body-scale));}
+.receipt-paper .meta-label,.receipt-paper .row-label{font-size:calc(9.5px * var(--receipt-heading-scale));}
+.receipt-paper .paid-title{font-size:calc(11px * var(--receipt-heading-scale));}
+.receipt-paper .paid-unit,.receipt-paper .pay-opts-row,.receipt-paper .payment-options-group{font-size:calc(9.5px * var(--receipt-body-scale));}
+.receipt-paper .services-banner{font-size:calc(9.5px * var(--receipt-heading-scale));}
+.receipt-paper .custom-check-item{font-size:calc(9px * var(--receipt-body-scale));}
+.receipt-paper .ledger-header{font-size:calc(9.5px * var(--receipt-heading-scale));}
+.receipt-paper .currency-label{font-size:calc(9.5px * var(--receipt-body-scale));}
+.receipt-paper .sig-title{font-size:calc(9.5px * var(--receipt-heading-scale));}
+.receipt-paper .stamp-frame span{font-size:calc(8px * var(--receipt-body-scale));}
+.receipt-paper .footer-blessing{font-size:calc(9px * var(--receipt-heading-scale));}
+.receipt-paper .footer-meta-line{font-size:calc(8px * var(--receipt-body-scale));}
+.receipt-paper .live-input{font-size:calc(10px * var(--receipt-body-scale));}
+.receipt-paper .paid-numeric{font-size:calc(13px * var(--receipt-heading-scale));}
