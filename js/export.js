@@ -87,6 +87,11 @@ function normalizeWhatsAppNumber(value) {
     return '';
 }
 
+function formatReceiptDate(value) {
+    const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? m[3] + '/' + m[2] + '/' + m[1] + ' م' : String(value || '');
+}
+
 function getReceiptText() {
     const name = document.getElementById('digClientName')?.value || 'المريض الكريم';
     const patientPhoneRaw = document.getElementById('digPatientPhone')?.value || '';
@@ -95,7 +100,8 @@ function getReceiptText() {
     const total = document.getElementById('digTotal')?.value || '0';
     const balance = document.getElementById('digBalance')?.value || '0';
     const change = Math.max(0, Number(paid) - Number(total));
-    const date = document.getElementById('digDate')?.value || getLocalDateISO();
+    const dateRaw = document.getElementById('digDate')?.value || getLocalDateISO();
+    const date = formatReceiptDate(dateRaw);
     const recNo = document.getElementById('digReceiptNo')?.value || '---';
     const method = document.getElementById('selectedPayMethod')?.value || 'غير محددة';
     const ref = document.getElementById('digRef')?.value || '';
