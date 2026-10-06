@@ -405,3 +405,10 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
  .receipt-paper .date-sequence{font-size:10px!important;line-height:1.15!important;}
  .receipt-paper .header-logo-wrap{width:calc(62px * var(--logo-scale,1))!important;height:calc(62px * var(--logo-scale,1))!important;}
 }
+
+/* FINAL RTL PAPER DATE ORDER — day on the right, then month, then year. */
+.receipt-paper .date-sequence{direction:rtl!important;unicode-bidi:isolate!important;display:inline-flex!important;flex-direction:row!important;align-items:baseline!important;justify-content:flex-start!important;gap:4px!important;min-width:0!important;width:auto!important;white-space:nowrap!important;font-size:10px!important;line-height:1.15!important;font-weight:700!important;letter-spacing:0!important;}
+.receipt-paper .date-sequence .date-part{display:inline-block!important;white-space:nowrap!important;unicode-bidi:isolate!important;}
+.receipt-paper .date-sequence .date-sep{direction:ltr!important;}
+.receipt-paper .date-sequence .date-year{direction:ltr!important;}
+@media print{.receipt-paper .date-sequence{font-size:10px!important;}}
