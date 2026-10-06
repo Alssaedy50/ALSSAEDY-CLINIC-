@@ -77,24 +77,26 @@
                     <span class="manual-only write-dots num-dots"></span>
                     <input type="text" class="digital-only live-input num-input" id="digReceiptNo" placeholder="">
                 </div>
-                <div class="meta-cell date-cell" style="display: flex; align-items: center; gap: 6px; direction: rtl;">
+                <div class="meta-cell date-field-wrapper" style="display: flex; align-items: center; gap: 6px; direction: rtl;">
                     <span class="meta-label">التاريخ:</span>
-                    
-                    <!-- حقل التاريخ للدفتر الورقي: فواصل ثابتة لا تنقلب إطلاقاً وتطبع بالترتيب الطبيعي (يوم / شهر / سنة) -->
-                    <div class="manual-only" dir="ltr" style="display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 10.5px;">
-                        <span style="display: inline-block; width: 26px; border-bottom: 1.5px dashed #64748b; height: 12px;"></span>
-                        <span style="color: #94a3b8; font-weight: 800;">/</span>
-                        <span style="display: inline-block; width: 26px; border-bottom: 1.5px dashed #64748b; height: 12px;"></span>
-                        <span style="color: #94a3b8; font-weight: 800;">/</span>
-                        <span style="color: var(--primary); font-weight: 800;">202_ <bdi dir="rtl">م</bdi></span>
+
+                    <!-- للوضع الورقي: ثلاث خلايا منفصلة تماماً (اليوم / الشهر / السنة) لا يمكن للمتصفح قلبها -->
+                    <div class="manual-only date-boxes-row" dir="rtl" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="date-line-slot" style="display: inline-block; width: 32px; border-bottom: 1.5px dashed #475569; text-align: center; height: 14px;"></span>
+                        <span class="date-slash" style="color: #94a3b8; font-weight: bold; font-size: 11px;">/</span>
+                        <span class="date-line-slot" style="display: inline-block; width: 32px; border-bottom: 1.5px dashed #475569; text-align: center; height: 14px;"></span>
+                        <span class="date-slash" style="color: #94a3b8; font-weight: bold; font-size: 11px;">/</span>
+                        <span class="date-year-label" style="font-weight: 800; color: #073b63; font-size: 10px; white-space: nowrap;">202__ م</span>
                     </div>
 
-                    <!-- حقل التاريخ للسند الرقمي: إدخال حر يقبل جميع الصيغ واللغات -->
+                    <!-- للوضع الرقمي: إدخال حر لجميع الصيغ واللغات مع تقويم اختياري -->
                     <div class="digital-only" style="display: inline-flex; align-items: center; gap: 4px;">
-                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو اكتب يدوياً" dir="auto" style="text-align: center; width: 125px; font-weight: 700;">
-                        <button type="button" class="no-print" style="background: none; border: none; cursor: pointer; font-size: 12px; padding: 0 2px;" onclick="document.getElementById('hiddenDatePicker').showPicker()" title="اختيار من التقويم">📅</button>
+                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو حر" dir="auto" style="text-align: center; width: 120px; font-weight: 700;">
+                        <button type="button" class="no-print" style="background: none; border: none; cursor: pointer; font-size: 12px;" onclick="document.getElementById('hiddenDatePicker').showPicker()">📅</button>
                         <input type="date" id="hiddenDatePicker" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" onchange="document.getElementById('digDate').value=this.value">
                     </div>
+                </div>
+
                 </div>
             </div>
 
