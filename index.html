@@ -9,9 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="logo_data.js"></script>
-    <link rel="stylesheet" href="css/ui.css?v=20261006_05">
-    <link rel="stylesheet" href="css/receipt.css?v=20261006_05">
-    <link rel="stylesheet" href="css/print.css?v=20261006_05">
+    <link rel="stylesheet" href="css/ui.css?v=20261006_06">
+    <link rel="stylesheet" href="css/receipt.css?v=20261006_06">
+    <link rel="stylesheet" href="css/print.css?v=20261006_06">
 </head>
 <body data-mode="manual">
 
@@ -97,6 +97,12 @@
                     <input type="text" class="digital-only live-input flex-1 bold-field" id="digClientName" placeholder="">
                 </div>
 
+                <div class="row-flex patient-contact-row">
+                    <span class="row-label editable" data-key="patient_phone_lbl">رقم المريض / واتساب:</span>
+                    <span class="manual-only write-dots flex-1"></span>
+                    <input type="tel" class="digital-only live-input flex-1 patient-phone-input" id="digPatientPhone" inputmode="tel" autocomplete="tel" placeholder="">
+                </div>
+
                 <div class="paid-hero-bar">
                     <span class="paid-title editable" data-key="paid_lbl">المبلغ المدفوع:</span>
                     <div class="manual-only paid-blank-line"></div>
@@ -111,10 +117,11 @@
                     <span class="manual-only tafqeet-closing editable" data-key="tafqeet_end">ريالاً يمنياً فقط لا غير.</span>
                 </div>
 
-                <!-- خيارات الدفع بدون أي عناصر radio لمنع الرمز 0 تماماً -->
+                <!-- في الدفتر الورقي يكتب المستلم طريقة الدفع بالقلم؛ خيارات الدفع تظهر للسند الرقمي فقط. -->
                 <div class="row-flex pay-opts-row">
                     <span class="row-label editable" data-key="pay_method_lbl">طريقة الدفع:</span>
-                    <div class="payment-options-group">
+                    <span class="manual-only write-dots flex-1 payment-manual-dots"></span>
+                    <div class="digital-only payment-options-group">
                         <div class="custom-radio-item active" id="optCash" onclick="setPayMethod('نقداً')">
                             <span class="radio-circle"><span class="radio-dot"></span></span>
                             <span class="radio-label">نقداً</span>
@@ -124,7 +131,7 @@
                             <span class="radio-label">محفظة / تحويل بنكي</span>
                         </div>
                     </div>
-                    <input type="hidden" id="selectedPayMethod" value="نقداً">
+                    <input type="hidden" id="selectedPayMethod" value="">
                     <span class="row-label ref-label editable" data-key="ref_lbl">المرجع:</span>
                     <span class="manual-only write-dots ref-dots"></span>
                     <input type="text" class="digital-only live-input ref-dots" id="digRef" placeholder="">
@@ -319,11 +326,18 @@
             <h3>مشاركة السند مع المريض</h3>
             <p>اختر الوسيلة المناسبة للإرسال الفوري:</p>
             <div class="modal-options">
+                <button type="button" class="opt-card" onclick="sharePatientWhatsApp()">
+                    <span class="opt-icon">🟢</span>
+                    <div>
+                        <strong>واتساب المريض مباشرة</strong>
+                        <small>فتح محادثة المريض بالرقم مع إشعار السند جاهزاً للإرسال</small>
+                    </div>
+                </button>
                 <button type="button" class="opt-card" onclick="shareReceiptImage()">
                     <span class="opt-icon">🖼️</span>
                     <div>
                         <strong>مشاركة كصورة مباشرة</strong>
-                        <small>إرسال صورة واضحة للواتساب</small>
+                        <small>إرسال صورة واضحة للواتساب أو أي منصة مشاركة</small>
                     </div>
                 </button>
                 <button type="button" class="opt-card" onclick="shareWhatsAppText()">
