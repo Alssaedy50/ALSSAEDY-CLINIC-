@@ -135,3 +135,24 @@ html,body{margin:0!important;padding:0!important;background:#fff!important}.no-p
  .auth-box,.stamp-container{min-height:54px}
  .receipt-footer{margin-top:3px;padding-top:3px}
 }
+
+/* Final Arabic-first receipt language + compact financial strip */
+.language-controls .tool-btn{min-height:34px}
+.clean-date-boxes{direction:rtl!important;unicode-bidi:isolate;display:flex;align-items:center;justify-content:flex-start;gap:4px;min-width:150px}
+.clean-date-boxes .date-slot{width:25px;height:18px;border-bottom:1.5px dashed #64748b;display:inline-block}
+.clean-date-boxes .year-prefix{white-space:nowrap;direction:rtl;unicode-bidi:isolate}
+.en-sub,.en-title,.finance-en{display:none!important}
+.finance-summary{display:grid!important;grid-template-columns:1fr!important;gap:0!important;border:1px solid #cbd5e1!important;border-radius:4px!important;overflow:hidden!important;background:#fff!important}
+.finance-item{min-height:22px!important;height:22px!important;border:0!important;border-bottom:1px solid #e2e8f0!important;border-radius:0!important;background:#fff!important;padding:2px 7px!important;display:grid!important;grid-template-columns:1fr 88px 30px!important;grid-template-rows:1fr!important;align-items:center!important;column-gap:6px!important}
+.finance-item:last-child{border-bottom:0!important}
+.finance-label{font-size:8.5px!important;font-weight:800!important}
+.finance-blank{grid-column:2!important;grid-row:1!important;height:15px!important;border-bottom:1px dotted #64748b!important}
+.finance-input{grid-column:2!important;grid-row:1!important;height:18px!important;border:0!important;border-bottom:1px dotted var(--primary)!important;text-align:center!important;font-size:10px!important}
+.finance-currency{grid-column:3!important;grid-row:1!important;font:800 7px Cairo,sans-serif!important;color:#475569!important;text-align:left!important}
+@media print{
+ .receipt-container{width:148mm!important;height:210mm!important;padding:6.5mm 7mm 4.5mm!important;overflow:hidden!important}
+ .finance-item{min-height:22px!important;height:22px!important}
+ .finance-summary{border-color:#94a3b8!important}
+}
+body[data-language="en"] .arabic-only{display:none!important}
+body[data-language="ar"] .english-only{display:none!important}
