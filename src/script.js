@@ -6,13 +6,17 @@ let applyingRemoteTheme=false;
 let isEditing=false;
 let bootstrapDone=false;
 const MAX_UPLOAD_BYTES=3*1024*1024;
+const ASSET_DB='alssaedy_receipt_assets_v1';
+function assetDB(){return new Promise((resolve,reject)=>{if(!window.indexedDB)return reject(new Error('IndexedDB unavailable'));const r=indexedDB.open(ASSET_DB,1);r.onupgradeneeded=()=>r.result.createObjectStore('assets');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function saveLocalAsset(key,value){try{const db=await assetDB();await new Promise((resolve,reject)=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').put(value,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){console.info('Local asset storage unavailable')}}
+async function loadLocalAsset(key){try{const db=await assetDB();const value=await new Promise((resolve,reject)=>{const tx=db.transaction('assets','readonly');const r=tx.objectStore('assets').get(key);r.onsuccess=()=>resolve(r.result||'');r.onerror=()=>reject(r.error)});db.close();return value}catch(e){return ''}}
 
 function localISODate(){const now=new Date(),offset=now.getTimezoneOffset();return new Date(now.getTime()-offset*60000).toISOString().slice(0,10)}
 function getState(){
  const inputs={};document.querySelectorAll('.live-input').forEach(el=>{if(el.id)inputs[el.id]=el.value});
  const checks=Array.from(document.querySelectorAll('.check-interactive')).map(el=>({name:el.name||'',value:el.value||'',checked:el.checked}));
  const texts={};document.querySelectorAll('.editable').forEach(el=>{if(el.dataset.key)texts[el.dataset.key]=el.textContent});
- return {version:6,orientation:document.body.dataset.orientation||'portrait',fontFamily:document.documentElement.dataset.fontFamily||'Cairo',fontScale:document.documentElement.dataset.fontScale||'1',textColor:document.documentElement.dataset.textColor||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts,logo:document.getElementById('clinicLogoImg')?.src||'',watermark:document.getElementById('watermarkLayer')?.style.backgroundImage||''}
+ return {version:7,orientation:document.body.dataset.orientation||'portrait',fontFamily:document.documentElement.dataset.fontFamily||'Cairo',fontScale:document.documentElement.dataset.fontScale||'1',textColor:document.documentElement.dataset.textColor||'#122033',mode:document.body.dataset.mode||'manual',size:document.body.dataset.size||'a5',theme:document.body.dataset.theme||'classic',inputs,checks,texts,logo:/^data:/i.test(document.getElementById('clinicLogoImg')?.src||'')?'':(document.getElementById('clinicLogoImg')?.src||''),watermark:/data:/i.test(document.getElementById('watermarkLayer')?.style.backgroundImage||'')?'':(document.getElementById('watermarkLayer')?.style.backgroundImage||'')}
 }
 function saveState(){
  try{
@@ -45,7 +49,7 @@ async function uploadLogo(event){
  const reader=new FileReader();
  reader.onload=async e=>{
   const dataUrl=e.target.result,logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');
-  if(logo)logo.src=dataUrl;if(watermark)watermark.style.backgroundImage='url("'+dataUrl+'")';saveState();
+  if(logo)logo.src=dataUrl;if(watermark)watermark.style.backgroundImage='url("'+dataUrl+'")';await saveLocalAsset('logo',dataUrl);saveState();
   try{
    const remoteUrl=await uploadThemeAsset(file,'logo');
    if(remoteUrl){if(logo)logo.src=remoteUrl;if(watermark)watermark.style.backgroundImage='url("'+remoteUrl+'")';saveState()}
@@ -60,7 +64,7 @@ function uploadBackground(event){
  const reader=new FileReader();
  reader.onload=async e=>{
   const dataUrl=e.target.result,watermark=document.getElementById('watermarkLayer');
-  if(watermark)watermark.style.backgroundImage='url("'+dataUrl+'")';saveState();
+  if(watermark)watermark.style.backgroundImage='url("'+dataUrl+'")';await saveLocalAsset('background',dataUrl);saveState();
   try{
    const remoteUrl=await uploadThemeAsset(file,'background');
    if(remoteUrl){if(watermark)watermark.style.backgroundImage='url("'+remoteUrl+'")';saveState()}
@@ -179,7 +183,9 @@ window.addEventListener('DOMContentLoaded',()=>{
  setSize(document.body.dataset.size||'a5',false);setTheme(document.body.dataset.theme||'classic',false);calculateFinancials(false);bootTheme();
 });
 
-async function bootTheme(){try{await loadRemoteTheme()}finally{bootstrapDone=true}}
+async function migrateLegacyAssets(){const logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');if(logo?.src&&/^data:/i.test(logo.src))await saveLocalAsset('logo',logo.src);const bg=watermark?.style.backgroundImage||'';const m=bg.match(/^url\(["']?(data:[^"')]+)["']?\)$/i);if(m)await saveLocalAsset('background',m[1]);saveState()}
+async function loadLocalAssets(){const logo=await loadLocalAsset('logo'),bg=await loadLocalAsset('background');const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');if(logo&&l&&(!l.src||!/^https?:/i.test(l.src)))l.src=logo;if(bg&&w&&(!w.style.backgroundImage||w.style.backgroundImage.includes('Saedy_Dental_Logo')))w.style.backgroundImage='url("'+bg+'")'}
+async function bootTheme(){try{await migrateLegacyAssets();await loadLocalAssets();await loadRemoteTheme()}finally{bootstrapDone=true}}
 async function loadRemoteTheme(){
  try{
   const r=await fetch(THEME_API,{cache:'no-store'});if(!r.ok)return;
