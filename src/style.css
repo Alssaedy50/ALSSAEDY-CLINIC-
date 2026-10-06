@@ -42,7 +42,7 @@ body.is-editing .logo-hint{display:block!important}
 @media print{
 html,body{margin:0!important;padding:0!important;background:#fff!important}.no-print{display:none!important}.receipt-wrapper{display:block;padding:0;overflow:visible}.receipt-container{width:148mm!important;height:210mm!important;margin:0!important;padding:7mm 8mm 5mm!important;box-shadow:none!important;border:0!important;break-inside:avoid;page-break-inside:avoid}.receipt-container *{print-color-adjust:exact;-webkit-print-color-adjust:exact}body[data-size="a4"] .receipt-container{width:210mm!important;height:297mm!important;padding:13mm 15mm 10mm!important}body[data-size="thermal"] .receipt-container{width:80mm!important;height:190mm!important;min-height:190mm!important;padding:4mm!important}.editable{outline:none!important;background:transparent!important}.phone-item{background:#fff!important;border-color:#64748b!important;color:#111827!important}
 }
-@page receipt-a5{size:A5 portrait;margin:0}@page receipt-a4{size:A4 portrait;margin:0}@page receipt-thermal{size:80mm 190mm;margin:0}
+@page receipt-a5-portrait{size:A5 portrait;margin:0}@page receipt-a5-landscape{size:A5 landscape;margin:0}@page receipt-a4-portrait{size:A4 portrait;margin:0}@page receipt-a4-landscape{size:A4 landscape;margin:0}@page receipt-thermal{size:80mm 190mm;margin:0}
 
 /* Settings drawer + typography + orientation refinement */
 :root{--receipt-font:Cairo,sans-serif;--font-scale:1;--custom-text:#122033}
