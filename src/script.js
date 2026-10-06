@@ -1,6 +1,3 @@
-// تثبيت مسار الشعار الرسمي الدائم
-const OFFICIAL_LOGO_SRC = "Saedy_Dental_Logo.svg";
-
 function toggleDrawer(open) {
     document.getElementById('settingsPanel').classList.toggle('open', open);
 }
@@ -40,35 +37,32 @@ function adjustFontSize(delta) {
     document.getElementById('fontScaleLabel').innerText = currentScale + '%';
 }
 
-// تثبيت واستعادة الشعار
 function uploadLogo(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            document.getElementById('clinicLogoImg').src = e.target.result;
+            applyLogo(e.target.result);
             localStorage.setItem('alssaedy_custom_logo', e.target.result);
         };
         reader.readAsDataURL(file);
     }
 }
 
-function resetOfficialLogo() {
-    localStorage.removeItem('alssaedy_custom_logo');
-    document.getElementById('clinicLogoImg').src = OFFICIAL_LOGO_SRC;
-    alert('تمت استعادة الشعار الرسمي الافتراضي للعيادة بنجاح.');
+function applyLogo(url) {
+    document.getElementById('clinicLogoImg').src = url;
+    document.getElementById('watermarkLayer').style.backgroundImage = `url('${url}')`;
 }
 
-function uploadBg(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('watermarkLayer').style.backgroundImage = `url('${e.target.result}')`;
-            localStorage.setItem('alssaedy_bg', e.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
+function resetOfficialLogo() {
+    localStorage.removeItem('alssaedy_custom_logo');
+    const defaultLogo = window.OFFICIAL_LOGO_DATA || 'logo.png';
+    applyLogo(defaultLogo);
+    alert('تمت استعادة الشعار الرسمي المعتمد للعيادة بنجاح.');
+}
+
+function toggleWatermark() {
+    document.body.classList.toggle('hide-watermark');
 }
 
 let isEditing = false;
@@ -76,7 +70,7 @@ function toggleEditMode() {
     isEditing = !isEditing;
     document.body.classList.toggle('is-editing', isEditing);
     const btn = document.getElementById('btnEdit');
-    btn.innerText = isEditing ? '💾 حفظ التعديلات' : '✏️ تعديل النصوص مباشرة';
+    btn.innerText = isEditing ? '💾 حفظ التعديلات' : '✏️ تفعيل التعديل المباشر';
     btn.style.background = isEditing ? '#10b981' : '#f59e0b';
 
     const editables = document.querySelectorAll('.editable');
@@ -91,7 +85,6 @@ function toggleEditMode() {
     }
 }
 
-// الحساب المالي
 function calculateLedger() {
     const paid = parseFloat(document.getElementById('digPaid').value) || 0;
     const total = parseFloat(document.getElementById('digTotal').value) || 0;
@@ -99,7 +92,7 @@ function calculateLedger() {
     document.getElementById('digBalance').value = Math.max(0, total - paid);
 }
 
-// توليد صورة عالية الدقة 300 DPI
+// توليد صورة عالية الدقة دون مشاكل أمنية في الكانفاس
 async function generateReceiptCanvas() {
     const receipt = document.getElementById('receiptPrintArea');
     return await html2canvas(receipt, {
@@ -124,7 +117,6 @@ async function downloadReceiptImage() {
     }
 }
 
-// النوافذ والمشاركة
 function openShareModal() { document.getElementById('shareModal').classList.add('open'); }
 function closeShareModal() { document.getElementById('shareModal').classList.remove('open'); }
 function openHistoryModal() {
@@ -134,7 +126,7 @@ function openHistoryModal() {
 function closeHistoryModal() { document.getElementById('historyModal').classList.remove('open'); }
 
 function getReceiptText() {
-    const name = document.getElementById('digClientName').value || 'العميل الكريم';
+    const name = document.getElementById('digClientName').value || 'المريض الكريم';
     const paid = document.getElementById('digPaid').value || '0';
     const total = document.getElementById('digTotal').value || '0';
     const balance = document.getElementById('digBalance').value || '0';
@@ -178,7 +170,7 @@ async function shareReceiptImage() {
                 });
             } else {
                 downloadReceiptImage();
-                setTimeout(shareWhatsAppText, 1000);
+                setTimeout(shareWhatsAppText, 1200);
             }
         }, 'image/png', 1.0);
     } catch(e) {
@@ -194,7 +186,7 @@ function copyReceiptText() {
     }).catch(() => { alert(text); });
 }
 
-// نظام الحفظ المحلي وسجل الفواتير
+// نظام السجل المحلي
 function saveReceiptLocally() {
     const recNo = document.getElementById('digReceiptNo').value || ('REC-' + Math.floor(100 + Math.random()*900));
     const record = {
@@ -231,12 +223,12 @@ function renderHistory() {
     }
 
     container.innerHTML = history.map(item => `
-        <div class="history-item">
-            <div class="history-item-info">
+        <div class="history-entry">
+            <div>
                 <strong>${item.name} (${item.recNo})</strong>
                 <small>التاريخ: ${item.date} | المدفوع: ${item.paid} ريال | المتبقي: ${item.balance} ريال</small>
             </div>
-            <div class="history-item-btns">
+            <div class="history-entry-btns">
                 <button type="button" onclick="loadReceipt(${item.id})">📥 استرجاع</button>
                 <button type="button" onclick="deleteReceipt(${item.id})" style="color:#b91c1c;">✕</button>
             </div>
@@ -271,21 +263,18 @@ function deleteReceipt(id) {
 }
 
 function clearAllHistory() {
-    if (confirm('هل أنت متأكد من رغبتك في حذف كامل سجل السندات المحفوظة؟')) {
+    if (confirm('هل أنت متأكد من حذف كامل سجل السندات؟')) {
         localStorage.removeItem('alssaedy_receipts_history');
         renderHistory();
         updateHistoryCount();
     }
 }
 
-// التهيئة عند التحميل
 window.addEventListener('DOMContentLoaded', () => {
-    // استعادة الشعار الرسمي المعتمد
+    // تطبيق الشعار المدمج المعتمد تلقائياً
+    const defaultLogo = window.OFFICIAL_LOGO_DATA || 'logo.png';
     const customLogo = localStorage.getItem('alssaedy_custom_logo');
-    document.getElementById('clinicLogoImg').src = customLogo || OFFICIAL_LOGO_SRC;
-
-    const savedBg = localStorage.getItem('alssaedy_bg');
-    if (savedBg) document.getElementById('watermarkLayer').style.backgroundImage = `url('${savedBg}')`;
+    applyLogo(customLogo || defaultLogo);
 
     const savedTexts = localStorage.getItem('alssaedy_texts');
     if (savedTexts) {
