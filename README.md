@@ -1,8 +1,14 @@
 # ALSSAEDY CLINIC — Receipt Voucher
 
-Professional A5 Portrait Dental Clinic Receipt Voucher system designed for real-world daily practice and high-precision physical printing.
+Professional dental clinic receipt system for daily use, electronic filling, printing, image export, PDF export, and sharing.
 
-- **Size**: A5 Portrait (148 × 210 mm)
-- **Typography**: RTL Arabic primary + LTR English identity
-- **Print**: CMYK / B&W ready (300 DPI)
-- **Logo**: assets/Saedy_Dental_Logo.svg
+- **Primary size:** A5 Portrait (148 × 210 mm)
+- **Other sizes:** A4 and 80mm thermal
+- **Orientation:** Portrait / Landscape
+- **Typography:** RTL Arabic primary + LTR English identity
+- **Logo & background:** replaceable locally with no application-imposed file-size limit
+- **Local persistence:** receipt settings in localStorage; uploaded logo/background in IndexedDB
+- **Synchronization:** intentionally disabled for the current version; central synchronization will be added later
+- **Print:** browser print engine with exact receipt dimensions
+- **Export:** PNG, JPEG, PDF, and system file sharing when supported
+- **Official logo:** assets/Saedy_Dental_Logo.svg
