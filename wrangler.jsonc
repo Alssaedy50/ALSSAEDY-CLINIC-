@@ -6,29 +6,7 @@
   "assets": {
     "directory": "."
   },
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "THEME_STORE",
-        "class_name": "ThemeStore"
-      }
-    ]
-  },
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": [
-        "ThemeStore"
-      ]
-    }
-  ],
   "observability": {
     "enabled": true
-  },
-  "r2_buckets": [
-    {
-      "binding": "THEME_ASSETS",
-      "bucket_name": "alssaedy-clinic-assets"
-    }
-  ]
+  }
 }
