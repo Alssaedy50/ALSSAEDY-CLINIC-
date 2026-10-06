@@ -24,9 +24,13 @@ function setMode(mode) {
     document.body.setAttribute('data-mode', mode);
     document.getElementById('btnModeManual').classList.toggle('active', mode === 'manual');
     document.getElementById('btnModeDigital').classList.toggle('active', mode === 'digital');
-    if (mode === 'digital') {
+    // Paper mode is a handwriting template: no digital payment selection is carried into it.
+    if (mode === 'manual') {
+        setPayMethod('');
+    } else {
         if (!document.getElementById('digDate').value) setTodayDate();
         if (!document.getElementById('digReceiptNo').value) generateNextReceiptNo();
+        if (!document.getElementById('selectedPayMethod').value) setPayMethod('نقداً');
     }
     updateActionAvailability();
 }
@@ -121,19 +125,20 @@ function generateNextReceiptNo() {
 
 function clearReceiptInputs() {
     if (confirm('هل تريد تفريغ حقول السند الحالية؟')) {
-        ['digReceiptNo','digClientName','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id => {
+        ['digReceiptNo','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
-        setPayMethod('نقداً');
+        setPayMethod(document.body.getAttribute('data-mode') === 'digital' ? 'نقداً' : '');
         document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
     }
 }
 
 function setPayMethod(method) {
-    document.getElementById('selectedPayMethod').value = method;
-    document.getElementById('optCash').classList.toggle('active', method === 'نقداً');
-    document.getElementById('optBank').classList.toggle('active', method !== 'نقداً');
+    const safeMethod = method === 'نقداً' || method === 'محفظة / تحويل بنكي' ? method : '';
+    document.getElementById('selectedPayMethod').value = safeMethod;
+    document.getElementById('optCash').classList.toggle('active', safeMethod === 'نقداً');
+    document.getElementById('optBank').classList.toggle('active', safeMethod === 'محفظة / تحويل بنكي');
 }
 
 function toggleService(element) {

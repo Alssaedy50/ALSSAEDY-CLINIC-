@@ -75,26 +75,68 @@ function triggerNativePrint() {
     }, { once: true });
 }
 
+function normalizeWhatsAppNumber(value) {
+    const digits = String(value || '')
+        .replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+        .replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.startsWith('00967')) return digits.slice(2);
+    if (digits.startsWith('967') && digits.length === 12) return digits;
+    if (digits.startsWith('0') && digits.length === 10) return '967' + digits.slice(1);
+    if (digits.startsWith('7') && digits.length === 9) return '967' + digits;
+    return '';
+}
+
 function getReceiptText() {
-    const name = document.getElementById('digClientName').value || 'المريض الكريم';
-    const paid = document.getElementById('digPaid').value || '0';
-    const total = document.getElementById('digTotal').value || '0';
-    const balance = document.getElementById('digBalance').value || '0';
+    const name = document.getElementById('digClientName')?.value || 'المريض الكريم';
+    const patientPhoneRaw = document.getElementById('digPatientPhone')?.value || '';
+    const patientPhone = patientPhoneRaw.trim();
+    const paid = document.getElementById('digPaid')?.value || '0';
+    const total = document.getElementById('digTotal')?.value || '0';
+    const balance = document.getElementById('digBalance')?.value || '0';
     const change = Math.max(0, Number(paid) - Number(total));
-    const date = document.getElementById('digDate').value || getLocalDateISO();
-    const recNo = document.getElementById('digReceiptNo').value || '---';
-    const method = document.getElementById('selectedPayMethod').value || 'نقداً';
-    const ref = document.getElementById('digRef').value || '';
-    const services = Array.from(document.querySelectorAll('.custom-check-item.active')).map(item => item.innerText.replace('✓','').trim());
+    const date = document.getElementById('digDate')?.value || getLocalDateISO();
+    const recNo = document.getElementById('digReceiptNo')?.value || '---';
+    const method = document.getElementById('selectedPayMethod')?.value || 'غير محددة';
+    const ref = document.getElementById('digRef')?.value || '';
+    const services = Array.from(document.querySelectorAll('.custom-check-item.active'))
+        .map(item => item.innerText.replace('✓','').trim());
     const srvText = services.length ? 'الخدمات: ' + services.join('، ') : '';
     const refText = ref ? '\nالمرجع: ' + ref : '';
+    const patientPhoneText = patientPhone ? '\nرقم المريض / واتساب: ' + patientPhone : '';
     const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + change + ' ريال يمني' : '';
-    return '*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*\nرقم السند: ' + recNo + '\nالتاريخ: ' + date + '\nالمريض: ' + name + '\n' + srvText + '\nطريقة الدفع: ' + method + refText + '\n-----------------------------\nالمبلغ المدفوع: ' + paid + ' ريال يمني\nإجمالي الحساب: ' + total + ' ريال يمني\nالمتبقي: ' + balance + ' ريال يمني' + changeText + '\n-----------------------------\nشكراً لثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.\nريمة - كسمة - عزلة الضبارة\n+967 716 339 366';
+    return '*سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي*\n' +
+        'رقم السند: ' + recNo + '\n' +
+        'التاريخ: ' + date + '\n' +
+        'المريض: ' + name + patientPhoneText + '\n' +
+        srvText + (srvText ? '\n' : '') +
+        'طريقة الدفع: ' + method + refText + '\n' +
+        '-----------------------------\n' +
+        'المبلغ المدفوع: ' + paid + ' ريال يمني\n' +
+        'إجمالي الحساب: ' + total + ' ريال يمني\n' +
+        'المتبقي: ' + balance + ' ريال يمني' + changeText + '\n' +
+        '-----------------------------\n' +
+        'شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.\n' +
+        'ريمة - كسمة - عزلة الضبارة\n' +
+        'هاتف العيادة: +967 716 339 366 | +967 739 550 138 | +967 775 956 520';
 }
 
 function shareWhatsAppText() {
     closeShareModal();
     window.open('https://wa.me/?text=' + encodeURIComponent(getReceiptText()), '_blank', 'noopener,noreferrer');
+}
+
+function sharePatientWhatsApp() {
+    const raw = document.getElementById('digPatientPhone')?.value || '';
+    const phone = normalizeWhatsAppNumber(raw);
+    if (!phone) {
+        alert('أدخل رقم المريض بصيغة يمنية صحيحة (مثال: 77XXXXXXXX أو +967 77XXXXXXX) أولاً.');
+        return;
+    }
+    closeShareModal();
+    const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(getReceiptText());
+    const popup = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!popup) window.location.href = url;
 }
 
 async function shareReceiptImage() {
@@ -109,7 +151,13 @@ async function shareReceiptImage() {
                 await navigator.share({ files: [file], title: 'سند قبض مالي', text: getReceiptText() });
             } else {
                 downloadReceiptImage();
-                setTimeout(shareWhatsAppText, 1000);
+                setTimeout(() => {
+                    if (normalizeWhatsAppNumber(document.getElementById('digPatientPhone')?.value || '')) {
+                        sharePatientWhatsApp();
+                    } else {
+                        shareWhatsAppText();
+                    }
+                }, 1000);
             }
         }, 'image/png', 0.95);
     } catch(e) {

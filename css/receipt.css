@@ -99,6 +99,9 @@ body.hide-watermark .watermark-layer { display: none !important; }
 
 .section-patient { margin-bottom: 3px; }
 .row-flex { display: flex; align-items: center; margin-bottom: 3px; }
+.patient-contact-row .patient-phone-input { direction: ltr; unicode-bidi: isolate; text-align: left; font-variant-numeric: tabular-nums; }
+.payment-manual-dots { min-width: 105px; }
+
 
 .paid-hero-bar {
     background: var(--bg-strip);

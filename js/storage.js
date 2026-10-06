@@ -26,6 +26,7 @@ function collectReceiptData() {
         recNo: document.getElementById('digReceiptNo').value.trim(),
         date: document.getElementById('digDate').value || getLocalDateISO(),
         name: document.getElementById('digClientName').value.trim() || 'مريض بدون اسم',
+        patientPhone: document.getElementById('digPatientPhone')?.value.trim() || '',
         paid: String(paid),
         total: String(total),
         balance: String(Math.max(0, total - paid)),
@@ -95,6 +96,7 @@ function loadReceipt(id) {
     document.getElementById('digReceiptNo').value = item.recNo || '';
     document.getElementById('digDate').value = item.date || getLocalDateISO();
     document.getElementById('digClientName').value = item.name || '';
+    document.getElementById('digPatientPhone').value = item.patientPhone || '';
     document.getElementById('digPaid').value = item.paid || '';
     document.getElementById('digTotal').value = item.total || '';
     document.getElementById('digTooth').value = item.tooth || '';
