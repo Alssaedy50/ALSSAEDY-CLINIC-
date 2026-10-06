@@ -287,3 +287,7 @@ html[data-size="thermal"] .services-grid-matrix{grid-template-columns:1fr 1fr} h
 html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[data-size="thermal"] .paid-hero-bar,html[data-size="thermal"] .pay-opts-row{flex-wrap:wrap}
 @media screen and (max-width:700px){.receipt-paper{transform-origin:top center;flex-shrink:0}html[data-size="a4"] .receipt-paper{transform:scale(calc((100vw - 16px)/793.7))}html[data-size="a5"] .receipt-paper{transform:scale(calc((100vw - 16px)/559.4))}html[data-size="thermal"] .receipt-paper{transform:none;width:min(80mm,calc(100vw - 16px));max-width:calc(100vw - 16px)}}
 .live-input:invalid{border-bottom-color:#b91c1c}
+/* Protected component rules — do not alter without regression review. */
+.ledger-grid-wrap{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ledger-box{min-width:0}.section-signatures{direction:rtl}.section-signatures .sig-column{direction:rtl}
+.footer-meta-line{align-items:center}.footer-address{unicode-bidi:isolate}.footer-phones{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
