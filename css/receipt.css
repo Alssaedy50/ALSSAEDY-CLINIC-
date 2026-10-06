@@ -422,3 +422,19 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
     direction: ltr !important;
     unicode-bidi: isolate !important;
 }
+
+
+/* FINAL PAPER DATE — isolated cells to prevent PDF BiDi reordering. */
+.date-boxes-row {
+    direction: rtl !important;
+    unicode-bidi: embed !important;
+}
+
+.date-line-slot {
+    vertical-align: bottom !important;
+}
+
+.date-year-label {
+    direction: rtl !important;
+    unicode-bidi: isolate !important;
+}
