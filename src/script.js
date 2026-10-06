@@ -51,7 +51,7 @@ async function uploadBackground(event){
  }catch(err){console.error(err);alert('تعذر حفظ الخلفية محليًا.')}
  finally{event.target.value=''}
 }
-function setDefaultWatermarkfunction setDefaultWatermark(){const layer=document.getElementById('watermarkLayer');if(!layer||layer.style.backgroundImage)return;layer.style.backgroundImage='url("../assets/Saedy_Dental_Logo.svg")'}
+function setDefaultWatermark(){const layer=document.getElementById('watermarkLayer');if(!layer||layer.style.backgroundImage)return;layer.style.backgroundImage='url("../assets/Saedy_Dental_Logo.svg")'}
 function calculateFinancials(persist=true){const paid=Number.parseFloat(document.getElementById('digitalPaidAmount').value)||0,total=Number.parseFloat(document.getElementById('digitalTotal').value)||0;document.getElementById('digitalPaidTable').value=paid;document.getElementById('digitalBalance').value=total-paid;if(persist)saveState()}
 function getPaymentMethod(){return document.querySelector('input[name="paymentMethod"]:checked')?.value||''}
 function receiptData(){
