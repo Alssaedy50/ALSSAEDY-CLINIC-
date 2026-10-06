@@ -184,7 +184,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 async function migrateLegacyAssets(){const logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');if(logo?.src&&/^data:/i.test(logo.src))await saveLocalAsset('logo',logo.src);const bg=watermark?.style.backgroundImage||'';const m=bg.match(/^url\(["']?(data:[^"')]+)["']?\)$/i);if(m)await saveLocalAsset('background',m[1]);saveState()}
-async function loadLocalAssets(){const logo=await loadLocalAsset('logo'),bg=await loadLocalAsset('background');const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');if(logo&&l&&(!l.src||!/^https?:/i.test(l.src)))l.src=logo;if(bg&&w&&(!w.style.backgroundImage||w.style.backgroundImage.includes('Saedy_Dental_Logo')))w.style.backgroundImage='url("'+bg+'")'}
+async function loadLocalAssets(){const logo=await loadLocalAsset('logo'),bg=await loadLocalAsset('background');const l=document.getElementById('clinicLogoImg'),w=document.getElementById('watermarkLayer');if(logo&&l)l.src=logo;if(bg&&w)w.style.backgroundImage='url("'+bg+'")'}
 async function bootTheme(){try{await migrateLegacyAssets();await loadLocalAssets();await loadRemoteTheme()}finally{bootstrapDone=true}}
 async function loadRemoteTheme(){
  try{
