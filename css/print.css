@@ -1,45 +1,22 @@
 @media print {
-    html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
-    body { overflow: visible !important; }
-    .site-bg-overlay, .no-print, .quick-action-bar, .floating-action-dock, .settings-panel, .modal-screen { display: none !important; }
-    .page-canvas-wrapper { padding: 0 !important; margin: 0 !important; display: block !important; min-height: 0 !important; }
-    .receipt-paper {
-        margin: 0 auto !important;
-        width: 145.04mm !important;
-        height: 198mm !important;
-        max-height: 198mm !important;
-        min-height: 198mm !important;
-        padding: 5mm 7mm !important;
-        page-break-inside: avoid !important;
-        page-break-after: avoid !important;
-        border: 2px solid #073b63 !important;
-        outline: 1px solid #cbd5e1 !important;
-        outline-offset: -4px !important;
-        border-radius: 4px !important;
-        box-sizing: border-box !important;
-        box-shadow: none !important;
-    }
-    html[data-size="a4"] .receipt-paper {
-        width: 205.8mm !important;
-        height: 291.06mm !important;
-        max-height: 291.06mm !important;
-        min-height: 291.06mm !important;
-    }
-    html[data-size="thermal"] .receipt-paper {
-        margin: 0 !important;
-        width: 80mm !important;
-        min-height: 0 !important;
-        height: auto !important;
-        max-height: none !important;
-        padding: 5mm 4mm !important;
-    }
-    .date-container{display:inline-flex!important;align-items:center!important;gap:4px!important;direction:rtl!important;white-space:nowrap!important;}
-    .date-slot{min-width:28px!important;width:28px!important;display:inline-block!important;}
-    .date-slash{direction:ltr!important;unicode-bidi:isolate!important;}
-    .date-year{direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;font-weight:700!important;}
-    .footer-phones{display:flex!important;justify-content:center!important;align-items:center!important;gap:10px!important;white-space:nowrap!important;direction:ltr!important;unicode-bidi:isolate!important;font-family:monospace,sans-serif!important;font-size:8.5px!important;font-weight:700!important;color:#073b63!important;}
-    .footer-phones .phone-separator{color:#94a3b8!important;}
-    input, button { color: #000 !important; }
+html,body{margin:0!important;padding:0!important;background:#fff!important;width:148mm!important;height:210mm!important;min-height:210mm!important;overflow:hidden!important}
+.site-bg-overlay,.no-print,.quick-action-bar,.floating-action-dock,.settings-panel,.modal-screen{display:none!important}
+.page-canvas-wrapper{width:148mm!important;height:198mm!important;min-height:198mm!important;max-height:198mm!important;padding:0!important;margin:0!important;display:block!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important}
+.receipt-paper{width:148mm!important;max-width:148mm!important;min-width:148mm!important;height:198mm!important;min-height:198mm!important;max-height:198mm!important;margin:0!important;padding:5mm 7mm!important;box-sizing:border-box!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important;page-break-after:avoid!important;box-shadow:none!important}
+.date-container{display:inline-flex!important;align-items:center!important;gap:5px!important;direction:rtl!important;unicode-bidi:normal!important;white-space:nowrap!important}
+.date-sequence{display:inline-flex!important;flex-direction:row!important;align-items:center!important;gap:4px!important;direction:rtl!important;unicode-bidi:normal!important;white-space:nowrap!important}
+.date-sequence .date-slot{width:25px!important;min-width:25px!important;height:15px!important;display:inline-block!important}
+.date-sequence .date-slash{direction:ltr!important;unicode-bidi:isolate!important}
+.date-sequence .date-year{direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;font-weight:800!important}
+.footer-meta-line{flex-direction:column!important;justify-content:center!important;gap:3px!important;text-align:center!important}
+.footer-address{white-space:nowrap!important;width:100%!important;text-align:center!important}
+.footer-phones{display:flex!important;width:100%!important;justify-content:center!important;align-items:center!important;gap:8px!important;white-space:nowrap!important;overflow:visible!important;direction:ltr!important;unicode-bidi:isolate!important;font-family:monospace,sans-serif!important;font-size:8.5px!important;font-weight:800!important;color:#073b63!important;padding:2px 0!important;border:0!important;background:transparent!important}
+html[data-size="a4"] body{width:210mm!important;height:297mm!important;min-height:297mm!important}
+html[data-size="a4"] .page-canvas-wrapper{width:210mm!important;height:291.06mm!important;min-height:291.06mm!important;max-height:291.06mm!important}
+html[data-size="a4"] .receipt-paper{width:210mm!important;min-width:210mm!important;height:291.06mm!important;min-height:291.06mm!important;max-height:291.06mm!important}
+html[data-size="thermal"] body{width:80mm!important;height:auto!important;min-height:0!important;overflow:visible!important}
+html[data-size="thermal"] .page-canvas-wrapper{width:80mm!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+html[data-size="thermal"] .receipt-paper{width:80mm!important;min-width:80mm!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:5mm 4mm!important}
 }
-@media print{ @page{size:A5;margin:0!important} }
-@media print and (max-width:1px){ @page{margin:0!important} }
+@page{size:148mm 210mm;margin:0!important}
+@page:first{margin:0!important}
