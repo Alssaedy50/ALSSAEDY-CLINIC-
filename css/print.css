@@ -24,3 +24,41 @@ html[data-size="thermal"] .receipt-paper{width:80mm!important;min-width:80mm!imp
   .receipt-paper .date-sequence{font-size:9px!important;line-height:1!important;font-weight:700!important;}
   .receipt-paper .main-voucher-title{font-size:calc(15px * var(--receipt-title-scale))!important;}
 }
+
+/* FINAL PAPER DATE FIX — matches the live paper-date markup in index.html. */
+@media print {
+  .receipt-paper .date-boxes-row {
+    display:inline-flex!important;
+    flex-direction:row!important;
+    align-items:baseline!important;
+    gap:4px!important;
+    direction:ltr!important;
+    unicode-bidi:isolate!important;
+    white-space:nowrap!important;
+  }
+  .receipt-paper .date-line-slot {
+    display:inline-block!important;
+    width:25px!important;
+    min-width:25px!important;
+    height:15px!important;
+    border-bottom:1.5px dashed #64748b!important;
+    text-align:center!important;
+    direction:ltr!important;
+    unicode-bidi:isolate!important;
+  }
+  .receipt-paper .date-slash {
+    display:inline-block!important;
+    direction:ltr!important;
+    unicode-bidi:isolate!important;
+    font-weight:800!important;
+  }
+  .receipt-paper .date-year-label {
+    display:inline-block!important;
+    direction:ltr!important;
+    unicode-bidi:isolate!important;
+    white-space:nowrap!important;
+  }
+  .receipt-paper .date-field-wrapper {
+    break-inside:avoid!important;
+  }
+}
