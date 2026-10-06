@@ -1,0 +1,30 @@
+name: Verify receipt image export
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'css/**'
+      - 'js/**'
+      - 'vendor/html2canvas/**'
+      - 'tests/**'
+      - '.github/workflows/receipt-export-test.yml'
+
+jobs:
+  export-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install browser test dependencies
+        run: npm install --no-save playwright pngjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start local site
+        run: python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/site.log 2>&1 &
+      - name: Render and verify full receipt PNG
+        run: node tests/receipt-export-test.mjs
