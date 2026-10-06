@@ -26,7 +26,7 @@ function scheduleSync(){if(!syncReady)return;clearTimeout(syncTimer);syncTimer=s
 function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(getState()));scheduleSync()}catch(e){console.error('Unable to save receipt state:',e)}}
 async function syncNow(){if(!syncReady||syncBusy||!navigator.onLine)return;syncBusy=true;setSyncStatus('جاري المزامنة…');try{const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local){setSyncStatus('لا توجد بيانات للمزامنة');return}let response=await fetch('/api/sync',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({baseVersion:syncVersion(),clientId:syncClientId(),state:local})});if(response.status===409){const conflict=await response.json();if(conflict.record?.version){setSyncVersion(conflict.record.version);response=await fetch('/api/sync',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({baseVersion:conflict.record.version,clientId:syncClientId(),state:local})})}}if(!response.ok)throw new Error('HTTP '+response.status);const result=await response.json();if(result.record?.version)setSyncVersion(result.record.version);setSyncStatus('تمت المزامنة ✓')}catch(e){console.warn('Receipt sync unavailable:',e);setSyncStatus(navigator.onLine?'تعذر المزامنة — ستتم المحاولة لاحقًا':'بانتظار الإنترنت')}finally{syncBusy=false}}
 async function pullSync(){if(!navigator.onLine)return;try{const response=await fetch('/api/sync',{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const result=await response.json();if(result.found&&result.record?.state){const remoteVersion=Number(result.record.version)||0;const localVersion=syncVersion();const localRaw=localStorage.getItem(STORAGE_KEY);if(!localRaw||localVersion===0||remoteVersion>localVersion){applyStateObject(result.record.state);localStorage.setItem(STORAGE_KEY,JSON.stringify(result.record.state))}setSyncVersion(remoteVersion);setSyncStatus('تمت المزامنة ✓')}else setSyncStatus('جاهز للمزامنة')}catch(e){console.warn('Receipt sync pull unavailable:',e);setSyncStatus('المزامنة غير متاحة حاليًا')}}
-async function initSync(){setSyncStatus(navigator.onLine?'جارٍ فحص البيانات…':'غير متصل — محفوظ محليًا');if(navigator.onLine)await pullSync();syncReady=true;if(navigator.onLine)await syncNow()}
+async function initSync(){setSyncStatus(navigator.onLine?'جارٍ فحص البيانات…':'غير متصل — محفوظ محليًا');if(navigator.onLine){await pullSync();await syncLocalAssets()}syncReady=true;if(navigator.onLine)await syncNow()}
 
 function setMode(mode,persist=true){document.body.dataset.mode=mode;document.getElementById('btnModeManual').classList.toggle('active',mode==='manual');document.getElementById('btnModeDigital').classList.toggle('active',mode==='digital');if(mode==='digital'){const d=document.getElementById('digitalDate');if(d&&!d.value)d.value=localISODate()}if(persist)saveState()}
 function setSize(size,persist=true){document.body.dataset.size=size;const orientation=document.body.dataset.orientation||'portrait';document.body.style.page=size==='thermal'?'receipt-thermal':size+'-'+orientation;['a5','a4','thermal'].forEach(s=>document.getElementById('btnSize'+s[0].toUpperCase()+s.slice(1)).classList.toggle('active',s===size));if(persist)saveState()}
@@ -44,6 +44,31 @@ function toggleEditMode(){
  if(!isEditing)saveState();
 }
 function triggerLogoUpload(){document.getElementById('logoUploader')?.click()}
+async function syncAssetToCloud(key,file){
+ try{
+  if(!navigator.onLine)return false;
+  const response=await fetch('/api/assets?key='+encodeURIComponent(key),{method:'PUT',headers:{'content-type':file.type||'application/octet-stream'},body:file});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  return true;
+ }catch(e){console.warn('Asset sync unavailable:',e);return false}
+}
+async function pullCloudAsset(key){
+ try{
+  if(!navigator.onLine)return null;
+  const response=await fetch('/api/assets?key='+encodeURIComponent(key),{cache:'no-store'});
+  if(response.status===404)return null;
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  return await response.blob();
+ }catch(e){console.warn('Cloud asset restore unavailable:',e);return null}
+}
+async function syncLocalAssets(){
+ if(!navigator.onLine)return;
+ for(const key of ['logo','background']){
+  const cloud=await pullCloudAsset(key);
+  if(cloud)await saveLocalAsset(key,cloud);
+ }
+ await loadLocalAssets();
+}
 async function uploadLogo(event){
  const file=event.target.files?.[0];
  const isImage=file&&(/^(image\/(png|jpeg|jpg|webp|gif|svg\+xml)|application\/svg\+xml)$/i.test(file.type)||/\.(png|jpe?g|webp|gif|svg)$/i.test(file.name||''));if(!isImage){event.target.value='';return}
@@ -51,7 +76,7 @@ async function uploadLogo(event){
   const url=URL.createObjectURL(file),logo=document.getElementById('clinicLogoImg'),watermark=document.getElementById('watermarkLayer');
   if(logo){logo.src=url;logo.dataset.objectUrl=url}
   if(watermark){if(watermark.dataset.objectUrl)URL.revokeObjectURL(watermark.dataset.objectUrl);watermark.style.backgroundImage='url("' + url + '")';watermark.dataset.objectUrl=url}
-  await saveLocalAsset('logo',file);saveState();
+  await saveLocalAsset('logo',file);saveState();await syncAssetToCloud('logo',file);
  }catch(err){console.error(err);alert('تعذر حفظ الشعار محليًا.')}
  finally{event.target.value=''}
 }
@@ -61,7 +86,7 @@ async function uploadBackground(event){
  try{
   const url=URL.createObjectURL(file),watermark=document.getElementById('watermarkLayer');
   if(watermark){if(watermark.dataset.objectUrl)URL.revokeObjectURL(watermark.dataset.objectUrl);watermark.style.backgroundImage='url("' + url + '")';watermark.dataset.objectUrl=url}
-  await saveLocalAsset('background',file);saveState();
+  await saveLocalAsset('background',file);saveState();await syncAssetToCloud('background',file);
  }catch(err){console.error(err);alert('تعذر حفظ الخلفية محليًا.')}
  finally{event.target.value=''}
 }
@@ -112,7 +137,7 @@ function cloneForExport(){
 function createExportMount(){
  const d=exportDimensions(),mount=document.createElement('div');
  mount.dataset.size=document.body.dataset.size||'a5';mount.dataset.orientation=document.body.dataset.orientation||'portrait';mount.dataset.mode=document.body.dataset.mode||'manual';mount.dataset.theme=document.body.dataset.theme||'classic';
- mount.style.cssText='position:fixed;left:0;top:0;width:'+d.width+'mm;height:'+d.height+'mm;background:#fff;overflow:hidden;z-index:1;opacity:0;pointer-events:none;direction:rtl';
+ mount.style.cssText='position:fixed;left:0;top:0;width:'+d.width+'mm;height:'+d.height+'mm;background:#fff;overflow:hidden;z-index:2147483647;opacity:1;pointer-events:none;direction:rtl';
  const node=cloneForExport();node.style.width=d.width+'mm';node.style.height=d.height+'mm';node.style.margin='0';node.style.boxShadow='none';node.style.border='0';
  mount.appendChild(node);document.body.appendChild(mount);return{mount,node,d};
 }
