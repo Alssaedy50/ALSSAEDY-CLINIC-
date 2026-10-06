@@ -92,7 +92,6 @@ function calculateLedger() {
     document.getElementById('digBalance').value = Math.max(0, total - paid);
 }
 
-// توليد صورة عالية الدقة دون مشاكل أمنية في الكانفاس
 async function generateReceiptCanvas() {
     const receipt = document.getElementById('receiptPrintArea');
     return await html2canvas(receipt, {
@@ -186,7 +185,6 @@ function copyReceiptText() {
     }).catch(() => { alert(text); });
 }
 
-// نظام السجل المحلي
 function saveReceiptLocally() {
     const recNo = document.getElementById('digReceiptNo').value || ('REC-' + Math.floor(100 + Math.random()*900));
     const record = {
@@ -271,7 +269,6 @@ function clearAllHistory() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // تطبيق الشعار المدمج المعتمد تلقائياً
     const defaultLogo = window.OFFICIAL_LOGO_DATA || 'logo.png';
     const customLogo = localStorage.getItem('alssaedy_custom_logo');
     applyLogo(customLogo || defaultLogo);
