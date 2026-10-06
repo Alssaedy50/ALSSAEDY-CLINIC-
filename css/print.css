@@ -4,38 +4,42 @@
     .site-bg-overlay, .no-print, .quick-action-bar, .floating-action-dock, .settings-panel, .modal-screen { display: none !important; }
     .page-canvas-wrapper { padding: 0 !important; margin: 0 !important; display: block !important; min-height: 0 !important; }
     .receipt-paper {
-        margin: 0 !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        max-width: none !important;
+        margin: 0 auto !important;
         width: 145.04mm !important;
-        min-height: 205.8mm !important;
-        height: 205.8mm !important;
-        margin: 2.1mm auto !important;
-        padding: 6mm 8mm 4mm 8mm !important;
-        page-break-after: avoid !important;
+        height: 198mm !important;
+        max-height: 198mm !important;
+        min-height: 198mm !important;
+        padding: 5mm 7mm !important;
         page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        border: 2px solid #073b63 !important;
+        outline: 1px solid #cbd5e1 !important;
+        outline-offset: -4px !important;
+        border-radius: 4px !important;
+        box-sizing: border-box !important;
+        box-shadow: none !important;
     }
     html[data-size="a4"] .receipt-paper {
         width: 205.8mm !important;
-        min-height: 291.06mm !important;
         height: 291.06mm !important;
-        margin: 2.97mm auto !important;
+        max-height: 291.06mm !important;
+        min-height: 291.06mm !important;
     }
     html[data-size="thermal"] .receipt-paper {
         margin: 0 !important;
         width: 80mm !important;
         min-height: 0 !important;
         height: auto !important;
+        max-height: none !important;
         padding: 5mm 4mm !important;
     }
-    html[data-size="a4"] .receipt-header h2 { font-size: 18px; }
-    html[data-size="a4"] .main-voucher-title { font-size: 22px; }
-    html[data-size="thermal"] .receipt-header { flex-wrap: wrap; }
-    html[data-size="thermal"] .receipt-header .header-clinic { width: 100%; text-align: center; }
-    html[data-size="thermal"] .services-grid-matrix { grid-template-columns: 1fr 1fr; }
-    html[data-size="thermal"] .ledger-grid-wrap { grid-template-columns: 1fr; }
+    .date-container{display:inline-flex!important;align-items:center!important;gap:4px!important;direction:rtl!important;white-space:nowrap!important;}
+    .date-slot{min-width:28px!important;width:28px!important;display:inline-block!important;}
+    .date-slash{direction:ltr!important;unicode-bidi:isolate!important;}
+    .date-year{direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;font-weight:700!important;}
+    .footer-phones{display:flex!important;justify-content:center!important;align-items:center!important;gap:10px!important;white-space:nowrap!important;direction:ltr!important;unicode-bidi:isolate!important;font-family:monospace,sans-serif!important;font-size:8.5px!important;font-weight:700!important;color:#073b63!important;}
+    .footer-phones .phone-separator{color:#94a3b8!important;}
     input, button { color: #000 !important; }
 }
-@media print{ @page{margin:0!important} .receipt-paper{box-sizing:border-box!important} }
+@media print{ @page{size:A5;margin:0!important} }
+@media print and (max-width:1px){ @page{margin:0!important} }

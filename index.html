@@ -9,9 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         <script src="logo_data.js"></script>
-    <link rel="stylesheet" href="css/ui.css?v=20261007_07">
-    <link rel="stylesheet" href="css/receipt.css?v=20261007_07">
-    <link rel="stylesheet" href="css/print.css?v=20261007_07">
+    <link rel="stylesheet" href="css/ui.css?v=20261007_08">
+    <link rel="stylesheet" href="css/receipt.css?v=20261007_08">
+    <link rel="stylesheet" href="css/print.css?v=20261007_08">
 </head>
 <body data-mode="manual">
 
@@ -78,9 +78,13 @@
                     <input type="text" class="digital-only live-input num-input" id="digReceiptNo" placeholder="">
                 </div>
                 <div class="meta-cell">
-                    <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
-                    <div class="manual-only ar-date-flow" dir="rtl" aria-label="التاريخ">
-                        <bdo dir="ltr" class="date-ltr-flow">_____ / _____ / 202_</bdo><span class="date-suffix"> م</span>
+                    <div class="manual-only date-container" aria-label="التاريخ">
+                        <span class="meta-label editable" data-key="date_lbl">التاريخ:</span>
+                        <span class="date-slot"></span>
+                        <span class="date-slash" dir="ltr">/</span>
+                        <span class="date-slot"></span>
+                        <span class="date-slash" dir="ltr">/</span>
+                        <span class="date-year" dir="ltr">202_ م</span>
                     </div>
                     <input type="date" class="digital-only live-input" id="digDate">
                 </div>
@@ -213,8 +217,10 @@
                 <div class="footer-meta-line">
                     <span class="footer-address editable" data-key="addr_val">ريمة – كسمة – عزلة الضبارة</span>
                     <div class="footer-phones" dir="ltr">
-                        <span>+967 716 339 366</span> &bull; 
-                        <span>+967 739 550 138</span> &bull; 
+                        <span>+967 716 339 366</span>
+                        <span class="phone-separator">•</span>
+                        <span>+967 739 550 138</span>
+                        <span class="phone-separator">•</span>
                         <span>+967 775 956 520</span>
                     </div>
                 </div>
