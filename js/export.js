@@ -42,7 +42,7 @@ async function downloadReceiptPDF() {
         const options = {
             margin: profile.pdfFormat === 'a5' ? 0 : 0,
             filename: 'سند_قبض_' + recNo + '.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'png' },
             html2canvas: { scale: 4, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', imageTimeout: 15000 },
             jsPDF: { unit: 'mm', format: profile.pdfFormat, orientation: profile.orientation }
         };
