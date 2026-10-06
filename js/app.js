@@ -74,6 +74,14 @@ function setReceiptColor(color) {
 function setReceiptWeight(weight) {
     const safe=weight>=800?800:700;
     document.documentElement.style.setProperty('--receipt-font-weight', String(safe));
+    const receipt=document.getElementById('receiptPrintArea');
+    if(receipt){
+        receipt.querySelectorAll('*').forEach(el=>{
+            if(!el.dataset.baseFontWeight) el.dataset.baseFontWeight=getComputedStyle(el).fontWeight;
+            const base=parseInt(el.dataset.baseFontWeight,10);
+            if(Number.isFinite(base) && base>=600) el.style.fontWeight=String(safe);
+        });
+    }
     localStorage.setItem('alssaedy_receipt_weight', String(safe));
 }
 
