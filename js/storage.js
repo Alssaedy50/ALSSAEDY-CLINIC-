@@ -47,7 +47,7 @@ function collectReceiptData() {
     const total=Math.max(0,Number.parseFloat(document.getElementById('digTotal').value)||0);
     const currency=typeof getCurrencyInfo==='function'?getCurrencyInfo():{code:'YER',nameAr:'ريال يمني',symbol:'ر.ي'};
     return {
-        id:crypto?.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2),
+        id:window.crypto?.randomUUID?window.crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2),
         recNo:document.getElementById('digReceiptNo').value.trim(),
         date:document.getElementById('digDate').value||getLocalDateISO(),
         name:document.getElementById('digClientName').value.trim()||'مريض بدون اسم',
@@ -259,7 +259,7 @@ async function upsertCurrentPatient(receipt){
   let p=list.find(x=>receipt.patientId&&x.id===receipt.patientId)
       ||list.find(x=>phone&&x.phone===phone)
       ||list.find(x=>x.name===name&&(!phone||x.phone===phone));
-  if(!p)p={id:(crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now()),name,phone,gender:'',age:'',medicalHistory:'',problem:'',createdAt:new Date().toISOString(),nextVisit:'',notes:'',visits:[]};
+  if(!p)p={id:(window.crypto?.randomUUID?window.crypto.randomUUID():'P-'+Date.now()),name,phone,gender:'',age:'',medicalHistory:'',problem:'',createdAt:new Date().toISOString(),nextVisit:'',notes:'',visits:[]};
   p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
   if(!Array.isArray(p.visits))p.visits=[];
   if(!p.visits.some(v=>v.receiptId===receipt.id))p.visits.push({receiptId:receipt.id,date:receipt.date,total:receipt.total,paid:receipt.paid,currency:receipt.currency,services:receipt.services||[],tooth:receipt.tooth||''});
@@ -283,7 +283,7 @@ async function savePatientManual(){
   if(!gender){alert('اختر جنس المريض.');return;}
   const list=await getPatients();
   let p=list.find(x=>x.id===existingId)||list.find(x=>phone&&x.phone===phone);
-  if(!p)p={id:(crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now()),createdAt:new Date().toISOString(),visits:[]};
+  if(!p)p={id:(window.crypto?.randomUUID?window.crypto.randomUUID():'P-'+Date.now()),createdAt:new Date().toISOString(),visits:[]};
   p.name=name;p.gender=gender;p.age=age;p.phone=phone;p.nextVisit=nextVisit;
   p.problem=problem;p.medicalHistory=medicalHistory;p.notes=notes;p.updatedAt=new Date().toISOString();
   await clinicDBPut('patients',p);
