@@ -203,12 +203,59 @@ Completed:
 - initial dependency/call-site sampling
 - initial legacy candidate identification
 - initial storage/navigation/export/logo/sync observations
-- this continuity ledger
+- continuity ledger
+- Phase 0 / Task 0.2 dependency & call graph
+- Phase 0 / Task 0.3 action/event map
 
-Next task:
-**0.2 Dependency/call graph — complete the authoritative action → function → state → storage → output map.**
+Current:
+- Phase 0 / Task 0.4 state/data-flow map
 
 Do not start Phase 1 until Phase 0.15 is marked COMPLETE.
 Do not start Phase 2 until Phase 1 is tested.
 Do not start productization until architecture and data boundaries are stable.
 Do not create a release until Phase 5 is COMPLETE.
+
+
+## Audit checkpoint — 2026-10-08
+
+### Phase 0 / Task 0.2 — Dependency & call graph: COMPLETE
+
+Authoritative runtime map established from the current `main` branch.
+
+#### UI/action → handler → state/data → persistence/output
+- Receipt tabs → `activateAppTab()` → `activeAppTab` + panel/modal state → receipt/patients/history/settings UI.
+- Receipt entry → live DOM inputs + `calculateLedger()` / date/payment/service handlers → receipt field state → `saveReceiptLocally()` → IndexedDB `receipts` plus a legacy localStorage mirror.
+- Save → `saveReceiptLocally()` → `collectReceiptData()` → fingerprint/duplicate checks → IndexedDB + localStorage mirror → patient upsert + optional auto-sync.
+- History → `openHistoryModal()` → `renderHistory()` → reads `safeHistory()` → load/delete/clear actions mutate IndexedDB and the localStorage mirror.
+- Patient workflow → `openPatientsModal()` / `selectPatient()` / `savePatientManual()` → patient state + receipt-derived financial summary → IndexedDB `patients` and localStorage mirror; patient account can create a new receipt.
+- PNG → `downloadReceiptImage()` → `generateReceiptCanvas()` → `saveCanvasImage()` → Android chunked image bridge or browser download.
+- Share image → `shareReceiptImage()` → canvas PNG → Web Share API or image download + WhatsApp fallback.
+- Print/PDF → `triggerNativePrint()` / `downloadReceiptPDF()` → print DOM materialization + dynamic print CSS → browser/WebView print engine. This is the authoritative PDF route.
+- Legacy PDF → `buildReceiptPdfBlob()` → jsPDF + raster canvas. No active caller was found; candidate for removal after final dependency proof.
+- Text share/copy → `getReceiptText()` → clipboard/WhatsApp URL.
+- Transaction export → `exportTransactionsFile()` → history read → CSV/JSON → Android Downloads bridge or browser download.
+- Full backup → `buildFullBackup()` → IndexedDB receipts/patients + localStorage settings → JSON file. Import reverses this into IndexedDB and rebuilds the receipt mirror.
+- Cloud sync → `syncBackupNow()` / `syncRestoreNow()` → IndexedDB snapshot + selected settings → `fetch()` to `/api/clinic-sync` → Vercel Blob record; restore writes back to IndexedDB and localStorage mirrors.
+
+#### Android bridge map
+- `triggerNativePrint()` ultimately relies on WebView print; native `Android.printReceipt()` remains separately exposed and must be checked for active JS callers before removal.
+- PNG export uses `Android.beginImageSave()` → `appendImageChunk()` → `finishImageSave()`.
+- Transaction exports use `Android.saveTransactionsFile()`.
+- Patient reminders use `Android.scheduleReminder()`.
+- `Android.savePdfFromData()` and `Android.saveImage()` remain exposed legacy bridge methods; no active JS call was found for them in the current frontend call graph.
+
+#### Confirmed architectural issues discovered during 0.2
+1. **Two persistence representations:** IndexedDB is the durable store, but receipts/patients are repeatedly mirrored into localStorage. This creates synchronization responsibility in multiple modules and violates the intended single source of truth.
+2. **Logo persistence/application is split:** `saveLogoDurably/loadLogoDurably` coexist with `persistLogoData/loadCustomLogo`; the latter pair has no active caller in the current graph.
+3. **Export has competing historical paths:** native print is authoritative, while jsPDF/blob helpers remain in the codebase without active callers.
+4. **Navigation is not a true router:** tab selection, modal state and browser history are mixed. In particular, `activateAppTab('patients')` opens the patient modal through `openPatientsModal()`, but that function does not push a panel history state; this directly weakens Back navigation. `selectPatient()` also renders the account without explicitly transitioning through `showPatientDetailView()`.
+5. **Multiple event mechanisms:** 89 inline `onclick` handlers coexist with JavaScript `addEventListener` handlers. This is workable but increases coupling and makes a future centralized event/action layer preferable.
+6. **Sync settings use localStorage directly** while sync data uses IndexedDB, adding another split ownership boundary.
+
+### Phase 0 / Task 0.3 — Action/Event map: COMPLETE
+
+The action inventory covers 89 inline handlers across 53 handler expressions, plus DOMContentLoaded, popstate, input/change, keyboard shortcut, service-worker and Android bridge events. The major action families are: receipt entry, quick actions, navigation, settings/theme/typography, logo, history, patient management, backup/import/export, sync, print/PDF/image/share and template generation.
+
+### Next task
+**0.4 State/data-flow map — IN PROGRESS.**
+Focus: identify every authoritative state owner, every mirror, every mutation path, and the exact boundaries between DOM state, IndexedDB, localStorage, sync snapshots, export snapshots and Android persistence.
