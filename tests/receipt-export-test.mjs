@@ -139,8 +139,8 @@ const result = await page.evaluate(async () => {
   if (!document.fonts.check('900 16px "Cairo"', 'سند قبض مالي')) {
     throw new Error('Cairo Arabic font is not ready before Canvas capture.');
   }
-  if (typeof generateReceiptCanvas !== 'function' || typeof buildReceiptPdfBlob !== 'function') {
-    throw new Error('Export pipeline functions are unavailable.');
+  if (typeof generateReceiptCanvas !== 'function') {
+    throw new Error('Image export pipeline is unavailable.');
   }
 
   const source = document.getElementById('receiptPrintArea');
