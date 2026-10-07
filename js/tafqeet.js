@@ -1,4 +1,12 @@
-function tafqeetRial(number) {
+function currencyWordsName() {
+    if (typeof getCurrencyInfo === 'function') {
+        const info = getCurrencyInfo();
+        if (info && info.nameAr) return info.nameAr;
+    }
+    return 'ريال يمني';
+}
+
+function tafqeetRial(number, currencyName) {
     if (isNaN(number) || number <= 0) return '';
     number = Math.floor(number);
     const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة',
@@ -29,34 +37,36 @@ function tafqeetRial(number) {
     let thousands = Math.floor((number % 1000000) / 1000);
     let rest = number % 1000;
 
-    if (millions > 0) {
-        if (millions === 1) parts.push('مليون');
-        else if (millions === 2) parts.push('مليونان');
-        else if (millions >= 3 && millions <= 10) parts.push(convertGroup(millions) + ' ملايين');
-        else parts.push(convertGroup(millions) + ' مليون');
+    function scaleWord(count, singular, dual, few, many) {
+        if (count === 1) return singular;
+        if (count === 2) return dual;
+        if (count >= 3 && count <= 10) return convertGroup(count) + ' ' + few;
+        return convertGroup(count) + ' ' + many;
     }
-    if (thousands > 0) {
-        if (thousands === 1) parts.push('ألف');
-        else if (thousands === 2) parts.push('ألفان');
-        else if (thousands >= 3 && thousands <= 10) parts.push(convertGroup(thousands) + ' آلاف');
-        else parts.push(convertGroup(thousands) + ' ألف');
-    }
+
+    if (millions > 0) parts.push(scaleWord(millions, 'مليون', 'مليونان', 'ملايين', 'مليون'));
+    if (thousands > 0) parts.push(scaleWord(thousands, 'ألف', 'ألفان', 'آلاف', 'ألف'));
     if (rest > 0) {
         parts.push(convertGroup(rest));
     }
 
-    return parts.join(' و') + ' ريال يمني فقط لا غير';
+    return parts.join(' و') + ' ' + (currencyName || currencyWordsName()) + ' فقط لا غير';
 }
 
 function calculateLedger() {
-    const paidVal = document.getElementById('digPaid').value;
-    const paid = parseFloat(paidVal) || 0;
-    const total = parseFloat(document.getElementById('digTotal').value) || 0;
-    
-    document.getElementById('digPaidTable').value = paid ? paid : '';
-    document.getElementById('digBalance').value = (total || paid) ? Math.max(0, total - paid) : '';
+    const paidEl = document.getElementById('digPaid');
+    const totalEl = document.getElementById('digTotal');
+    if (!paidEl || !totalEl) return;
+    const paidTableEl = document.getElementById('digPaidTable');
+    const balanceEl = document.getElementById('digBalance');
+    const tafqeetEl = document.getElementById('digTafqeet');
 
-    if (paid > 0) {
-        document.getElementById('digTafqeet').value = tafqeetRial(paid);
-    }
+    const paid = Math.max(0, parseFloat(paidEl.value) || 0);
+    const total = Math.max(0, parseFloat(totalEl.value) || 0);
+
+    if (paidTableEl) paidTableEl.value = paid ? paid : '';
+    if (balanceEl) balanceEl.value = (total || paid) ? Math.max(0, total - paid) : '';
+    // Clear the words field when there is no paid amount so stale text never
+    // survives a "تفريغ" or a receipt edited back to zero.
+    if (tafqeetEl) tafqeetEl.value = paid > 0 ? tafqeetRial(paid) : '';
 }

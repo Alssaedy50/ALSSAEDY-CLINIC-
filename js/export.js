@@ -1,9 +1,40 @@
-function getExportBox(profile) {
+function getExportBox(profile, fullPage = false) {
+    if (fullPage && profile.height !== 'auto') {
+        return { width: profile.width, height: profile.height };
+    }
     // Keep a precise 2mm printable safety margin while filling the selected paper.
     if (profile.pdfFormat === 'a5') return { width: '144mm', height: '206mm' };
     if (profile.pdfFormat === 'a4') return { width: '206mm', height: '293mm' };
     if (Array.isArray(profile.pdfFormat)) return { width: '76mm', height: 'auto' };
     return { width: profile.width, height: profile.height === 'auto' ? 'auto' : profile.height };
+}
+
+function getPdfPageSizeMm(profile) {
+    if (profile.pdfFormat === 'a4') return { w: 210, h: 297, format: 'a4' };
+    if (Array.isArray(profile.pdfFormat)) return { w: profile.pdfFormat[0] || 80, h: profile.pdfFormat[1] || 240, format: null };
+    return { w: 148, h: 210, format: 'a5' };
+}
+
+let __jspdfLoadingPromise = null;
+function ensureJsPdf() {
+    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+    if (__jspdfLoadingPromise) return __jspdfLoadingPromise;
+    __jspdfLoadingPromise = new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-jspdf-retry]');
+        if (existing) {
+            existing.addEventListener('load', () => window.jspdf?.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF غير متاح.')), { once: true });
+            existing.addEventListener('error', () => reject(new Error('تعذر تحميل مكتبة PDF.')), { once: true });
+            setTimeout(() => window.jspdf?.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF غير متاح.')), 3000);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'vendor/jspdf/jspdf.umd.min.js';
+        script.dataset.jspdfRetry = '1';
+        script.onload = () => window.jspdf?.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF غير متاح.'));
+        script.onerror = () => reject(new Error('تعذر تحميل مكتبة PDF.'));
+        document.head.appendChild(script);
+    });
+    return __jspdfLoadingPromise;
 }
 
 async function ensureLibraries() {
@@ -41,6 +72,7 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
         document.body.getAttribute('data-mode') === 'manual';
     const source = sourceReceipt.querySelector('#digDate');
     const cloned = clonedReceipt.querySelector('#digDate');
+    const clonedPrintDate = clonedReceipt.querySelector('#printDateValue');
     const clonedPaperYear = clonedReceipt.querySelector('#paperDateYear');
 
     if (isBlankTemplate) {
@@ -48,6 +80,7 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
             cloned.value = '';
             cloned.removeAttribute('value');
         }
+        if (clonedPrintDate) clonedPrintDate.textContent = '';
         if (clonedPaperYear) {
             clonedPaperYear.innerHTML =
                 '<span class="paper-year-digits" dir="ltr">202</span>' +
@@ -59,10 +92,16 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
         return;
     }
 
-    if (!source || !cloned) return;
-    const value = String(source.value || '').trim();
-    cloned.value = value;
-    cloned.setAttribute('value', value);
+    if (cloned) {
+        const value = String(source?.value || '').trim();
+        cloned.value = value;
+        cloned.setAttribute('value', value);
+    }
+    // Mirror the human-readable date into the print-only element so the rendered
+    // PNG/PDF shows "DD/MM/YYYY م" instead of the raw typed text.
+    if (clonedPrintDate && typeof formatReceiptDate === 'function') {
+        clonedPrintDate.textContent = formatReceiptDate(source?.value || '');
+    }
   }
 
 function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument) {
@@ -112,7 +151,7 @@ function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument
     });
 }
 
-async function generateReceiptCanvas() {
+async function generateReceiptCanvas(options = {}) {
     await ensureLibraries();
     await document.fonts.ready;
 
@@ -120,7 +159,7 @@ async function generateReceiptCanvas() {
     if (!receipt) throw new Error('منطقة السند غير موجودة.');
 
     const profile = getSizeProfile();
-    const exportBox = getExportBox(profile);
+    const exportBox = getExportBox(profile, options.fullPage === true);
     document.documentElement.style.setProperty('--export-width', exportBox.width);
     document.documentElement.style.setProperty('--export-height', exportBox.height);
 
@@ -139,7 +178,7 @@ async function generateReceiptCanvas() {
         );
 
         return html2canvas(receipt, {
-            scale: 6,
+            scale: options.scale || 6,
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -159,22 +198,111 @@ async function generateReceiptCanvas() {
     }).finally(() => document.body.classList.remove('exporting-receipt'));
 }
 
+function canvasToPngBlob(canvas) {
+    return new Promise(resolve => {
+        if (canvas.toBlob) canvas.toBlob(blob => resolve(blob), 'image/png');
+        else {
+            const dataUrl = canvas.toDataURL('image/png');
+            const bin = atob(dataUrl.split(',')[1]);
+            const arr = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+            resolve(new Blob([arr], { type: 'image/png' }));
+        }
+    });
+}
+
+// Renders the live receipt to a correctly sized, single-page, text-crisp PDF
+// without any print dialog. Works on desktop and inside the Android WebView.
+async function buildReceiptPdfBlob() {
+    const jsPDF = await ensureJsPdf();
+    const canvas = await generateReceiptCanvas({ fullPage: true, scale: 3 });
+    const profile = getSizeProfile();
+    const page = getPdfPageSizeMm(profile);
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: page.format || [page.w, page.h], compress: true });
+    const pw = doc.internal.pageSize.getWidth();
+    const ph = doc.internal.pageSize.getHeight();
+    if (profile.height === 'auto') {
+        // Thermal: keep the image aspect ratio and grow the page height if needed.
+        const imgH = Math.min(ph * 4, pw * (canvas.height / canvas.width));
+        doc.addImage(imgData, 'JPEG', 0, 0, pw, imgH, undefined, 'FAST');
+    } else {
+        doc.addImage(imgData, 'JPEG', 0, 0, pw, ph, undefined, 'FAST');
+    }
+    return doc.output('blob');
+}
+
 async function downloadReceiptPDF() {
-    // Native print is the authoritative PDF path: text stays sharp instead of becoming a raster screenshot.
     try {
-        await document.fonts.ready;
-        const oldTitle=document.title;
-        const recNo=document.getElementById('digReceiptNo')?.value||'سند';
-        document.title='سند_قبض_'+recNo;
-        injectPrintPageStyle();
-        alert('سيتم فتح نافذة الطباعة. اختر «حفظ كملف PDF» ثم احفظ السند بالمقاس الظاهر.');
-        setTimeout(()=>window.print(),120);
-        window.addEventListener('afterprint',()=>{
-            document.title=oldTitle;
-            const style=document.getElementById('dynamic-print-size');
-            if(style)style.remove();
-        },{once:true});
-    }catch(err){alert('تعذر تجهيز ملف PDF للطباعة: '+err.message);}
+        const recNo = (document.getElementById('digReceiptNo')?.value || 'سند').trim();
+        if (window.Android && typeof Android.savePdf === 'function') {
+            // Native path: rasterize the exact sheet into a real PDF file.
+            const blob = await buildReceiptPdfBlob();
+            const reader = await blobToDataUrl(blob);
+            Android.savePdfFromData(reader, 'سند_قبض_' + recNo);
+            return;
+        }
+        const blob = await buildReceiptPdfBlob();
+        downloadBlob(blob, 'سند_قبض_' + recNo + '.pdf');
+        if (typeof toast === 'function') toast('تم إنشاء ملف PDF بالمقاس المحدد وتنزيله.'); else alert('تم إنشاء ملف PDF وتنزيله.');
+    } catch (err) {
+        // Fallback: browser native print-to-PDF never fails silently.
+        try {
+            const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
+            const oldTitle = document.title;
+            document.title = 'سند_قبض_' + recNo;
+            injectPrintPageStyle();
+            window.addEventListener('afterprint', () => { document.title = oldTitle; document.getElementById('dynamic-print-size')?.remove(); }, { once: true });
+            setTimeout(() => window.print(), 150);
+        } catch (e2) {
+            alert('تعذر إنشاء PDF: ' + err.message);
+        }
+    }
+}
+
+function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+    });
+}
+
+function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ---- print preview ---- */
+async function openPreviewModal() {
+    const modal = document.getElementById('previewModal');
+    const stage = document.getElementById('previewStage');
+    if (!modal || !stage) return;
+    modal.classList.add('open');
+    stage.innerHTML = '<div class="preview-loading">جارٍ تجهيز المعاينة...</div>';
+    try {
+        const canvas = await generateReceiptCanvas({ fullPage: true, scale: 2 });
+        const dataUrl = canvas.toDataURL('image/png');
+        stage.innerHTML = '';
+        const img = document.createElement('img');
+        img.alt = 'معاينة السند';
+        img.src = dataUrl;
+        stage.appendChild(img);
+    } catch (e) {
+        stage.innerHTML = '<div class="preview-loading">تعذر تجهيز المعاينة: ' + escapePreviewText(e.message) + '</div>';
+    }
+}
+function closePreviewModal() { document.getElementById('previewModal')?.classList.remove('open'); }
+function escapePreviewText(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
 }
 
 function injectPrintPageStyle() {
@@ -210,8 +338,9 @@ function normalizeWhatsAppNumber(value) {
 }
 
 function formatReceiptDate(value) {
-    const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return m ? m[3] + '/' + m[2] + '/' + m[1] + ' م' : String(value || '');
+    const parsed = typeof parseAnyDate === 'function' ? parseAnyDate(value) : null;
+    if (parsed) return parsed.d + '/' + parsed.m + '/' + parsed.y + ' م';
+    return String(value || '');
 }
 
 function bidiIsolate(value) {
@@ -306,19 +435,27 @@ async function shareReceiptImage() {
 }
 
 async function saveCanvasImage(canvas, filename) {
-    const dataUrl=canvas.toDataURL('image/png');
-    if(window.Android&&typeof Android.saveImageChunks==='function'){
-        const base64=dataUrl.substring(dataUrl.indexOf(',')+1), chunkSize=180000;
+    if (window.Android && typeof Android.beginImageSave === 'function') {
+        const dataUrl = canvas.toDataURL('image/png');
+        const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1), chunkSize = 262144;
         Android.beginImageSave(filename);
-        for(let i=0;i<base64.length;i+=chunkSize) Android.appendImageChunk(base64.substring(i,i+chunkSize));
+        for (let i = 0; i < base64.length; i += chunkSize) Android.appendImageChunk(base64.substring(i, i + chunkSize));
         Android.finishImageSave();
         return;
     }
-    const link=document.createElement('a'); link.download=filename+'.png'; link.href=dataUrl; document.body.appendChild(link); link.click(); link.remove();
+    const blob = await canvasToPngBlob(canvas);
+    downloadBlob(blob, filename + '.png');
 }
-async function downloadReceiptImage(){
-    try{const canvas=await generateReceiptCanvas();const recNo=document.getElementById('digReceiptNo')?.value||'سند';await saveCanvasImage(canvas,'سند_قبض_'+recNo);}
-    catch(e){alert('تعذر إنشاء الصورة: '+e.message);}
+
+async function downloadReceiptImage() {
+    try {
+        const canvas = await generateReceiptCanvas({ fullPage: true });
+        const recNo = (document.getElementById('digReceiptNo')?.value || 'سند').trim();
+        await saveCanvasImage(canvas, 'سند_قبض_' + recNo);
+        if (typeof toast === 'function') toast('تم تنزيل صورة السند بنجاح.');
+    } catch (e) {
+        if (typeof toast === 'function') toast('تعذر إنشاء الصورة: ' + e.message, 'error'); else alert('تعذر إنشاء الصورة: ' + e.message);
+    }
 }
 
 function copyReceiptText() {
@@ -353,13 +490,33 @@ function prepareBlankTemplate(){
 function finishBlankTemplate(snapshot){document.body.classList.remove('blank-template-export');restoreReceiptAfterTemplate(snapshot);}
 async function downloadBlankTemplateImage(){
   const snapshot=prepareBlankTemplate();
-  try{const canvas=await generateReceiptCanvas();const dataUrl=canvas.toDataURL('image/png',0.95);const filename='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();if(window.Android&&typeof Android.saveImageChunks==='function')saveCanvasImage(canvas,filename);else if(window.Android&&typeof Android.saveImage==='function')Android.saveImage(dataUrl,filename);else{const link=document.createElement('a');link.download=filename+'.png';link.href=dataUrl;document.body.appendChild(link);link.click();link.remove();}}
-  catch(e){alert('تعذر إنشاء نموذج الطباعة: '+e.message);}
+  try{
+    const canvas=await generateReceiptCanvas({fullPage:true});
+    const filename='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
+    if(window.Android&&typeof Android.beginImageSave==='function') await saveCanvasImage(canvas,filename);
+    else if(window.Android&&typeof Android.saveImage==='function') Android.saveImage(canvas.toDataURL('image/png'),filename);
+    else{const blob=await canvasToPngBlob(canvas);downloadBlob(blob,filename+'.png');}
+    if(typeof toast==='function')toast('تم تنزيل النموذج الفارغ بنجاح.');
+  }
+  catch(e){if(typeof toast==='function')toast('تعذر إنشاء نموذج الطباعة: '+e.message,'error');else alert('تعذر إنشاء نموذج الطباعة: '+e.message);}
   finally{finishBlankTemplate(snapshot);}
 }
-function downloadBlankTemplatePDF(){
-  const snapshot=prepareBlankTemplate(),oldTitle=document.title;
-  document.title='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
-  if(window.Android&&typeof Android.savePdf==='function'){Android.savePdf(getSelectedSize(),'ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase());setTimeout(()=>{document.title=oldTitle;finishBlankTemplate(snapshot);},1500);return;}
-  injectPrintPageStyle();window.addEventListener('afterprint',()=>{document.title=oldTitle;document.getElementById('dynamic-print-size')?.remove();finishBlankTemplate(snapshot);},{once:true});setTimeout(()=>window.print(),120);
+async function downloadBlankTemplatePDF(){
+  const snapshot=prepareBlankTemplate();
+  const baseName='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
+  try{
+    const blob=await buildReceiptPdfBlob();
+    if(window.Android&&typeof Android.savePdfFromData==='function'){Android.savePdfFromData(await blobToDataUrl(blob),baseName);}
+    else downloadBlob(blob,baseName+'.pdf');
+    if(typeof toast==='function')toast('تم إنشاء نموذج PDF فارغ.');
+  }
+  catch(e){
+    const oldTitle=document.title;document.title=baseName;
+    if(window.Android&&typeof Android.savePdf==='function'){Android.savePdf(getSelectedSize(),baseName);setTimeout(()=>{document.title=oldTitle;finishBlankTemplate(snapshot);},1500);return;}
+    injectPrintPageStyle();
+    window.addEventListener('afterprint',()=>{document.title=oldTitle;document.getElementById('dynamic-print-size')?.remove();finishBlankTemplate(snapshot);},{once:true});
+    setTimeout(()=>window.print(),120);
+    return;
+  }
+  finishBlankTemplate(snapshot);
 }

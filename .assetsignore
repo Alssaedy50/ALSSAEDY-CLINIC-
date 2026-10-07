@@ -1,7 +1,17 @@
+node_modules/
 .git/
 .github/
 scripts/
 docs/
+tests/
+output/
+.backup-*/
+.wrangler/
 README.md
+AGENTS.md
 wrangler.jsonc
+package.json
+package-lock.json
 .gitignore
+.assetsignore
+*.log

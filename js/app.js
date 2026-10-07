@@ -153,19 +153,39 @@ function getLocalDateISO() {
     return y + '-' + m + '-' + d;
 }
 
+function parseAnyDate(value) {
+    // Accepts ISO (YYYY-MM-DD), D/M/Y, D-M-Y, YYYY/M/D and Arabic-Indic digits.
+    // Returns {y,m,d} strings or null. Never throws.
+    const normalized = String(value ?? '')
+        .trim()
+        .replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+        .replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+        .replace(/[.\\]/g, '-');
+    if (!normalized) return null;
+    let m = normalized.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (m) return { y: m[1], m: m[2].padStart(2, '0'), d: m[3].padStart(2, '0') };
+    m = normalized.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+    if (m) {
+        let y = m[3];
+        if (y.length === 2) y = (Number(y) > 50 ? '19' : '20') + y;
+        return { y, m: m[2].padStart(2, '0'), d: m[1].padStart(2, '0') };
+    }
+    return null;
+}
+
 function syncPaperDate(dateValue) {
-    const match = String(dateValue || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const parsed = parseAnyDate(dateValue);
     const day = document.getElementById('paperDateDay');
     const month = document.getElementById('paperDateMonth');
     const year = document.getElementById('paperDateYear');
 
-    if (day) day.textContent = match ? match[3] : '';
-    if (month) month.textContent = match ? match[2] : '';
+    if (day) day.textContent = parsed ? parsed.d : '';
+    if (month) month.textContent = parsed ? parsed.m : '';
 
     // Manual paper template: keep the pre-printed Arabic year marker "202م".
     // Digital receipts may still mirror the full selected year when a date exists.
     if (year) {
-        const yearValue = match ? match[1] : '202';
+        const yearValue = parsed ? parsed.y : '202';
         year.innerHTML =
             '<span class="paper-year-digits" dir="ltr">' + yearValue + '</span>' +
             '<span class="paper-year-era" dir="rtl">م</span>';
@@ -202,20 +222,24 @@ function generateNextReceiptNo() {
 
 function clearReceiptInputs() {
     if (confirm('هل تريد تفريغ حقول السند الحالية؟')) {
-        ['digReceiptNo','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id => {
+        ['digReceiptNo','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
         setPayMethod(document.body.getAttribute('data-mode') === 'digital' ? 'نقداً' : '');
         document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
+        localStorage.removeItem('alssaedy_draft');
+        if (typeof calculateLedger === 'function') calculateLedger();
+        if (typeof toast === 'function') toast('تم تفريغ حقول السند.', 'info');
     }
 }
 
 function setPayMethod(method) {
     const safeMethod = method === 'نقداً' || method === 'محفظة / تحويل بنكي' ? method : '';
-    document.getElementById('selectedPayMethod').value = safeMethod;
-    document.getElementById('optCash').classList.toggle('active', safeMethod === 'نقداً');
-    document.getElementById('optBank').classList.toggle('active', safeMethod === 'محفظة / تحويل بنكي');
+    const hidden = document.getElementById('selectedPayMethod');
+    if (hidden) hidden.value = safeMethod;
+    document.getElementById('optCash')?.classList.toggle('active', safeMethod === 'نقداً');
+    document.getElementById('optBank')?.classList.toggle('active', safeMethod === 'محفظة / تحويل بنكي');
 }
 
 function toggleService(element) {
