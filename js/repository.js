@@ -59,6 +59,7 @@ async function clinicDBClear(store){
 window.__clinicRepository = window.__clinicRepository || {
   receipts: [],
   patients: [],
+  settings: {},
   hydrated: false
 };
 
@@ -78,10 +79,19 @@ async function clinicRepositoryHydrate(){
   }
   repo.receipts=await clinicDBAll('receipts');
   repo.patients=await clinicDBAll('patients');
+  const durableSettings=await clinicDBAll('settings');
+  const settingsById=Object.fromEntries(durableSettings.filter(x=>x?.id).map(x=>[x.id,x.value]));
+  const legacyLogo=localStorage.getItem('alssaedy_custom_logo')||'';
+  if(!settingsById.customLogo && legacyLogo){
+    await clinicDBPut('settings',{id:'customLogo',value:legacyLogo,updatedAt:new Date().toISOString()});
+    settingsById.customLogo=legacyLogo;
+  }
+  repo.settings=settingsById;
   repo.hydrated=true;
   /* Legacy mirrors are migration inputs only; durable data now lives in IndexedDB. */
   if(receipts.length || repo.receipts.length) localStorage.removeItem('alssaedy_receipts_history');
   if(patients.length || repo.patients.length) localStorage.removeItem('alssaedy_patients');
+  if(repo.settings.customLogo) localStorage.removeItem('alssaedy_custom_logo');
   return repo;
 }
 function readLegacyArray(key){
@@ -124,3 +134,15 @@ async function clinicRepositoryHydratePatients(){
 }
 
 async function hydrateDurableReceipts(){ return clinicRepositoryHydrate(); }
+
+function clinicRepositoryGetSettingSync(id){ return window.__clinicRepository.settings?.[id] ?? ''; }
+async function clinicRepositoryPutSetting(id,value){
+  const item={id:String(id),value:String(value??''),updatedAt:new Date().toISOString()};
+  await clinicDBPut('settings',item);
+  window.__clinicRepository.settings[item.id]=item.value;
+  return item.value;
+}
+async function clinicRepositoryDeleteSetting(id){
+  await clinicDBDelete('settings',String(id));
+  delete window.__clinicRepository.settings[String(id)];
+}
