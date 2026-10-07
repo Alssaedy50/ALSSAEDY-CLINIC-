@@ -5,38 +5,6 @@ function getExportBox(profile) {
     return { width: profile.width, height: profile.height === 'auto' ? 'auto' : profile.height };
 }
 
-function getPdfPageSizeMm(profile, canvas) {
-    if (profile.pdfFormat === 'a4') return { w: 210, h: 297, format: 'a4' };
-    if (Array.isArray(profile.pdfFormat)) {
-        const w = Number(profile.pdfFormat[0]) || 80;
-        const h = canvas && canvas.width ? w * (canvas.height / canvas.width) : (Number(profile.pdfFormat[1]) || 240);
-        return { w, h: Math.max(40, h), format: null };
-    }
-    return { w: 148, h: 210, format: 'a5' };
-}
-
-let __jspdfLoadingPromise = null;
-function ensureJsPdf() {
-    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
-    if (__jspdfLoadingPromise) return __jspdfLoadingPromise;
-    __jspdfLoadingPromise = new Promise((resolve, reject) => {
-        const existing = document.querySelector('script[data-jspdf-retry]');
-        if (existing) {
-            existing.addEventListener('load', () => window.jspdf?.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF غير متاح.')), { once: true });
-            existing.addEventListener('error', () => reject(new Error('تعذر تحميل مكتبة PDF.')), { once: true });
-            setTimeout(() => window.jspdf?.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF غير متاح.')), 3000);
-            return;
-        }
-        const script = document.createElement('script');
-        script.src = 'vendor/jspdf/jspdf.umd.min.js?v=1.1.0';
-        script.dataset.jspdfRetry = '1';
-        script.onload = () => window.jspdf?.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF غير متاح.'));
-        script.onerror = () => reject(new Error('تعذر تحميل مكتبة PDF.'));
-        document.head.appendChild(script);
-    });
-    return __jspdfLoadingPromise;
-}
-
 async function ensureLibraries() {
     if (typeof html2canvas === 'function') return;
     // Android/local deployments can occasionally finish parsing before the vendor
@@ -280,53 +248,6 @@ function canvasToPngBlob(canvas) {
             for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
             resolve(new Blob([arr], { type: 'image/png' }));
         }
-    });
-}
-
-// Renders the live receipt to a correctly sized, single-page, text-crisp PDF
-// without any print dialog. Works on desktop and inside the Android WebView.
-async function buildReceiptPdfBlob() {
-    const jsPDF = await ensureJsPdf();
-    const canvas = await generateReceiptCanvas({ fullPage: true, scale: window.Android ? 3 : 4 });
-    const profile = getSizeProfile();
-    const page = getPdfPageSizeMm(profile, canvas);
-    // PNG avoids JPEG ringing around Arabic text and thin borders.
-    const imgData = canvas.toDataURL('image/png');
-    const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: page.format || [page.w, page.h],
-        compress: true
-    });
-    doc.addImage(imgData, 'PNG', 0, 0, page.w, page.h, undefined, 'FAST');
-    return doc.output('blob');
-}
-
-async function downloadReceiptPDF() {
-    // Printing is the authoritative PDF path. The browser/WebView print engine
-    // keeps Arabic/Latin text as real PDF text instead of embedding one raster image.
-    const recNo = (document.getElementById('digReceiptNo')?.value || 'سند').trim();
-    const oldTitle = document.title;
-    document.title = 'سند_قبض_' + recNo;
-    try {
-        injectPrintPageStyle();
-        updatePrintDate(document.getElementById('digDate')?.value || '');
-        if (typeof toast === 'function') toast('اختر «حفظ كـ PDF» من نافذة الطباعة للحصول على PDF نصي عالي الدقة.');
-        setTimeout(() => window.print(), 120);
-    } finally {
-        window.addEventListener('afterprint', () => {
-            document.title = oldTitle;
-            document.getElementById('dynamic-print-size')?.remove();
-        }, { once: true });
-    }
-}
-
-function blobToDataUrl(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
     });
 }
 
