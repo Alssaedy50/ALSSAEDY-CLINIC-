@@ -129,7 +129,6 @@ const result = await page.evaluate(async () => {
   return exports;
 });
 
-const { execFileSync } = await import('node:child_process');
 const outputs = {};
 for (const [size, item] of Object.entries(result)) {
   const pngPath = '/tmp/alssaedy-' + size + '.png';
