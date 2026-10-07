@@ -6,6 +6,10 @@
   "assets": {
     "directory": "."
   },
+  "migrations": [
+    { "tag": "v1", "new_classes": ["ThemeStore"] },
+    { "tag": "v2", "deleted_classes": ["ThemeStore"] }
+  ],
   "observability": {
     "enabled": true
   }
