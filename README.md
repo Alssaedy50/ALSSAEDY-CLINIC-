@@ -1,3 +1,7 @@
+## v1.2.0
+
+Quality, print/PDF, logo, and navigation fixes.
+
 # ALSSAEDY CLINIC — Receipt Voucher
 
 Professional dental clinic receipt system for daily use, electronic filling, printing, image export, PDF export, and sharing.
