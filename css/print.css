@@ -33,3 +33,31 @@ html[data-size="thermal"] body{width:80mm!important;min-height:0!important;overf
 html[data-size="thermal"] .page-canvas-wrapper{width:80mm!important;height:auto!important;overflow:visible!important}
 html[data-size="thermal"] .receipt-paper{width:80mm!important;height:auto!important;min-width:80mm!important;max-width:80mm!important;min-height:0!important;max-height:none!important;padding:5mm 4mm!important;overflow:visible!important}
 }
+
+/* Blank A5 notebook contract: no auto numbering and a real binding margin. */
+body.blank-template-export .receipt-paper{
+    padding-inline-start:15mm !important;
+    padding-inline-end:7mm !important;
+    box-sizing:border-box !important;
+}
+body.blank-template-export .num-dots{
+    min-width:75px !important;
+}
+body.blank-template-export .manual-only.write-dots{
+    min-height:18px !important;
+    height:18px !important;
+}
+body.blank-template-export .section-patient .row-flex{
+    min-height:25px !important;
+    margin-bottom:6px !important;
+}
+body.blank-template-export .paid-blank-line{
+    min-height:20px !important;
+    height:20px !important;
+}
+@media print{
+    body.blank-template-export[data-size="a5"] .receipt-paper{
+        padding-inline-start:15mm !important;
+        padding-inline-end:7mm !important;
+    }
+}
