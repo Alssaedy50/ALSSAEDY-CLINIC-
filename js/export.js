@@ -151,9 +151,19 @@ function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument
     });
 }
 
+async function waitForReceiptFonts() {
+    // html2canvas must capture shaped Arabic glyphs, not the fallback font.
+    // Explicitly request the weights used by the receipt before the clone is made.
+    const weights = [400, 600, 700, 800, 900];
+    await Promise.all(weights.map(weight =>
+        document.fonts.load(`${weight} 16px "Cairo"`, "سند قبض مالي")
+    ));
+    await document.fonts.ready;
+}
+
 async function generateReceiptCanvas(options = {}) {
     await ensureLibraries();
-    await document.fonts.ready;
+    await waitForReceiptFonts();
 
     const receipt = document.getElementById('receiptPrintArea');
     if (!receipt) throw new Error('منطقة السند غير موجودة.');
@@ -183,13 +193,61 @@ async function generateReceiptCanvas(options = {}) {
             allowTaint: false,
             backgroundColor: '#ffffff',
             logging: false,
-            letterRendering: true,
+            // Do NOT use html2canvas letterRendering for Arabic: it can split
+            // joined glyphs and place individual letters on top of each other.
+            letterRendering: false,
             imageTimeout: 15000,
             windowWidth: captureWidth,
             windowHeight: captureHeight,
             onclone: (clonedDocument) => {
                 const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
                 if (!clonedReceipt) return;
+
+                // Freeze typography/layout for Canvas. The live UI may use
+                // responsive transforms, flex sizing and editable controls;
+                // the exported sheet must not inherit those behaviours.
+                const style = clonedDocument.createElement('style');
+                style.textContent = `
+                    #receiptPrintArea, #receiptPrintArea * {
+                        font-family: "Cairo", "Noto Kufi Arabic", "Tajawal", sans-serif !important;
+                        letter-spacing: normal !important;
+                        font-feature-settings: "liga" 1, "calt" 1 !important;
+                        -webkit-font-feature-settings: "liga" 1, "calt" 1 !important;
+                        text-rendering: geometricPrecision !important;
+                    }
+                    #receiptPrintArea .main-voucher-title,
+                    #receiptPrintArea .row-label,
+                    #receiptPrintArea .meta-label,
+                    #receiptPrintArea .paid-title,
+                    #receiptPrintArea .paid-unit,
+                    #receiptPrintArea .tafqeet-text,
+                    #receiptPrintArea .tafqeet-closing,
+                    #receiptPrintArea .services-banner,
+                    #receiptPrintArea .custom-check-item,
+                    #receiptPrintArea .ledger-header,
+                    #receiptPrintArea .sig-title,
+                    #receiptPrintArea .footer-blessing,
+                    #receiptPrintArea .footer-address {
+                        direction: rtl !important;
+                        unicode-bidi: isolate !important;
+                        letter-spacing: normal !important;
+                    }
+                    #receiptPrintArea .receipt-header,
+                    #receiptPrintArea .title-strip,
+                    #receiptPrintArea .meta-data-strip,
+                    #receiptPrintArea .row-flex,
+                    #receiptPrintArea .paid-hero-bar,
+                    #receiptPrintArea .pay-opts-row,
+                    #receiptPrintArea .section-signatures {
+                        transform: none !important;
+                    }
+                    #receiptPrintArea .receipt-header { display: grid !important; }
+                    #receiptPrintArea .main-voucher-title { display: inline-block !important; white-space: nowrap !important; }
+                    #receiptPrintArea .title-strip { display: flex !important; }
+                    #receiptPrintArea .row-label { flex: 0 0 auto !important; }
+                `;
+                clonedDocument.head.appendChild(style);
+
                 materializeReceiptDate(receipt, clonedReceipt);
                 materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
                 const logo=clonedReceipt.querySelector('#clinicLogoImg'); if(logo){logo.style.opacity='1';logo.style.filter='none';}
