@@ -8,7 +8,7 @@ const page = await browser.newPage({ viewport: { width: 1100, height: 1400 }, de
 await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
 await page.evaluate(() => {
   if (typeof setMode !== 'function') throw new Error('setMode is unavailable');
-  finishBlankTemplate(snapshot);
+  setMode('digital');
   const set = (id, value) => {
     const el = document.getElementById(id);
     if (!el) throw new Error('Missing #' + id);
@@ -51,14 +51,15 @@ const blankCheck = await page.evaluate(() => {
   };
   const visibleDigital = Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none' && el.id !== 'hiddenDatePicker').length;
   const visibleManual = Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length;
-  return {values,date,visibleDigital,visibleManual};
+  const result={values,date,visibleDigital,visibleManual};
+  finishBlankTemplate(snapshot);
+  return result;
 });
 if (Object.values(blankCheck.values).some(Boolean) ||
     blankCheck.date.day !== '' || blankCheck.date.month !== '' || blankCheck.date.year !== '____ م' ||
     blankCheck.visibleDigital !== 0 || blankCheck.visibleManual !== 1) {
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
-setMode('digital');
 
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
