@@ -11,8 +11,8 @@ html,body{margin:0!important;padding:0!important;background:#fff!important;width
 .date-line-slot{display:inline-block!important;width:25px!important;min-width:25px!important;height:15px!important;border-bottom:1.5px dashed #64748b!important}
 .date-slash{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important}
 .paper-year-fixed{display:inline-flex!important;flex-direction:row!important;align-items:center!important;direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important}
-.paper-year-digits{direction:ltr!important;unicode-bidi:isolate!important;display:inline-block!important}
-.paper-year-era{direction:ltr!important;unicode-bidi:isolate!important;display:inline-block!important}
+.date-sequence .date-year{display:inline-flex!important;flex-direction:row!important;align-items:baseline!important;justify-content:flex-start!important;gap:3px!important;direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;min-width:48px!important}
+.paper-year-digits,.paper-year-era{direction:ltr!important;unicode-bidi:isolate!important;display:inline-block!important;flex:0 0 auto!important;white-space:nowrap!important}
 .date-field-wrapper .digital-only{display:inline-flex!important}
 .date-field-wrapper .manual-only{display:none!important}
 [data-mode="manual"] .date-field-wrapper .digital-only,body.blank-template-export .date-field-wrapper .digital-only{display:none!important}
