@@ -440,6 +440,7 @@ async function importFullBackup(event){
     if(payload.settings?.texts)localStorage.setItem('alssaedy_texts',payload.settings.texts);
     
     if(typeof applyLogo==='function')applyLogo(localStorage.getItem('alssaedy_custom_logo')||OFFICIAL_LOGO_URL);
+    await clinicRepositoryHydrate();
     updateHistoryCount();renderHistory();
     alert('تمت استعادة البيانات بنجاح مع منع التكرارات.');
   }catch(e){alert('تعذر استيراد النسخة: '+e.message);}
