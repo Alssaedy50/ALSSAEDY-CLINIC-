@@ -61,6 +61,18 @@ if (Object.values(blankCheck.values).some(Boolean) ||
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
 
+await page.evaluate(() => { prepareBlankTemplate(); });
+await page.emulateMediaType('print');
+const pdfPath='/tmp/alssaedy-blank-template.pdf';
+await page.pdf({path:pdfPath,preferCSSPageSize:true,printBackground:true});
+await page.evaluate(() => { finishBlankTemplate(window.__templateSnapshot || null); setMode('digital'); });
+import { execFileSync } from 'node:child_process';
+let pdfText='';
+try { pdfText=execFileSync('pdftotext',[pdfPath,'-'],{encoding:'utf8'}); } catch(e) { throw new Error('pdftotext unavailable or PDF generation failed: '+e.message); }
+for(const forbidden of ['2026-10-07','مريض الاختبار','TEST-001','25000']) {
+  if(pdfText.includes(forbidden)) throw new Error('Blank PDF contains digital data: '+forbidden);
+}
+
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
   const canvas = await generateReceiptCanvas();
