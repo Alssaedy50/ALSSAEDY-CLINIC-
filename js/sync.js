@@ -140,7 +140,7 @@ async function syncRestoreNow() {
         }
         await clinicRepositoryHydrate();
         if (snap.settings) {
-            if (snap.settings.customLogo) localStorage.setItem('alssaedy_custom_logo', snap.settings.customLogo);
+            if (snap.settings.customLogo) await saveLogoDurably(snap.settings.customLogo);
             if (snap.settings.currency) localStorage.setItem('alssaedy_currency', snap.settings.currency);
             if (snap.settings.size) localStorage.setItem('alssaedy_receipt_size', snap.settings.size);
             if (snap.settings.theme) localStorage.setItem('alssaedy_theme', snap.settings.theme);

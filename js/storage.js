@@ -402,7 +402,7 @@ async function buildFullBackup(){
   return {schema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:2,exportedAt:new Date().toISOString(),receipts,patients,settings:{
     size:localStorage.getItem('alssaedy_receipt_size')||'a5',
     theme:localStorage.getItem('alssaedy_theme')||'classic',
-    customLogo:localStorage.getItem('alssaedy_custom_logo')||'',
+    customLogo:await loadLogoDurably(),
     texts:localStorage.getItem('alssaedy_texts')||'',
     currency:localStorage.getItem('alssaedy_currency')||'YER'
   }};
@@ -427,13 +427,13 @@ async function importFullBackup(event){
       const exists=(await clinicDBAll('receipts')).some(x=>receiptFingerprint(x)===receiptFingerprint(item));
       if(!exists)await clinicDBPut('receipts',item);
     }
-    if(payload.settings?.customLogo)localStorage.setItem('alssaedy_custom_logo',payload.settings.customLogo);
+    if(payload.settings?.customLogo)await saveLogoDurably(payload.settings.customLogo);
     if(payload.settings?.currency)localStorage.setItem('alssaedy_currency',payload.settings.currency);
     if(payload.settings?.size)localStorage.setItem('alssaedy_receipt_size',payload.settings.size);
     if(payload.settings?.theme)localStorage.setItem('alssaedy_theme',payload.settings.theme);
     if(payload.settings?.texts)localStorage.setItem('alssaedy_texts',payload.settings.texts);
     
-    if(typeof applyLogo==='function')applyLogo(localStorage.getItem('alssaedy_custom_logo')||OFFICIAL_LOGO_URL);
+    if(typeof applyLogo==='function')applyLogo((await loadLogoDurably())||OFFICIAL_LOGO_URL);
     await clinicRepositoryHydrate();
     updateHistoryCount();renderHistory();
     alert('تمت استعادة البيانات بنجاح مع منع التكرارات.');
