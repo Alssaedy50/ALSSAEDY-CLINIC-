@@ -239,3 +239,42 @@ function clearAllHistory() {
         updateHistoryCount();
     }
 }
+let currentPatientId='';
+async function getPatients(){try{return await clinicDBAll('patients');}catch(e){return JSON.parse(localStorage.getItem('alssaedy_patients')||'[]');}}
+async function upsertCurrentPatient(receipt){
+  const name=(receipt.name||'').trim(), phone=(receipt.patientPhone||'').trim();
+  if(!name||name==='مريض بدون اسم')return null;
+  const list=await getPatients();
+  let p=list.find(x=>receipt.patientId&&x.id===receipt.patientId)||list.find(x=>phone&&x.phone===phone)||list.find(x=>x.name===name&&(!phone||x.phone===phone));
+  if(!p)p={id:crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now(),name,phone,createdAt:new Date().toISOString(),nextVisit:'',notes:''};
+  p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
+  await clinicDBPut('patients',p);localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
+  currentPatientId=p.id; return p;
+}
+async function savePatientManual(){
+  const name=document.getElementById('patientFormName')?.value.trim(),phone=document.getElementById('patientFormPhone')?.value.trim();
+  if(!name){alert('أدخل اسم المريض أولاً.');return;}
+  const p={id:crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now(),name,phone:phone||'',nextVisit:document.getElementById('patientFormVisit')?.value||'',notes:document.getElementById('patientFormNotes')?.value.trim()||'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  await clinicDBPut('patients',p);localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
+  closePatientsModal();renderPatients();alert('تم حفظ ملف المريض بشكل دائم داخل التطبيق.');
+}
+async function renderPatients(){
+  const box=document.getElementById('patientsList');if(!box)return;
+  const list=await getPatients();
+  if(!list.length){box.innerHTML='<div class="empty-state">لا توجد ملفات مرضى بعد.</div>';return;}
+  const receipts=safeHistory();
+  box.innerHTML=list.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).map(p=>{
+    const rs=receipts.filter(r=>r.patientId===p.id||(r.patientPhone&&r.patientPhone===p.phone));
+    const total=rs.reduce((s,r)=>s+(Number(r.total)||0),0),paid=rs.reduce((s,r)=>s+(Number(r.paid)||0),0),bal=Math.max(0,total-paid);
+    return '<div class="patient-card"><div><strong>'+escapeHTML(p.name)+'</strong><small>'+escapeHTML(p.phone||'بدون هاتف')+'</small></div><div class="patient-balance">'+bal.toLocaleString()+' '+escapeHTML((rs[0]?.currencyName)||'ر.ي')+'</div><button type="button" onclick="selectPatient(\''+p.id+'\')">اختيار</button></div>';
+  }).join('');
+}
+async function selectPatient(id){
+  const list=await getPatients(),p=list.find(x=>x.id===id);if(!p)return;
+  currentPatientId=p.id;
+  document.getElementById('digClientName').value=p.name||'';
+  document.getElementById('digPatientPhone').value=p.phone||'';
+  closePatientsModal();alert('تم اختيار المريض وربط السند بملفه.');
+}
+function openPatientsModal(){document.getElementById('patientsModal')?.classList.add('open');renderPatients();}
+function closePatientsModal(){document.getElementById('patientsModal')?.classList.remove('open');}
