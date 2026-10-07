@@ -168,49 +168,28 @@ const result = await page.evaluate(async () => {
   const exports = {};
   for (const size of sizes) {
     setSize(size.id);
-    const canvas = await generateReceiptCanvas({ fullPage: true, scale: 2 });
+    const canvas = await generateReceiptCanvas({ fullPage: true, scale: 4 });
     if (size.ratio) {
       const actual = canvas.width / canvas.height;
       if (Math.abs(actual - size.ratio) > 0.01) {
         throw new Error('Wrong physical aspect ratio for ' + size.id + ': ' + actual);
       }
     }
-    const blob = await buildReceiptPdfBlob();
-    if (!blob || blob.size < 2000 || blob.type !== 'application/pdf') {
-      throw new Error('PDF generation failed for ' + size.id);
-    }
-    const reader = new FileReader();
-    const pdfData = await new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
     exports[size.id] = {
       width: canvas.width,
       height: canvas.height,
-      dataUrl: canvas.toDataURL('image/png'),
-      pdfDataUrl: pdfData
+      dataUrl: canvas.toDataURL('image/png')
     };
   }
   setSize('a5');
   return exports;
-});
-
-const outputs = {};
+});const outputs = {};
 for (const [size, item] of Object.entries(result)) {
   const pngPath = '/tmp/alssaedy-' + size + '.png';
-  const pdfPath = '/tmp/alssaedy-' + size + '.pdf';
   fs.writeFileSync(pngPath, Buffer.from(item.dataUrl.split(',')[1], 'base64'));
-  fs.writeFileSync(pdfPath, Buffer.from(item.pdfDataUrl.split(',')[1], 'base64'));
-
   const png = PNG.sync.read(fs.readFileSync(pngPath));
-  if (png.width !== item.width || png.height !== item.height) {
-    throw new Error('PNG dimensions mismatch for ' + size);
-  }
-  if (png.width < 500 || png.height < 500) {
-    throw new Error('Export unexpectedly small for ' + size + ': ' + png.width + 'x' + png.height);
-  }
-
+  if (png.width !== item.width || png.height !== item.height) throw new Error('PNG dimensions mismatch for ' + size);
+  if (png.width < 1000 || png.height < 1000) throw new Error('Export unexpectedly small for ' + size + ': ' + png.width + 'x' + png.height);
   let ink = 0;
   for (let y = Math.floor(png.height * 0.55); y < png.height; y += 4) {
     for (let x = 0; x < png.width; x += 4) {
@@ -219,13 +198,27 @@ for (const [size, item] of Object.entries(result)) {
     }
   }
   if (ink < 500) throw new Error('Lower receipt area appears blank for ' + size);
-
-  const info = execFileSync('pdfinfo', [pdfPath], {encoding:'utf8'});
-  const pages = /Pages:\s+(\d+)/.exec(info)?.[1];
-  const media = /Page size:\s+([0-9.]+) x ([0-9.]+) pts/.exec(info);
-  if (pages !== '1' || !media) throw new Error('Invalid PDF structure for ' + size);
-  outputs[size] = { png: [png.width, png.height], pdfPts: [Number(media[1]), Number(media[2])], ink };
+  outputs[size] = { png: [png.width, png.height], ink };
 }
 
-console.log(JSON.stringify({ ok: true, outputs }));
+// The production PDF path is the browser/WebView print engine, not a screenshot.
+// Chromium page.pdf() exercises the same vector/text print pipeline and lets us
+// verify that the generated PDF contains selectable text.
+for (const size of ['a5','a4']) {
+  await page.evaluate(size => setSize(size), size);
+  await page.emulateMedia({ media: 'print' });
+  const pdfPath='/tmp/alssaedy-vector-' + size + '.pdf';
+  await page.pdf({path:pdfPath,preferCSSPageSize:true,printBackground:true});
+  const info=execFileSync('pdfinfo',[pdfPath],{encoding:'utf8'});
+  const pages=/Pages:\s+(\d+)/.exec(info)?.[1];
+  if(pages!=='1') throw new Error('Vector print PDF must contain exactly one page for '+size);
+  const text=execFileSync('pdftotext',[pdfPath,'-'],{encoding:'utf8'});
+  if(!text.includes('مريض الاختبار') || !text.includes('TEST-001') || !text.includes('07/10/2026')) {
+    throw new Error('PDF is missing selectable receipt text for '+size+': '+text.slice(0,500));
+  }
+  if(text.includes('2026-10-07')) throw new Error('PDF exposed the native ISO input value for '+size);
+  outputs[size].pdf={pages:Number(pages),selectableText:true};
+}
+await page.emulateMedia({media:'screen'});
 await browser.close();
+console.log(JSON.stringify({ok:true,outputs}));
