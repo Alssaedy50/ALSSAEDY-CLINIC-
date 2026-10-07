@@ -295,43 +295,32 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .ledger-box{min-width:0}.section-signatures{direction:rtl}.section-signatures .sig-column{direction:rtl}
 .footer-meta-line{align-items:center}.footer-address{unicode-bidi:isolate}.footer-phones{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
 
-/* 2026-10-07 typography and print corrections */
-.ar-date-flow{white-space:nowrap!important;direction:rtl!important;unicode-bidi:isolate;}
-.date-ltr-flow{direction:ltr!important;unicode-bidi:bidi-override;white-space:nowrap;}
-.date-suffix{unicode-bidi:isolate;white-space:nowrap;}
-.manual-payment-options .custom-radio-item{cursor:default;}
-.ledger-content .currency-label{flex:0 0 auto;white-space:nowrap;}
+/* =========================================================
+   PRODUCTION LAYOUT CONTRACT — canonical single-source rules
+   ========================================================= */
 
-/* Footer contact line: keep all clinic numbers on one horizontal line. */
-.footer-phones{white-space:nowrap!important;display:block;flex:0 0 auto;}
-@media screen and (max-width:700px){.footer-phones{white-space:nowrap!important;display:block;overflow:visible;}}
-
-/* 2026-10-07 final visual corrections: isolated date, official border, footer phone flex. */
-.receipt-paper{border:2px solid #073b63;outline:1px solid #cbd5e1;outline-offset:-4px;border-radius:4px;box-sizing:border-box;}
-/* Arabic date: label remains RTL, date sequence itself is an isolated LTR island. */
-.date-container{display:inline-flex!important;align-items:center!important;gap:5px!important;direction:rtl!important;unicode-bidi:normal!important;white-space:nowrap!important;}
-.date-sequence{display:inline-flex!important;flex:0 0 auto!important;flex-direction:row!important;align-items:center!important;gap:4px!important;direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;}
-.date-sequence .date-slot{width:25px!important;min-width:25px!important;height:15px!important;border-bottom:1.5px dashed #64748b!important;display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;}
-.date-sequence .date-slash{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;}
-.date-sequence .date-year{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;white-space:nowrap!important;}
-/* Official footer: one address line + one isolated LTR phone line. */
-.footer-meta-line{flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:3px!important;text-align:center!important;}
-.footer-address{white-space:nowrap!important;width:100%!important;text-align:center!important;unicode-bidi:isolate!important;direction:rtl!important;}
-.footer-phones{display:inline-flex!important;width:auto!important;max-width:100%!important;justify-content:center!important;align-items:center!important;gap:10px!important;white-space:nowrap!important;overflow:visible!important;direction:ltr!important;unicode-bidi:isolate!important;font-family:monospace,sans-serif!important;font-size:8.5px!important;font-weight:800!important;color:#073b63!important;padding:2px 0!important;border:0!important;background:transparent!important;flex:0 0 auto!important;}
-.footer-phones span{direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;}
-.footer-phones .phone-separator{color:#94a3b8!important;font-weight:900!important;}
-@media screen and (max-width:700px){
-  .footer-phones{max-width:none!important;overflow:visible!important;}
+/* Header: fixed three-column structure keeps the official logo centered. */
+.receipt-header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr)!important;
+  align-items:center!important;
+  column-gap:8px!important;
+  width:100%!important;
+  padding:7px 6px 5px!important;
 }
+.receipt-header .header-doc{min-width:0!important;text-align:right!important;justify-self:stretch!important;}
+.receipt-header .header-logo-wrap{
+  width:calc(62px * var(--logo-scale,1))!important;
+  height:calc(62px * var(--logo-scale,1))!important;
+  justify-self:center!important;align-self:center!important;margin:0 auto!important;
+}
+.receipt-header .header-clinic{min-width:0!important;text-align:left!important;justify-self:stretch!important;}
+.receipt-header .header-doc h2,.receipt-header .header-clinic h2{line-height:1.18!important;}
+.receipt-header .header-doc p,.receipt-header .header-clinic p{line-height:1.2!important;margin-top:1px!important;}
+.receipt-paper .clinic-logo{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;}
 
-/* 2026-10-07 final typography consistency. Keep date visually subordinate to labels. */
+/* Typography scaling remains compatible with existing settings. */
 .receipt-paper{font-size:calc(10px * var(--receipt-body-scale));}
-.receipt-paper .date-sequence{
-    font-size:9px!important;
-    line-height:1!important;
-    font-weight:700!important;
-    color:var(--line-border)!important;
-}
 .receipt-paper .main-voucher-title{font-size:calc(15px * var(--receipt-title-scale))!important;}
 .receipt-paper .receipt-header h2{font-size:calc(13px * var(--receipt-heading-scale));}
 .receipt-paper .receipt-header p{font-size:calc(9px * var(--receipt-body-scale));}
@@ -342,119 +331,80 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .receipt-paper .custom-check-item{font-size:calc(9px * var(--receipt-body-scale));}
 .receipt-paper .ledger-header{font-size:calc(9.5px * var(--receipt-heading-scale));}
 .receipt-paper .currency-label{font-size:calc(9.5px * var(--receipt-body-scale));}
-.receipt-paper .sig-title{font-size:calc(9.5px * var(--receipt-heading-scale));}
+.receipt-paper .sig-title{font-size:calc(9.5px * var(--receipt-body-scale));}
 .receipt-paper .stamp-frame span{font-size:calc(8px * var(--receipt-body-scale));}
 .receipt-paper .footer-blessing{font-size:calc(9px * var(--receipt-heading-scale));}
 .receipt-paper .footer-meta-line{font-size:calc(8px * var(--receipt-body-scale));}
 .receipt-paper .live-input{font-size:calc(10px * var(--receipt-body-scale));}
 .receipt-paper .paid-numeric{font-size:calc(13px * var(--receipt-heading-scale));}
 
-
-/* PAPER RECEIPT — final header/date alignment refinement. */
-.receipt-header{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr)!important;
+/* Canonical paper date: one isolated RTL flex island.
+   DOM order is day / month / year; RTL flex places day on the right.
+   The year itself is a nested LTR island, guaranteeing 202م. */
+.date-field-wrapper{display:flex;align-items:center;gap:6px;direction:rtl!important;white-space:nowrap!important;}
+.date-field-wrapper .meta-label{flex:0 0 auto!important;}
+.date-container{
+  display:inline-flex!important;
   align-items:center!important;
-  column-gap:8px!important;
-  width:100%!important;
-  padding-bottom:4px!important;
+  flex:0 0 auto!important;
+  direction:rtl!important;
+  unicode-bidi:isolate!important;
+  white-space:nowrap!important;
 }
-.receipt-header .header-doc{min-width:0!important;text-align:right!important;justify-self:stretch!important;}
-.receipt-header .header-logo-wrap{width:62px!important;height:62px!important;justify-self:center!important;align-self:center!important;margin:0 auto!important;}
-.receipt-header .header-clinic{min-width:0!important;text-align:left!important;justify-self:stretch!important;}
-.receipt-header .header-doc h2,.receipt-header .header-clinic h2{line-height:1.18!important;}
-.receipt-header .header-doc p,.receipt-header .header-clinic p{line-height:1.2!important;margin-top:1px!important;}
-.receipt-title-box{margin:3px 0 4px!important;line-height:1.1!important;}
-.meta-data-strip{min-height:29px!important;margin-bottom:4px!important;}
-.date-container{display:inline-flex!important;align-items:center!important;gap:5px!important;direction:rtl!important;white-space:nowrap!important;}
-.date-container .meta-label{flex:0 0 auto!important;}
 .date-sequence{
-  display:inline-block!important;flex:0 0 auto!important;
-  direction:ltr!important;unicode-bidi:isolate!important;
-  white-space:nowrap!important;font-size:9px!important;
-  line-height:1!important;font-weight:600!important;letter-spacing:0!important;
+  display:inline-flex!important;
+  flex-direction:row!important;
+  align-items:baseline!important;
+  gap:4px!important;
+  direction:rtl!important;
+  unicode-bidi:isolate!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+  line-height:1.15!important;
+  font-weight:700!important;
+  color:var(--primary)!important;
 }
+.date-sequence .date-part,
+.date-sequence .date-sep,
+.date-sequence .date-year{
+  display:inline-block!important;
+  flex:0 0 auto!important;
+  unicode-bidi:isolate!important;
+  white-space:nowrap!important;
+}
+.date-sequence .date-slot{
+  width:25px!important;
+  min-width:25px!important;
+  height:15px!important;
+  border-bottom:1.5px dashed #64748b!important;
+  text-align:center!important;
+}
+.date-sequence .date-sep{direction:ltr!important;font-weight:800!important;}
+.date-sequence .date-year{direction:ltr!important;min-width:34px!important;text-align:left!important;}
+.date-sequence .paper-year-digits,.date-sequence .paper-year-era{direction:ltr!important;unicode-bidi:isolate!important;display:inline!important;}
+.digital-date-control{display:inline-flex!important;align-items:center!important;gap:4px!important;direction:ltr!important;flex:0 0 auto!important;}
+.digital-date-control #digDate{width:120px!important;text-align:center!important;font-weight:700!important;direction:ltr!important;}
+.date-picker-btn{background:none;border:0;cursor:pointer;font-size:12px;padding:2px 4px;}
+.hidden-date-picker{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;}
+[data-mode="manual"] .date-field-wrapper .digital-only{display:none!important;}
+[data-mode="digital"] .date-field-wrapper .manual-only{display:none!important;}
+
+/* Footer: address + phone numbers are independent BiDi islands. */
+.footer-meta-line{flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:3px!important;text-align:center!important;}
+.footer-address{white-space:nowrap!important;width:100%!important;text-align:center!important;unicode-bidi:isolate!important;direction:rtl!important;}
+.footer-phones{
+  display:inline-flex!important;width:auto!important;max-width:100%!important;justify-content:center!important;align-items:center!important;
+  gap:10px!important;white-space:nowrap!important;overflow:visible!important;direction:ltr!important;unicode-bidi:isolate!important;
+  font-family:monospace,sans-serif!important;font-size:8.5px!important;font-weight:800!important;color:#073b63!important;
+  padding:2px 0!important;border:0!important;background:transparent!important;flex:0 0 auto!important;
+}
+.footer-phones span{direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;font-weight:900!important;}
+.footer-phones .phone-separator{color:#94a3b8!important;font-weight:900!important;}
+
 @media print{
   .receipt-header{grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr)!important;column-gap:6px!important;}
-  .receipt-header .header-logo-wrap{width:62px!important;height:62px!important;}
-  .date-sequence{font-size:9px!important;direction:ltr!important;unicode-bidi:isolate!important;}
-}
-
-/* FINAL PAPER DATE + LOGO CONTROL — isolated feature branch. */
-.receipt-paper .date-container{gap:6px!important;align-items:baseline!important;}
-.receipt-paper .date-sequence{
-  direction:ltr!important;unicode-bidi:isolate!important;
-  display:inline-block!important;white-space:nowrap!important;
-  font-size:10px!important;line-height:1.15!important;
-  font-weight:700!important;letter-spacing:0!important;
-  color:var(--primary)!important;
-  min-width:82px!important;
-}
-.receipt-paper .header-logo-wrap{
-  width:calc(62px * var(--logo-scale,1))!important;
-  height:calc(62px * var(--logo-scale,1))!important;
-  justify-self:center!important;align-self:center!important;
-  margin:0 auto!important;
-}
-.receipt-paper .clinic-logo{
-  width:100%!important;height:100%!important;
-  max-width:none!important;max-height:none!important;
-  object-fit:contain!important;
-}
-@media print{
- .receipt-paper .date-sequence{font-size:10px!important;line-height:1.15!important;}
- .receipt-paper .header-logo-wrap{width:calc(62px * var(--logo-scale,1))!important;height:calc(62px * var(--logo-scale,1))!important;}
-}
-
-/* FINAL RTL PAPER DATE ORDER — day on the right, then month, then year. */
-.receipt-paper .date-sequence{direction:rtl!important;unicode-bidi:isolate!important;display:inline-flex!important;flex-direction:row!important;align-items:baseline!important;justify-content:flex-start!important;gap:4px!important;min-width:0!important;width:auto!important;white-space:nowrap!important;font-size:10px!important;line-height:1.15!important;font-weight:700!important;letter-spacing:0!important;}
-.receipt-paper .date-sequence .date-part{display:inline-block!important;white-space:nowrap!important;unicode-bidi:isolate!important;}
-.receipt-paper .date-sequence .date-sep{direction:ltr!important;}
-.receipt-paper .date-sequence .date-year{direction:ltr!important;}
-@media print{.receipt-paper .date-sequence{font-size:10px!important;}}
-
-
-/* FINAL DATE PRINT ISOLATION — 2026-10-07 */
-.date-cell {
-    unicode-bidi: isolate !important;
-}
-.date-cell .manual-only {
-    direction: ltr !important;
-    unicode-bidi: isolate !important;
-}
-
-
-/* FINAL PAPER DATE — isolated cells to prevent PDF BiDi reordering. */
-.date-boxes-row {
-    direction: rtl !important;
-    unicode-bidi: embed !important;
-}
-
-.date-line-slot {
-    vertical-align: bottom !important;
-}
-
-.date-year-label {
-    direction: rtl !important;
-    unicode-bidi: isolate !important;
-}
-
-/* Canonical date rendering: exactly one visible date source per mode. */
-.date-field-wrapper .digital-only{display:inline-flex!important;align-items:center!important;gap:4px!important}
-.date-field-wrapper .manual-only{display:none!important}
-[data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
-[data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
-#hiddenDatePicker{display:none!important}
-.date-boxes-row{direction:rtl!important;unicode-bidi:isolate!important;display:inline-flex!important;flex-direction:row!important;align-items:center!important;gap:4px!important;white-space:nowrap!important}
-.date-boxes-row .date-line-slot{display:inline-block!important;width:25px!important;height:15px!important;text-align:center!important;border-bottom:1.5px dashed #64748b!important}
-.date-boxes-row .date-slash{display:inline-block!important}
-.date-boxes-row .date-year-label{display:inline-flex!important;direction:ltr!important;unicode-bidi:isolate!important;min-width:34px!important;flex-direction:row!important;justify-content:flex-start!important;gap:0!important}
-@media print{
-  .date-field-wrapper #hiddenDatePicker{display:none!important}
-  .date-field-wrapper .digital-only{display:inline-flex!important}
-  .date-field-wrapper .manual-only{display:none!important}
-  [data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
-  [data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
+  .receipt-header .header-logo-wrap{width:calc(62px * var(--logo-scale,1))!important;height:calc(62px * var(--logo-scale,1))!important;}
+  .date-sequence{font-size:10px!important;}
 }
 
 /* VISUAL QUALITY PASS v1.1 — preserves the existing clinic identity and layout contract. */
