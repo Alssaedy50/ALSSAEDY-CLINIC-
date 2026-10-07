@@ -305,25 +305,20 @@ async function shareReceiptImage() {
     }
 }
 
-async function downloadReceiptImage() {
-    try {
-        const canvas = await generateReceiptCanvas();
-        const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
-        const dataUrl = canvas.toDataURL('image/png', 0.95);
-        const filename = 'سند_قبض_' + recNo;
-        if (window.Android && typeof Android.saveImage === 'function') {
-            Android.saveImage(dataUrl, filename);
-            return;
-        }
-        const link = document.createElement('a');
-        link.download = filename + '.png';
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-    } catch(e) {
-        alert('تعذر إنشاء الصورة: ' + e.message);
+async function saveCanvasImage(canvas, filename) {
+    const dataUrl=canvas.toDataURL('image/png');
+    if(window.Android&&typeof Android.saveImageChunks==='function'){
+        const base64=dataUrl.substring(dataUrl.indexOf(',')+1), chunkSize=180000;
+        Android.beginImageSave(filename);
+        for(let i=0;i<base64.length;i+=chunkSize) Android.appendImageChunk(base64.substring(i,i+chunkSize));
+        Android.finishImageSave();
+        return;
     }
+    const link=document.createElement('a'); link.download=filename+'.png'; link.href=dataUrl; document.body.appendChild(link); link.click(); link.remove();
+}
+async function downloadReceiptImage(){
+    try{const canvas=await generateReceiptCanvas();const recNo=document.getElementById('digReceiptNo')?.value||'سند';await saveCanvasImage(canvas,'سند_قبض_'+recNo);}
+    catch(e){alert('تعذر إنشاء الصورة: '+e.message);}
 }
 
 function copyReceiptText() {
@@ -363,8 +358,8 @@ async function downloadBlankTemplateImage(){
   finally{finishBlankTemplate(snapshot);}
 }
 function downloadBlankTemplatePDF(){
-  const snapshot=prepareBlankTemplate(), oldTitle=document.title;
-  document.title='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase(); injectPrintPageStyle();
-  window.addEventListener('afterprint',()=>{document.title=oldTitle;document.getElementById('dynamic-print-size')?.remove();finishBlankTemplate(snapshot);},{once:true});
-  setTimeout(()=>window.print(),120);
+  const snapshot=prepareBlankTemplate(),oldTitle=document.title;
+  document.title='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
+  if(window.Android&&typeof Android.savePdf==='function'){Android.savePdf(getSelectedSize(),'ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase());setTimeout(()=>{document.title=oldTitle;finishBlankTemplate(snapshot);},1500);return;}
+  injectPrintPageStyle();window.addEventListener('afterprint',()=>{document.title=oldTitle;document.getElementById('dynamic-print-size')?.remove();finishBlankTemplate(snapshot);},{once:true});setTimeout(()=>window.print(),120);
 }
