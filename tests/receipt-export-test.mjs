@@ -56,7 +56,7 @@ const blankCheck = await page.evaluate(() => {
   return result;
 });
 if (Object.values(blankCheck.values).some(Boolean) ||
-    blankCheck.date.day !== '' || blankCheck.date.month !== '' || blankCheck.date.year !== '____ م' ||
+    blankCheck.date.day !== '' || blankCheck.date.month !== '' || blankCheck.date.year !== '202م' ||
     blankCheck.visibleDigital !== 0 || blankCheck.visibleManual !== 1) {
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
