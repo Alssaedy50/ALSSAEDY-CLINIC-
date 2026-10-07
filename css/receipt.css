@@ -291,6 +291,16 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 @media screen and (max-width:700px){.receipt-paper{transform-origin:top center;flex-shrink:0}html[data-size="a4"] .receipt-paper{transform:scale(calc((100vw - 16px)/793.7))}html[data-size="a5"] .receipt-paper{transform:scale(calc((100vw - 16px)/559.4))}html[data-size="thermal"] .receipt-paper{transform:none;width:min(80mm,calc(100vw - 16px));max-width:calc(100vw - 16px)}}
 .live-input:invalid{border-bottom-color:#b91c1c}
 /* Protected component rules — do not alter without regression review. */
+
+/* Canonical mobile safeguards formerly mixed into UI chrome. */
+@media screen and (max-width:700px){
+ .patient-contact-row .row-label{white-space:nowrap}
+ .patient-contact-row .patient-phone-input{min-width:0;max-width:140px;width:140px;flex:0 1 140px}
+ .manual-payment-options{margin:0 4px;gap:8px}
+ .ledger-grid-wrap{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+ .ledger-box{min-width:0;padding:8px 5px}.ledger-header{overflow-wrap:anywhere}.ledger-content{gap:3px;min-width:0}.ledger-field{min-width:0;max-width:100%!important}.currency-label{font-size:10px}
+ .pay-opts-row{flex-wrap:wrap;row-gap:7px}.pay-opts-row .ref-label{margin-right:0}.pay-opts-row .ref-dots{flex:1 1 90px;min-width:70px}
+}
 .ledger-grid-wrap{grid-template-columns:repeat(3,minmax(0,1fr))}
 .ledger-box{min-width:0}.section-signatures{direction:rtl}.section-signatures .sig-column{direction:rtl}
 .footer-meta-line{align-items:center}.footer-address{unicode-bidi:isolate}.footer-phones{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
@@ -511,14 +521,4 @@ body.exporting-receipt .patient-contact-row .patient-phone-input {
   image-rendering:auto!important;
 }
 .header-logo-wrap{aspect-ratio:1/1!important;overflow:visible!important}
-.date-field-wrapper .print-date-value{display:none!important}
-.digital-date-control .print-date-value{display:none!important}
-.template-date-editor-row #paperTemplateDate{
-  text-align:center!important;
-  direction:ltr!important;
-  unicode-bidi:isolate!important;
-}
-@media print{
- .date-field-wrapper .print-date-value{display:none!important}
- .digital-date-control .print-date-value{display:none!important}
-}
+/* Date print visibility is owned by css/print.css; template input is owned by css/templates.css. */
