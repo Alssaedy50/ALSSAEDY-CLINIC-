@@ -167,7 +167,7 @@ public class MainActivity extends Activity {
             runOnUiThread(()->{
                 Uri uri=null; ParcelFileDescriptor pfd=null;
                 try{
-                    String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName).replaceAll("[^A-Za-z0-9_\-\u0600-\u06FF]","_")+".pdf";
+                    String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName).replaceAll("[^A-Za-z0-9_\\-\\u0600-\\u06FF]","_")+".pdf";
                     ContentValues v=new ContentValues();v.put(MediaStore.Downloads.DISPLAY_NAME,safe);v.put(MediaStore.Downloads.MIME_TYPE,"application/pdf");v.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ALSSAEDY Clinic");v.put(MediaStore.Downloads.IS_PENDING,1);
                     uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,v);if(uri==null)throw new Exception("تعذر إنشاء ملف PDF");
                     pfd=getContentResolver().openFileDescriptor(uri,"w");if(pfd==null)throw new Exception("تعذر فتح ملف PDF");
@@ -325,7 +325,7 @@ public class MainActivity extends Activity {
         }
 
         private Uri writePngBytesToMediaStore(byte[] bytes,String fileName) throws Exception {
-            String safeName=(fileName==null||fileName.trim().isEmpty()?"receipt":fileName).replaceAll("[^A-Za-z0-9_\-\u0600-\u06FF]","_")+".png";
+            String safeName=(fileName==null||fileName.trim().isEmpty()?"receipt":fileName).replaceAll("[^A-Za-z0-9_\\-\\u0600-\\u06FF]","_")+".png";
             ContentValues values=new ContentValues();
             values.put(MediaStore.Images.Media.DISPLAY_NAME,safeName);
             values.put(MediaStore.Images.Media.MIME_TYPE,"image/png");
