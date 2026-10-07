@@ -9,7 +9,6 @@ tasks.register("prepareWebAssets", Copy) {
         include "manifest.webmanifest"
         include "sw.js"
         include "logo.png"
-        include "logo_data.js"
         include "android-app-bridge.js"
         include "css/**"
         include "js/**"
@@ -55,8 +54,8 @@ android {
         applicationId "com.alssaedy.clinic"
         minSdk 29
         targetSdk 35
-        versionCode 15
-        versionName "1.1.5"
+        versionCode 16
+        versionName "1.2.0"
     }
 
     sourceSets {
