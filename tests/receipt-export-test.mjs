@@ -79,12 +79,21 @@ const result = await page.evaluate(async () => {
   const cloneCheck = (() => {
     const source = document.getElementById('receiptPrintArea');
     const cloned = source.cloneNode(true);
-    materializeReceiptControls(source, cloned, document);
     materializeReceiptDate(source, cloned);
+    materializeReceiptControls(source, cloned, document);
     const fields = Array.from(cloned.querySelectorAll('.export-field-value')).map(el => el.textContent.trim());
-    return fields.includes('2026-10-07') && fields.includes('مريض الاختبار') && fields.includes('TEST-001');
+    // The date is exported as its human-readable form (DD/MM/YYYY م), which is
+    // the only date representation actually shown on the printed sheet.
+    const formattedDate = formatReceiptDate(document.getElementById('digDate')?.value || '');
+    return fields.includes('مريض الاختبار') && fields.includes('TEST-001') &&
+      (fields.includes(formattedDate) || cloned.querySelector('#printDateValue')?.textContent.trim() === formattedDate);
   })();
   if (!cloneCheck) throw new Error('Export clone did not preserve receipt fields.');
+  const pdfOk = await (async () => {
+    try { const blob = await buildReceiptPdfBlob(); return blob && blob.size > 2000 && blob.type === 'application/pdf'; }
+    catch (e) { return false; }
+  })();
+  if (!pdfOk) throw new Error('One-click PDF generation failed.');
   return {
     width: canvas.width,
     height: canvas.height,

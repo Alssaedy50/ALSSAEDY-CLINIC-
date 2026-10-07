@@ -76,17 +76,18 @@ function saveReceiptLocally(){
   const history=safeHistory();
   const fp=receiptFingerprint(data);
   if(history.some(item=>receiptFingerprint(item)===fp)){
-    alert('⚠️ هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.');
+    if(typeof toast==='function')toast('هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.','error');else alert('⚠️ هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.');
     return;
   }
   const numberDuplicate=history.some(item=>String(item.recNo)===String(data.recNo));
-  if(numberDuplicate){alert('⚠️ رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.');return;}
+  if(numberDuplicate){if(typeof toast==='function')toast('رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.','error');else alert('⚠️ رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.');return;}
   history.unshift(data);
   localStorage.setItem('alssaedy_receipts_history',JSON.stringify(history));
   clinicDBPut('receipts',data).then(()=>clinicDBAll('receipts').then(all=>localStorage.setItem('alssaedy_receipts_history',JSON.stringify(all)))).catch(()=>{});
   if(typeof upsertCurrentPatient==='function')upsertCurrentPatient(data);
   updateHistoryCount();
-  alert('تم حفظ السند بنجاح في السجل الدائم.');
+  localStorage.removeItem('alssaedy_draft');
+  if(typeof toast==='function')toast('تم حفظ السند بنجاح في السجل الدائم.');else alert('تم حفظ السند بنجاح في السجل الدائم.');
 }
 
 function getAllReceiptHistory() {
@@ -181,21 +182,68 @@ function updateHistoryCount() {
     if (badge) badge.innerText = safeHistory().length;
 }
 
+function getHistoryStats(list) {
+    const items = Array.isArray(list) ? list : safeHistory();
+    const totals = items.reduce((acc, item) => {
+        acc.total += Number(item.total) || 0;
+        acc.paid += Number(item.paid) || 0;
+        acc.balance += Number(item.balance) || 0;
+        return acc;
+    }, { total: 0, paid: 0, balance: 0 });
+    return { count: items.length, total: totals.total, paid: totals.paid, balance: totals.balance };
+}
+
+function renderHistoryStats(list) {
+    const box = document.getElementById('historyStats');
+    if (!box) return;
+    const s = getHistoryStats(list);
+    const fmt = n => Number(n || 0).toLocaleString('ar-EG');
+    box.innerHTML =
+        '<div class="stat-cell"><span class="stat-label">عدد السندات</span><strong>' + fmt(s.count) + '</strong></div>' +
+        '<div class="stat-cell"><span class="stat-label">إجمالي الحسابات</span><strong>' + fmt(s.total) + '</strong></div>' +
+        '<div class="stat-cell"><span class="stat-label">إجمالي المدفوع</span><strong>' + fmt(s.paid) + '</strong></div>' +
+        '<div class="stat-cell stat-balance"><span class="stat-label">إجمالي المتبقي</span><strong>' + fmt(s.balance) + '</strong></div>';
+}
+
+function filterHistory(list, query) {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(item => {
+        const haystack = [
+            item.recNo, item.name, item.date, item.patientPhone, item.ref,
+            item.customService, item.tooth, item.tafqeet,
+            Array.isArray(item.services) ? item.services.join(' ') : ''
+        ].join(' ').toLowerCase();
+        return haystack.includes(q);
+    });
+}
+
 function renderHistory() {
     const history = safeHistory();
     const container = document.getElementById('historyList');
     if (!container) return;
+    const query = document.getElementById('historySearch')?.value || '';
+    const filtered = filterHistory(history, query);
+    renderHistoryStats(filtered.length === history.length ? history : filtered);
     if (!history.length) {
         container.innerHTML = '<p style="text-align:center; padding:15px; color:#64748b; font-size:11px;">لا توجد سندات محفوظة حتى الآن.</p>';
         return;
     }
-    container.innerHTML = history.map(item => {
+    if (!filtered.length) {
+        container.innerHTML = '<p style="text-align:center; padding:15px; color:#64748b; font-size:11px;">لا توجد نتائج مطابقة للبحث.</p>';
+        return;
+    }
+    container.innerHTML = filtered.map(item => {
         const name = escapeHTML(item.name || 'مريض بدون اسم');
         const recNo = escapeHTML(item.recNo || '---');
-        const date = escapeHTML(item.date || '---');
+        const date = escapeHTML(typeof formatReceiptDate === 'function' ? formatReceiptDate(item.date) : (item.date || '---'));
         const paid = escapeHTML(item.paid || '0');
+        const total = escapeHTML(item.total || '0');
         const balance = escapeHTML(item.balance || '0');
-        return '<div class="history-entry"><div><strong>' + name + ' (' + recNo + ')</strong><small>التاريخ: ' + date + ' | المدفوع: ' + paid + ' ' + escapeHTML(item.currencySymbol || item.currencyName || 'ر.ي') + ' | المتبقي: ' + balance + ' ' + escapeHTML(item.currencySymbol || item.currencyName || 'ر.ي') + '</small></div><div class="history-entry-btns"><button type="button" onclick="loadReceipt(\'' + String(item.id).replace(/'/g,'') + '\')">📥 استرجاع</button><button type="button" onclick="deleteReceipt(\'' + String(item.id).replace(/'/g,'') + '\')" style="color:#b91c1c;">✕</button></div></div>';
+        const cur = escapeHTML(item.currencySymbol || item.currencyName || 'ر.ي');
+        const services = Array.isArray(item.services) && item.services.length ? escapeHTML(item.services.join('، ')) : '—';
+        const id = escapeHTML(String(item.id).replace(/'/g, ''));
+        return '<div class="history-entry"><div class="history-entry-main"><strong>' + name + ' <span class="history-recno">(' + recNo + ')</span></strong><small>' + date + ' • ' + escapeHTML(services) + '</small><small>مدفوع ' + paid + ' ' + cur + ' / إجمالي ' + total + ' ' + cur + ' / متبقٍ ' + balance + ' ' + cur + '</small></div><div class="history-entry-btns"><button type="button" title="استرجاع" onclick="loadReceipt(\'' + id + '\')">📥</button><button type="button" title="حذف" onclick="deleteReceipt(\'' + id + '\')" style="color:#b91c1c;">✕</button></div></div>';
     }).join('');
 }
 

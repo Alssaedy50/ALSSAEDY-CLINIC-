@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#073b63">
+    <meta name="description" content="نظام سندات قبض مالي احترافي لعيادة الدكتور صلاح الدين السعيدي — طباعة A5/A4/80mm وتصدير PDF وصور ومشاركة.">
+    <link rel="manifest" href="manifest.webmanifest">
     <title>سند قبض مالي - عيادة الدكتور صلاح الدين السعيدي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="vendor/html2canvas/html2canvas.min.js"></script>
         <script src="logo_data.js"></script>
-    <link rel="stylesheet" href="css/ui.css?v=20261007_18">
-    <link rel="stylesheet" href="css/receipt.css?v=20261007_18">
-    <link rel="stylesheet" href="css/print.css?v=20261007_18">
-    <link rel="stylesheet" href="css/templates.css?v=20261007_18">
+    <link rel="stylesheet" href="css/ui.css?v=1.1.0">
+    <link rel="stylesheet" href="css/receipt.css?v=1.1.0">
+    <link rel="stylesheet" href="css/print.css?v=1.1.0">
+    <link rel="stylesheet" href="css/templates.css?v=1.1.0">
+    <link rel="stylesheet" href="css/polish.css?v=1.1.0">
 </head>
 <body data-mode="digital">
 
@@ -23,6 +27,7 @@
             <div class="nav-brand">
                 <span class="brand-title">عيادة د/ صلاح الدين السعيدي</span>
                 <span class="brand-badge">نظام السندات</span>
+                <span class="brand-badge count-badge" id="historyCount" title="عدد السندات المحفوظة">0</span>
             </div>
             <div class="app-tabs no-print" role="tablist"><button type="button" class="app-tab active" id="tabReceipt" onclick="activateAppTab('receipt')">🧾 <b>السند</b></button><button type="button" class="app-tab" id="tabPatients" onclick="activateAppTab('patients')">👥 <b>المرضى</b></button><button type="button" class="app-tab" id="tabHistory" onclick="activateAppTab('history')">📂 <b>السجل</b></button><button type="button" class="app-tab" id="tabSettings" onclick="activateAppTab('settings')">⚙️ <b>الإعدادات</b></button></div><div class="nav-controls">
                 <div class="mode-pill">
@@ -249,6 +254,10 @@
             <span class="dock-icon">🖼️</span>
             <span class="dock-text">صورة</span>
         </button>
+        <button type="button" class="dock-btn btn-preview" onclick="openPreviewModal()" title="معاينة الطباعة">
+            <span class="dock-icon">👁️</span>
+            <span class="dock-text">معاينة</span>
+        </button>
         <button type="button" class="dock-btn btn-print" onclick="triggerNativePrint()" title="طباعة وحفظ PDF">
             <span class="dock-icon">🖨️</span>
             <span class="dock-text">طباعة / PDF</span>
@@ -286,6 +295,20 @@
                         <button type="button" class="tool-btn active" id="themeClassic" onclick="setTheme('classic')">كحلي رسمي</button>
                         <button type="button" class="tool-btn" id="themeModern" onclick="setTheme('modern')">تركواز طبي</button>
                         <button type="button" class="tool-btn" id="themeMono" onclick="setTheme('mono')">أبيض وأسود</button>
+                    </div>
+                    <button type="button" class="tool-btn wide mt-2" id="btnNight" onclick="toggleNightMode()">🌙 وضع ليلي</button>
+                </div>
+
+                <div class="setting-card">
+                    <h4>👁️ المعاينة والتصدير</h4>
+                    <p class="setting-help">عاين السند بنفس أبعاد الورق قبل الطباعة، ثم اطبع أو نزّل PDF أو صورة.</p>
+                    <div class="grid-btns two">
+                        <button type="button" class="tool-btn" onclick="openPreviewModal();toggleDrawer(false)">👁️ معاينة السند</button>
+                        <button type="button" class="tool-btn" onclick="downloadReceiptPDF()">📄 حفظ PDF</button>
+                    </div>
+                    <div class="grid-btns two mt-2">
+                        <button type="button" class="tool-btn" onclick="downloadReceiptImage()">🖼️ تنزيل صورة PNG</button>
+                        <button type="button" class="tool-btn" onclick="shareReceiptImage()">📲 مشاركة الصورة</button>
                     </div>
                 </div>
 
@@ -484,18 +507,38 @@
         <div class="modal-box modal-wide">
             <button class="modal-close" type="button" onclick="closeHistoryModal()">×</button>
             <h3>سجل السندات المحفوظة</h3>
+            <div class="history-stats" id="historyStats"></div>
+            <input type="search" id="historySearch" class="live-input history-search" placeholder="🔎 ابحث بالاسم أو رقم السند أو التاريخ أو الخدمة..." oninput="renderHistory()">
             <div class="history-container" id="historyList"></div>
             <div class="history-footer">
+                <button type="button" class="tool-btn" onclick="exportTransactionsFile('csv')">📊 تصدير CSV</button>
                 <button type="button" class="tool-btn" onclick="clearAllHistory()">🗑️ مسح السجل بالكامل</button>
             </div>
         </div>
     </div>
 
-    <script src="js/tafqeet.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/templates.js"></script>
-    <script src="js/app.js"></script>
-    <script src="android-app-bridge.js"></script>
+    <div class="toast-stack no-print" id="toastStack" aria-live="polite"></div>
+
+    <div class="no-print modal-screen" id="previewModal">
+        <div class="modal-box preview-modal-box">
+            <button class="modal-close" type="button" onclick="closePreviewModal()">×</button>
+            <h3>👁️ معاينة السند كما سيُطبع</h3>
+            <p class="preview-note">هذه معاينة دقيقة بنفس أبعاد الورق المختار. استخدم الأزرار للطباعة أو التنزيل.</p>
+            <div class="preview-stage" id="previewStage"><div class="preview-loading">جارٍ تجهيز المعاينة...</div></div>
+            <div class="preview-actions">
+                <button type="button" class="tool-btn" onclick="closePreviewModal();triggerNativePrint()">🖨️ طباعة</button>
+                <button type="button" class="tool-btn" onclick="closePreviewModal();downloadReceiptPDF()">📄 حفظ PDF</button>
+                <button type="button" class="tool-btn" onclick="closePreviewModal();downloadReceiptImage()">🖼️ تنزيل صورة</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/tafqeet.js?v=1.1.0"></script>
+    <script src="js/storage.js?v=1.1.0"></script>
+    <script src="js/export.js?v=1.1.0"></script>
+    <script src="js/templates.js?v=1.1.0"></script>
+    <script src="js/app.js?v=1.1.0"></script>
+    <script src="js/ui.js?v=1.1.0"></script>
+    <script src="android-app-bridge.js?v=1.1.0"></script>
 </body>
 </html>

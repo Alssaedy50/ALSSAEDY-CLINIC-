@@ -102,8 +102,18 @@ public class MainActivity extends Activity {
                 nm.createNotificationChannel(ch);
             }
             android.app.Notification.Builder b=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(context,"clinic_reminders"):new android.app.Notification.Builder(context);
-            b.setSmallIcon(com.alssaedy.clinic.R.drawable.clinic_logo).setContentTitle(title).setContentText(text).setAutoCancel(true).setPriority(android.app.Notification.PRIORITY_HIGH);
+            b.setSmallIcon(clinicIcon(context)).setContentTitle(title).setContentText(text).setAutoCancel(true).setPriority(android.app.Notification.PRIORITY_HIGH);
             nm.notify((int)System.currentTimeMillis(),b.build());
+        }
+    }
+
+    /** Prefer the app's own drawable, fall back to a system icon so notifications
+        never crash if the logo resource is missing from a build. */
+    static int clinicIcon(Context context) {
+        try {
+            return com.alssaedy.clinic.R.drawable.clinic_logo;
+        } catch (Throwable t) {
+            return android.R.drawable.ic_dialog_info;
         }
     }
 
@@ -208,6 +218,36 @@ public class MainActivity extends Activity {
             return new int[]{420,595};
         }
 
+        /** Saves a PDF produced by jsPDF (passed as a data URL) straight into Downloads.
+            This keeps the exact on-screen A5/A4/80mm layout and avoids the WebView
+            snapshot path which could clip long thermal receipts. */
+        @JavascriptInterface
+        public void savePdfFromData(String dataUrl, String fileName){
+            try{
+                if(dataUrl==null||!dataUrl.contains(",")) throw new Exception("بيانات PDF غير صالحة");
+                byte[] bytes=Base64.getDecoder().decode(dataUrl.substring(dataUrl.indexOf(',')+1));
+                String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName)
+                    .replaceAll("[^A-Za-z0-9_\\-\\u0600-\\u06FF]","_")+".pdf";
+                ContentValues values=new ContentValues();
+                values.put(MediaStore.Downloads.DISPLAY_NAME,safe);
+                values.put(MediaStore.Downloads.MIME_TYPE,"application/pdf");
+                values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ALSSAEDY Clinic");
+                values.put(MediaStore.Downloads.IS_PENDING,1);
+                Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
+                if(uri==null) throw new Exception("تعذر إنشاء ملف PDF");
+                try(OutputStream out=getContentResolver().openOutputStream(uri)){
+                    if(out==null) throw new Exception("تعذر فتح ملف PDF");
+                    out.write(bytes);
+                }
+                values.clear();
+                values.put(MediaStore.Downloads.IS_PENDING,0);
+                getContentResolver().update(uri,values,null,null);
+                runOnUiThread(()->Toast.makeText(MainActivity.this,"تم حفظ PDF الجاهز للطباعة في التنزيلات.",Toast.LENGTH_LONG).show());
+            }catch(Exception e){
+                runOnUiThread(()->Toast.makeText(MainActivity.this,"تعذر حفظ PDF: "+e.getMessage(),Toast.LENGTH_LONG).show());
+            }
+        }
+
         @JavascriptInterface
         public void scheduleReminder(long triggerAtMillis, String title, String text) {
             try {
@@ -217,7 +257,12 @@ public class MainActivity extends Activity {
                 intent.putExtra("text", text==null?"لديك موعد متابعة في العيادة.":text);
                 int request=(int)(triggerAtMillis ^ (triggerAtMillis >>> 32));
                 PendingIntent pi=PendingIntent.getBroadcast(MainActivity.this,request,intent,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
-                if(alarm!=null) alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,triggerAtMillis,pi);
+                if(alarm==null) return;
+                // Exact alarms require permission on Android 12+; fall back to an
+                // inexact alarm rather than failing silently when it is not granted.
+                boolean canExact = Build.VERSION.SDK_INT < 31 || alarm.canScheduleExactAlarms();
+                if(canExact) alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,triggerAtMillis,pi);
+                else alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,triggerAtMillis,pi);
             } catch(Exception e) {}
         }
 

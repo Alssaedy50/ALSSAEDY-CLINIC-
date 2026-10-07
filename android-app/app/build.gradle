@@ -6,12 +6,15 @@ def resOutput = layout.buildDirectory.dir("generated/android-res")
 tasks.register("prepareWebAssets", Copy) {
     from(rootProject.projectDir.parentFile) {
         include "index.html"
+        include "manifest.webmanifest"
+        include "sw.js"
         include "logo.png"
         include "logo_data.js"
         include "android-app-bridge.js"
         include "css/**"
         include "js/**"
         include "assets/**"
+        include "vendor/**"
     }
     into(webOutput.map { it.dir("web") })
 }
@@ -52,8 +55,8 @@ android {
         applicationId "com.alssaedy.clinic"
         minSdk 29
         targetSdk 35
-        versionCode 9
-        versionName "1.0.8"
+        versionCode 10
+        versionName "1.1.0"
     }
 
     sourceSets {
