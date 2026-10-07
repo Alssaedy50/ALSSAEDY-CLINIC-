@@ -16,6 +16,7 @@ function setCurrency(code){
 function updateCurrencyInText(info){
  const labels=document.querySelectorAll('.currency-label');labels.forEach(el=>{el.textContent=info.symbol;});
  const paid=document.getElementById('paidCurrencyLabel');if(paid)paid.textContent=info.nameAr;
+ const end=document.querySelector('.tafqeet-closing');if(end)end.textContent=info.nameAr + ' فقط لا غير.';
 }
 const DESIGN_CONTRACT_VERSION='1.0';
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
