@@ -189,7 +189,7 @@ function openDatePicker() {
     const picker = document.getElementById('hiddenDatePicker');
     if (!picker) return;
     const input = document.getElementById('digDate');
-    if (input && /^\\d{4}-\\d{2}-\\d{2}$/.test(input.value)) picker.value = input.value;
+    if (input && /^\d{4}-\d{2}-\d{2}$/.test(input.value)) picker.value = input.value;
     try {
         if (typeof picker.showPicker === 'function') picker.showPicker();
         else { picker.focus(); picker.click(); }
