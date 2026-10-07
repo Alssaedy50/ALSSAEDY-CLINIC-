@@ -488,7 +488,8 @@ Removed the disconnected jsPDF raster-PDF path, its data-URL helper and unused v
 
 Introduced explicit top-level `appRoute` state and made patient list/detail transitions history-aware. Opening Patients now creates a history entry; opening a patient creates `patient-detail`; browser/Android Back returns from detail to list and from list to receipt. Closing the patient section clears its stale route without reopening it. History/settings continue to use their existing history entries.
 
-Next: **1.5 Service worker/cache lifecycle** — make asset versioning and update behavior explicit without weakening offline operation.
+### Phase 1 / Task 1.5 — Service worker/cache lifecycle: IN PROGRESS
+Objective: prevent stale HTML/service-worker code from blocking updates while retaining offline cached assets.
 Objective: make browser/Android Back deterministic for receipt, patients, patient detail, history and settings without removing existing screens.
 Objective: retain one authoritative PDF/print path and one PNG path; remove proven disconnected export/bridge machinery without changing user-visible export capabilities.
 Objective: move durable clinic configuration (custom logo first) behind the repository boundary while leaving UI-only preferences isolated until their own migration.
