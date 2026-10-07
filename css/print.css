@@ -89,3 +89,7 @@ body.blank-template-export .date-year-label{font-size:0!important;color:transpar
 body.blank-template-export .date-year-label::before{content:"";font-size:0!important}
 body.blank-template-export #digDate,
 body.blank-template-export #hiddenDatePicker{display:none!important}
+
+/* v1.0.6: plain-text date source for reliable Android/WebView printing. */
+@media print{.date-field-wrapper .print-date-value{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:900!important;color:#073b63!important;white-space:nowrap!important}.date-field-wrapper #digDate{display:none!important}.receipt-paper .clinic-logo{opacity:1!important;filter:none!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}.receipt-paper .paid-unit,.receipt-paper .currency-label{display:inline-block!important;opacity:1!important;color:#073b63!important;font-weight:900!important}}
+.print-date-value{display:none}
