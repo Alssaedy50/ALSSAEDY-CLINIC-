@@ -36,10 +36,14 @@ await page.waitForTimeout(500);
 
 const dateCheck = await page.evaluate(() => ({
   digitalDate: document.getElementById('digDate')?.value || '',
-  visibleDigitalDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none' && el.id !== 'hiddenDatePicker').length,
-  visibleManualDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length
+  digitalDateInputs: document.querySelectorAll('#digDate').length,
+  visibleDigitalDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none').length,
+  visibleManualDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length,
+  paperYear: document.getElementById('paperDateYear')?.textContent || '',
+  paperYearDirection: getComputedStyle(document.getElementById('paperDateYear') || document.body).direction,
+  pickerHandler: typeof openDatePicker === 'function'
 }));
-if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0) {
+if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler) {
   throw new Error('Digital receipt date visibility failed: ' + JSON.stringify(dateCheck));
 }
 
@@ -58,7 +62,8 @@ const blankCheck = await page.evaluate(() => {
   finishBlankTemplate(snapshot);
   return result;
 });
-if (Object.values(blankCheck.values).some(Boolean) ||
+if (blankCheck.date.year !== '202م' || blankCheck.date.year.includes('202م') === false ||
+    Object.values(blankCheck.values).some(Boolean) ||
     blankCheck.date.day !== '' || blankCheck.date.month !== '' || blankCheck.date.year !== '202م' ||
     blankCheck.visibleDigital !== 0 || blankCheck.visibleManual !== 1) {
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
