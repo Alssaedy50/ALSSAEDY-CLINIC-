@@ -143,7 +143,7 @@ function syncPaperDate(dateValue) {
     if (!match) {
         if (day) day.textContent = '';
         if (month) month.textContent = '';
-        if (year) year.textContent = '202__ م';
+        if (year) year.textContent = '____ م';
         return;
     }
     if (day) day.textContent = match[3];
