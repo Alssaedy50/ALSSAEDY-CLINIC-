@@ -10,7 +10,7 @@ function setCurrency(code){
  localStorage.setItem('alssaedy_currency',info.code);
  const select=document.getElementById('currencySelect');if(select)select.value=info.code;
  ['paidCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.nameAr;});
- ['totalCurrencyLabel','paidTableCurrencyLabel','balanceCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.symbol;});
+ ['totalCurrencyLabel','paidTableCurrencyLabel','balanceCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.symbol;}); const badge=document.getElementById('receiptCurrencyBadge');if(badge)badge.textContent=info.nameAr+' · '+info.code;
  updateCurrencyInText(info);
 }
 function updateCurrencyInText(info){
@@ -19,7 +19,7 @@ function updateCurrencyInText(info){
  const end=document.querySelector('.tafqeet-closing');if(end)end.textContent=info.nameAr + ' فقط لا غير.';
 }
 const DESIGN_CONTRACT_VERSION='1.0';
-const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
+const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA && String(window.OFFICIAL_LOGO_DATA).trim()) ? window.OFFICIAL_LOGO_DATA : 'assets/Saedy_Dental_Logo.svg';
 
 // Protected physical-size contract. Change only after print/export regression review.
 const SIZE_PROFILES = {
@@ -36,9 +36,7 @@ function getSizeProfile() {
     return SIZE_PROFILES[getSelectedSize()] || SIZE_PROFILES.a5;
 }
 
-function toggleDrawer(open) {
-    document.getElementById('settingsPanel').classList.toggle('open', open);
-}
+function toggleDrawer(open, skipHistory=false){document.getElementById('settingsPanel').classList.toggle('open',open);if(open){pushPanelState('settings');activateAppTabVisual('settings');}else if(!skipHistory)closePanelState('settings');}
 
 function setMode(mode) {
     document.body.setAttribute('data-mode', mode);
@@ -171,16 +169,17 @@ function syncPaperDate(dateValue) {
     if (year) year.textContent = match[1] + ' م';
 }
 
+function updatePrintDate(value){ const el=document.getElementById('printDateValue'); if(el) el.textContent=formatReceiptDate(value||''); }
 function setTodayDate() {
     const value = getLocalDateISO();
     const input = document.getElementById('digDate');
     if (input) input.value = value;
-    syncPaperDate(value);
+    syncPaperDate(value); updatePrintDate(value);
 }
 
 function syncReceiptDateFromInput() {
     const input = document.getElementById('digDate');
-    if (input) syncPaperDate(input.value);
+    if (input) { syncPaperDate(input.value); updatePrintDate(input.value); }
 }
 
 function generateNextReceiptNo() {
@@ -277,10 +276,18 @@ function updateActionAvailability() {
     }
 }
 
-function openShareModal() { document.getElementById('shareModal').classList.add('open'); }
-function closeShareModal() { document.getElementById('shareModal').classList.remove('open'); }
-function openHistoryModal() { renderHistory(); document.getElementById('historyModal').classList.add('open'); }
-function closeHistoryModal() { document.getElementById('historyModal').classList.remove('open'); }
+let activeAppTab='receipt';
+function activateAppTab(tab){ activeAppTab=tab; ['receipt','patients','history','settings'].forEach(t=>document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active',t===tab)); if(tab==='receipt'){closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);window.scrollTo({top:0,behavior:'smooth'});} if(tab==='patients')openPatientsModal(); if(tab==='history')openHistoryModal(); if(tab==='settings')toggleDrawer(true); }
+function activateAppTabVisual(tab){ ['receipt','patients','history','settings'].forEach(t=>document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active',t===tab)); }
+function pushPanelState(name){ if(history.state?.alssaedyPanel===name)return; history.pushState({alssaedyPanel:name},'', '#'+name); }
+function closePanelState(name){ if(history.state?.alssaedyPanel===name){history.back();return true;} return false; }
+window.addEventListener('popstate',(e)=>{ const panel=e.state?.alssaedyPanel||''; if(panel==='patients'){document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');} else if(panel==='patient-detail'){document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');} else if(panel==='history'){document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');} else if(panel==='settings'){document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');} else {document.getElementById('patientsModal')?.classList.remove('open');document.getElementById('historyModal')?.classList.remove('open');document.getElementById('settingsPanel')?.classList.remove('open');document.getElementById('shareModal')?.classList.remove('open');showPatientListView();activateAppTabVisual('receipt');} });
+function openShareModal(){document.getElementById('shareModal').classList.add('open');}
+function closeShareModal(){document.getElementById('shareModal').classList.remove('open');}
+function openHistoryModal(){renderHistory();document.getElementById('historyModal').classList.add('open');pushPanelState('history');activateAppTabVisual('history');}
+function closeHistoryModal(skipHistory=false){document.getElementById('historyModal').classList.remove('open');if(!skipHistory)closePanelState('history');}
+function showPatientListView(){document.querySelector('.patient-form')?.classList.remove('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.remove('patient-detail-hidden');document.getElementById('patientsList')?.classList.remove('patient-detail-hidden');document.getElementById('patientAccountPanel')?.setAttribute('hidden','');}
+function showPatientDetailView(){document.querySelector('.patient-form')?.classList.add('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.add('patient-detail-hidden');document.getElementById('patientsList')?.classList.add('patient-detail-hidden');document.getElementById('patientAccountPanel')?.removeAttribute('hidden');}
 
 window.addEventListener('DOMContentLoaded', () => {
     const customLogo=localStorage.getItem('alssaedy_custom_logo');
@@ -321,6 +328,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setMode('digital');
     const dateInput = document.getElementById('digDate');
     if (dateInput) dateInput.addEventListener('input', syncReceiptDateFromInput);
+    updatePrintDate(dateInput?.value||'');
     hydrateDurableReceipts().then(()=>updateHistoryCount()).catch(()=>updateHistoryCount());
     updateActionAvailability();
 });

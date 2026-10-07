@@ -90,7 +90,7 @@ function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument
 }
 
 async function generateReceiptCanvas() {
-    ensureLibraries();
+    await ensureLibraries();
     await document.fonts.ready;
 
     const receipt = document.getElementById('receiptPrintArea');
@@ -116,7 +116,7 @@ async function generateReceiptCanvas() {
         );
 
         return html2canvas(receipt, {
-            scale: 4,
+            scale: 6,
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -128,8 +128,9 @@ async function generateReceiptCanvas() {
             onclone: (clonedDocument) => {
                 const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
                 if (!clonedReceipt) return;
-                materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
                 materializeReceiptDate(receipt, clonedReceipt);
+                materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
+                const logo=clonedReceipt.querySelector('#clinicLogoImg'); if(logo){logo.style.opacity='1';logo.style.filter='none';}
             }
         });
     }).finally(() => document.body.classList.remove('exporting-receipt'));
