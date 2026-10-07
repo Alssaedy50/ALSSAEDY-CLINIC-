@@ -12,3 +12,18 @@
 .toast-text{line-height:1.5}
 
 /* CSS ownership refactor checkpoint. */
+
+/* Feature components — history and preview. */
+.history-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:6px 0 10px}
+.stat-cell{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
+.stat-cell .stat-label{font-size:8.5px;color:#64748b;font-weight:700}
+.stat-cell strong{font-size:12px;color:var(--primary);font-variant-numeric:tabular-nums}
+.stat-balance{background:#fef2f2;border-color:#fecaca}.stat-balance strong{color:#b91c1c}
+.history-search{margin-bottom:10px;text-align:right;font-size:11px;padding:8px 10px}
+.history-entry-main{min-width:0;text-align:right;flex:1}.history-entry-main small{display:block;margin-top:2px}.history-recno{color:#64748b;font-size:9px;font-weight:600}
+@media(max-width:600px){.history-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.preview-modal-box{width:min(560px,94vw)!important;max-height:92vh;display:flex;flex-direction:column}
+.preview-note{font-size:10px!important}.preview-stage{margin:8px 0;overflow:auto;background:#e2e8f0;border-radius:10px;padding:10px;display:flex;justify-content:center;max-height:64vh}
+.preview-stage img{max-width:100%;height:auto;box-shadow:0 6px 24px rgba(15,23,42,.25);border-radius:4px;background:#fff}
+.preview-loading{color:#475569;font-size:11px;padding:30px 10px}.preview-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:600px){.preview-actions{grid-template-columns:1fr}}
