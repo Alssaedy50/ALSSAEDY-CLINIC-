@@ -160,7 +160,7 @@ function parseAnyDate(value) {
         .trim()
         .replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
         .replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
-        .replace(/[.\\]/g, '-')
+        .replace(/[./\\]/g, '-')
         .replace(/[\s]+/g, '-')
         .replace(/-+/g, '-');
     if (!normalized) return null;
