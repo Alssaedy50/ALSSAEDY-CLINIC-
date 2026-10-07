@@ -18,9 +18,25 @@ html,body{margin:0!important;padding:0!important;background:#fff!important;width
 [data-mode="manual"] .date-field-wrapper .digital-only,body.blank-template-export .date-field-wrapper .digital-only{display:none!important}
 [data-mode="manual"] .date-field-wrapper .manual-only,body.blank-template-export .date-field-wrapper .manual-only{display:inline-flex!important}
 .date-field-wrapper #hiddenDatePicker,.date-field-wrapper #digDate{display:none!important}
-@media print{.date-field-wrapper .print-date-value{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:900!important;color:#073b63!important;white-space:nowrap!important}}
 .date-field-wrapper .print-date-value{display:none!important}
-body.exporting-receipt .date-field-wrapper .print-date-value{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:900!important;color:#073b63!important;white-space:nowrap!important}
+@media print{
+  .date-field-wrapper .print-date-value{
+    display:inline-block!important;
+    direction:ltr!important;
+    unicode-bidi:isolate!important;
+    font-weight:900!important;
+    color:#073b63!important;
+    white-space:nowrap!important;
+  }
+}
+body.exporting-receipt .date-field-wrapper .print-date-value{
+  display:inline-block!important;
+  direction:ltr!important;
+  unicode-bidi:isolate!important;
+  font-weight:900!important;
+  color:#073b63!important;
+  white-space:nowrap!important;
+}
 body.exporting-receipt .date-field-wrapper #digDate{display:none!important}
 body.blank-template-export .paper-year-fixed,body.blank-template-export .paper-year-digits,body.blank-template-export .paper-year-era{font-size:10px!important;color:#073b63!important}
 .footer-meta-line{flex-direction:column!important;justify-content:center!important;gap:3px!important;text-align:center!important}
