@@ -290,6 +290,31 @@ The action inventory covers 89 inline handlers across 53 handler expressions, pl
 - Make sync consume repository snapshots rather than reaching into storage primitives directly.
 - Make export consume a read-only receipt snapshot and never mutate persistent state.
 
+
+### Phase 0 / Task 0.5 — Date pipeline audit: COMPLETE
+
+#### Current date flow
+`digDate / paperTemplateDate` → `parseAnyDate()` → normalized `YYYY-MM-DD`-style components → `formatReceiptDate()` for exported text/WhatsApp → `syncPaperDate()` for paper display → receipt history/backup/sync as stored raw date value.
+
+#### Confirmed good
+- One shared parser is used for paper display and formatted receipt text.
+- Arabic/Persian numerals are normalized.
+- Both year-first and day-first common numeric forms are supported.
+- Calendar validity is checked with a real `Date` probe, including invalid day/month combinations.
+- Paper year digits and `م` are rendered as separate LTR/isolated elements to reduce RTL/BiDi reordering.
+- Native print receives a materialized text date instead of relying on the hidden date input.
+- Export clone materialization removes the duplicate print-date node before creating the authoritative exported node.
+
+#### Date defects / design risks
+1. The UI placeholder says “any common format”, but the parser intentionally accepts only a bounded numeric grammar; this wording is too broad.
+2. The native picker sync only copies an existing value when it already matches strict `YYYY-MM-DD`. If the user entered a valid day-first date such as `07/10/2026`, opening the picker does not seed it with the normalized date.
+3. Receipt history stores the user's raw date string rather than a canonical date plus display representation. This makes future filtering/sorting/migration harder and can produce mixed formats across old records.
+4. `generateNextReceiptNo()` still reads the localStorage receipt-history mirror rather than the durable repository, coupling numbering to the mirror.
+5. The paper template's blank state intentionally keeps the current year in the year slot while day/month are blank; this is a product decision that should remain explicit in the new template model.
+
+#### Phase 1 target
+Create one canonical date value in the data layer (ISO date), one formatter for human display, and one input adapter that accepts supported human formats and seeds the native picker from the normalized value. Persist canonical date values; do not persist presentation strings.
+
 ### Next task
-**0.5 Date pipeline audit — IN PROGRESS.**
-Focus: one date domain model from user input/native picker → normalized date → paper display → digital display → print/PDF → history/storage → backup/sync, including RTL/BiDi correctness.
+**0.6 Logo pipeline audit — IN PROGRESS.**
+Focus: authoritative logo source, upload decoding, SVG/raster preservation, resizing, storage, cache, DOM rendering, PNG export, print/PDF, Android packaging, reset/import/sync behavior, and aspect-ratio integrity.
