@@ -240,45 +240,157 @@ function clearAllHistory() {
     }
 }
 let currentPatientId='';
-async function getPatients(){try{return await clinicDBAll('patients');}catch(e){return JSON.parse(localStorage.getItem('alssaedy_patients')||'[]');}}
+
+function patientId(){
+  return (window.currentPatientId||'').trim();
+}
+async function getPatients(){
+  try{return await clinicDBAll('patients');}
+  catch(e){return JSON.parse(localStorage.getItem('alssaedy_patients')||'[]');}
+}
+function patientFormValue(id){return document.getElementById(id)?.value?.trim()||'';}
+
 async function upsertCurrentPatient(receipt){
   const name=(receipt.name||'').trim(), phone=(receipt.patientPhone||'').trim();
   if(!name||name==='مريض بدون اسم')return null;
   const list=await getPatients();
-  let p=list.find(x=>receipt.patientId&&x.id===receipt.patientId)||list.find(x=>phone&&x.phone===phone)||list.find(x=>x.name===name&&(!phone||x.phone===phone));
-  if(!p)p={id:crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now(),name,phone,createdAt:new Date().toISOString(),nextVisit:'',notes:''};
+  let p=list.find(x=>receipt.patientId&&x.id===receipt.patientId)
+      ||list.find(x=>phone&&x.phone===phone)
+      ||list.find(x=>x.name===name&&(!phone||x.phone===phone));
+  if(!p)p={id:(crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now()),name,phone,gender:'',age:'',medicalHistory:'',problem:'',createdAt:new Date().toISOString(),nextVisit:'',notes:'',visits:[]};
   p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
-  await clinicDBPut('patients',p);localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
-  currentPatientId=p.id; return p;
+  if(!Array.isArray(p.visits))p.visits=[];
+  if(!p.visits.some(v=>v.receiptId===receipt.id))p.visits.push({receiptId:receipt.id,date:receipt.date,total:receipt.total,paid:receipt.paid,currency:receipt.currency,services:receipt.services||[],tooth:receipt.tooth||''});
+  await clinicDBPut('patients',p);
+  localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
+  currentPatientId=p.id; window.currentPatientId=p.id;
+  return p;
 }
+
 async function savePatientManual(){
-  const name=document.getElementById('patientFormName')?.value.trim(),phone=document.getElementById('patientFormPhone')?.value.trim();
+  const name=patientFormValue('patientFormName');
+  const gender=patientFormValue('patientFormGender');
+  const age=patientFormValue('patientFormAge');
+  const phone=patientFormValue('patientFormPhone');
+  const nextVisit=patientFormValue('patientFormVisit');
+  const problem=patientFormValue('patientFormProblem');
+  const medicalHistory=patientFormValue('patientFormHistory');
+  const notes=patientFormValue('patientFormNotes');
+  const existingId=patientFormValue('patientFormId');
   if(!name){alert('أدخل اسم المريض أولاً.');return;}
-  const p={id:crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now(),name,phone:phone||'',nextVisit:document.getElementById('patientFormVisit')?.value||'',notes:document.getElementById('patientFormNotes')?.value.trim()||'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-  await clinicDBPut('patients',p);localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
-  closePatientsModal();renderPatients();alert('تم حفظ ملف المريض بشكل دائم داخل التطبيق.');
+  if(!gender){alert('اختر جنس المريض.');return;}
+  const list=await getPatients();
+  let p=list.find(x=>x.id===existingId)||list.find(x=>phone&&x.phone===phone);
+  if(!p)p={id:(crypto?.randomUUID?crypto.randomUUID():'P-'+Date.now()),createdAt:new Date().toISOString(),visits:[]};
+  p.name=name;p.gender=gender;p.age=age;p.phone=phone;p.nextVisit=nextVisit;
+  p.problem=problem;p.medicalHistory=medicalHistory;p.notes=notes;p.updatedAt=new Date().toISOString();
+  await clinicDBPut('patients',p);
+  localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
+  currentPatientId=p.id;window.currentPatientId=p.id;
+  renderPatients();renderPatientAccount(p);
+  schedulePatientReminder(p);
+  alert('تم حفظ ملف المريض وتحديث حسابه الطبي والمالي.');
 }
+
+function schedulePatientReminder(p){
+  if(!p?.nextVisit||!window.Android||typeof Android.scheduleReminder!=='function')return;
+  const parts=String(p.nextVisit).split('-').map(Number);
+  if(parts.length!==3)return;
+  const when=new Date(parts[0],parts[1]-1,parts[2],9,0,0,0).getTime();
+  if(when>Date.now())Android.scheduleReminder(when,'موعد عودة المريض: '+p.name,'لديك موعد متابعة مسجل في عيادة السعيدي.');
+}
+
+function patientReceipts(p){
+  const receipts=safeHistory();
+  return receipts.filter(r=>r.patientId===p.id||(p.phone&&r.patientPhone===p.phone));
+}
+function patientFinancialSummary(p){
+  const rs=patientReceipts(p);
+  return {
+    receipts:rs,
+    total:rs.reduce((s,r)=>s+(Number(r.total)||0),0),
+    paid:rs.reduce((s,r)=>s+(Number(r.paid)||0),0),
+    balance:rs.reduce((s,r)=>s+(Number(r.balance)||0),0)
+  };
+}
+
 async function renderPatients(){
   const box=document.getElementById('patientsList');if(!box)return;
   const list=await getPatients();
   if(!list.length){box.innerHTML='<div class="empty-state">لا توجد ملفات مرضى بعد.</div>';return;}
-  const receipts=safeHistory();
-  box.innerHTML=list.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))).map(p=>{
-    const rs=receipts.filter(r=>r.patientId===p.id||(r.patientPhone&&r.patientPhone===p.phone));
-    const total=rs.reduce((s,r)=>s+(Number(r.total)||0),0),paid=rs.reduce((s,r)=>s+(Number(r.paid)||0),0),bal=Math.max(0,total-paid);
-    return '<div class="patient-card"><div><strong>'+escapeHTML(p.name)+'</strong><small>'+escapeHTML(p.phone||'بدون هاتف')+'</small></div><div class="patient-balance">'+bal.toLocaleString()+' '+escapeHTML((rs[0]?.currencyName)||'ر.ي')+'</div><button type="button" onclick="selectPatient(\''+p.id+'\')">اختيار</button></div>';
+  box.innerHTML=list.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).map(p=>{
+    const f=patientFinancialSummary(p),cur=f.receipts[0]?.currencyName||'ريال يمني';
+    return '<div class="patient-card"><div><strong>'+escapeHTML(p.name)+'</strong><small>'+escapeHTML((p.gender||'—')+' • '+(p.age||'—')+' سنة • '+(p.phone||'بدون هاتف'))+'</small><small>المشكلة: '+escapeHTML(p.problem||'غير مسجلة')+'</small></div><div class="patient-balance">'+f.balance.toLocaleString()+' '+escapeHTML(cur)+'</div><div class="patient-list-actions"><button type="button" onclick="selectPatient(\''+p.id+'\')">فتح الحساب</button></div></div>';
   }).join('');
 }
+
 async function selectPatient(id){
   const list=await getPatients(),p=list.find(x=>x.id===id);if(!p)return;
-  currentPatientId=p.id;
+  currentPatientId=p.id;window.currentPatientId=p.id;
+  document.getElementById('patientFormId').value=p.id;
+  document.getElementById('patientFormName').value=p.name||'';
+  document.getElementById('patientFormGender').value=p.gender||'';
+  document.getElementById('patientFormAge').value=p.age||'';
+  document.getElementById('patientFormPhone').value=p.phone||'';
+  document.getElementById('patientFormVisit').value=p.nextVisit||'';
+  document.getElementById('patientFormProblem').value=p.problem||'';
+  document.getElementById('patientFormHistory').value=p.medicalHistory||'';
+  document.getElementById('patientFormNotes').value=p.notes||'';
   document.getElementById('digClientName').value=p.name||'';
   document.getElementById('digPatientPhone').value=p.phone||'';
-  closePatientsModal();alert('تم اختيار المريض وربط السند بملفه.');
+  renderPatientAccount(p);
 }
+
+function renderPatientAccount(p){
+  const panel=document.getElementById('patientAccountPanel');if(!panel||!p)return;
+  const f=patientFinancialSummary(p);
+  const rows=(f.receipts||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,10).map(r=>
+    '<div class="history-entry"><div><strong>'+escapeHTML(r.recNo||'---')+' — '+escapeHTML((r.services||[]).join('، ')||'زيارة')+'</strong><small>'+escapeHTML(r.date||'')+' | '+escapeHTML(r.paid||'0')+' '+escapeHTML(r.currencyName||'ريال يمني')+' مدفوع | متبقٍ '+escapeHTML(r.balance||'0')+'</small></div><button type="button" onclick="loadReceipt(\''+String(r.id).replace(/'/g,'')+'\')">فتح</button></div>'
+  ).join('');
+  panel.hidden=false;
+  panel.innerHTML='<div class="patient-account-head"><strong>📒 حساب '+escapeHTML(p.name)+'</strong><button type="button" class="tool-btn" onclick="startPatientVisit()">➕ زيارة / سند جديد</button></div>'+
+    '<div class="patient-profile-meta"><b>الجنس:</b> '+escapeHTML(p.gender||'—')+' &nbsp; <b>العمر:</b> '+escapeHTML(p.age||'—')+' &nbsp; <b>الهاتف:</b> '+escapeHTML(p.phone||'—')+'<br><b>المشكلة:</b> '+escapeHTML(p.problem||'—')+'<br><b>التاريخ المرضي:</b> '+escapeHTML(p.medicalHistory||'—')+'</div>'+
+    '<div class="patient-account-grid"><input id="accountServiceName" class="live-input" placeholder="الخدمة المقدمة"><input id="accountServicePrice" class="live-input" type="number" min="0" placeholder="سعر الخدمة"><input id="accountServicePaid" class="live-input" type="number" min="0" placeholder="المدفوع الآن"><input id="accountServiceTooth" class="live-input" placeholder="رقم السن / الموضع"><textarea id="accountServiceNotes" class="live-input" placeholder="تفاصيل الزيارة / ملاحظات"></textarea></div>'+
+    '<div class="patient-account-services"><button type="button" class="tool-btn wide" onclick="createReceiptFromPatientAccount()">🧾 إنشاء سند من حساب المريض</button></div>'+
+    '<div class="patient-account-summary"><div>الإجمالي<br>'+f.total.toLocaleString()+'</div><div>المدفوع<br>'+f.paid.toLocaleString()+'</div><div>المتبقي<br>'+f.balance.toLocaleString()+'</div></div>'+
+    '<div class="patient-account-services"><h4>آخر الزيارات والسندات</h4>'+(rows||'<div class="empty-state">لا توجد زيارات محفوظة.</div>')+'</div>';
+}
+
+function startPatientVisit(){
+  closePatientsModal();setMode('digital');document.getElementById('digClientName').value=document.getElementById('patientFormName').value||'';document.getElementById('digPatientPhone').value=document.getElementById('patientFormPhone').value||'';clearPatientVisitFields();
+}
+
+function clearPatientVisitFields(){
+  ['accountServiceName','accountServicePrice','accountServicePaid','accountServiceTooth','accountServiceNotes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+}
+
+function createReceiptFromPatientAccount(){
+  const pName=patientFormValue('patientFormName');
+  const service=patientFormValue('accountServiceName');
+  const price=Number(document.getElementById('accountServicePrice')?.value||0);
+  const paid=Number(document.getElementById('accountServicePaid')?.value||0);
+  const tooth=patientFormValue('accountServiceTooth');
+  const notes=patientFormValue('accountServiceNotes');
+  if(!pName||!patientId()){alert('اختر أو احفظ ملف المريض أولاً.');return;}
+  if(!service){alert('أدخل الخدمة المقدمة.');return;}
+  if(price<=0){alert('أدخل سعر الخدمة.');return;}
+  setMode('digital');generateNextReceiptNo();setTodayDate();
+  document.getElementById('digClientName').value=pName;
+  document.getElementById('digPatientPhone').value=patientFormValue('patientFormPhone');
+  document.getElementById('digTotal').value=String(price);
+  document.getElementById('digPaid').value=String(Math.min(Math.max(0,paid),price));
+  document.getElementById('digTooth').value=tooth;
+  document.getElementById('digTafqeet').value=notes;
+  document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));
+  const match=Array.from(document.querySelectorAll('.custom-check-item')).find(el=>el.innerText.replace('✓','').trim()===service);
+  if(match)match.classList.add('active');
+  calculateLedger();
+  closePatientsModal();
+  alert('تم تجهيز السند من حساب المريض. راجعه ثم اضغط حفظ.');
+}
+
 function openPatientsModal(){document.getElementById('patientsModal')?.classList.add('open');renderPatients();}
 function closePatientsModal(){document.getElementById('patientsModal')?.classList.remove('open');}
-
 async function buildFullBackup(){
   const receipts=await clinicDBAll('receipts'),patients=await clinicDBAll('patients');
   return {schema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:2,exportedAt:new Date().toISOString(),receipts,patients,settings:{
