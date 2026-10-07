@@ -239,21 +239,15 @@ function loadReceipt(id) {
     closeHistoryModal();
 }
 
-function deleteReceipt(id) {
-    const history = safeHistory().filter(r => String(r.id) !== String(id));
-    
-    clinicDBDelete('receipts', id).catch(()=>{});
-    renderHistory();
-    updateHistoryCount();
+async function deleteReceipt(id){
+  try{await clinicRepositoryDeleteReceipt(id);renderHistory();updateHistoryCount();}
+  catch(e){toast?.('تعذر حذف السند: '+(e?.message||'خطأ غير معروف'),'error');}
 }
 
-function clearAllHistory() {
-    if (confirm('هل أنت متأكد من حذف كامل سجل السندات؟')) {
-        
-        clinicDBClear('receipts').catch(()=>{});
-        renderHistory();
-        updateHistoryCount();
-    }
+async function clearAllHistory(){
+  if(!confirm('هل أنت متأكد من حذف كامل سجل السندات؟'))return;
+  try{await clinicRepositoryClearReceipts();renderHistory();updateHistoryCount();}
+  catch(e){toast?.('تعذر مسح السجل: '+(e?.message||'خطأ غير معروف'),'error');}
 }
 let currentPatientId='';
 
@@ -472,9 +466,8 @@ async function importDataFile(event){
       if(!item.name)item.name='مريض بدون اسم';
       if(existing.some(x=>receiptFingerprint(x)===receiptFingerprint(item)))continue;
       if(existing.some(x=>String(x.recNo)===String(item.recNo)))continue;
-      await clinicDBPut('receipts',item);existing.push(item);added++;
+      await clinicRepositoryPutReceipt(item);existing.push(item);added++;
     }
-    
     updateHistoryCount();renderHistory();
     alert('تم استيراد '+added+' سند جديد مع منع التكرارات.');
   }catch(e){alert('تعذر استيراد الملف: '+e.message);}
