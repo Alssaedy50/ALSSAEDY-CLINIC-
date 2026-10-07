@@ -20,6 +20,20 @@ function updateCurrencyInText(info){
 }
 const DESIGN_CONTRACT_VERSION='1.0';
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA && String(window.OFFICIAL_LOGO_DATA).trim()) ? window.OFFICIAL_LOGO_DATA : 'assets/Saedy_Dental_Logo.svg';
+async function saveLogoDurably(value){
+  try{if(typeof clinicDBPut==='function')await clinicDBPut('settings',{id:'customLogo',value:String(value||''),updatedAt:new Date().toISOString()});}catch(_){}
+}
+async function loadLogoDurably(){
+  try{
+    if(typeof clinicDBAll==='function'){
+      const rows=await clinicDBAll('settings');
+      const row=rows.find(x=>x.id==='customLogo'&&x.value);
+      if(row?.value)return row.value;
+    }
+  }catch(_){}
+  return localStorage.getItem('alssaedy_custom_logo')||'';
+}
+
 
 // Protected physical-size contract. Change only after print/export regression review.
 const SIZE_PROFILES = {
@@ -323,8 +337,8 @@ async async function uploadLogo(event){
           output=file.type==='image/jpeg' ? canvas.toDataURL('image/jpeg',0.98) : canvas.toDataURL('image/png');
         }
       }
-      try{localStorage.setItem('alssaedy_custom_logo',output);}catch(_){}
-      applyLogo(output);
+      try{if(output.length<=3500000)localStorage.setItem('alssaedy_custom_logo',output);}catch(_){}
+      saveLogoDurably(output); applyLogo(output);
       if(typeof toast==='function')toast('تم حفظ الشعار بجودة عالية.');else alert('تم حفظ الشعار بجودة عالية.');
     }catch(e){alert('تعذر حفظ الشعار: '+(e?.message||'خطأ غير معروف'));}finally{if(input)input.value='';}
   };
@@ -337,6 +351,7 @@ function applyLogo(url){
 }
 function resetOfficialLogo(){
   try{localStorage.removeItem('alssaedy_custom_logo');}catch(_){}
+  try{if(typeof clinicDBDelete==='function')clinicDBDelete('settings','customLogo');}catch(_){}
   const uploader=document.getElementById('logoUploader');if(uploader)uploader.value='';
   applyLogo(OFFICIAL_LOGO_URL);
   if(typeof toast==='function')toast('تمت استعادة الشعار الرسمي.');else alert('تمت استعادة الشعار الرسمي.');
@@ -425,6 +440,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const customLogo=localStorage.getItem('alssaedy_custom_logo');
     applyLogo(customLogo||OFFICIAL_LOGO_URL);
+    loadLogoDurably().then(value=>{if(value)applyLogo(value);}).catch(()=>{});
     setCurrency(localStorage.getItem('alssaedy_currency')||'YER');
 
     const savedTexts = localStorage.getItem('alssaedy_texts');
