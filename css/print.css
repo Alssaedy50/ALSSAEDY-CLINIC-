@@ -80,3 +80,12 @@ html[data-size="thermal"] .receipt-paper{width:80mm!important;min-width:80mm!imp
   [data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
   [data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
 }
+
+/* BLANK TEMPLATE CONTRACT v2: never print a populated digital date. */
+body.blank-template-export .date-field-wrapper .digital-only{display:none!important}
+body.blank-template-export .date-field-wrapper .manual-only{display:inline-flex!important}
+body.blank-template-export .date-line-slot{color:transparent!important}
+body.blank-template-export .date-year-label{font-size:0!important;color:transparent!important}
+body.blank-template-export .date-year-label::before{content:"";font-size:0!important}
+body.blank-template-export #digDate,
+body.blank-template-export #hiddenDatePicker{display:none!important}
