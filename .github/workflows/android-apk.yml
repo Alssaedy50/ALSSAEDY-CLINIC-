@@ -70,7 +70,7 @@ jobs:
 
       - name: Verify APK metadata
         run: |
-          ${ANDROID_HOME}/build-tools/35.0.0/aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -E "package: name='com.alssaedy.clinic'|versionCode='13'|versionName='1.1.4'"
+          ${ANDROID_HOME}/build-tools/35.0.0/aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -E "package: name='com.alssaedy.clinic'|versionCode='14'|versionName='1.1.4'"
 
       - name: Remove temporary signing key
         if: always()
