@@ -4,10 +4,10 @@ const CURRENCY_PROFILES={
  SAR:{code:'SAR',nameAr:'ريال سعودي',symbol:'ر.س'},
  USD:{code:'USD',nameAr:'دولار أمريكي',symbol:'$'}
 };
-function getCurrencyInfo(){return CURRENCY_PROFILES[localStorage.getItem('alssaedy_currency')||'YER']||CURRENCY_PROFILES.YER;}
+function getCurrencyInfo(){return CURRENCY_PROFILES[getPreference('currency')||'YER']||CURRENCY_PROFILES.YER;}
 function setCurrency(code){
  const info=CURRENCY_PROFILES[code]||CURRENCY_PROFILES.YER;
- localStorage.setItem('alssaedy_currency',info.code);
+ setPreference('currency',info.code);
  const select=document.getElementById('currencySelect');if(select)select.value=info.code;
  ['paidCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.nameAr;});
  ['totalCurrencyLabel','paidTableCurrencyLabel','balanceCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.symbol;}); const badge=document.getElementById('receiptCurrencyBadge');if(badge){badge.textContent=info.code;badge.setAttribute('aria-label',info.nameAr+' ('+info.code+')');}
@@ -64,21 +64,21 @@ function setSize(size) {
     document.getElementById('btnSizeA5').classList.toggle('active', size === 'a5');
     document.getElementById('btnSizeA4').classList.toggle('active', size === 'a4');
     document.getElementById('btnSizeThermal').classList.toggle('active', size === 'thermal');
-    localStorage.setItem('alssaedy_receipt_size', size);
+    setPreference('receipt_size', size);
 }
 
-function getLogoScale(){ return Math.min(1.35, Math.max(0.75, Number(localStorage.getItem('alssaedy_logo_scale')) || 1)); }
+function getLogoScale(){ return Math.min(1.35, Math.max(0.75, Number(getPreference('logo_scale')) || 1)); }
 function setLogoScale(scale){
   const safe=Math.min(1.35, Math.max(0.75, Number(scale)||1));
   document.documentElement.style.setProperty('--logo-scale', safe);
-  localStorage.setItem('alssaedy_logo_scale', String(safe));
+  setPreference('logo_scale', String(safe));
   const el=document.getElementById('logoSizeValue'); if(el) el.textContent=Math.round(safe*100)+'%';
 }
 function adjustLogoSize(direction){ setLogoScale(getLogoScale()+direction*0.05); }
 
 function setReceiptFont(fontFamily) {
     document.documentElement.style.setProperty('--receipt-font-family', fontFamily);
-    localStorage.setItem('alssaedy_font_family', fontFamily);
+    setPreference('font_family', fontFamily);
     const el=document.getElementById('fontFamilySelect'); if(el) el.value=fontFamily;
 }
 function setReceiptScale(scale) {
@@ -87,7 +87,7 @@ function setReceiptScale(scale) {
     document.documentElement.style.setProperty('--receipt-body-scale', safe);
     document.documentElement.style.setProperty('--receipt-heading-scale', safe);
     document.documentElement.style.setProperty('--receipt-title-scale', safe);
-    localStorage.setItem('alssaedy_font_scale', String(safe));
+    setPreference('font_scale', String(safe));
     const el=document.getElementById('fontSizeValue'); if(el) el.textContent=Math.round(safe*100)+'%';
     updateTypographyOutputs();
 }
@@ -122,7 +122,7 @@ function setReceiptColor(color) {
     if(!/^#[0-9a-fA-F]{6}$/.test(color)) return;
     document.documentElement.style.setProperty('--primary', color);
     document.documentElement.style.setProperty('--teal', color);
-    localStorage.setItem('alssaedy_receipt_color', color);
+    setPreference('receipt_color', color);
     const el=document.getElementById('accentColorInput'); if(el) el.value=color;
 }
 function setReceiptWeight(weight) {
@@ -136,7 +136,7 @@ function setReceiptWeight(weight) {
             if(Number.isFinite(base) && base>=600) el.style.fontWeight=String(safe);
         });
     }
-    localStorage.setItem('alssaedy_receipt_weight', String(safe));
+    setPreference('receipt_weight', String(safe));
 }
 
 function setTheme(theme) {
@@ -144,7 +144,7 @@ function setTheme(theme) {
     document.getElementById('themeClassic').classList.toggle('active', theme === 'classic');
     document.getElementById('themeModern').classList.toggle('active', theme === 'modern');
     document.getElementById('themeMono').classList.toggle('active', theme === 'mono');
-    localStorage.setItem('alssaedy_theme', theme);
+    setPreference('theme', theme);
 }
 
 function getLocalDateISO() {
@@ -324,7 +324,7 @@ function resetOfficialLogo(){
 
 function toggleWatermark() {
     document.body.classList.toggle('hide-watermark');
-    localStorage.setItem('alssaedy_watermark', document.body.classList.contains('hide-watermark') ? 'off' : 'on');
+    setPreference('watermark', document.body.classList.contains('hide-watermark') ? 'off' : 'on');
 }
 
 let isEditing = false;
@@ -340,7 +340,7 @@ function toggleEditMode() {
     if (!isEditing) {
         const data = {};
         document.querySelectorAll('.editable').forEach(el => { data[el.dataset.key] = el.innerText.trim(); });
-        localStorage.setItem('alssaedy_texts', JSON.stringify(data));
+        setPreference('texts', JSON.stringify(data));
     }
 }
 
@@ -407,9 +407,9 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
     applyLogo(OFFICIAL_LOGO_URL);
-    setCurrency(localStorage.getItem('alssaedy_currency')||'YER');
+    setCurrency(getPreference('currency')||'YER');
 
-    const savedTexts = localStorage.getItem('alssaedy_texts');
+    const savedTexts = getPreference('texts');
     if (savedTexts) {
         try {
             const data = JSON.parse(savedTexts);
@@ -419,23 +419,23 @@ window.addEventListener('DOMContentLoaded', () => {
         } catch(e) {}
     }
 
-    const savedFont = localStorage.getItem('alssaedy_font_family');
+    const savedFont = getPreference('font_family');
     if (savedFont) setReceiptFont(savedFont);
-    setReceiptScale(localStorage.getItem('alssaedy_font_scale') || 1);
-    setLogoScale(localStorage.getItem('alssaedy_logo_scale') || 1);
-    setReceiptTextSize('body', localStorage.getItem('alssaedy_body_scale') || 1);
-    setReceiptTextSize('heading', localStorage.getItem('alssaedy_heading_scale') || 1);
-    setReceiptTextSize('title', localStorage.getItem('alssaedy_title_scale') || 1);
-    const savedColor = localStorage.getItem('alssaedy_receipt_color');
+    setReceiptScale(getPreference('font_scale') || 1);
+    setLogoScale(getPreference('logo_scale') || 1);
+    setReceiptTextSize('body', getPreference('body_scale') || 1);
+    setReceiptTextSize('heading', getPreference('heading_scale') || 1);
+    setReceiptTextSize('title', getPreference('title_scale') || 1);
+    const savedColor = getPreference('receipt_color');
     if (savedColor) setReceiptColor(savedColor);
-    const savedWeight = localStorage.getItem('alssaedy_receipt_weight');
+    const savedWeight = getPreference('receipt_weight');
     if (savedWeight) setReceiptWeight(savedWeight);
 
-    const savedSize = localStorage.getItem('alssaedy_receipt_size');
+    const savedSize = getPreference('receipt_size');
     setSize(SIZE_PROFILES[savedSize] ? savedSize : 'a5');
-    const savedTheme = localStorage.getItem('alssaedy_theme');
+    const savedTheme = getPreference('theme');
     if (savedTheme) setTheme(savedTheme);
-    if (localStorage.getItem('alssaedy_watermark') === 'off') document.body.classList.add('hide-watermark');
+    if (getPreference('watermark') === 'off') document.body.classList.add('hide-watermark');
 
     // Digital receipt is the primary/default workflow.
     // The paper template is generated separately and starts completely blank.
