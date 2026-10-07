@@ -412,7 +412,29 @@
         </div>
     </div>
 
-    <div class="no-print modal-screen" id="patientsModal"><div class="modal-box patients-modal-box"><button class="modal-close" type="button" onclick="closePatientsModal()">×</button><h3>👤 المرضى والعملاء</h3><p>ملفات مرضى دائمة مرتبطة بالسندات والحسابات.</p><div class="patient-form"><input id="patientFormName" class="live-input" placeholder="اسم المريض *"><input id="patientFormPhone" class="live-input" placeholder="رقم الهاتف"><input id="patientFormVisit" class="live-input" type="date" title="موعد العودة"><textarea id="patientFormNotes" class="live-input" placeholder="ملاحظات"></textarea><button type="button" class="tool-btn wide" onclick="savePatientManual()">➕ حفظ ملف المريض</button></div><hr><div id="patientsList"></div></div></div>
+    <div class="no-print modal-screen" id="patientsModal">
+  <div class="modal-box patients-modal-box">
+    <button class="modal-close" type="button" onclick="closePatientsModal()">×</button>
+    <h3>👤 ملفات المرضى والحسابات</h3>
+    <p>ملف طبي وحساب مالي مستقل لكل مريض، مرتبط بالسندات والزيارات والمتبقي.</p>
+    <input type="hidden" id="patientFormId">
+    <div class="patient-form">
+      <input id="patientFormName" class="live-input" placeholder="اسم المريض *">
+      <select id="patientFormGender" class="setting-select"><option value="">الجنس *</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
+      <input id="patientFormAge" class="live-input" type="number" min="0" max="120" placeholder="العمر">
+      <input id="patientFormPhone" class="live-input" placeholder="رقم الهاتف">
+      <input id="patientFormVisit" class="live-input" type="date" title="موعد العودة">
+      <input id="patientFormProblem" class="live-input" placeholder="المشكلة / المرض">
+      <textarea id="patientFormHistory" class="live-input" placeholder="التاريخ المرضي إن وجد"></textarea>
+      <textarea id="patientFormNotes" class="live-input" placeholder="ملاحظات إضافية"></textarea>
+      <button type="button" class="tool-btn wide" onclick="savePatientManual()">➕ حفظ / تحديث ملف المريض</button>
+    </div>
+    <div id="patientAccountPanel" class="patient-account-panel" hidden></div>
+    <hr>
+    <h4 class="patients-list-title">سجل المرضى</h4>
+    <div id="patientsList"></div>
+  </div>
+</div>
     <div class="no-print modal-screen" id="shareModal">
         <div class="modal-box">
             <button class="modal-close" type="button" onclick="closeShareModal()">×</button>
