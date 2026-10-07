@@ -216,18 +216,25 @@ function toggleService(element) {
     element.classList.toggle('active');
 }
 
-function uploadLogo(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            applyLogo(e.target.result);
-            localStorage.setItem('alssaedy_custom_logo', e.target.result);
-        };
-        reader.readAsDataURL(file);
-    }
+function uploadLogo(event){
+  const file=event.target.files?.[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const raw=reader.result;
+    const img=new Image();
+    img.onload=()=>{
+      const max=900,scale=Math.min(1,max/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
+      const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));canvas.height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+      const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      const compressed=canvas.toDataURL('image/png');
+      try{localStorage.setItem('alssaedy_custom_logo',compressed);applyLogo(compressed);alert('تم حفظ الشعار الجديد بنجاح.');}
+      catch(e){alert('تعذر حفظ الشعار. اختر صورة أصغر حجماً.');}
+    };
+    img.onerror=()=>alert('صيغة الشعار غير مدعومة. اختر PNG أو JPG أو صورة SVG بسيطة.');
+    img.src=raw;
+  };
+  reader.readAsDataURL(file);
 }
-
 function applyLogo(url) {
     document.getElementById('clinicLogoImg').src = url;
     document.getElementById('watermarkLayer').style.backgroundImage = "url('" + url + "')";
