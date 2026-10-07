@@ -37,8 +37,30 @@ jobs:
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
 
+      - name: Prepare production signing
+        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 != '' && secrets.ALSSAEDY_RELEASE_STORE_PASSWORD != '' && secrets.ALSSAEDY_RELEASE_KEY_ALIAS != '' && secrets.ALSSAEDY_RELEASE_KEY_PASSWORD != '' }}
+        env:
+          KEYSTORE_B64: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 --decode > app/alssaedy-release.keystore
+          test -s app/alssaedy-release.keystore
+
       - name: Build release APK
+        env:
+          ALSSAEDY_RELEASE_KEYSTORE: \${{ github.workspace }}/android-app/app/alssaedy-release.keystore
+          ALSSAEDY_RELEASE_STORE_PASSWORD: \${{ secrets.ALSSAEDY_RELEASE_STORE_PASSWORD }}
+          ALSSAEDY_RELEASE_KEY_ALIAS: \${{ secrets.ALSSAEDY_RELEASE_KEY_ALIAS }}
+          ALSSAEDY_RELEASE_KEY_PASSWORD: \${{ secrets.ALSSAEDY_RELEASE_KEY_PASSWORD }}
         run: gradle assembleRelease --stacktrace
+
+      - name: Verify release signing
+        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 != '' && secrets.ALSSAEDY_RELEASE_STORE_PASSWORD != '' && secrets.ALSSAEDY_RELEASE_KEY_ALIAS != '' && secrets.ALSSAEDY_RELEASE_KEY_PASSWORD != '' }}
+        run: |
+          \${ANDROID_HOME}/build-tools/35.0.0/apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
+
+      - name: Remove temporary signing key
+        if: always()
+        run: rm -f app/alssaedy-release.keystore
 
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
@@ -48,10 +70,20 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-      - name: Upload release APK build output
+      - name: Upload signed production APK
+        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 != '' && secrets.ALSSAEDY_RELEASE_STORE_PASSWORD != '' && secrets.ALSSAEDY_RELEASE_KEY_ALIAS != '' && secrets.ALSSAEDY_RELEASE_KEY_PASSWORD != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ALSSAEDY-CLINIC-v1.0.5-release-unsigned
-          path: android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+          name: ALSSAEDY-CLINIC-v1.0.5-release-SIGNED
+          path: android-app/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 90
+
+      - name: Upload unsigned release output (signing setup required)
+        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 == '' || secrets.ALSSAEDY_RELEASE_STORE_PASSWORD == '' || secrets.ALSSAEDY_RELEASE_KEY_ALIAS == '' || secrets.ALSSAEDY_RELEASE_KEY_PASSWORD == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALSSAEDY-CLINIC-v1.0.5-release-SIGNING-NOT-CONFIGURED
+          path: android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
+          retention-days: 30
