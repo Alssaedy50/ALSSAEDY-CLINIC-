@@ -40,11 +40,18 @@ jobs:
       - name: Build release APK
         run: gradle assembleRelease --stacktrace
 
-      - name: Upload APKs
+      - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: ALSSAEDY-CLINIC-Android-APK
-          path: |
-            android-app/app/build/outputs/apk/debug/app-debug.apk
-            android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+          name: ALSSAEDY-CLINIC-v1.0.3-debug-APK
+          path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload release APK build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALSSAEDY-CLINIC-v1.0.3-release-unsigned
+          path: android-app/app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
+          retention-days: 90
