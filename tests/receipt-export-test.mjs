@@ -51,6 +51,25 @@ if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 
   throw new Error('Digital receipt date visibility failed: ' + JSON.stringify(dateCheck));
 }
 
+await page.emulateMedia({ media: 'print' });
+const nativePrintDateCheck = await page.evaluate(() => ({
+  printDate: document.getElementById('printDateValue')?.textContent || '',
+  printDateDisplay: getComputedStyle(document.getElementById('printDateValue')).display,
+  digitalInputDisplay: getComputedStyle(document.getElementById('digDate')).display,
+  pickerDisplay: getComputedStyle(document.getElementById('hiddenDatePicker')).display,
+  yearDigits: document.getElementById('paperYearDigits')?.textContent || '',
+  yearEra: document.getElementById('paperYearEra')?.textContent || ''
+}));
+if (nativePrintDateCheck.printDate !== '07/10/2026 م' ||
+    nativePrintDateCheck.printDateDisplay === 'none' ||
+    nativePrintDateCheck.digitalInputDisplay !== 'none' ||
+    nativePrintDateCheck.pickerDisplay !== 'none' ||
+    nativePrintDateCheck.yearDigits !== '2026' ||
+    nativePrintDateCheck.yearEra !== 'م') {
+  throw new Error('Native print date contract failed: ' + JSON.stringify(nativePrintDateCheck));
+}
+await page.emulateMedia({ media: 'screen' });
+
 const blankCheck = await page.evaluate(() => {
   const snapshot = prepareBlankTemplate();
   const fields = ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'];
