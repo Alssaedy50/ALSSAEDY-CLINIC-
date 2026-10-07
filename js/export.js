@@ -212,7 +212,8 @@ function getReceiptText() {
     const srvText = services.length ? 'الخدمات: ' + services.join('، ') : '';
     const refText = ref ? '\nالمرجع: ' + bidiIsolate(ref) : '';
     const patientPhoneText = patientPhone ? '\nرقم الهاتف: ' + bidiIsolate(patientPhone) : '';
-    const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + bidiIsolate(change) + ' ريال يمني' : '';
+    const currency = typeof getCurrencyInfo === 'function' ? getCurrencyInfo() : {nameAr:'ريال يمني',symbol:'ر.ي'};
+    const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + bidiIsolate(change) + ' ' + currency.nameAr : '';
     const clinicPhones = [
         '+967 716 339 366',
         '+967 739 550 138',
@@ -225,9 +226,9 @@ function getReceiptText() {
         srvText + (srvText ? '\n' : '') +
         'طريقة الدفع: ' + method + refText + '\n' +
         '-----------------------------\n' +
-        'المبلغ المدفوع: ' + bidiIsolate(paid) + ' ريال يمني\n' +
-        'إجمالي الحساب: ' + bidiIsolate(total) + ' ريال يمني\n' +
-        'المتبقي: ' + bidiIsolate(balance) + ' ريال يمني' + changeText + '\n' +
+        'المبلغ المدفوع: ' + bidiIsolate(paid) + ' ' + currency.nameAr + ' (' + currency.symbol + ')\n' +
+        'إجمالي الحساب: ' + bidiIsolate(total) + ' ' + currency.nameAr + ' (' + currency.symbol + ')\n' +
+        'المتبقي: ' + bidiIsolate(balance) + ' ' + currency.nameAr + ' (' + currency.symbol + ')' + changeText + '\n' +
         '-----------------------------\n' +
         'شاكرين ثقتكم بنا، مع تمنياتنا لكم بدوام الصحة والعافية.\n' +
         'ريمة – كسمة – عزلة الضبارة\n' +
