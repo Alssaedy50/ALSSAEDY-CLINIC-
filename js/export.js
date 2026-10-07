@@ -83,7 +83,7 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
         if (clonedPaperYear) {
             const digits = clonedPaperYear.querySelector('#paperYearDigits') || clonedPaperYear.querySelector('.paper-year-digits');
             const era = clonedPaperYear.querySelector('#paperYearEra') || clonedPaperYear.querySelector('.paper-year-era');
-            if (digits) { digits.textContent='202'; digits.setAttribute('dir','ltr'); }
+            if (digits) { digits.textContent=String(new Date().getFullYear()); digits.setAttribute('dir','ltr'); }
             if (era) { era.textContent='م'; era.setAttribute('dir','ltr'); }
             clonedPaperYear.setAttribute('dir','ltr');
             clonedPaperYear.style.direction='ltr';
@@ -386,6 +386,10 @@ function injectPrintPageStyle() {
 }
 
 function triggerNativePrint() {
+    // Native print uses the live DOM (unlike Canvas export), so materialize the
+    // display-only date before opening the system print dialog.
+    const dateInput = document.getElementById('digDate');
+    updatePrintDate(dateInput?.value || '');
     injectPrintPageStyle();
     window.focus();
     setTimeout(() => window.print(), 100);
@@ -539,22 +543,35 @@ function copyReceiptText() {
 function snapshotReceiptForTemplate(){
   const ids=['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'];
   const fields={}; ids.forEach(id=>{const el=document.getElementById(id); if(el) fields[id]=el.value;});
-  return {mode:document.body.getAttribute('data-mode')||'digital',size:getSelectedSize(),payMethod:document.getElementById('selectedPayMethod')?.value||'',services:Array.from(document.querySelectorAll('.custom-check-item')).map(el=>el.classList.contains('active')),fields};
+  return {
+    mode:document.body.getAttribute('data-mode')||'digital',
+    size:getSelectedSize(),
+    payMethod:document.getElementById('selectedPayMethod')?.value||'',
+    paperTemplateDate:getPaperTemplateDateValue(),
+    services:Array.from(document.querySelectorAll('.custom-check-item')).map(el=>el.classList.contains('active')),
+    fields
+  };
 }
 function restoreReceiptAfterTemplate(snapshot){
   if(!snapshot)return;
   Object.entries(snapshot.fields||{}).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value;});
   document.querySelectorAll('.custom-check-item').forEach((el,i)=>el.classList.toggle('active',!!snapshot.services?.[i]));
-  setPayMethod(snapshot.payMethod||''); setSize(snapshot.size||'a5'); setMode(snapshot.mode||'digital');
+  setPayMethod(snapshot.payMethod||'');
+  setSize(snapshot.size||'a5');
+  setPaperTemplateDate(snapshot.paperTemplateDate||'');
+  setMode(snapshot.mode||'digital');
   if(typeof calculateLedger==='function')calculateLedger();
   if(typeof syncReceiptDateFromInput==='function')syncReceiptDateFromInput();
 }
 function prepareBlankTemplate(){
   const snapshot=snapshotReceiptForTemplate();
+  const paperDate = getPaperTemplateDateValue();
   setMode('manual');
   ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));
-  setPayMethod(''); syncPaperDate(''); document.body.classList.add('blank-template-export');
+  setPayMethod('');
+  syncPaperDate(paperDate);
+  document.body.classList.add('blank-template-export');
   return snapshot;
 }
 function finishBlankTemplate(snapshot){document.body.classList.remove('blank-template-export');restoreReceiptAfterTemplate(snapshot);}
