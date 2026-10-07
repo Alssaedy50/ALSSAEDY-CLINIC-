@@ -78,11 +78,20 @@ for(const forbidden of ['2026-10-07','مريض الاختبار','TEST-001','250
 
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
+  if (!document.fonts.check('900 16px "Cairo"', 'سند قبض مالي')) {
+    throw new Error('Cairo Arabic font is not ready before Canvas capture.');
+  }
   if (typeof generateReceiptCanvas !== 'function' || typeof buildReceiptPdfBlob !== 'function') {
     throw new Error('Export pipeline functions are unavailable.');
   }
 
   const source = document.getElementById('receiptPrintArea');
+  const titleBox = source.querySelector('.main-voucher-title')?.getBoundingClientRect();
+  const titleStrip = source.querySelector('.title-strip')?.getBoundingClientRect();
+  if (!titleBox || !titleStrip || titleBox.width <= 0 || titleBox.height <= 0 ||
+      titleBox.right > titleStrip.right + 1 || titleBox.left < titleStrip.left - 1) {
+    throw new Error('Receipt title layout is invalid before Canvas capture.');
+  }
   const cloned = source.cloneNode(true);
   materializeReceiptDate(source, cloned);
   materializeReceiptControls(source, cloned, document);
