@@ -60,7 +60,7 @@ function collectReceiptData() {
         tafqeet:document.getElementById('digTafqeet').value.trim(),
         payMethod:document.getElementById('selectedPayMethod').value||'نقداً',
         ref:document.getElementById('digRef').value.trim(),
-        services:getSelectedServices(),mode:'digital',size:getSelectedSize(),
+        services:[...getSelectedServices(), ...(document.getElementById('digCustomService')?.value.trim() ? [document.getElementById('digCustomService').value.trim()] : [])].filter((v,i,a)=>a.indexOf(v)===i),mode:'digital',size:getSelectedSize(),
         currency:currency.code,currencyName:currency.nameAr,currencySymbol:currency.symbol
     };
 }
@@ -382,6 +382,7 @@ function createReceiptFromPatientAccount(){
   document.getElementById('digTotal').value=String(price);
   document.getElementById('digPaid').value=String(Math.min(Math.max(0,paid),price));
   document.getElementById('digTooth').value=tooth;
+  if(document.getElementById('digCustomService'))document.getElementById('digCustomService').value=service;
   document.getElementById('digTafqeet').value=notes;
   document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));
   const match=Array.from(document.querySelectorAll('.custom-check-item')).find(el=>el.innerText.replace('✓','').trim()===service);
