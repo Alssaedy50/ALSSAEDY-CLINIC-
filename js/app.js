@@ -403,9 +403,7 @@ window.addEventListener('DOMContentLoaded', () => {
             dateInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
     }
-    const customLogo=localStorage.getItem('alssaedy_custom_logo');
-    applyLogo(customLogo||OFFICIAL_LOGO_URL);
-    loadLogoDurably().then(value=>{if(value)applyLogo(value);}).catch(()=>{});
+    applyLogo(OFFICIAL_LOGO_URL);
     setCurrency(localStorage.getItem('alssaedy_currency')||'YER');
 
     const savedTexts = localStorage.getItem('alssaedy_texts');
@@ -440,6 +438,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // The paper template is generated separately and starts completely blank.
     syncPaperDate('');
     setMode('digital');
-    hydrateDurableReceipts().then(()=>updateHistoryCount()).catch(()=>updateHistoryCount());
+    hydrateDurableReceipts().then(()=>{ const logo=loadLogoDurably(); if(logo)applyLogo(logo); updateHistoryCount(); }).catch(()=>updateHistoryCount());
     updateActionAvailability();
 });
