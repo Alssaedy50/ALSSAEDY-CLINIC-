@@ -199,7 +199,7 @@ function renderHistory() {
 }
 
 function loadReceipt(id) {
-    const item = safeHistory().find(r => Number(r.id) === Number(id));
+    const item = safeHistory().find(r => String(r.id) === String(id));
     if (!item) return;
     setMode('digital');
     document.getElementById('digReceiptNo').value = item.recNo || '';
@@ -224,7 +224,7 @@ function loadReceipt(id) {
 }
 
 function deleteReceipt(id) {
-    const history = safeHistory().filter(r => Number(r.id) !== Number(id));
+    const history = safeHistory().filter(r => String(r.id) !== String(id));
     localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
     clinicDBDelete('receipts', id).catch(()=>{});
     renderHistory();
