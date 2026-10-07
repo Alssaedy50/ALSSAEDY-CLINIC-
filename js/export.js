@@ -74,7 +74,11 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
     const clonedPaperYear = clonedReceipt.querySelector('#paperDateYear');
 
     if (isBlankTemplate) {
-        if (cloned) cloned.value = '';
+        if (cloned) {
+            cloned.value='';
+            cloned.removeAttribute('value');
+            cloned.style.display='none';
+        }
         if (clonedPrintDate) clonedPrintDate.remove();
         if (clonedPaperYear) {
             clonedPaperYear.innerHTML =
@@ -86,19 +90,23 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
         return;
     }
 
-    // Export/print must contain exactly one date. Replace the live input with
-    // one ordinary text span; do not keep a second print-date mirror.
+    // Keep the original input in the clone so materializeReceiptControls()
+    // retains one-to-one control mapping. Hide that input and add exactly one
+    // ordinary text node for the exported/printed date.
+    const value=String(source?.value||'').trim();
     if (cloned) {
-        const value=String(source?.value||'').trim();
-        const span=cloned.ownerDocument.createElement('span');
-        span.id='printDateValue';
-        span.className='exported-receipt-date export-field-value';
-        span.textContent=(typeof formatReceiptDate==='function' ? formatReceiptDate(value) : value);
-        span.setAttribute('dir','ltr');
-        span.style.cssText='display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;text-align:center!important;white-space:nowrap!important;width:120px!important;';
-        cloned.replaceWith(span);
+        cloned.value=value;
+        cloned.setAttribute('value',value);
+        cloned.style.display='none';
     }
     if (clonedPrintDate) clonedPrintDate.remove();
+    const span=clonedReceipt.ownerDocument.createElement('span');
+    span.id='printDateValue';
+    span.className='exported-receipt-date export-field-value';
+    span.textContent=(typeof formatReceiptDate==='function' ? formatReceiptDate(value) : value);
+    span.setAttribute('dir','ltr');
+    span.style.cssText='display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;text-align:center!important;white-space:nowrap!important;width:120px!important;';
+    if (cloned) cloned.parentNode.insertBefore(span,cloned.nextSibling);
 }
 function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument) {
     // Android WebView/html2canvas can render the form control chrome but omit the
