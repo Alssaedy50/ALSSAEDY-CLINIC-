@@ -97,7 +97,6 @@ const dateFormats = await page.evaluate(() => {
   });
 });
 for (const item of dateFormats) {
-  if (item.day !== item.value.includes('2026') ? item.day : item.day) {}
   if (item.day !== '07' || item.month !== '10' || item.year !== '2026' || item.era !== 'م') {
     throw new Error('Paper date format parsing failed: ' + JSON.stringify(item));
   }
