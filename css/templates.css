@@ -11,3 +11,18 @@
 .patient-profile-meta{font-size:11px;color:#475569;line-height:1.8;margin:5px 0}
 .patient-list-actions{display:flex;gap:5px;flex-wrap:wrap}
 @media(max-width:600px){.patient-account-grid,.patient-account-summary{grid-template-columns:1fr}.patient-service-row{grid-template-columns:1fr 1fr}.patient-service-row input:first-child{grid-column:1/-1}}
+
+
+/* Paper template date editor — UI only, never part of the printed sheet. */
+.template-date-editor{
+  margin:12px 0 16px;
+  padding:12px;
+  border:1px solid rgba(7,59,99,.16);
+  border-radius:12px;
+  background:rgba(7,59,99,.04);
+}
+.template-date-editor > label{display:block;font-weight:800;margin-bottom:7px;}
+.template-date-editor-row{display:flex;gap:6px;align-items:center;}
+.template-date-editor-row #paperTemplateDate{flex:1;min-width:0;text-align:center;direction:ltr;unicode-bidi:isolate;}
+.template-date-editor small{display:block;margin-top:7px;line-height:1.5;opacity:.75;}
+@media (max-width:520px){.template-date-editor-row{flex-wrap:wrap}.template-date-editor-row #paperTemplateDate{width:100%;flex-basis:100%}}
