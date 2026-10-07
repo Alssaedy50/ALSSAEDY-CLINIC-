@@ -158,15 +158,21 @@ function syncPaperDate(dateValue) {
     const day = document.getElementById('paperDateDay');
     const month = document.getElementById('paperDateMonth');
     const year = document.getElementById('paperDateYear');
-    if (!match) {
-        if (day) day.textContent = '';
-        if (month) month.textContent = '';
-        if (year) year.textContent = '____ م';
-        return;
+
+    if (day) day.textContent = match ? match[3] : '';
+    if (month) month.textContent = match ? match[2] : '';
+
+    // Manual paper template: keep the pre-printed Arabic year marker "202م".
+    // Digital receipts may still mirror the full selected year when a date exists.
+    if (year) {
+        const yearValue = match ? match[1] : '202';
+        year.innerHTML =
+            '<span class="paper-year-digits" dir="ltr">' + yearValue + '</span>' +
+            '<span class="paper-year-era" dir="rtl">م</span>';
+        year.setAttribute('dir', 'rtl');
+        year.style.direction = 'rtl';
+        year.style.unicodeBidi = 'isolate';
     }
-    if (day) day.textContent = match[3];
-    if (month) month.textContent = match[2];
-    if (year) year.textContent = match[1] + ' م';
 }
 
 function updatePrintDate(value){ const el=document.getElementById('printDateValue'); if(el) el.textContent=formatReceiptDate(value||''); }
