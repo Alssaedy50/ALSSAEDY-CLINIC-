@@ -386,3 +386,7 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 .app-tab{border:0;background:transparent;color:#64748b;border-radius:10px;padding:7px 10px;display:flex;align-items:center;gap:5px;font:inherit;cursor:pointer;transition:.18s ease}.app-tab b{font-size:10px}.app-tab.active{background:#073b63;color:#fff;box-shadow:0 4px 12px rgba(7,59,99,.18)}
 .patient-detail-hidden{display:none!important}.patient-account-panel[hidden]{display:none!important}.patient-account-head{position:sticky;top:0;z-index:2;background:#f8fafc;padding:8px 0;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:7px}
 @media(max-width:900px){.app-tabs{order:3;width:100%;justify-content:space-between}.app-tab{flex:1;justify-content:center;padding:7px 5px}.site-navbar .nav-container{flex-wrap:wrap}.nav-controls{flex:1 1 100%;justify-content:center}}@media print{.app-tabs{display:none!important}}
+
+/* v1.0.8 navigation cleanup */
+@media screen and (min-width:701px){.nav-container{max-width:1120px}.nav-controls{margin-inline-start:auto}}
+@media screen and (max-width:700px){.app-tabs{width:100%;justify-content:center;overflow-x:auto}.app-tab{flex:1 1 auto;justify-content:center;padding:7px 6px}.nav-controls{width:100%;justify-content:center}}
