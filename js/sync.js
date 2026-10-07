@@ -72,13 +72,13 @@ async function buildSyncSnapshot() {
 async function syncRequest(method, options = {}) {
     const key = getSyncKey();
     if (!key) throw new Error('لم يتم إدخال مفتاح العيادة للمزامنة.');
-    const url = getSyncUrl() + '?key=' + encodeURIComponent(key);
+    const url = getSyncUrl();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), options.timeoutMs || 20000);
     try {
         const res = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
             body: options.body ? JSON.stringify(options.body) : undefined,
             signal: controller.signal
         });

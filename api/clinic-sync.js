@@ -17,7 +17,9 @@ function keyHash(key) {
 }
 
 function keyFrom(req) {
-  return (new URL(req.url, `https://${req.headers?.host || 'localhost'}`).searchParams.get('key') || '').trim();
+  const auth = String(req.headers?.authorization || '').trim();
+  if (/^Bearer\\s+/i.test(auth)) return auth.replace(/^Bearer\\s+/i, '').trim();
+  return String(req.headers?.['x-clinic-key'] || '').trim();
 }
 
 function pathFor(key) {
@@ -38,6 +40,14 @@ async function readRecord(path) {
 
 export default async function handler(req, res) {
   try {
+    const origin = String(req.headers?.origin || '').trim();
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Clinic-Key');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
+    if (req.method === 'OPTIONS') return res.status(204).end();
     const key = keyFrom(req);
     if (key.length < 6 || key.length > 200) return res.status(400).json({ error: 'invalid_key' });
     const path = pathFor(key);

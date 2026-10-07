@@ -10,13 +10,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="vendor/html2canvas/html2canvas.min.js?v=1.1.2"></script>
-        <script src="logo_data.js?v=1.1.2"></script>
-    <link rel="stylesheet" href="css/ui.css?v=1.1.2">
-    <link rel="stylesheet" href="css/receipt.css?v=1.1.2">
-    <link rel="stylesheet" href="css/print.css?v=1.1.2">
-    <link rel="stylesheet" href="css/templates.css?v=1.1.2">
-    <link rel="stylesheet" href="css/polish.css?v=1.1.2">
+    <script src="vendor/html2canvas/html2canvas.min.js?v=1.1.4"></script>
+    <link rel="stylesheet" href="css/ui.css?v=1.1.4">
+    <link rel="stylesheet" href="css/receipt.css?v=1.1.4">
+    <link rel="stylesheet" href="css/print.css?v=1.1.4">
+    <link rel="stylesheet" href="css/templates.css?v=1.1.4">
+    <link rel="stylesheet" href="css/polish.css?v=1.1.4">
 </head>
 <body data-mode="digital">
 
@@ -81,23 +80,21 @@
                     <span class="manual-only write-dots num-dots"></span>
                     <input type="text" class="digital-only live-input num-input" id="digReceiptNo" placeholder="">
                 </div>
-                <div class="meta-cell date-field-wrapper" style="display: flex; align-items: center; gap: 6px; direction: rtl;">
+                <div class="meta-cell date-field-wrapper">
                     <span class="meta-label">التاريخ:</span>
-
-                    <!-- للوضع الورقي: ثلاث خلايا منفصلة تماماً (اليوم / الشهر / السنة) لا يمكن للمتصفح قلبها -->
-                    <div class="manual-only date-boxes-row" dir="rtl" style="display: inline-flex; align-items: center; gap: 4px;">
-                        <span class="date-line-slot" id="paperDateDay" style="display: inline-block; width: 32px; border-bottom: 1.5px dashed #475569; text-align: center; height: 14px;"></span>
-                        <span class="date-slash" style="color: #94a3b8; font-weight: bold; font-size: 11px;">/</span>
-                        <span class="date-line-slot" id="paperDateMonth" style="display: inline-block; width: 32px; border-bottom: 1.5px dashed #475569; text-align: center; height: 14px;"></span>
-                        <span class="date-slash" style="color: #94a3b8; font-weight: bold; font-size: 11px;">/</span>
-                        <span class="date-year-label paper-year-fixed" id="paperDateYear" dir="rtl" style="font-weight: 800; color: #073b63; font-size: 10px; white-space: nowrap; direction: rtl; unicode-bidi: isolate;"><span class="paper-year-digits" dir="ltr">202</span><span class="paper-year-era" dir="rtl">م</span></span>
+                    <div class="manual-only date-container" aria-label="التاريخ">
+                        <div class="date-sequence" dir="rtl">
+                            <span class="date-part date-slot" id="paperDateDay"></span>
+                            <span class="date-sep">/</span>
+                            <span class="date-part date-slot" id="paperDateMonth"></span>
+                            <span class="date-sep">/</span>
+                            <span class="date-part date-year" id="paperDateYear"><bdi class="paper-year-digits" id="paperYearDigits" dir="ltr">202</bdi><bdi class="paper-year-era" id="paperYearEra" dir="ltr">م</bdi></span>
+                        </div>
                     </div>
-
-                    <!-- للوضع الرقمي: إدخال حر لجميع الصيغ واللغات مع تقويم اختياري -->
-                    <div class="digital-only" style="display: inline-flex; align-items: center; gap: 4px;">
-                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو حر" dir="auto" style="text-align: center; width: 120px; font-weight: 700;">
-                        <button type="button" class="no-print" style="background: none; border: none; cursor: pointer; font-size: 12px;" onclick="document.getElementById('hiddenDatePicker').showPicker()">📅</button>
-                        <input type="date" id="hiddenDatePicker" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" onchange="document.getElementById('digDate').value=this.value">
+                    <div class="digital-only digital-date-control">
+                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو حر" dir="ltr" inputmode="numeric" autocomplete="off">
+                        <button type="button" class="no-print date-picker-btn" aria-label="اختيار التاريخ" onclick="openDatePicker()">📅</button>
+                        <input type="date" id="hiddenDatePicker" class="hidden-date-picker" tabindex="-1" aria-hidden="true">
                     </div>
                 </div>
             </div>
@@ -315,11 +312,11 @@
                 <div class="setting-card">
                     <h4>🖼️ الشعار والعلامة المائية</h4>
                     <div class="grid-btns two">
-                        <button type="button" class="tool-btn" onclick="document.getElementById('logoUploader').click()">تغيير الشعار</button>
+                        <label class="tool-btn file-picker-label" for="logoUploader">تغيير الشعار</label>
                         <button type="button" class="tool-btn" onclick="toggleWatermark()">العلامة المائية (ON/OFF)</button>
                     </div>
                     <button type="button" class="tool-btn wide mt-2" onclick="resetOfficialLogo()">🔄 استعادة الشعار المعتمد</button>
-                    <input type="file" id="logoUploader" accept="image/*,.svg" style="display:none;" onchange="uploadLogo(event)">
+                    <input type="file" id="logoUploader" accept="image/png,image/jpeg,image/webp,image/svg+xml,.svg" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" onchange="uploadLogo(event)">
                 </div>
 
                 <div class="setting-card logo-size-card">
@@ -549,13 +546,13 @@
         </div>
     </div>
 
-    <script src="js/tafqeet.js?v=1.1.2"></script>
-    <script src="js/storage.js?v=1.1.2"></script>
-    <script src="js/export.js?v=1.1.2"></script>
-    <script src="js/templates.js?v=1.1.2"></script>
-    <script src="js/app.js?v=1.1.2"></script>
-    <script src="js/ui.js?v=1.1.2"></script>
-    <script src="js/sync.js?v=1.1.2"></script>
-    <script src="android-app-bridge.js?v=1.1.2"></script>
+    <script src="js/tafqeet.js?v=1.1.4"></script>
+    <script src="js/storage.js?v=1.1.4"></script>
+    <script src="js/export.js?v=1.1.4"></script>
+    <script src="js/templates.js?v=1.1.4"></script>
+    <script src="js/app.js?v=1.1.4"></script>
+    <script src="js/ui.js?v=1.1.4"></script>
+    <script src="js/sync.js?v=1.1.4"></script>
+    <script src="android-app-bridge.js?v=1.1.4"></script>
 </body>
 </html>

@@ -177,20 +177,24 @@ function syncPaperDate(dateValue) {
     const parsed = parseAnyDate(dateValue);
     const day = document.getElementById('paperDateDay');
     const month = document.getElementById('paperDateMonth');
-    const year = document.getElementById('paperDateYear');
+    const yearDigits = document.getElementById('paperYearDigits');
+    const yearEra = document.getElementById('paperYearEra');
 
     if (day) day.textContent = parsed ? parsed.d : '';
     if (month) month.textContent = parsed ? parsed.m : '';
-
-    // Manual paper template: keep the pre-printed Arabic year marker "202م".
-    // Digital receipts may still mirror the full selected year when a date exists.
-    if (year) {
-        const yearValue = parsed ? parsed.y : '202';
-        year.innerHTML =
-            '<span class="paper-year-digits" dir="ltr">' + yearValue + '</span><span class="paper-year-era" dir="ltr">م</span>';
-        year.setAttribute('dir', 'ltr');
-        year.style.direction = 'ltr';
-        year.style.unicodeBidi = 'isolate';
+    if (yearDigits) yearDigits.textContent = parsed ? parsed.y : '202';
+    if (yearEra) yearEra.textContent = 'م';
+}
+function openDatePicker() {
+    const picker = document.getElementById('hiddenDatePicker');
+    if (!picker) return;
+    const input = document.getElementById('digDate');
+    if (input && /^\d{4}-\d{2}-\d{2}$/.test(input.value)) picker.value = input.value;
+    try {
+        if (typeof picker.showPicker === 'function') picker.showPicker();
+        else { picker.focus(); picker.click(); }
+    } catch (_) {
+        try { picker.focus(); picker.click(); } catch (_) {}
     }
 }
 
@@ -252,36 +256,36 @@ function uploadLogo(event){
   const reader=new FileReader();
   reader.onload=()=>{
     const raw=String(reader.result||'');
-    // Keep vector SVG files untouched; raster logos are resized only when truly
-    // oversized, preserving much more detail than the previous 900px limit.
     if(file.type==='image/svg+xml' || /\\.svg$/i.test(file.name)){
       try{localStorage.setItem('alssaedy_custom_logo',raw);applyLogo(raw);alert('تم حفظ الشعار الجديد بجودة أصلية.');}
-      catch(e){alert('تعذر حفظ الشعار. قد يكون ملف SVG كبيراً جداً.');}
+      catch(e){alert('تعذر حفظ الشعار. اختر SVG أصغر أو صورة PNG/JPG مناسبة.');}
       if(input) input.value='';
       return;
     }
     const img=new Image();
     img.onload=()=>{
       const sourceW=img.naturalWidth||img.width||1, sourceH=img.naturalHeight||img.height||1;
-      const max=2048;
+      const max=1600;
       const scale=Math.min(1,max/Math.max(sourceW,sourceH));
       const width=Math.max(1,Math.round(sourceW*scale));
       const height=Math.max(1,Math.round(sourceH*scale));
       const canvas=document.createElement('canvas');
       canvas.width=width; canvas.height=height;
       const ctx=canvas.getContext('2d',{alpha:true});
-      if(!ctx){alert('تعذر معالجة الشعار.');return;}
+      if(!ctx){alert('تعذر معالجة الشعار.');if(input)input.value='';return;}
       ctx.imageSmoothingEnabled=true;
       ctx.imageSmoothingQuality='high';
       ctx.clearRect(0,0,width,height);
       ctx.drawImage(img,0,0,width,height);
-      const output=canvas.toDataURL('image/png');
+      let output='';
+      try { output=canvas.toDataURL('image/webp',0.94); } catch (_) {}
+      if(!output || output.length<100) output=canvas.toDataURL('image/png');
       try{
         localStorage.setItem('alssaedy_custom_logo',output);
         applyLogo(output);
         alert('تم حفظ الشعار الجديد بجودة عالية.');
       }catch(e){
-        alert('تعذر حفظ الشعار. اختر صورة PNG/JPG أصغر حجماً.');
+        alert('تعذر حفظ الشعار بسبب مساحة التخزين. استخدم صورة أصغر أو SVG.');
       }
       if(input) input.value='';
     };
@@ -347,6 +351,15 @@ function showPatientListView(){document.querySelector('.patient-form')?.classLis
 function showPatientDetailView(){document.querySelector('.patient-form')?.classList.add('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.add('patient-detail-hidden');document.getElementById('patientsList')?.classList.add('patient-detail-hidden');document.getElementById('patientAccountPanel')?.removeAttribute('hidden');}
 
 window.addEventListener('DOMContentLoaded', () => {
+    const datePicker = document.getElementById('hiddenDatePicker');
+    const dateInput = document.getElementById('digDate');
+    if (datePicker && dateInput) {
+        datePicker.addEventListener('change', () => {
+            dateInput.value = datePicker.value || '';
+            syncReceiptDateFromInput();
+            dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    }
     const customLogo=localStorage.getItem('alssaedy_custom_logo');
     applyLogo(customLogo||OFFICIAL_LOGO_URL);
     setCurrency(localStorage.getItem('alssaedy_currency')||'YER');
@@ -383,9 +396,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // The paper template is generated separately and starts completely blank.
     syncPaperDate('');
     setMode('digital');
-    const dateInput = document.getElementById('digDate');
-    if (dateInput) dateInput.addEventListener('input', syncReceiptDateFromInput);
-    updatePrintDate(dateInput?.value||'');
     hydrateDurableReceipts().then(()=>updateHistoryCount()).catch(()=>updateHistoryCount());
     updateActionAvailability();
 });
