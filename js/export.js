@@ -432,7 +432,7 @@ async function shareReceiptImage() {
     }
 }
 
-async async function saveCanvasImage(canvas, filename) {
+async function saveCanvasImage(canvas, filename) {
     if (window.Android && typeof Android.beginImageSave === 'function') {
         const dataUrl = canvas.toDataURL('image/png');
         const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1), chunkSize = 65536;
