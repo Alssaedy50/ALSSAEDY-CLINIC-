@@ -315,6 +315,30 @@ The action inventory covers 89 inline handlers across 53 handler expressions, pl
 #### Phase 1 target
 Create one canonical date value in the data layer (ISO date), one formatter for human display, and one input adapter that accepts supported human formats and seeds the native picker from the normalized value. Persist canonical date values; do not persist presentation strings.
 
+
+### Phase 0 / Task 0.6 — Logo pipeline audit: COMPLETE
+
+#### Current pipeline
+Official logo: `assets/Saedy_Dental_Logo.svg` → `OFFICIAL_LOGO_URL` → `applyLogo()` → receipt header + watermark. Custom upload: FileReader → SVG preserved as data URL, raster images optionally downscaled to max 4096px → localStorage + IndexedDB settings → `applyLogo()`. PNG export uses html2canvas; print/PDF uses the live DOM/WebView print engine. Android packages a separate `logo.png` as the application icon while web content still uses the SVG asset.
+
+#### Confirmed good
+- Official logo is vector SVG with a 500×500 viewBox, so it is not inherently resolution-limited for print.
+- Raster upload processing caps oversized inputs at 4096px while preserving aspect ratio.
+- SVG uploads are not rasterized, preserving vector quality in the browser/print path.
+- Receipt logo uses `object-fit: contain` and a square presentation box, preventing forced stretching of non-square artwork.
+- Export clone explicitly removes width/height attributes and disables visual filters/opacity overrides that could degrade capture.
+- Reset removes both custom logo stores and restores the official asset.
+
+#### Confirmed architectural issues / risks
+1. **Two logo persistence implementations:** `saveLogoDurably/loadLogoDurably` and `persistLogoData/loadCustomLogo` overlap; the latter pair has no active callers. One logo repository should remain after Phase 1 cleanup.
+2. **Two persistence stores:** custom logo is written to both IndexedDB and localStorage, with startup preferring localStorage and then asynchronously applying IndexedDB. This can create a visible two-step logo state during startup.
+3. **Import/sync restore bypass the durable logo API:** they write `alssaedy_custom_logo` directly to localStorage rather than the authoritative logo manager.
+4. **Export quality depends on html2canvas for PNG:** the capture is high-scale (4 browser / 3 Android in the legacy PDF helper), but PNG remains raster by definition. Print/PDF is the correct high-fidelity/vector route.
+5. **Android launcher icon is a separate raster asset:** it must be treated as application branding, not as the source of truth for receipt rendering.
+
+#### Phase 1 target
+Create one LogoRepository/manager with a single durable source, a single load/apply path, explicit raster quality policy, and explicit separation between receipt-rendering logo and Android launcher icon.
+
 ### Next task
-**0.6 Logo pipeline audit — IN PROGRESS.**
-Focus: authoritative logo source, upload decoding, SVG/raster preservation, resizing, storage, cache, DOM rendering, PNG export, print/PDF, Android packaging, reset/import/sync behavior, and aspect-ratio integrity.
+**0.7 Export/print/PDF/PNG/share audit — IN PROGRESS.**
+Focus: prove each export path, quality characteristics, filename/download behavior, Android bridge usage, print CSS, text selectability, blank-template behavior, and eliminate competing legacy paths only after call-graph proof.
