@@ -92,7 +92,8 @@
                         </div>
                     </div>
                     <div class="digital-only digital-date-control">
-                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو حر" dir="ltr" inputmode="numeric" autocomplete="off">
+                        <span id="printDateValue" class="print-date-value export-field-value" aria-hidden="true" dir="ltr"></span>
+                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو 07/10/2026 أو أي صيغة شائعة" dir="ltr" inputmode="numeric" autocomplete="off">
                         <button type="button" class="no-print date-picker-btn" aria-label="اختيار التاريخ" onclick="openDatePicker()">📅</button>
                         <input type="date" id="hiddenDatePicker" class="hidden-date-picker" tabindex="-1" aria-hidden="true">
                     </div>
@@ -440,6 +441,17 @@
                 <button type="button" class="template-size-card" id="templateSizeThermal" onclick="selectTemplateSize('thermal')">
                     <strong>80mm</strong><span>طابعة حرارية</span>
                 </button>
+            </div>
+            <div class="template-date-editor">
+                <label for="paperTemplateDate">📅 تاريخ السند الورقي</label>
+                <div class="template-date-editor-row">
+                    <input type="text" id="paperTemplateDate" class="live-input" dir="ltr" inputmode="numeric"
+                           placeholder="07/10/2026 أو 2026-10-07 أو أي صيغة شائعة"
+                           oninput="setPaperTemplateDate(this.value)">
+                    <button type="button" class="tool-btn" onclick="setPaperTemplateToday()">اليوم</button>
+                    <button type="button" class="tool-btn" onclick="clearPaperTemplateDate()">فارغ</button>
+                </div>
+                <small>يمكن كتابة التاريخ بصيغ مثل: 07/10/2026، 7-10-2026، 2026/10/07، أو بالأرقام العربية.</small>
             </div>
             <div class="template-actions">
                 <button type="button" class="opt-card template-action" onclick="downloadBlankTemplatePDF()">
