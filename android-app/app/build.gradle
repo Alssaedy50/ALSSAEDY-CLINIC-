@@ -54,8 +54,8 @@ android {
         applicationId "com.alssaedy.clinic"
         minSdk 29
         targetSdk 35
-        versionCode 16
-        versionName "1.2.0"
+        versionCode 17
+        versionName "1.2.1"
     }
 
     sourceSets {
