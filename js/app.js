@@ -404,8 +404,8 @@ window.addEventListener('popstate',(e)=>{
 });
 function openShareModal(){document.getElementById('shareModal').classList.add('open');}
 function closeShareModal(){document.getElementById('shareModal').classList.remove('open');}
-function openHistoryModal(){renderHistory();document.getElementById('historyModal').classList.add('open');pushPanelState('history');activateAppTabVisual('history');}
-function closeHistoryModal(skipHistory=false){document.getElementById('historyModal').classList.remove('open');if(!skipHistory)closePanelState('history');}
+function openHistoryModal(skipHistory=false){renderHistory();document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');if(!skipHistory)pushPanelState('history');}
+function closeHistoryModal(skipHistory=false){document.getElementById('historyModal')?.classList.remove('open');if(!skipHistory)closePanelState('history');}
 function showPatientListView(){document.querySelector('.patient-form')?.classList.remove('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.remove('patient-detail-hidden');document.getElementById('patientsList')?.classList.remove('patient-detail-hidden');document.getElementById('patientAccountPanel')?.setAttribute('hidden','');}
 function showPatientDetailView(){document.querySelector('.patient-form')?.classList.add('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.add('patient-detail-hidden');document.getElementById('patientsList')?.classList.add('patient-detail-hidden');document.getElementById('patientAccountPanel')?.removeAttribute('hidden');}
 
