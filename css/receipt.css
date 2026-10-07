@@ -514,7 +514,6 @@ body.exporting-receipt .patient-contact-row .patient-phone-input {
 .date-field-wrapper .print-date-value{display:none!important}
 .digital-date-control .print-date-value{display:none!important}
 .template-date-editor-row #paperTemplateDate{
-  inputmode:text!important;
   text-align:center!important;
   direction:ltr!important;
   unicode-bidi:isolate!important;
