@@ -203,7 +203,31 @@ Completed:
 - Phase 1 / Task 1.6 — Settings Ownership Cleanup
 
 Current:
-- Phase 1 / Task 1.7 — CSS Responsibility Cleanup
+- Phase 1 / Task 1.8 — CSS/UX Regression Verification
+
+### Phase 1.7 — CSS Responsibility Cleanup: COMPLETE
+
+Implemented:
+- Receipt geometry and receipt-specific mobile/export rules remain owned by `css/receipt.css`.
+- Print-only rules remain owned by `css/print.css`.
+- Template/patient modal rules remain owned by `css/templates.css`.
+- Global application chrome remains owned by `css/ui.css`.
+- `css/polish.css` was reduced from a catch-all stylesheet to cross-feature presentation components and feedback styles.
+- Removed duplicate date-print visibility rules from `css/receipt.css`; print visibility is now owned by `css/print.css`.
+- Removed duplicate paper-template date editor styling from `css/receipt.css`; template editor styling remains in `css/templates.css`.
+- Moved receipt mobile safeguards out of the UI stylesheet into the receipt stylesheet.
+- Added a temporary component-layer artifact during the refactor, then removed it because it was not loaded by the current shell; no unused stylesheet remains.
+- Verified the repository after the rename from `ALSSAEDY-CLINIC-` to `AQSA7`.
+
+Validation:
+- Duplicate-selector scan performed across all five CSS files.
+- Exact duplicate blocks identified and removed where ownership was unambiguous.
+- JavaScript runtime sources remain syntactically valid.
+- CSS files remain text-valid and preserve the existing stylesheet load order.
+- No Phase 2 work has started.
+
+Next:
+- Phase 1 / Task 1.8 — CSS/UX Regression Verification
 
 ### Phase 1.6 — Settings Ownership Cleanup: COMPLETE
 
