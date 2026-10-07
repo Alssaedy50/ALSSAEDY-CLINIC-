@@ -316,7 +316,7 @@ async function loadCustomLogo(){
   }catch(_){}
   return localStorage.getItem('alssaedy_custom_logo')||'';
 }
-async async function uploadLogo(event){
+async function uploadLogo(event){
   const input=event?.target, file=input?.files?.[0];
   if(!file)return;
   const reader=new FileReader();
