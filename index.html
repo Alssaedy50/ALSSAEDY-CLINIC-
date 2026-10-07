@@ -367,9 +367,14 @@
                     </div>
                     <div class="grid-btns two mt-2">
                         <button type="button" class="tool-btn" onclick="exportFullBackup()">💾 Backup كامل</button>
-                        <button type="button" class="tool-btn" onclick="document.getElementById('backupImporter').click()">📥 استعادة</button>
+                        <button type="button" class="tool-btn" onclick="document.getElementById('backupImporter').click()">📥 استعادة Backup</button>
+                    </div>
+                    <div class="grid-btns two mt-2">
+                        <button type="button" class="tool-btn" onclick="document.getElementById('dataImporter').click()">📂 استيراد ملف</button>
+                        <button type="button" class="tool-btn" onclick="exportTransactionsFile('json')">⬆️ تصدير نسخة JSON</button>
                     </div>
                     <input type="file" id="backupImporter" accept=".json,application/json" style="display:none" onchange="importFullBackup(event)">
+                    <input type="file" id="dataImporter" accept=".json,.csv,application/json,text/csv" style="display:none" onchange="importDataFile(event)">
                     <button type="button" class="tool-btn wide mt-2" onclick="openHistoryModal();toggleDrawer(false)">📂 فتح سجل السندات</button>
                 </div>
 
