@@ -280,3 +280,38 @@ function copyReceiptText() {
         navigator.clipboard.writeText(text).then(() => alert('تم نسخ بيانات السند إلى الحافظة بنجاح.')).catch(() => alert(text));
     } else alert(text);
 }
+/* Blank printable template workflow. It never saves template data. */
+function snapshotReceiptForTemplate(){
+  const ids=['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'];
+  const fields={}; ids.forEach(id=>{const el=document.getElementById(id); if(el) fields[id]=el.value;});
+  return {mode:document.body.getAttribute('data-mode')||'digital',size:getSelectedSize(),payMethod:document.getElementById('selectedPayMethod')?.value||'',services:Array.from(document.querySelectorAll('.custom-check-item')).map(el=>el.classList.contains('active')),fields};
+}
+function restoreReceiptAfterTemplate(snapshot){
+  if(!snapshot)return;
+  Object.entries(snapshot.fields||{}).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value;});
+  document.querySelectorAll('.custom-check-item').forEach((el,i)=>el.classList.toggle('active',!!snapshot.services?.[i]));
+  setPayMethod(snapshot.payMethod||''); setSize(snapshot.size||'a5'); setMode(snapshot.mode||'digital');
+  if(typeof calculateLedger==='function')calculateLedger();
+  if(typeof syncReceiptDateFromInput==='function')syncReceiptDateFromInput();
+}
+function prepareBlankTemplate(){
+  const snapshot=snapshotReceiptForTemplate();
+  setMode('manual');
+  ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));
+  setPayMethod(''); syncPaperDate(''); document.body.classList.add('blank-template-export');
+  return snapshot;
+}
+function finishBlankTemplate(snapshot){document.body.classList.remove('blank-template-export');restoreReceiptAfterTemplate(snapshot);}
+async function downloadBlankTemplateImage(){
+  const snapshot=prepareBlankTemplate();
+  try{const canvas=await generateReceiptCanvas();const link=document.createElement('a');link.download='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase()+'.png';link.href=canvas.toDataURL('image/png',0.95);link.click();}
+  catch(e){alert('تعذر إنشاء نموذج الطباعة: '+e.message);}
+  finally{finishBlankTemplate(snapshot);}
+}
+function downloadBlankTemplatePDF(){
+  const snapshot=prepareBlankTemplate(), oldTitle=document.title;
+  document.title='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase(); injectPrintPageStyle();
+  window.addEventListener('afterprint',()=>{document.title=oldTitle;document.getElementById('dynamic-print-size')?.remove();finishBlankTemplate(snapshot);},{once:true});
+  setTimeout(()=>window.print(),120);
+}
