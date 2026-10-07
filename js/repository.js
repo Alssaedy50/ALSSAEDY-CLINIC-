@@ -66,13 +66,15 @@ async function clinicRepositoryHydrate(){
   const repo=window.__clinicRepository;
   const receipts=await clinicDBAll('receipts');
   const patients=await clinicDBAll('patients');
-  if(!receipts.length){
-    const legacy=readLegacyArray('alssaedy_receipts_history');
-    for(const item of legacy) await clinicDBPut('receipts',item);
+  const legacyReceipts=readLegacyArray('alssaedy_receipts_history');
+  const legacyPatients=readLegacyArray('alssaedy_patients');
+  const receiptIds=new Set(receipts.map(item=>String(item.id)));
+  for(const item of legacyReceipts){
+    if(item?.id && !receiptIds.has(String(item.id))){ await clinicDBPut('receipts',item); receiptIds.add(String(item.id)); }
   }
-  if(!patients.length){
-    const legacy=readLegacyArray('alssaedy_patients');
-    for(const item of legacy) await clinicDBPut('patients',item);
+  const patientIds=new Set(patients.map(item=>String(item.id)));
+  for(const item of legacyPatients){
+    if(item?.id && !patientIds.has(String(item.id))){ await clinicDBPut('patients',item); patientIds.add(String(item.id)); }
   }
   repo.receipts=await clinicDBAll('receipts');
   repo.patients=await clinicDBAll('patients');
