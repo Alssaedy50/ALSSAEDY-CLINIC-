@@ -390,3 +390,29 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 /* v1.0.8 navigation cleanup */
 @media screen and (min-width:701px){.nav-container{max-width:1120px}.nav-controls{margin-inline-start:auto}}
 @media screen and (max-width:700px){.app-tabs{width:100%;justify-content:center;overflow-x:auto}.app-tab{flex:1 1 auto;justify-content:center;padding:7px 6px}.nav-controls{width:100%;justify-content:center}}
+
+
+/* ===== v1.2.0 navigation/layout contract ===== */
+html,body{overscroll-behavior-y:none}
+.modal-screen{padding:8px!important;box-sizing:border-box!important}
+.modal-box{max-height:calc(100dvh - 16px);overflow-y:auto;overscroll-behavior:contain}
+.modal-box>.modal-close{position:sticky;top:0;float:left;z-index:20;background:#fff;border-radius:999px;width:32px;height:32px;line-height:28px;box-shadow:0 2px 8px rgba(15,23,42,.12)}
+.settings-drawer{height:100dvh!important;max-height:100dvh!important}
+.drawer-header{position:sticky!important;top:0!important;z-index:30!important;flex:0 0 auto}
+.drawer-body{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;overscroll-behavior:contain}
+.settings-panel{overscroll-behavior:contain}
+@media(max-width:700px){
+ .settings-drawer{width:100%!important;max-width:none!important}
+ .drawer-header{padding-top:calc(12px + env(safe-area-inset-top,0px))!important}
+ .drawer-body{padding:12px 10px calc(30px + env(safe-area-inset-bottom,0px))!important}
+ .setting-card{padding:11px!important;border-radius:12px!important}
+ .setting-card h4{font-size:11px!important}
+ .tool-btn{min-height:38px!important;font-size:10px!important}
+ .modal-screen{align-items:stretch!important;justify-content:stretch!important}
+ .patients-modal-box{width:100%!important;max-width:none!important;height:calc(100dvh - 16px)!important;max-height:none!important;border-radius:14px!important;text-align:right!important}
+ .patients-modal-box h3,.patients-modal-box>p,.patients-modal-box>.patients-list-title{padding-inline:4px}
+ .patients-modal-box .patient-form{padding-bottom:4px}
+}
+@media(min-width:701px){
+ .patients-modal-box{max-height:88vh;overflow-y:auto}
+}
