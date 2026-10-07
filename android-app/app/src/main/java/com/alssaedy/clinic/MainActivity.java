@@ -30,12 +30,8 @@ import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import android.os.CancellationSignal;
-import android.print.PageRange;
-import android.print.PrintDocumentInfo;
-import android.print.PrintDocumentAdapter.LayoutResultCallback;
-import android.print.PrintDocumentAdapter.WriteResultCallback;
-import android.os.ParcelFileDescriptor;
+import android.graphics.Canvas;
+import android.graphics.pdf.PdfDocument;
 import java.util.Base64;
 
 public class MainActivity extends Activity {
@@ -165,26 +161,51 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void savePdf(String size,String fileName){
             runOnUiThread(()->{
-                Uri uri=null; ParcelFileDescriptor pfd=null;
+                Uri uri=null;
                 try{
-                    String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName).replaceAll("[^A-Za-z0-9_\\-\\u0600-\\u06FF]","_")+".pdf";
-                    ContentValues v=new ContentValues();v.put(MediaStore.Downloads.DISPLAY_NAME,safe);v.put(MediaStore.Downloads.MIME_TYPE,"application/pdf");v.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ALSSAEDY Clinic");v.put(MediaStore.Downloads.IS_PENDING,1);
-                    uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,v);if(uri==null)throw new Exception("تعذر إنشاء ملف PDF");
-                    pfd=getContentResolver().openFileDescriptor(uri,"w");if(pfd==null)throw new Exception("تعذر فتح ملف PDF");
-                    PrintDocumentAdapter adapter=webView.createPrintDocumentAdapter("ALSSAEDY-Receipt");
-                    PrintAttributes attrs=new PrintAttributes.Builder().setMediaSize(getPrintMediaSize(size)).setMinMargins(PrintAttributes.Margins.NO_MARGINS).setResolution(new PrintAttributes.Resolution("alssaedy","ALSSAEDY",300,300)).build();
-                    final Uri target=uri;final ParcelFileDescriptor targetFd=pfd;
-                    adapter.onLayout(null,attrs,new CancellationSignal(),new LayoutResultCallback(){
-                        @Override public void onLayoutFinished(PrintDocumentInfo info,boolean changed){
-                            adapter.onWrite(new PageRange[]{PageRange.ALL_PAGES},targetFd,new CancellationSignal(),new WriteResultCallback(){
-                                @Override public void onWriteFinished(PageRange[] pages){try{targetFd.close();ContentValues done=new ContentValues();done.put(MediaStore.Downloads.IS_PENDING,0);getContentResolver().update(target,done,null,null);Toast.makeText(MainActivity.this,"تم حفظ PDF الجاهز للطباعة في التنزيلات.",Toast.LENGTH_LONG).show();}catch(Exception e){Toast.makeText(MainActivity.this,"تعذر إنهاء PDF.",Toast.LENGTH_LONG).show();}}
-                                @Override public void onWriteFailed(CharSequence error){try{targetFd.close();}catch(Exception ignored){}Toast.makeText(MainActivity.this,"فشل إنشاء PDF: "+error,Toast.LENGTH_LONG).show();}
-                            },null);
-                        }
-                        @Override public void onLayoutFailed(CharSequence error){try{targetFd.close();}catch(Exception ignored){}Toast.makeText(MainActivity.this,"فشل تجهيز PDF: "+error,Toast.LENGTH_LONG).show();}
-                    },null);
-                }catch(Exception e){try{if(pfd!=null)pfd.close();}catch(Exception ignored){}Toast.makeText(MainActivity.this,"تعذر حفظ PDF: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+                    String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName)
+                        .replaceAll("[^A-Za-z0-9_\\-\\u0600-\\u06FF]","_")+".pdf";
+                    ContentValues values=new ContentValues();
+                    values.put(MediaStore.Downloads.DISPLAY_NAME,safe);
+                    values.put(MediaStore.Downloads.MIME_TYPE,"application/pdf");
+                    values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ALSSAEDY Clinic");
+                    values.put(MediaStore.Downloads.IS_PENDING,1);
+                    uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
+                    if(uri==null) throw new Exception("تعذر إنشاء ملف PDF");
+                    try(OutputStream out=getContentResolver().openOutputStream(uri)){
+                        if(out==null) throw new Exception("تعذر فتح ملف PDF");
+                        int[] pageSize=getPdfPageSize(size);
+                        PdfDocument pdf=new PdfDocument();
+                        PdfDocument.Page page=pdf.startPage(new PdfDocument.PageInfo.Builder(pageSize[0],pageSize[1],1).create());
+                        Canvas canvas=page.getCanvas();
+                        float sx=pageSize[0]/(float)Math.max(1,webView.getWidth());
+                        float sy=pageSize[1]/(float)Math.max(1,webView.getHeight());
+                        float scale=Math.min(sx,sy);
+                        canvas.save();
+                        canvas.scale(scale,scale);
+                        webView.draw(canvas);
+                        canvas.restore();
+                        pdf.finishPage(page);
+                        pdf.writeTo(out);
+                        pdf.close();
+                    }
+                    values.clear();
+                    values.put(MediaStore.Downloads.IS_PENDING,0);
+                    getContentResolver().update(uri,values,null,null);
+                    Toast.makeText(MainActivity.this,"تم حفظ PDF الجاهز للطباعة في التنزيلات.",Toast.LENGTH_LONG).show();
+                }catch(Exception e){
+                    if(uri!=null){
+                        try{ContentValues fail=new ContentValues();fail.put(MediaStore.Downloads.IS_PENDING,0);getContentResolver().update(uri,fail,null,null);}catch(Exception ignored){}
+                    }
+                    Toast.makeText(MainActivity.this,"تعذر حفظ PDF: "+e.getMessage(),Toast.LENGTH_LONG).show();
+                }
             });
+        }
+
+        private int[] getPdfPageSize(String size){
+            if("a4".equalsIgnoreCase(size)) return new int[]{595,842};
+            if("thermal".equalsIgnoreCase(size)) return new int[]{227,680};
+            return new int[]{420,595};
         }
 
         @JavascriptInterface
