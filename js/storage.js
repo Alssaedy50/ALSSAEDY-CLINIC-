@@ -105,12 +105,12 @@ function buildTransactionsExport(format) {
 
     if (format === 'csv') {
         const headers = [
-            'ID','Receipt No','Date','Patient Name','Patient Phone','Paid',
+            'ID','Receipt No','Date','Patient Name','Patient Phone','Paid','Currency','Currency Name',
             'Total','Balance','Change','Tooth / Location','Amount in Words',
             'Payment Method','Reference','Services','Mode','Size','Exported At'
         ];
         const rows = history.map(item => [
-            item.id,item.recNo,item.date,item.name,item.patientPhone,item.paid,
+            item.id,item.recNo,item.date,item.name,item.patientPhone,item.paid,item.currency||'YER',item.currencyName||'ريال يمني',
             item.total,item.balance,item.change,item.tooth,item.tafqeet,
             item.payMethod,item.ref,Array.isArray(item.services) ? item.services.join(' | ') : '',
             item.mode,item.size,exportedAt
@@ -195,7 +195,7 @@ function renderHistory() {
         const date = escapeHTML(item.date || '---');
         const paid = escapeHTML(item.paid || '0');
         const balance = escapeHTML(item.balance || '0');
-        return '<div class="history-entry"><div><strong>' + name + ' (' + recNo + ')</strong><small>التاريخ: ' + date + ' | المدفوع: ' + paid + ' ريال | المتبقي: ' + balance + ' ريال</small></div><div class="history-entry-btns"><button type="button" onclick="loadReceipt(' + Number(item.id) + ')">📥 استرجاع</button><button type="button" onclick="deleteReceipt(' + Number(item.id) + ')" style="color:#b91c1c;">✕</button></div></div>';
+        return '<div class="history-entry"><div><strong>' + name + ' (' + recNo + ')</strong><small>التاريخ: ' + date + ' | المدفوع: ' + paid + ' ' + escapeHTML(item.currencySymbol || item.currencyName || 'ر.ي') + ' | المتبقي: ' + balance + ' ' + escapeHTML(item.currencySymbol || item.currencyName || 'ر.ي') + '</small></div><div class="history-entry-btns"><button type="button" onclick="loadReceipt(\'' + String(item.id).replace(/'/g,'') + '\')">📥 استرجاع</button><button type="button" onclick="deleteReceipt(\'' + String(item.id).replace(/'/g,'') + '\')" style="color:#b91c1c;">✕</button></div></div>';
     }).join('');
 }
 
