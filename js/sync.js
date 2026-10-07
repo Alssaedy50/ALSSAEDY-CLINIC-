@@ -138,7 +138,7 @@ async function syncRestoreNow() {
             const dup = existingPatients.find(x => x.id === p.id || (p.phone && x.phone === p.phone) || (!p.phone && x.name === p.name));
             if (!dup) { await clinicDBPut('patients', p); addedPatients++; }
         }
-        localStorage.setItem('alssaedy_receipts_history', JSON.stringify(await clinicDBAll('receipts')));
+        await clinicRepositoryHydrate();
         if (snap.settings) {
             if (snap.settings.customLogo) localStorage.setItem('alssaedy_custom_logo', snap.settings.customLogo);
             if (snap.settings.currency) localStorage.setItem('alssaedy_currency', snap.settings.currency);
