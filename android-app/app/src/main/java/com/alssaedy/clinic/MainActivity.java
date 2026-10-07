@@ -30,10 +30,18 @@ import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import android.os.CancellationSignal;
+import android.print.PageRange;
+import android.print.PrintDocumentInfo;
+import android.print.PrintDocumentAdapter.LayoutResultCallback;
+import android.print.PrintDocumentAdapter.WriteResultCallback;
+import android.os.ParcelFileDescriptor;
 import java.util.Base64;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private String pendingImageName;
+    private StringBuilder pendingImageBase64;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -155,6 +163,31 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void savePdf(String size,String fileName){
+            runOnUiThread(()->{
+                Uri uri=null; ParcelFileDescriptor pfd=null;
+                try{
+                    String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName).replaceAll("[^A-Za-z0-9_\-\u0600-\u06FF]","_")+".pdf";
+                    ContentValues v=new ContentValues();v.put(MediaStore.Downloads.DISPLAY_NAME,safe);v.put(MediaStore.Downloads.MIME_TYPE,"application/pdf");v.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ALSSAEDY Clinic");v.put(MediaStore.Downloads.IS_PENDING,1);
+                    uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,v);if(uri==null)throw new Exception("تعذر إنشاء ملف PDF");
+                    pfd=getContentResolver().openFileDescriptor(uri,"w");if(pfd==null)throw new Exception("تعذر فتح ملف PDF");
+                    PrintDocumentAdapter adapter=webView.createPrintDocumentAdapter("ALSSAEDY-Receipt");
+                    PrintAttributes attrs=new PrintAttributes.Builder().setMediaSize(getPrintMediaSize(size)).setMinMargins(PrintAttributes.Margins.NO_MARGINS).setResolution(new PrintAttributes.Resolution("alssaedy","ALSSAEDY",300,300)).build();
+                    final Uri target=uri;final ParcelFileDescriptor targetFd=pfd;
+                    adapter.onLayout(null,attrs,new CancellationSignal(),new LayoutResultCallback(){
+                        @Override public void onLayoutFinished(PrintDocumentInfo info,boolean changed){
+                            adapter.onWrite(new PageRange[]{PageRange.ALL_PAGES},targetFd,new CancellationSignal(),new WriteResultCallback(){
+                                @Override public void onWriteFinished(PageRange[] pages){try{targetFd.close();ContentValues done=new ContentValues();done.put(MediaStore.Downloads.IS_PENDING,0);getContentResolver().update(target,done,null,null);Toast.makeText(MainActivity.this,"تم حفظ PDF الجاهز للطباعة في التنزيلات.",Toast.LENGTH_LONG).show();}catch(Exception e){Toast.makeText(MainActivity.this,"تعذر إنهاء PDF.",Toast.LENGTH_LONG).show();}}
+                                @Override public void onWriteFailed(CharSequence error){try{targetFd.close();}catch(Exception ignored){}Toast.makeText(MainActivity.this,"فشل إنشاء PDF: "+error,Toast.LENGTH_LONG).show();}
+                            },null);
+                        }
+                        @Override public void onLayoutFailed(CharSequence error){try{targetFd.close();}catch(Exception ignored){}Toast.makeText(MainActivity.this,"فشل تجهيز PDF: "+error,Toast.LENGTH_LONG).show();}
+                    },null);
+                }catch(Exception e){try{if(pfd!=null)pfd.close();}catch(Exception ignored){}Toast.makeText(MainActivity.this,"تعذر حفظ PDF: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+            });
+        }
+
+        @JavascriptInterface
         public void scheduleReminder(long triggerAtMillis, String title, String text) {
             try {
                 AlarmManager alarm=(AlarmManager)getSystemService(ALARM_SERVICE);
@@ -193,6 +226,28 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, "تعذر فتح الرابط.", Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+
+        @JavascriptInterface
+        public void beginImageSave(String fileName) {
+            pendingImageName=fileName; pendingImageBase64=new StringBuilder();
+        }
+        @JavascriptInterface
+        public void appendImageChunk(String chunk) {
+            if(pendingImageBase64!=null && chunk!=null) pendingImageBase64.append(chunk);
+        }
+        @JavascriptInterface
+        public void finishImageSave() {
+            try{
+                if(pendingImageBase64==null) return;
+                byte[] bytes=Base64.getDecoder().decode(pendingImageBase64.toString());
+                Uri uri=writePngBytesToMediaStore(bytes,pendingImageName);
+                pendingImageBase64=null; pendingImageName=null;
+                runOnUiThread(()->Toast.makeText(MainActivity.this,uri!=null?"تم حفظ الصورة في صور العيادة.":"تعذر إنشاء ملف الصورة.",Toast.LENGTH_LONG).show());
+            }catch(Exception e){
+                pendingImageBase64=null; pendingImageName=null;
+                runOnUiThread(()->Toast.makeText(MainActivity.this,"تعذر حفظ الصورة: "+e.getMessage(),Toast.LENGTH_LONG).show());
+            }
         }
 
         @JavascriptInterface
@@ -267,6 +322,19 @@ public class MainActivity extends Activity {
             } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, "تعذر مشاركة الصورة.", Toast.LENGTH_SHORT).show());
             }
+        }
+
+        private Uri writePngBytesToMediaStore(byte[] bytes,String fileName) throws Exception {
+            String safeName=(fileName==null||fileName.trim().isEmpty()?"receipt":fileName).replaceAll("[^A-Za-z0-9_\-\u0600-\u06FF]","_")+".png";
+            ContentValues values=new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME,safeName);
+            values.put(MediaStore.Images.Media.MIME_TYPE,"image/png");
+            values.put(MediaStore.Images.Media.RELATIVE_PATH,Environment.DIRECTORY_PICTURES+"/ALSSAEDY Clinic");
+            values.put(MediaStore.Images.Media.IS_PENDING,1);
+            Uri uri=getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
+            if(uri==null)return null;
+            try(OutputStream out=getContentResolver().openOutputStream(uri)){out.write(bytes);}
+            values.clear();values.put(MediaStore.Images.Media.IS_PENDING,0);getContentResolver().update(uri,values,null,null);return uri;
         }
 
         private Uri writeImageToMediaStore(String dataUrl, String fileName) throws Exception {
