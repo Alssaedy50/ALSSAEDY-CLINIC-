@@ -17,7 +17,9 @@ function keyHash(key) {
 }
 
 function keyFrom(req) {
-  return (new URL(req.url, `https://${req.headers?.host || 'localhost'}`).searchParams.get('key') || '').trim();
+  const auth = String(req.headers?.authorization || '').trim();
+  if (/^Bearer\\s+/i.test(auth)) return auth.replace(/^Bearer\\s+/i, '').trim();
+  return String(req.headers?.['x-clinic-key'] || '').trim();
 }
 
 function pathFor(key) {
