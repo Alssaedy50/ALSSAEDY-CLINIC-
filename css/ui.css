@@ -380,3 +380,9 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
   .data-management-card .grid-btns.two{grid-template-columns:1fr 1fr}
   .data-management-card .tool-btn{font-size:10px}
 }
+
+/* v1.0.6 professional navigation and patient UX */
+.app-tabs{display:flex;align-items:center;gap:5px;padding:4px;border:1px solid rgba(148,163,184,.28);background:rgba(255,255,255,.78);backdrop-filter:blur(12px);border-radius:14px;box-shadow:0 5px 20px rgba(15,23,42,.07)}
+.app-tab{border:0;background:transparent;color:#64748b;border-radius:10px;padding:7px 10px;display:flex;align-items:center;gap:5px;font:inherit;cursor:pointer;transition:.18s ease}.app-tab b{font-size:10px}.app-tab.active{background:#073b63;color:#fff;box-shadow:0 4px 12px rgba(7,59,99,.18)}
+.patient-detail-hidden{display:none!important}.patient-account-panel[hidden]{display:none!important}.patient-account-head{position:sticky;top:0;z-index:2;background:#f8fafc;padding:8px 0;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:7px}
+@media(max-width:900px){.app-tabs{order:3;width:100%;justify-content:space-between}.app-tab{flex:1;justify-content:center;padding:7px 5px}.site-navbar .nav-container{flex-wrap:wrap}.nav-controls{flex:1 1 100%;justify-content:center}}@media print{.app-tabs{display:none!important}}
