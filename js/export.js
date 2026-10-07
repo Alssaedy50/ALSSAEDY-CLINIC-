@@ -194,7 +194,7 @@ async function generateReceiptCanvas(options = {}) {
         );
 
         return html2canvas(receipt, {
-            scale: options.scale || (window.Android ? 3 : 4),
+            scale: options.scale || 4,
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -303,30 +303,21 @@ async function buildReceiptPdfBlob() {
 }
 
 async function downloadReceiptPDF() {
+    // Printing is the authoritative PDF path. The browser/WebView print engine
+    // keeps Arabic/Latin text as real PDF text instead of embedding one raster image.
+    const recNo = (document.getElementById('digReceiptNo')?.value || 'سند').trim();
+    const oldTitle = document.title;
+    document.title = 'سند_قبض_' + recNo;
     try {
-        const recNo = (document.getElementById('digReceiptNo')?.value || 'سند').trim();
-        if (window.Android && typeof Android.savePdf === 'function') {
-            // Native path: rasterize the exact sheet into a real PDF file.
-            const blob = await buildReceiptPdfBlob();
-            const reader = await blobToDataUrl(blob);
-            Android.savePdfFromData(reader, 'سند_قبض_' + recNo);
-            return;
-        }
-        const blob = await buildReceiptPdfBlob();
-        downloadBlob(blob, 'سند_قبض_' + recNo + '.pdf');
-        if (typeof toast === 'function') toast('تم إنشاء ملف PDF بالمقاس المحدد وتنزيله.'); else alert('تم إنشاء ملف PDF وتنزيله.');
-    } catch (err) {
-        // Fallback: browser native print-to-PDF never fails silently.
-        try {
-            const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
-            const oldTitle = document.title;
-            document.title = 'سند_قبض_' + recNo;
-            injectPrintPageStyle();
-            window.addEventListener('afterprint', () => { document.title = oldTitle; document.getElementById('dynamic-print-size')?.remove(); }, { once: true });
-            setTimeout(() => window.print(), 150);
-        } catch (e2) {
-            alert('تعذر إنشاء PDF: ' + err.message);
-        }
+        injectPrintPageStyle();
+        updatePrintDate(document.getElementById('digDate')?.value || '');
+        if (typeof toast === 'function') toast('اختر «حفظ كـ PDF» من نافذة الطباعة للحصول على PDF نصي عالي الدقة.');
+        setTimeout(() => window.print(), 120);
+    } finally {
+        window.addEventListener('afterprint', () => {
+            document.title = oldTitle;
+            document.getElementById('dynamic-print-size')?.remove();
+        }, { once: true });
     }
 }
 
@@ -589,26 +580,14 @@ async function downloadBlankTemplateImage(){
 async function downloadBlankTemplatePDF(){
   const snapshot=prepareBlankTemplate();
   const baseName='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
-  try{
-    const blob=await buildReceiptPdfBlob();
-    if(window.Android&&typeof Android.savePdfFromData==='function'){
-      Android.savePdfFromData(await blobToDataUrl(blob),baseName);
-    } else {
-      downloadBlob(blob,baseName+'.pdf');
-    }
-    if(typeof toast==='function')toast('تم إنشاء نموذج PDF فارغ.');
-  }
-  catch(e){
-    const oldTitle=document.title;
-    document.title=baseName;
-    injectPrintPageStyle();
-    window.addEventListener('afterprint',()=>{
-      document.title=oldTitle;
-      document.getElementById('dynamic-print-size')?.remove();
-      finishBlankTemplate(snapshot);
-    },{once:true});
-    setTimeout(()=>window.print(),120);
-    return;
-  }
-  finishBlankTemplate(snapshot);
+  const oldTitle=document.title;
+  document.title=baseName;
+  injectPrintPageStyle();
+  if(typeof toast==='function')toast('اختر «حفظ كـ PDF» من نافذة الطباعة للحصول على نموذج نصي عالي الدقة.');
+  window.addEventListener('afterprint',()=>{
+    document.title=oldTitle;
+    document.getElementById('dynamic-print-size')?.remove();
+    finishBlankTemplate(snapshot);
+  },{once:true});
+  setTimeout(()=>window.print(),120);
 }
