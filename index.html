@@ -30,6 +30,7 @@
                     <button type="button" class="btn-pill" id="btnModeTemplates" onclick="openTemplateModal()">🖨️ نماذج الطباعة</button>
                 </div>
                 <button type="button" class="btn-tool" onclick="toggleDrawer(true)">⚙ الخيارات</button>
+                <button type="button" class="btn-tool" onclick="openPatientsModal()">👤 المرضى</button>
                 <button type="button" class="btn-tool" onclick="openHistoryModal()">📂 السجل (<span id="historyCount">0</span>)</button>
             </div>
         </div>
@@ -116,7 +117,7 @@
                     <span class="paid-title editable" data-key="paid_lbl">المبلغ المدفوع:</span>
                     <div class="manual-only paid-blank-line"></div>
                     <input type="number" class="digital-only live-input paid-numeric" id="digPaid" placeholder="" oninput="calculateLedger()">
-                    <span class="paid-unit editable" data-key="curr_lbl">ريال يمني</span>
+                    <span class="paid-unit editable" data-key="curr_lbl" id="paidCurrencyLabel">ريال يمني</span>
                 </div>
 
                 <div class="row-flex">
@@ -183,7 +184,7 @@
                         <div class="ledger-content">
                             <span class="manual-only write-dots ledger-field"></span>
                             <input type="number" class="digital-only live-input ledger-field" id="digTotal" placeholder="" oninput="calculateLedger()">
-                            <span class="currency-label">ريال</span>
+                            <span class="currency-label" id="totalCurrencyLabel">ر.ي</span>
                         </div>
                     </div>
                     <div class="ledger-box">
@@ -191,7 +192,7 @@
                         <div class="ledger-content">
                             <span class="manual-only write-dots ledger-field"></span>
                             <input type="number" class="digital-only live-input ledger-field" id="digPaidTable" placeholder="" readonly>
-                            <span class="currency-label">ريال</span>
+                            <span class="currency-label" id="paidTableCurrencyLabel">ر.ي</span>
                         </div>
                     </div>
                     <div class="ledger-box balance-highlight">
@@ -199,7 +200,7 @@
                         <div class="ledger-content">
                             <span class="manual-only write-dots ledger-field"></span>
                             <input type="number" class="digital-only live-input ledger-field balance-val" id="digBalance" placeholder="" readonly>
-                            <span class="currency-label balance-curr">ريال</span>
+                            <span class="currency-label balance-curr" id="balanceCurrencyLabel">ر.ي</span>
                         </div>
                     </div>
                 </div>
@@ -357,13 +358,18 @@
                     </div>
                 </div>
 
-                <div class="setting-card data-management-card">
+                <div class="setting-card"><h4>💱 العملة</h4><p class="setting-help">تحفظ العملة داخل كل سند، لذلك لا تتغير السندات القديمة عند تغيير العملة الافتراضية.</p><select id="currencySelect" class="setting-select" onchange="setCurrency(this.value)"><option value="YER">🇾🇪 ريال يمني — YER</option><option value="SAR">🇸🇦 ريال سعودي — SAR</option><option value="USD">🇺🇸 دولار أمريكي — USD</option></select></div><div class="setting-card data-management-card">
                     <h4>🗂️ سجل المعاملات والنسخ الاحتياطي</h4>
                     <p class="setting-help">السجل محفوظ داخل التطبيق. صدّر جميع السندات في ملف واحد للاحتفاظ بنسخة على الهاتف أو فتحها في Excel.</p>
                     <div class="grid-btns two">
                         <button type="button" class="tool-btn" onclick="exportTransactionsFile('csv')">📊 تنزيل CSV</button>
                         <button type="button" class="tool-btn" onclick="exportTransactionsFile('json')">🛡️ نسخة JSON</button>
                     </div>
+                    <div class="grid-btns two mt-2">
+                        <button type="button" class="tool-btn" onclick="exportFullBackup()">💾 Backup كامل</button>
+                        <button type="button" class="tool-btn" onclick="document.getElementById('backupImporter').click()">📥 استعادة</button>
+                    </div>
+                    <input type="file" id="backupImporter" accept=".json,application/json" style="display:none" onchange="importFullBackup(event)">
                     <button type="button" class="tool-btn wide mt-2" onclick="openHistoryModal();toggleDrawer(false)">📂 فتح سجل السندات</button>
                 </div>
 
@@ -406,6 +412,7 @@
         </div>
     </div>
 
+    <div class="no-print modal-screen" id="patientsModal"><div class="modal-box patients-modal-box"><button class="modal-close" type="button" onclick="closePatientsModal()">×</button><h3>👤 المرضى والعملاء</h3><p>ملفات مرضى دائمة مرتبطة بالسندات والحسابات.</p><div class="patient-form"><input id="patientFormName" class="live-input" placeholder="اسم المريض *"><input id="patientFormPhone" class="live-input" placeholder="رقم الهاتف"><input id="patientFormVisit" class="live-input" type="date" title="موعد العودة"><textarea id="patientFormNotes" class="live-input" placeholder="ملاحظات"></textarea><button type="button" class="tool-btn wide" onclick="savePatientManual()">➕ حفظ ملف المريض</button></div><hr><div id="patientsList"></div></div></div>
     <div class="no-print modal-screen" id="shareModal">
         <div class="modal-box">
             <button class="modal-close" type="button" onclick="closeShareModal()">×</button>
