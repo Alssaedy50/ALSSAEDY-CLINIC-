@@ -23,7 +23,6 @@ const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA && String(window.OFFICIAL_L
 async function saveLogoDurably(value){ return clinicRepositoryPutSetting('customLogo',value||''); }
 function loadLogoDurably(){ return Promise.resolve(clinicRepositoryGetSettingSync('customLogo')); }
 
-
 // Protected physical-size contract. Change only after print/export regression review.
 const SIZE_PROFILES = {
     a5: { label: 'A5', width: '148mm', height: '210mm', pdfFormat: 'a5', orientation: 'portrait', printSize: '148mm 210mm' },
