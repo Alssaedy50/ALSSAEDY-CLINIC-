@@ -62,3 +62,21 @@ html[data-size="thermal"] .receipt-paper{width:80mm!important;min-width:80mm!imp
     break-inside:avoid!important;
   }
 }
+
+/* Canonical date rendering: exactly one visible date source per mode. */
+.date-field-wrapper .digital-only{display:inline-flex!important;align-items:center!important;gap:4px!important}
+.date-field-wrapper .manual-only{display:none!important}
+[data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
+[data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
+#hiddenDatePicker{display:none!important}
+.date-boxes-row{direction:ltr!important;unicode-bidi:isolate!important;display:inline-flex!important;align-items:center!important;gap:4px!important;white-space:nowrap!important}
+.date-boxes-row .date-line-slot{display:inline-block!important;width:25px!important;height:15px!important;text-align:center!important;border-bottom:1.5px dashed #64748b!important}
+.date-boxes-row .date-slash{display:inline-block!important}
+.date-boxes-row .date-year-label{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;min-width:34px!important}
+@media print{
+  .date-field-wrapper #hiddenDatePicker{display:none!important}
+  .date-field-wrapper .digital-only{display:inline-flex!important}
+  .date-field-wrapper .manual-only{display:none!important}
+  [data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
+  [data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
+}
