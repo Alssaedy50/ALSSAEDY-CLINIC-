@@ -353,7 +353,7 @@ function prepareBlankTemplate(){
 function finishBlankTemplate(snapshot){document.body.classList.remove('blank-template-export');restoreReceiptAfterTemplate(snapshot);}
 async function downloadBlankTemplateImage(){
   const snapshot=prepareBlankTemplate();
-  try{const canvas=await generateReceiptCanvas();const dataUrl=canvas.toDataURL('image/png',0.95);const filename='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();if(window.Android&&typeof Android.saveImage==='function')Android.saveImage(dataUrl,filename);else{const link=document.createElement('a');link.download=filename+'.png';link.href=dataUrl;document.body.appendChild(link);link.click();link.remove();}}
+  try{const canvas=await generateReceiptCanvas();const dataUrl=canvas.toDataURL('image/png',0.95);const filename='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();if(window.Android&&typeof Android.saveImageChunks==='function')saveCanvasImage(canvas,filename);else if(window.Android&&typeof Android.saveImage==='function')Android.saveImage(dataUrl,filename);else{const link=document.createElement('a');link.download=filename+'.png';link.href=dataUrl;document.body.appendChild(link);link.click();link.remove();}}
   catch(e){alert('تعذر إنشاء نموذج الطباعة: '+e.message);}
   finally{finishBlankTemplate(snapshot);}
 }
