@@ -81,10 +81,16 @@ async function clinicRepositoryHydrate(){
   repo.patients=await clinicDBAll('patients');
   const durableSettings=await clinicDBAll('settings');
   const settingsById=Object.fromEntries(durableSettings.filter(x=>x?.id).map(x=>[x.id,x.value]));
-  const legacyLogo=localStorage.getItem('alssaedy_custom_logo')||'';
-  if(!settingsById.customLogo && legacyLogo){
-    await clinicDBPut('settings',{id:'customLogo',value:legacyLogo,updatedAt:new Date().toISOString()});
-    settingsById.customLogo=legacyLogo;
+  const legacySettings = {
+    customLogo: localStorage.getItem('alssaedy_custom_logo') || '',
+    currency: localStorage.getItem('alssaedy_currency') || '',
+    receiptSize: localStorage.getItem('alssaedy_receipt_size') || '',
+    receiptTexts: localStorage.getItem('alssaedy_texts') || ''
+  };
+  for (const [id, value] of Object.entries(legacySettings)) {
+    if (!value || settingsById[id]) continue;
+    await clinicDBPut('settings',{id,value,updatedAt:new Date().toISOString()});
+    settingsById[id]=value;
   }
   repo.settings=settingsById;
   repo.hydrated=true;
@@ -92,6 +98,9 @@ async function clinicRepositoryHydrate(){
   if(repo.receipts.length) localStorage.removeItem('alssaedy_receipts_history');
   if(repo.patients.length) localStorage.removeItem('alssaedy_patients');
   if(repo.settings.customLogo) localStorage.removeItem('alssaedy_custom_logo');
+  if(repo.settings.currency) localStorage.removeItem('alssaedy_currency');
+  if(repo.settings.receiptSize) localStorage.removeItem('alssaedy_receipt_size');
+  if(repo.settings.receiptTexts) localStorage.removeItem('alssaedy_texts');
   return repo;
 }
 function readLegacyArray(key){
@@ -141,4 +150,13 @@ async function clinicRepositoryPutSetting(id,value){
 async function clinicRepositoryDeleteSetting(id){
   await clinicDBDelete('settings',String(id));
   delete window.__clinicRepository.settings[String(id)];
+}
+
+function clinicRepositoryGetSettingsSync(){
+  return {...(window.__clinicRepository.settings || {})};
+}
+async function clinicRepositoryPutSettings(values){
+  const entries=Object.entries(values||{});
+  for(const [id,value] of entries) await clinicRepositoryPutSetting(id,value);
+  return clinicRepositoryGetSettingsSync();
 }
