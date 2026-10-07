@@ -50,3 +50,24 @@ a change. Test print + export after any layout change.
 - Night mode uses `html[data-night="on"]`; the receipt paper always stays white.
 - The Android `prepareWebAssets` Gradle task must include `vendor/**` or offline
   html2canvas/jsPDF exports break inside the app.
+
+## Cloud sync (v1.1.0)
+- Client: `js/sync.js`. Keyed snapshots (a "clinic key" shared across devices),
+  optimistic concurrency via `baseVersion`, duplicate-free merge of receipts and
+  patients, optional auto-upload after each save.
+- Same-origin endpoint: `/api/clinic-sync`.
+  - Hosted (Vercel): `api/clinic-sync.js` (Vercel Blob, `BLOB_READ_WRITE_TOKEN`).
+  - Self-hosted: `scripts/serve.py` (dependency-free static server + sync API,
+    snapshots in git-ignored `output/sync/`).
+- The service worker must never cache `/api/*` — stale `found:false` responses
+  previously broke restore.
+
+## Deployments
+- GitHub Pages: `https://alssaedy50.github.io/ALSSAEDY-CLINIC-/` (from `main`).
+- Vercel: `https://alssaedy-clinic.vercel.app` (from `main`; `/api/clinic-sync`).
+- Cloudflare Worker: `https://alssaedy-clinic.alssaedy500.workers.dev`
+  (`worker.js` static assets only; deploy with `npx wrangler deploy`).
+  The `migrations` entry in `wrangler.jsonc` deletes the orphaned `ThemeStore`
+  Durable Object — do not remove it or deploys fail with error 10064.
+- Cache-busting: every CSS/JS reference uses `?v=<version>`; keep `sw.js`
+  `APP_SHELL` URLs in sync with the versioned URLs in `index.html`.
