@@ -79,7 +79,7 @@ jobs:
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: ALSSAEDY-CLINIC-v1.0.7-debug-APK
+          name: ALSSAEDY-CLINIC-v1.0.8-debug-APK
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 90
@@ -87,7 +87,7 @@ jobs:
       - name: Upload signed production APK
         uses: actions/upload-artifact@v4
         with:
-          name: ALSSAEDY-CLINIC-v1.0.7-release-SIGNED
+          name: ALSSAEDY-CLINIC-v1.0.8-release-SIGNED
           path: android-app/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 90
