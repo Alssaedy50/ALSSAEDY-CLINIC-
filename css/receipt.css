@@ -456,3 +456,27 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
   [data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
   [data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
 }
+
+/* VISUAL QUALITY PASS v1.1 — preserves the existing clinic identity and layout contract. */
+.receipt-paper{border-radius:10px!important;box-shadow:0 10px 30px rgba(15,23,42,.10)!important;border:1px solid rgba(7,59,99,.12)!important;background:linear-gradient(180deg,#fff 0%,#fdfefe 100%)!important}
+.receipt-header{padding:7px 6px 5px!important}
+.header-logo-wrap{filter:drop-shadow(0 3px 6px rgba(7,59,99,.12))}
+.clinic-logo{background:#fff;border-radius:12px;padding:3px;object-fit:contain}
+.receipt-title-box{margin:5px 0 7px!important}
+.title-strip{min-height:34px!important;border-radius:10px!important;box-shadow:0 3px 10px rgba(7,59,99,.08)}
+.main-voucher-title{letter-spacing:.1px!important}
+.meta-data-strip{border-radius:9px!important;box-shadow:0 2px 8px rgba(15,23,42,.05)!important}
+.section-patient,.section-services,.section-ledger,.section-signatures{border-radius:9px!important}
+.section-patient{background:linear-gradient(90deg,rgba(248,250,252,.82),rgba(255,255,255,.95))!important}
+.row-flex{min-height:29px!important}
+.live-input{border-radius:6px!important;background:#fff!important;border:1px solid rgba(100,116,139,.22)!important;box-shadow:inset 0 1px 2px rgba(15,23,42,.03)!important}
+.live-input:focus{border-color:var(--primary,#073b63)!important;box-shadow:0 0 0 2px rgba(7,59,99,.10)!important;outline:none!important}
+.paid-hero-bar{border-radius:9px!important;box-shadow:0 4px 12px rgba(7,59,99,.08)!important}
+.services-banner{border-radius:7px 7px 0 0!important}
+.custom-check-item{border-radius:7px!important;transition:transform .12s ease,box-shadow .12s ease!important}
+.custom-check-item.active{box-shadow:0 2px 7px rgba(7,59,99,.10)!important}
+.ledger-box{border-radius:8px!important;overflow:hidden!important}
+.balance-highlight{box-shadow:0 4px 12px rgba(7,59,99,.10)!important}
+.sig-draw-line{margin-top:14px!important}
+.receipt-footer{border-radius:8px!important;margin-top:6px!important}
+@media screen and (max-width:700px){.receipt-paper{box-shadow:none!important;border-radius:7px!important}.receipt-header{column-gap:5px!important}.header-logo-wrap{transform:scale(.94)}}
