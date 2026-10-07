@@ -339,11 +339,9 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 .ar-date-flow .date-blank,.ar-date-flow .slash,.ar-date-flow .year-block{unicode-bidi:isolate}
 .sig-title[data-key="rec_by_lbl"]{unicode-bidi:isolate;white-space:nowrap}
 .footer-meta-line{align-items:center;gap:8px}
-.footer-address{unicode-bidi:isolate}
 .footer-phones{direction:ltr;unicode-bidi:isolate;text-align:center;font-variant-numeric:tabular-nums}
 @media screen and (max-width:700px){
  .site-navbar{position:sticky;top:0}.page-canvas-wrapper{padding-top:12px!important}
- .footer-meta-line{flex-direction:column;gap:6px}.footer-address{text-align:center;width:100%}.footer-phones{width:100%;white-space:nowrap!important;line-height:1.35;padding:4px 7px;overflow:visible}
 }
 @media print{.ar-date-flow{direction:rtl!important;unicode-bidi:isolate!important}}
 
