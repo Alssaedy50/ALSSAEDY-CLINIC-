@@ -61,7 +61,7 @@ if (Object.values(blankCheck.values).some(Boolean) ||
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
 
-await page.evaluate(() => { prepareBlankTemplate(); });
+await page.evaluate(() => { window.__templateSnapshot=prepareBlankTemplate(); });
 await page.emulateMediaType('print');
 const pdfPath='/tmp/alssaedy-blank-template.pdf';
 await page.pdf({path:pdfPath,preferCSSPageSize:true,printBackground:true});
