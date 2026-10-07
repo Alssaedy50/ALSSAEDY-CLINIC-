@@ -311,7 +311,7 @@ function copyReceiptText() {
 }
 /* Blank printable template workflow. It never saves template data. */
 function snapshotReceiptForTemplate(){
-  const ids=['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'];
+  const ids=['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'];
   const fields={}; ids.forEach(id=>{const el=document.getElementById(id); if(el) fields[id]=el.value;});
   return {mode:document.body.getAttribute('data-mode')||'digital',size:getSelectedSize(),payMethod:document.getElementById('selectedPayMethod')?.value||'',services:Array.from(document.querySelectorAll('.custom-check-item')).map(el=>el.classList.contains('active')),fields};
 }
@@ -334,7 +334,7 @@ function prepareBlankTemplate(){
 function finishBlankTemplate(snapshot){document.body.classList.remove('blank-template-export');restoreReceiptAfterTemplate(snapshot);}
 async function downloadBlankTemplateImage(){
   const snapshot=prepareBlankTemplate();
-  try{const canvas=await generateReceiptCanvas();const link=document.createElement('a');link.download='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase()+'.png';link.href=canvas.toDataURL('image/png',0.95);link.click();}
+  try{const canvas=await generateReceiptCanvas();const dataUrl=canvas.toDataURL('image/png',0.95);const filename='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();if(window.Android&&typeof Android.saveImage==='function')Android.saveImage(dataUrl,filename);else{const link=document.createElement('a');link.download=filename+'.png';link.href=dataUrl;document.body.appendChild(link);link.click();link.remove();}}
   catch(e){alert('تعذر إنشاء نموذج الطباعة: '+e.message);}
   finally{finishBlankTemplate(snapshot);}
 }
