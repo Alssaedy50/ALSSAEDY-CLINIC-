@@ -24,6 +24,8 @@ jobs:
           node-version: 20
       - name: Install browser test dependencies
         run: npm install --no-save playwright pngjs
+      - name: Install PDF text inspection tool
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Start local site
