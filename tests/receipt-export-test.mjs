@@ -5,7 +5,10 @@ import { PNG } from 'pngjs';
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1100, height: 1400 }, deviceScaleFactor: 1 });
 
+const pageErrors = [];
+page.on('pageerror', err => pageErrors.push(String(err)));
 await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+if (pageErrors.length) throw new Error('JavaScript page errors: ' + pageErrors.join(' | '));
 await page.evaluate(() => {
   if (typeof setMode !== 'function') throw new Error('setMode is unavailable');
   setMode('digital');
