@@ -5,7 +5,10 @@ import { PNG } from 'pngjs';
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1100, height: 1400 }, deviceScaleFactor: 1 });
 
+const pageErrors = [];
+page.on('pageerror', err => pageErrors.push(String(err)));
 await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+if (pageErrors.length) throw new Error('JavaScript page errors: ' + pageErrors.join(' | '));
 await page.evaluate(() => {
   if (typeof setMode !== 'function') throw new Error('setMode is unavailable');
   setMode('digital');
@@ -75,50 +78,87 @@ for(const forbidden of ['2026-10-07','مريض الاختبار','TEST-001','250
 
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
-  const canvas = await generateReceiptCanvas();
-  const cloneCheck = (() => {
-    const source = document.getElementById('receiptPrintArea');
-    const cloned = source.cloneNode(true);
-    materializeReceiptDate(source, cloned);
-    materializeReceiptControls(source, cloned, document);
-    const fields = Array.from(cloned.querySelectorAll('.export-field-value')).map(el => el.textContent.trim());
-    // The date is exported as its human-readable form (DD/MM/YYYY م), which is
-    // the only date representation actually shown on the printed sheet.
-    const formattedDate = formatReceiptDate(document.getElementById('digDate')?.value || '');
-    return fields.includes('مريض الاختبار') && fields.includes('TEST-001') &&
-      (fields.includes(formattedDate) || cloned.querySelector('#printDateValue')?.textContent.trim() === formattedDate);
-  })();
-  if (!cloneCheck) throw new Error('Export clone did not preserve receipt fields.');
-  const pdfOk = await (async () => {
-    try { const blob = await buildReceiptPdfBlob(); return blob && blob.size > 2000 && blob.type === 'application/pdf'; }
-    catch (e) { return false; }
-  })();
-  if (!pdfOk) throw new Error('One-click PDF generation failed.');
-  return {
-    width: canvas.width,
-    height: canvas.height,
-    dataUrl: canvas.toDataURL('image/png')
-  };
+  if (typeof generateReceiptCanvas !== 'function' || typeof buildReceiptPdfBlob !== 'function') {
+    throw new Error('Export pipeline functions are unavailable.');
+  }
+
+  const source = document.getElementById('receiptPrintArea');
+  const cloned = source.cloneNode(true);
+  materializeReceiptDate(source, cloned);
+  materializeReceiptControls(source, cloned, document);
+  const fields = Array.from(cloned.querySelectorAll('.export-field-value')).map(el => el.textContent.trim());
+  const formattedDate = formatReceiptDate(document.getElementById('digDate')?.value || '');
+  if (!fields.includes('مريض الاختبار') || !fields.includes('TEST-001') ||
+      (!fields.includes(formattedDate) && cloned.querySelector('#printDateValue')?.textContent.trim() !== formattedDate)) {
+    throw new Error('Export clone did not preserve receipt fields.');
+  }
+
+  const sizes = [
+    { id: 'a5', ratio: 148 / 210 },
+    { id: 'a4', ratio: 210 / 297 },
+    { id: 'thermal', ratio: null }
+  ];
+  const exports = {};
+  for (const size of sizes) {
+    setSize(size.id);
+    const canvas = await generateReceiptCanvas({ fullPage: true, scale: 2 });
+    if (size.ratio) {
+      const actual = canvas.width / canvas.height;
+      if (Math.abs(actual - size.ratio) > 0.01) {
+        throw new Error('Wrong physical aspect ratio for ' + size.id + ': ' + actual);
+      }
+    }
+    const blob = await buildReceiptPdfBlob();
+    if (!blob || blob.size < 2000 || blob.type !== 'application/pdf') {
+      throw new Error('PDF generation failed for ' + size.id);
+    }
+    const reader = new FileReader();
+    const pdfData = await new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    exports[size.id] = {
+      width: canvas.width,
+      height: canvas.height,
+      dataUrl: canvas.toDataURL('image/png'),
+      pdfDataUrl: pdfData
+    };
+  }
+  setSize('a5');
+  return exports;
 });
 
-const base64 = result.dataUrl.split(',')[1];
-const pngPath = '/tmp/alssaedy-receipt-export.png';
-fs.writeFileSync(pngPath, Buffer.from(base64, 'base64'));
+const outputs = {};
+for (const [size, item] of Object.entries(result)) {
+  const pngPath = '/tmp/alssaedy-' + size + '.png';
+  const pdfPath = '/tmp/alssaedy-' + size + '.pdf';
+  fs.writeFileSync(pngPath, Buffer.from(item.dataUrl.split(',')[1], 'base64'));
+  fs.writeFileSync(pdfPath, Buffer.from(item.pdfDataUrl.split(',')[1], 'base64'));
 
-const png = PNG.sync.read(fs.readFileSync(pngPath));
-if (png.width !== result.width || png.height !== result.height) throw new Error('PNG dimensions mismatch');
-if (png.width < 1000 || png.height < 1200) throw new Error(`Export unexpectedly small: ${png.width}x${png.height}`);
-
-let lowerInk = 0;
-const yStart = Math.floor(png.height * 0.55);
-for (let y = yStart; y < png.height; y += 4) {
-  for (let x = 0; x < png.width; x += 4) {
-    const i = (y * png.width + x) * 4;
-    const r = png.data[i], g = png.data[i+1], b = png.data[i+2], a = png.data[i+3];
-    if (a > 0 && (r < 245 || g < 245 || b < 245)) lowerInk++;
+  const png = PNG.sync.read(fs.readFileSync(pngPath));
+  if (png.width !== item.width || png.height !== item.height) {
+    throw new Error('PNG dimensions mismatch for ' + size);
   }
-}
-if (lowerInk < 500) throw new Error(`Lower receipt area appears blank; ink samples=${lowerInk}`);
+  if (png.width < 500 || png.height < 500) {
+    throw new Error('Export unexpectedly small for ' + size + ': ' + png.width + 'x' + png.height);
+  }
 
-console.log(JSON.stringify({ ok: true, width: png.width, height: png.height, lowerInkSamples: lowerInk, pngPath }));
+  let ink = 0;
+  for (let y = Math.floor(png.height * 0.55); y < png.height; y += 4) {
+    for (let x = 0; x < png.width; x += 4) {
+      const i = (y * png.width + x) * 4;
+      if (png.data[i + 3] > 0 && (png.data[i] < 245 || png.data[i + 1] < 245 || png.data[i + 2] < 245)) ink++;
+    }
+  }
+  if (ink < 500) throw new Error('Lower receipt area appears blank for ' + size);
+
+  const info = execFileSync('pdfinfo', [pdfPath], {encoding:'utf8'});
+  const pages = /Pages:\s+(\d+)/.exec(info)?.[1];
+  const media = /Page size:\s+([0-9.]+) x ([0-9.]+) pts/.exec(info);
+  if (pages !== '1' || !media) throw new Error('Invalid PDF structure for ' + size);
+  outputs[size] = { png: [png.width, png.height], pdfPts: [Number(media[1]), Number(media[2])], ink };
+}
+
+console.log(JSON.stringify({ ok: true, outputs }));
 await browser.close();

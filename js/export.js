@@ -1,17 +1,17 @@
-function getExportBox(profile, fullPage = false) {
-    if (fullPage && profile.height !== 'auto') {
-        return { width: profile.width, height: profile.height };
-    }
-    // Keep a precise 2mm printable safety margin while filling the selected paper.
-    if (profile.pdfFormat === 'a5') return { width: '144mm', height: '206mm' };
-    if (profile.pdfFormat === 'a4') return { width: '206mm', height: '293mm' };
-    if (Array.isArray(profile.pdfFormat)) return { width: '76mm', height: 'auto' };
+function getExportBox(profile) {
+    // Export must use the same physical sheet dimensions as print CSS.
+    // Do not introduce an artificial safety margin here: the receipt itself
+    // already owns its internal padding.
     return { width: profile.width, height: profile.height === 'auto' ? 'auto' : profile.height };
 }
 
-function getPdfPageSizeMm(profile) {
+function getPdfPageSizeMm(profile, canvas) {
     if (profile.pdfFormat === 'a4') return { w: 210, h: 297, format: 'a4' };
-    if (Array.isArray(profile.pdfFormat)) return { w: profile.pdfFormat[0] || 80, h: profile.pdfFormat[1] || 240, format: null };
+    if (Array.isArray(profile.pdfFormat)) {
+        const w = Number(profile.pdfFormat[0]) || 80;
+        const h = canvas && canvas.width ? w * (canvas.height / canvas.width) : (Number(profile.pdfFormat[1]) || 240);
+        return { w, h: Math.max(40, h), format: null };
+    }
     return { w: 148, h: 210, format: 'a5' };
 }
 
@@ -159,7 +159,7 @@ async function generateReceiptCanvas(options = {}) {
     if (!receipt) throw new Error('منطقة السند غير موجودة.');
 
     const profile = getSizeProfile();
-    const exportBox = getExportBox(profile, options.fullPage === true);
+    const exportBox = getExportBox(profile);
     document.documentElement.style.setProperty('--export-width', exportBox.width);
     document.documentElement.style.setProperty('--export-height', exportBox.height);
 
@@ -217,18 +217,16 @@ async function buildReceiptPdfBlob() {
     const jsPDF = await ensureJsPdf();
     const canvas = await generateReceiptCanvas({ fullPage: true, scale: 3 });
     const profile = getSizeProfile();
-    const page = getPdfPageSizeMm(profile);
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: page.format || [page.w, page.h], compress: true });
-    const pw = doc.internal.pageSize.getWidth();
-    const ph = doc.internal.pageSize.getHeight();
-    if (profile.height === 'auto') {
-        // Thermal: keep the image aspect ratio and grow the page height if needed.
-        const imgH = Math.min(ph * 4, pw * (canvas.height / canvas.width));
-        doc.addImage(imgData, 'JPEG', 0, 0, pw, imgH, undefined, 'FAST');
-    } else {
-        doc.addImage(imgData, 'JPEG', 0, 0, pw, ph, undefined, 'FAST');
-    }
+    const page = getPdfPageSizeMm(profile, canvas);
+    // PNG avoids JPEG ringing around Arabic text and thin borders.
+    const imgData = canvas.toDataURL('image/png');
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: page.format || [page.w, page.h],
+        compress: true
+    });
+    doc.addImage(imgData, 'PNG', 0, 0, page.w, page.h, undefined, 'FAST');
     return doc.output('blob');
 }
 
@@ -437,7 +435,7 @@ async function shareReceiptImage() {
 async function saveCanvasImage(canvas, filename) {
     if (window.Android && typeof Android.beginImageSave === 'function') {
         const dataUrl = canvas.toDataURL('image/png');
-        const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1), chunkSize = 262144;
+        const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1), chunkSize = 65536;
         Android.beginImageSave(filename);
         for (let i = 0; i < base64.length; i += chunkSize) Android.appendImageChunk(base64.substring(i, i + chunkSize));
         Android.finishImageSave();
@@ -493,9 +491,7 @@ async function downloadBlankTemplateImage(){
   try{
     const canvas=await generateReceiptCanvas({fullPage:true});
     const filename='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
-    if(window.Android&&typeof Android.beginImageSave==='function') await saveCanvasImage(canvas,filename);
-    else if(window.Android&&typeof Android.saveImage==='function') Android.saveImage(canvas.toDataURL('image/png'),filename);
-    else{const blob=await canvasToPngBlob(canvas);downloadBlob(blob,filename+'.png');}
+    await saveCanvasImage(canvas, filename);
     if(typeof toast==='function')toast('تم تنزيل النموذج الفارغ بنجاح.');
   }
   catch(e){if(typeof toast==='function')toast('تعذر إنشاء نموذج الطباعة: '+e.message,'error');else alert('تعذر إنشاء نموذج الطباعة: '+e.message);}
@@ -506,15 +502,22 @@ async function downloadBlankTemplatePDF(){
   const baseName='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
   try{
     const blob=await buildReceiptPdfBlob();
-    if(window.Android&&typeof Android.savePdfFromData==='function'){Android.savePdfFromData(await blobToDataUrl(blob),baseName);}
-    else downloadBlob(blob,baseName+'.pdf');
+    if(window.Android&&typeof Android.savePdfFromData==='function'){
+      Android.savePdfFromData(await blobToDataUrl(blob),baseName);
+    } else {
+      downloadBlob(blob,baseName+'.pdf');
+    }
     if(typeof toast==='function')toast('تم إنشاء نموذج PDF فارغ.');
   }
   catch(e){
-    const oldTitle=document.title;document.title=baseName;
-    if(window.Android&&typeof Android.savePdf==='function'){Android.savePdf(getSelectedSize(),baseName);setTimeout(()=>{document.title=oldTitle;finishBlankTemplate(snapshot);},1500);return;}
+    const oldTitle=document.title;
+    document.title=baseName;
     injectPrintPageStyle();
-    window.addEventListener('afterprint',()=>{document.title=oldTitle;document.getElementById('dynamic-print-size')?.remove();finishBlankTemplate(snapshot);},{once:true});
+    window.addEventListener('afterprint',()=>{
+      document.title=oldTitle;
+      document.getElementById('dynamic-print-size')?.remove();
+      finishBlankTemplate(snapshot);
+    },{once:true});
     setTimeout(()=>window.print(),120);
     return;
   }

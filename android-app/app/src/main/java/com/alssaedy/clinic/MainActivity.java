@@ -30,8 +30,6 @@ import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import android.graphics.Canvas;
-import android.graphics.pdf.PdfDocument;
 import java.util.Base64;
 
 public class MainActivity extends Activity {
@@ -166,56 +164,6 @@ public class MainActivity extends Activity {
                 );
             }
             return PrintAttributes.MediaSize.ISO_A5;
-        }
-
-        @JavascriptInterface
-        public void savePdf(String size,String fileName){
-            runOnUiThread(()->{
-                Uri uri=null;
-                try{
-                    String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName)
-                        .replaceAll("[^A-Za-z0-9_\\-\\u0600-\\u06FF]","_")+".pdf";
-                    ContentValues values=new ContentValues();
-                    values.put(MediaStore.Downloads.DISPLAY_NAME,safe);
-                    values.put(MediaStore.Downloads.MIME_TYPE,"application/pdf");
-                    values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ALSSAEDY Clinic");
-                    values.put(MediaStore.Downloads.IS_PENDING,1);
-                    uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
-                    if(uri==null) throw new Exception("تعذر إنشاء ملف PDF");
-                    try(OutputStream out=getContentResolver().openOutputStream(uri)){
-                        if(out==null) throw new Exception("تعذر فتح ملف PDF");
-                        int[] pageSize=getPdfPageSize(size);
-                        PdfDocument pdf=new PdfDocument();
-                        PdfDocument.Page page=pdf.startPage(new PdfDocument.PageInfo.Builder(pageSize[0],pageSize[1],1).create());
-                        Canvas canvas=page.getCanvas();
-                        float sx=pageSize[0]/(float)Math.max(1,webView.getWidth());
-                        float sy=pageSize[1]/(float)Math.max(1,webView.getHeight());
-                        float scale=Math.min(sx,sy);
-                        canvas.save();
-                        canvas.scale(scale,scale);
-                        webView.draw(canvas);
-                        canvas.restore();
-                        pdf.finishPage(page);
-                        pdf.writeTo(out);
-                        pdf.close();
-                    }
-                    values.clear();
-                    values.put(MediaStore.Downloads.IS_PENDING,0);
-                    getContentResolver().update(uri,values,null,null);
-                    Toast.makeText(MainActivity.this,"تم حفظ PDF الجاهز للطباعة في التنزيلات.",Toast.LENGTH_LONG).show();
-                }catch(Exception e){
-                    if(uri!=null){
-                        try{ContentValues fail=new ContentValues();fail.put(MediaStore.Downloads.IS_PENDING,0);getContentResolver().update(uri,fail,null,null);}catch(Exception ignored){}
-                    }
-                    Toast.makeText(MainActivity.this,"تعذر حفظ PDF: "+e.getMessage(),Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-
-        private int[] getPdfPageSize(String size){
-            if("a4".equalsIgnoreCase(size)) return new int[]{595,842};
-            if("thermal".equalsIgnoreCase(size)) return new int[]{227,680};
-            return new int[]{420,595};
         }
 
         /** Saves a PDF produced by jsPDF (passed as a data URL) straight into Downloads.

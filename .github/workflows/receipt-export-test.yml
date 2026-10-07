@@ -22,6 +22,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Validate JavaScript syntax
+        run: |
+          node --check js/export.js
+          node --check js/app.js
+          node --check js/ui.js
       - name: Install browser test dependencies
         run: npm install --no-save playwright pngjs
       - name: Install PDF text inspection tool
