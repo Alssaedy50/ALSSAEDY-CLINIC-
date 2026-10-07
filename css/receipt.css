@@ -499,3 +499,27 @@ body.exporting-receipt .patient-contact-row .patient-phone-input {
     direction: ltr !important;
     unicode-bidi: isolate !important;
 }
+
+
+/* ===== v1.2.0 logo/date/export quality contract ===== */
+.clinic-logo{
+  width:100%!important;height:100%!important;
+  aspect-ratio:1/1!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  display:block!important;
+  image-rendering:auto!important;
+}
+.header-logo-wrap{aspect-ratio:1/1!important;overflow:visible!important}
+.date-field-wrapper .print-date-value{display:none!important}
+.digital-date-control .print-date-value{display:none!important}
+.template-date-editor-row #paperTemplateDate{
+  inputmode:text!important;
+  text-align:center!important;
+  direction:ltr!important;
+  unicode-bidi:isolate!important;
+}
+@media print{
+ .date-field-wrapper .print-date-value{display:none!important}
+ .digital-date-control .print-date-value{display:none!important}
+}
