@@ -4,10 +4,10 @@ const CURRENCY_PROFILES={
  SAR:{code:'SAR',nameAr:'ريال سعودي',symbol:'ر.س'},
  USD:{code:'USD',nameAr:'دولار أمريكي',symbol:'$'}
 };
-function getCurrencyInfo(){return CURRENCY_PROFILES[localStorage.getItem('alssaedy_currency')||'YER']||CURRENCY_PROFILES.YER;}
+function getCurrencyInfo(){const code=clinicRepositoryGetSettingSync('currency')||localStorage.getItem('alssaedy_currency')||'YER';return CURRENCY_PROFILES[code]||CURRENCY_PROFILES.YER;}
 function setCurrency(code){
  const info=CURRENCY_PROFILES[code]||CURRENCY_PROFILES.YER;
- localStorage.setItem('alssaedy_currency',info.code);
+ clinicRepositoryPutSetting('currency',info.code).catch(()=>{});
  const select=document.getElementById('currencySelect');if(select)select.value=info.code;
  ['paidCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.nameAr;});
  ['totalCurrencyLabel','paidTableCurrencyLabel','balanceCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.symbol;}); const badge=document.getElementById('receiptCurrencyBadge');if(badge){badge.textContent=info.code;badge.setAttribute('aria-label',info.nameAr+' ('+info.code+')');}
@@ -64,7 +64,7 @@ function setSize(size) {
     document.getElementById('btnSizeA5').classList.toggle('active', size === 'a5');
     document.getElementById('btnSizeA4').classList.toggle('active', size === 'a4');
     document.getElementById('btnSizeThermal').classList.toggle('active', size === 'thermal');
-    localStorage.setItem('alssaedy_receipt_size', size);
+    clinicRepositoryPutSetting('receiptSize', size).catch(()=>{});
 }
 
 function getLogoScale(){ return Math.min(1.35, Math.max(0.75, Number(localStorage.getItem('alssaedy_logo_scale')) || 1)); }
@@ -340,7 +340,7 @@ function toggleEditMode() {
     if (!isEditing) {
         const data = {};
         document.querySelectorAll('.editable').forEach(el => { data[el.dataset.key] = el.innerText.trim(); });
-        localStorage.setItem('alssaedy_texts', JSON.stringify(data));
+        clinicRepositoryPutSetting('receiptTexts', JSON.stringify(data)).catch(()=>{});
     }
 }
 
@@ -392,7 +392,7 @@ function closeHistoryModal(skipHistory=false){document.getElementById('historyMo
 function showPatientListView(){document.querySelector('.patient-form')?.classList.remove('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.remove('patient-detail-hidden');document.getElementById('patientsList')?.classList.remove('patient-detail-hidden');document.getElementById('patientAccountPanel')?.setAttribute('hidden','');}
 function showPatientDetailView(){document.querySelector('.patient-form')?.classList.add('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.add('patient-detail-hidden');document.getElementById('patientsList')?.classList.add('patient-detail-hidden');document.getElementById('patientAccountPanel')?.removeAttribute('hidden');}
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     const datePicker = document.getElementById('hiddenDatePicker');
     const dateInput = document.getElementById('digDate');
     if (dateInput) {
@@ -406,10 +406,12 @@ window.addEventListener('DOMContentLoaded', () => {
             dateInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
     }
-    applyLogo(OFFICIAL_LOGO_URL);
-    setCurrency(localStorage.getItem('alssaedy_currency')||'YER');
+    await hydrateDurableReceipts();
+    const durableSettings = clinicRepositoryGetSettingsSync();
+    applyLogo(durableSettings.customLogo || OFFICIAL_LOGO_URL);
+    setCurrency(durableSettings.currency || 'YER');
 
-    const savedTexts = localStorage.getItem('alssaedy_texts');
+    const savedTexts = durableSettings.receiptTexts || '';
     if (savedTexts) {
         try {
             const data = JSON.parse(savedTexts);
@@ -431,7 +433,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedWeight = localStorage.getItem('alssaedy_receipt_weight');
     if (savedWeight) setReceiptWeight(savedWeight);
 
-    const savedSize = localStorage.getItem('alssaedy_receipt_size');
+    const savedSize = durableSettings.receiptSize || '';
     setSize(SIZE_PROFILES[savedSize] ? savedSize : 'a5');
     const savedTheme = localStorage.getItem('alssaedy_theme');
     if (savedTheme) setTheme(savedTheme);
@@ -441,6 +443,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // The paper template is generated separately and starts completely blank.
     syncPaperDate('');
     setMode('digital');
-    hydrateDurableReceipts().then(()=>{ const logo=loadLogoDurably(); if(logo)applyLogo(logo); updateHistoryCount(); }).catch(()=>updateHistoryCount());
+    updateHistoryCount();
     updateActionAvailability();
 });
