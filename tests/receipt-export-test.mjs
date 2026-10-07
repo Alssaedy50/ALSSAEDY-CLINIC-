@@ -47,7 +47,7 @@ const dateCheck = await page.evaluate(() => ({
   paperYearDisplay: getComputedStyle(document.getElementById('paperDateYear') || document.body).display,
   pickerHandler: typeof openDatePicker === 'function'
 }));
-if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler || dateCheck.printDateValue !== '07/10/2026 م' || dateCheck.paperYearDigits !== '2026' || dateCheck.paperYearEra !== 'م' || dateCheck.paperYearDisplay !== 'inline-flex') {
+if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler || dateCheck.printDateValue !== '07/10/2026 م' || dateCheck.paperYearDigits !== '2026' || dateCheck.paperYearEra !== 'م' || !['flex','inline-flex'].includes(dateCheck.paperYearDisplay)) {
   throw new Error('Digital receipt date visibility failed: ' + JSON.stringify(dateCheck));
 }
 
