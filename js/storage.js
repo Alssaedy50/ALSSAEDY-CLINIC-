@@ -43,53 +43,50 @@ function getSelectedServices() {
 }
 
 function collectReceiptData() {
-    const paid = Math.max(0, Number.parseFloat(document.getElementById('digPaid').value) || 0);
-    const total = Math.max(0, Number.parseFloat(document.getElementById('digTotal').value) || 0);
+    const paid=Math.max(0,Number.parseFloat(document.getElementById('digPaid').value)||0);
+    const total=Math.max(0,Number.parseFloat(document.getElementById('digTotal').value)||0);
+    const currency=typeof getCurrencyInfo==='function'?getCurrencyInfo():{code:'YER',nameAr:'ريال يمني',symbol:'ر.ي'};
     return {
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        recNo: document.getElementById('digReceiptNo').value.trim(),
-        date: document.getElementById('digDate').value || getLocalDateISO(),
-        name: document.getElementById('digClientName').value.trim() || 'مريض بدون اسم',
-        patientPhone: document.getElementById('digPatientPhone')?.value.trim() || '',
-        paid: String(paid),
-        total: String(total),
-        balance: String(Math.max(0, total - paid)),
-        change: String(Math.max(0, paid - total)),
-        tooth: document.getElementById('digTooth').value.trim(),
-        tafqeet: document.getElementById('digTafqeet').value.trim(),
-        payMethod: document.getElementById('selectedPayMethod').value || 'نقداً',
-        ref: document.getElementById('digRef').value.trim(),
-        services: getSelectedServices(),
-        mode: 'digital',
-        size: getSelectedSize()
+        id:crypto?.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(36).slice(2),
+        recNo:document.getElementById('digReceiptNo').value.trim(),
+        date:document.getElementById('digDate').value||getLocalDateISO(),
+        name:document.getElementById('digClientName').value.trim()||'مريض بدون اسم',
+        patientPhone:document.getElementById('digPatientPhone')?.value.trim()||'',
+        patientId:window.currentPatientId||'',
+        paid:String(paid),total:String(total),
+        balance:String(Math.max(0,total-paid)),change:String(Math.max(0,paid-total)),
+        tooth:document.getElementById('digTooth').value.trim(),
+        tafqeet:document.getElementById('digTafqeet').value.trim(),
+        payMethod:document.getElementById('selectedPayMethod').value||'نقداً',
+        ref:document.getElementById('digRef').value.trim(),
+        services:getSelectedServices(),mode:'digital',size:getSelectedSize(),
+        currency:currency.code,currencyName:currency.nameAr,currencySymbol:currency.symbol
     };
 }
-
-function saveReceiptLocally() {
-    if (document.body.getAttribute('data-mode') !== 'digital') {
-        alert('الحفظ في السجل متاح للسند الرقمي فقط.');
-        return;
-    }
-    const data = collectReceiptData();
-    if (!data.recNo) generateNextReceiptNo();
-    const refreshed = collectReceiptData();
-
-    if (Number(refreshed.paid) < 0 || Number(refreshed.total) < 0) {
-        alert('لا يمكن إدخال مبالغ سالبة.');
-        return;
-    }
-
-    const history = safeHistory();
-    const duplicate = history.some(item => item.recNo === refreshed.recNo);
-    if (duplicate) {
-        if (!confirm('رقم السند موجود مسبقاً. هل تريد حفظ نسخة جديدة بنفس الرقم؟')) return;
-    }
-    history.unshift(refreshed);
-    localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
-    updateHistoryCount();
-    alert('تم حفظ السند في السجل المحلي بنجاح.');
+function receiptFingerprint(item){
+    return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.tooth,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),item.currency]);
 }
 
+function saveReceiptLocally(){
+  if(document.body.getAttribute('data-mode')!=='digital'){alert('الحفظ متاح للسند الرقمي فقط.');return;}
+  if(!document.getElementById('digReceiptNo').value)generateNextReceiptNo();
+  const data=collectReceiptData();
+  if(Number(data.paid)<0||Number(data.total)<0){alert('لا يمكن إدخال مبالغ سالبة.');return;}
+  const history=safeHistory();
+  const fp=receiptFingerprint(data);
+  if(history.some(item=>receiptFingerprint(item)===fp)){
+    alert('⚠️ هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.');
+    return;
+  }
+  const numberDuplicate=history.some(item=>String(item.recNo)===String(data.recNo));
+  if(numberDuplicate){alert('⚠️ رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.');return;}
+  history.unshift(data);
+  localStorage.setItem('alssaedy_receipts_history',JSON.stringify(history));
+  clinicDBPut('receipts',data).then(()=>clinicDBAll('receipts').then(all=>localStorage.setItem('alssaedy_receipts_history',JSON.stringify(all)))).catch(()=>{});
+  if(typeof upsertCurrentPatient==='function')upsertCurrentPatient(data);
+  updateHistoryCount();
+  alert('تم حفظ السند بنجاح في السجل الدائم.');
+}
 
 function getAllReceiptHistory() {
     return safeHistory().slice();
