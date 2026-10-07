@@ -22,7 +22,6 @@ const APP_SHELL = [
   './js/sync.js' + V,
   './android-app-bridge.js' + V,
   './vendor/html2canvas/html2canvas.min.js' + V,
-  './vendor/jspdf/jspdf.umd.min.js' + V,
   './assets/Saedy_Dental_Logo.svg'
 ];
 
