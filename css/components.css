@@ -1,0 +1,48 @@
+/* AQSA7 component presentation layer.
+   Owns reusable feature components that are neither receipt geometry nor global app chrome. */
+
+/* History + preview */
+.history-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:6px 0 10px}
+.stat-cell{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
+.stat-cell .stat-label{font-size:8.5px;color:#64748b;font-weight:700}
+.stat-cell strong{font-size:12px;color:var(--primary);font-variant-numeric:tabular-nums}
+.stat-balance{background:#fef2f2;border-color:#fecaca}
+.stat-balance strong{color:#b91c1c}
+.history-search{margin-bottom:10px;text-align:right;font-size:11px;padding:8px 10px}
+.history-entry-main{min-width:0;text-align:right;flex:1}
+.history-entry-main small{display:block;margin-top:2px}
+.history-recno{color:#64748b;font-size:9px;font-weight:600}
+@media(max-width:600px){.history-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.preview-modal-box{width:min(560px,94vw)!important;max-height:92vh;display:flex;flex-direction:column}
+.preview-note{font-size:10px!important}
+.preview-stage{margin:8px 0;overflow:auto;background:#e2e8f0;border-radius:10px;padding:10px;display:flex;justify-content:center;max-height:64vh}
+.preview-stage img{max-width:100%;height:auto;box-shadow:0 6px 24px rgba(15,23,42,.25);border-radius:4px;background:#fff}
+.preview-loading{color:#475569;font-size:11px;padding:30px 10px}
+.preview-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:600px){.preview-actions{grid-template-columns:1fr}}
+
+/* Patient */
+.patient-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.patient-field>span{font-size:10px;font-weight:800;color:#073b63;line-height:1.2}
+.patient-field .live-input{width:100%;box-sizing:border-box}
+.history-search{width:100%;max-width:100%;box-sizing:border-box;min-height:38px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patient-list-actions button{appearance:none;border:1px solid #073b63;background:#073b63;color:#fff;border-radius:8px;padding:7px 12px;font:inherit;font-size:10px;font-weight:800;cursor:pointer;box-shadow:0 2px 7px rgba(7,59,99,.16);transition:.16s ease}
+.patient-list-actions button:hover{background:#0f766e;border-color:#0f766e;transform:translateY(-1px)}
+.patient-list-actions button:focus-visible{outline:2px solid #14b8a6;outline-offset:2px}
+#receiptCurrencyBadge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 6px;border-radius:999px;background:#e0f2fe;color:#073b63;border:1px solid #bae6fd;font-size:8px;font-weight:900;line-height:1;direction:ltr;unicode-bidi:isolate}
+@media(max-width:600px){.patient-field>span{font-size:9px}.patient-list-actions{width:100%}.patient-list-actions button{width:100%;min-height:34px}}
+
+/* Cloud sync status presentation */
+.sync-badge{font-size:8px;background:#e2e8f0;color:#475569;border-radius:999px;padding:2px 8px;margin-inline-start:6px;vertical-align:middle}
+.sync-auto-row{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;color:#475569;margin:8px 0 2px}
+.sync-auto-row input{width:16px;height:16px}
+.sync-status{margin-top:8px;font-size:9.5px;line-height:1.55;border-radius:7px;padding:7px 9px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569}
+.sync-status.sync-ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.sync-status.sync-warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.sync-status.sync-error{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
+.sync-status.sync-busy{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+
+/* Night mode applies to application chrome and component surfaces, never receipt print geometry. */
+html[data-night="on"] .history-entry,html[data-night="on"] .patient-card,html[data-night="on"] .stat-cell{background:#111c33;border-color:#1e293b}
+html[data-night="on"] .sync-badge{background:#1e293b;color:#cbd5e1}
+html[data-night="on"] .sync-status{background:#111c33;border-color:#1e293b;color:#cbd5e1}
