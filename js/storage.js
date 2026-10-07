@@ -137,12 +137,6 @@ function exportTransactionsFile(format) {
     alert('تم تجهيز النسخة الاحتياطية الكاملة للسندات بصيغة JSON.');
 }
 
-function getTransactionsSummary() {
-    const history = getAllReceiptHistory();
-    const totalPaid = history.reduce((sum, item) => sum + (Number(item.paid) || 0), 0);
-    return { count: history.length, totalPaid };
-}
-
 function updateHistoryCount() {
     const badge = document.getElementById('historyCount');
     if (badge) badge.innerText = safeHistory().length;
