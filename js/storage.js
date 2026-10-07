@@ -297,7 +297,6 @@ function patientId(){
 }
 async function getPatients(){
   try{return await clinicDBAll('patients');}
-  catch(e){return JSON.parse(localStorage.getItem('alssaedy_patients')||'[]');}
 }
 function patientFormValue(id){return document.getElementById(id)?.value?.trim()||'';}
 
@@ -312,8 +311,7 @@ async function upsertCurrentPatient(receipt){
   p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
   if(!Array.isArray(p.visits))p.visits=[];
   if(!p.visits.some(v=>v.receiptId===receipt.id))p.visits.push({receiptId:receipt.id,date:receipt.date,total:receipt.total,paid:receipt.paid,currency:receipt.currency,services:receipt.services||[],tooth:receipt.tooth||''});
-  await clinicDBPut('patients',p);
-  localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
+  await clinicRepositoryPutPatient(p);
   currentPatientId=p.id; window.currentPatientId=p.id;
   return p;
 }
