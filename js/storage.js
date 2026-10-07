@@ -338,6 +338,9 @@ async function selectPatient(id){
   document.getElementById('digClientName').value=p.name||'';
   document.getElementById('digPatientPhone').value=p.phone||'';
   renderPatientAccount(p);
+  showPatientDetailView();
+  appRoute={screen:'patient-detail',patientId:p.id};
+  pushPanelState('patient-detail');
 }
 
 function renderPatientAccount(p){
@@ -389,8 +392,14 @@ function createReceiptFromPatientAccount(){
   alert('تم تجهيز السند من حساب المريض. راجعه ثم اضغط حفظ.');
 }
 
-function openPatientsModal(){document.getElementById('patientsModal')?.classList.add('open');renderPatients();}
-function closePatientsModal(){document.getElementById('patientsModal')?.classList.remove('open');}
+function openPatientsModal(skipHistory=false){document.getElementById('patientsModal')?.classList.add('open');renderPatients();showPatientListView();activateAppTabVisual('patients');appRoute={screen:'patients',patientId:''};if(!skipHistory)pushPanelState('patients');}
+function closePatientsModal(skipHistory=false){
+  document.getElementById('patientsModal')?.classList.remove('open');showPatientListView();
+  if(!skipHistory && (appRoute.screen==='patients'||appRoute.screen==='patient-detail')){
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+  appRoute={screen:'receipt',patientId:''};
+}
 async function buildFullBackup(){
   const receipts=await clinicDBAll('receipts'),patients=await clinicDBAll('patients');
   return {schema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:2,exportedAt:new Date().toISOString(),receipts,patients,settings:{
