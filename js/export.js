@@ -192,7 +192,7 @@ async function generateReceiptCanvas(options = {}) {
         );
 
         return html2canvas(receipt, {
-            scale: options.scale || 8,
+            scale: options.scale || (window.Android ? 3 : 4),
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -259,7 +259,7 @@ async function generateReceiptCanvas(options = {}) {
                  if(logo){
                      logo.style.opacity='1';
                      logo.style.filter='none';
-                     logo.style.imageRendering='high-quality';
+                     logo.style.imageRendering='auto';
                      logo.removeAttribute('width');
                      logo.removeAttribute('height');
                  }
@@ -285,7 +285,7 @@ function canvasToPngBlob(canvas) {
 // without any print dialog. Works on desktop and inside the Android WebView.
 async function buildReceiptPdfBlob() {
     const jsPDF = await ensureJsPdf();
-    const canvas = await generateReceiptCanvas({ fullPage: true, scale: 3 });
+    const canvas = await generateReceiptCanvas({ fullPage: true, scale: window.Android ? 3 : 4 });
     const profile = getSizeProfile();
     const page = getPdfPageSizeMm(profile, canvas);
     // PNG avoids JPEG ringing around Arabic text and thin borders.
