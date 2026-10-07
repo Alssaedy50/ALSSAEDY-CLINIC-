@@ -60,7 +60,7 @@ Audited main branch at the start of the program:
 ## Program phases
 
 ### Phase 0 — Deep Audit
-Status: IN PROGRESS
+Status: COMPLETE
 Tasks:
 - 0.1 repository inventory
 - 0.2 dependency/call graph
@@ -79,7 +79,7 @@ Tasks:
 - 0.15 final audit report and remediation order
 
 ### Phase 1 — Architecture Cleanup
-Status: NOT STARTED
+Status: IN PROGRESS
 - establish clear module boundaries
 - remove proven dead/legacy paths
 - unify state ownership
@@ -198,19 +198,35 @@ For every task:
 ## Current checkpoint
 
 Completed:
-- repository baseline inventory
-- initial structural checks
-- initial dependency/call-site sampling
-- initial legacy candidate identification
-- initial storage/navigation/export/logo/sync observations
-- continuity ledger
-- Phase 0 / Task 0.2 dependency & call graph
-- Phase 0 / Task 0.3 action/event map
+- Phase 0 / Tasks 0.1 → 0.15 — Deep Audit
+- Phase 1 / Tasks 1.1 → 1.5 — architecture/data-layer/export/logo/date foundations
+- Phase 1 / Task 1.6 — Settings Ownership Cleanup
 
 Current:
-- Phase 0 / Task 0.4 state/data-flow map
+- Phase 1 / Task 1.7 — CSS Responsibility Cleanup
 
-Do not start Phase 1 until Phase 0.15 is marked COMPLETE.
+### Phase 1.6 — Settings Ownership Cleanup: COMPLETE
+
+Implemented:
+- Durable clinic settings now have one IndexedDB owner through the repository.
+- `currency`, `receiptSize`, `receiptTexts`, and `customLogo` are clinic configuration.
+- UI presentation preferences remain in localStorage.
+- Sync configuration/metadata remains in localStorage.
+- Legacy clinic-setting localStorage values are migration inputs only.
+- Full backup schema upgraded to v3 with explicit `settings.clinic` and `settings.ui` separation.
+- Restore remains backward-compatible with the previous flat settings structure.
+- Cloud sync now restores clinic settings through repository APIs rather than writing clinic settings directly to localStorage.
+- Added `docs/AQSA7-SETTINGS-OWNERSHIP.md`.
+
+Validation:
+- JavaScript syntax compilation passed for `repository.js`, `app.js`, `storage.js`, and `sync.js`.
+- Repository-wide scan of the affected setting keys confirms direct localStorage access remains only inside the migration/cleanup layer.
+- Modified files verified on `main`.
+
+Next:
+- Phase 1 / Task 1.7 — CSS Responsibility Cleanup
+
+Do not start Phase 2 until Phase 1 is tested.
 Do not start Phase 2 until Phase 1 is tested.
 Do not start productization until architecture and data boundaries are stable.
 Do not create a release until Phase 5 is COMPLETE.
