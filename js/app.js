@@ -373,11 +373,35 @@ function updateActionAvailability() {
 }
 
 let activeAppTab='receipt';
-function activateAppTab(tab){ activeAppTab=tab; ['receipt','patients','history','settings'].forEach(t=>document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active',t===tab)); if(tab==='receipt'){closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);window.scrollTo({top:0,behavior:'smooth'});} if(tab==='patients')openPatientsModal(); if(tab==='history')openHistoryModal(); if(tab==='settings')toggleDrawer(true); }
-function activateAppTabVisual(tab){ ['receipt','patients','history','settings'].forEach(t=>document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active',t===tab)); }
-function pushPanelState(name){ if(history.state?.alssaedyPanel===name)return; history.pushState({alssaedyPanel:name},'', '#'+name); }
-function closePanelState(name){ if(history.state?.alssaedyPanel===name){history.back();return true;} return false; }
-window.addEventListener('popstate',(e)=>{ const panel=e.state?.alssaedyPanel||''; if(panel==='patients'){document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');} else if(panel==='patient-detail'){document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');} else if(panel==='history'){document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');} else if(panel==='settings'){document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');} else {document.getElementById('patientsModal')?.classList.remove('open');document.getElementById('historyModal')?.classList.remove('open');document.getElementById('settingsPanel')?.classList.remove('open');document.getElementById('shareModal')?.classList.remove('open');showPatientListView();activateAppTabVisual('receipt');} });
+function activateAppTab(tab){
+  activeAppTab=tab;
+  if(tab==='receipt'){closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;}
+  if(tab==='patients'){openPatientsModal();return;}
+  if(tab==='history'){openHistoryModal();return;}
+  if(tab==='settings'){toggleDrawer(true);return;}
+}
+function activateAppTabVisual(tab){
+  ['receipt','patients','history','settings'].forEach(t=>document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active',t===tab));
+}
+function pushPanelState(name){if(history.state?.alssaedyPanel===name)return;history.pushState({alssaedyPanel:name},'', '#'+name);}
+function closePanelState(name){if(history.state?.alssaedyPanel===name){history.back();return true;}return false;}
+function closeAllAppPanels(){
+  document.getElementById('patientsModal')?.classList.remove('open');
+  document.getElementById('historyModal')?.classList.remove('open');
+  document.getElementById('settingsPanel')?.classList.remove('open');
+  document.getElementById('shareModal')?.classList.remove('open');
+  document.getElementById('templateModal')?.classList.remove('open');
+  document.getElementById('previewModal')?.classList.remove('open');
+  showPatientListView();activateAppTabVisual('receipt');
+}
+window.addEventListener('popstate',(e)=>{
+  const panel=e.state?.alssaedyPanel||'';
+  if(panel==='patients'){document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');return;}
+  if(panel==='patient-detail'){document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');return;}
+  if(panel==='history'){document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');return;}
+  if(panel==='settings'){document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');return;}
+  closeAllAppPanels();
+});
 function openShareModal(){document.getElementById('shareModal').classList.add('open');}
 function closeShareModal(){document.getElementById('shareModal').classList.remove('open');}
 function openHistoryModal(){renderHistory();document.getElementById('historyModal').classList.add('open');pushPanelState('history');activateAppTabVisual('history');}
