@@ -410,3 +410,32 @@ html,body{overscroll-behavior-y:none}
 @media(min-width:701px){
  .patients-modal-box{max-height:88vh;overflow-y:auto}
 }
+
+
+/* Night mode — app chrome only; receipt paper remains print-accurate. */
+html[data-night="on"] body{background:#020617}
+html[data-night="on"] .site-bg-overlay{background:radial-gradient(circle at 50% 8%,#0b1220 0%,#020617 100%)}
+html[data-night="on"] .settings-drawer{background:#0f172a;color:#e2e8f0}
+html[data-night="on"] .drawer-body{background:#0f172a}
+html[data-night="on"] .setting-card{background:#111c33;border-color:#1e293b}
+html[data-night="on"] .setting-card h4{color:#93c5fd}
+html[data-night="on"] .setting-label,html[data-night="on"] .setting-help{color:#94a3b8}
+html[data-night="on"] .setting-select,html[data-night="on"] .tool-btn{background:#1e293b;color:#e2e8f0;border-color:#334155}
+html[data-night="on"] .tool-btn.active{background:var(--primary);color:#fff}
+html[data-night="on"] .modal-box{background:#0f172a;color:#e2e8f0}
+html[data-night="on"] .modal-box h3{color:#93c5fd}
+html[data-night="on"] .history-entry,html[data-night="on"] .patient-card,html[data-night="on"] .stat-cell{background:#111c33;border-color:#1e293b}
+html[data-night="on"] .site-navbar{background:rgba(2,6,23,.96)}
+html[data-night="on"] .page-canvas-wrapper{background:transparent}
+
+/* Sync UI — presentation only. Sync behavior remains in js/sync.js. */
+.sync-badge{font-size:8px;background:#e2e8f0;color:#475569;border-radius:999px;padding:2px 8px;margin-inline-start:6px;vertical-align:middle}
+.sync-auto-row{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;color:#475569;margin:8px 0 2px}
+.sync-auto-row input{width:16px;height:16px}
+.sync-status{margin-top:8px;font-size:9.5px;line-height:1.55;border-radius:7px;padding:7px 9px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569}
+.sync-status.sync-ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.sync-status.sync-warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.sync-status.sync-error{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
+.sync-status.sync-busy{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+html[data-night="on"] .sync-badge{background:#1e293b;color:#cbd5e1}
+html[data-night="on"] .sync-status{background:#111c33;border-color:#1e293b;color:#cbd5e1}
