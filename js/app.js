@@ -1,3 +1,22 @@
+
+const CURRENCY_PROFILES={
+ YER:{code:'YER',nameAr:'ريال يمني',symbol:'ر.ي'},
+ SAR:{code:'SAR',nameAr:'ريال سعودي',symbol:'ر.س'},
+ USD:{code:'USD',nameAr:'دولار أمريكي',symbol:'$'}
+};
+function getCurrencyInfo(){return CURRENCY_PROFILES[localStorage.getItem('alssaedy_currency')||'YER']||CURRENCY_PROFILES.YER;}
+function setCurrency(code){
+ const info=CURRENCY_PROFILES[code]||CURRENCY_PROFILES.YER;
+ localStorage.setItem('alssaedy_currency',info.code);
+ const select=document.getElementById('currencySelect');if(select)select.value=info.code;
+ ['paidCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.nameAr;});
+ ['totalCurrencyLabel','paidTableCurrencyLabel','balanceCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.symbol;});
+ updateCurrencyInText(info);
+}
+function updateCurrencyInText(info){
+ const labels=document.querySelectorAll('.currency-label');labels.forEach(el=>{el.textContent=info.symbol;});
+ const paid=document.getElementById('paidCurrencyLabel');if(paid)paid.textContent=info.nameAr;
+}
 const DESIGN_CONTRACT_VERSION='1.0';
 const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA) ? window.OFFICIAL_LOGO_DATA : document.getElementById('clinicLogoImg').src;
 
@@ -256,8 +275,9 @@ function openHistoryModal() { renderHistory(); document.getElementById('historyM
 function closeHistoryModal() { document.getElementById('historyModal').classList.remove('open'); }
 
 window.addEventListener('DOMContentLoaded', () => {
-    const customLogo = localStorage.getItem('alssaedy_custom_logo');
-    applyLogo(customLogo || OFFICIAL_LOGO_URL);
+    const customLogo=localStorage.getItem('alssaedy_custom_logo');
+    applyLogo(customLogo||OFFICIAL_LOGO_URL);
+    setCurrency(localStorage.getItem('alssaedy_currency')||'YER');
 
     const savedTexts = localStorage.getItem('alssaedy_texts');
     if (savedTexts) {
@@ -293,6 +313,6 @@ window.addEventListener('DOMContentLoaded', () => {
     setMode('digital');
     const dateInput = document.getElementById('digDate');
     if (dateInput) dateInput.addEventListener('input', syncReceiptDateFromInput);
-    updateHistoryCount();
+    hydrateDurableReceipts().then(()=>updateHistoryCount()).catch(()=>updateHistoryCount());
     updateActionAvailability();
 });
