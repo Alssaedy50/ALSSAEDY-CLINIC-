@@ -34,8 +34,31 @@ function withCaptureState(callback) {
 }
 
 function materializeReceiptDate(sourceReceipt, clonedReceipt) {
+    // Blank/manual paper templates are deliberately date-free. The pre-printed
+    // year marker is rendered by #paperDateYear; never copy the digital date into it.
+    const isBlankTemplate =
+        document.body.classList.contains('blank-template-export') ||
+        document.body.getAttribute('data-mode') === 'manual';
     const source = sourceReceipt.querySelector('#digDate');
     const cloned = clonedReceipt.querySelector('#digDate');
+    const clonedPaperYear = clonedReceipt.querySelector('#paperDateYear');
+
+    if (isBlankTemplate) {
+        if (cloned) {
+            cloned.value = '';
+            cloned.removeAttribute('value');
+        }
+        if (clonedPaperYear) {
+            clonedPaperYear.innerHTML =
+                '<span class="paper-year-digits" dir="ltr">202</span>' +
+                '<span class="paper-year-era" dir="rtl">م</span>';
+            clonedPaperYear.setAttribute('dir', 'rtl');
+            clonedPaperYear.style.direction = 'rtl';
+            clonedPaperYear.style.unicodeBidi = 'isolate';
+        }
+        return;
+    }
+
     if (!source || !cloned) return;
     const value = String(source.value || '').trim();
     cloned.value = value;
