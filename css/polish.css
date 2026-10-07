@@ -38,3 +38,5 @@
 .patient-list-actions button:focus-visible{outline:2px solid #14b8a6;outline-offset:2px}
 #receiptCurrencyBadge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 6px;border-radius:999px;background:#e0f2fe;color:#073b63;border:1px solid #bae6fd;font-size:8px;font-weight:900;line-height:1;direction:ltr;unicode-bidi:isolate}
 @media(max-width:600px){.patient-field>span{font-size:9px}.patient-list-actions{width:100%}.patient-list-actions button{width:100%;min-height:34px}}
+
+.sync-badge{font-size:8px;background:#e2e8f0;color:#475569;border-radius:999px;padding:2px 8px;margin-inline-start:6px;vertical-align:middle}
