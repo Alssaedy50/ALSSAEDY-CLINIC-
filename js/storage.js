@@ -88,6 +88,7 @@ function saveReceiptLocally(){
   updateHistoryCount();
   localStorage.removeItem('alssaedy_draft');
   if(typeof toast==='function')toast('تم حفظ السند بنجاح في السجل الدائم.');else alert('تم حفظ السند بنجاح في السجل الدائم.');
+  if(typeof autoSyncIfEnabled==='function')autoSyncIfEnabled();
 }
 
 function getAllReceiptHistory() {

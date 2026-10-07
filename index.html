@@ -383,7 +383,7 @@
                     </div>
                 </div>
 
-                <div class="setting-card"><h4>💱 العملة</h4><p class="setting-help">تحفظ العملة داخل كل سند، لذلك لا تتغير السندات القديمة عند تغيير العملة الافتراضية.</p><select id="currencySelect" class="setting-select" onchange="setCurrency(this.value)"><option value="YER">🇾🇪 ريال يمني — YER</option><option value="SAR">🇸🇦 ريال سعودي — SAR</option><option value="USD">🇺🇸 دولار أمريكي — USD</option></select></div><div class="setting-card data-management-card">
+                <div class="setting-card"><h4>💱 العملة</h4><p class="setting-help">تحفظ العملة داخل كل سند، لذلك لا تتغير السندات القديمة عند تغيير العملة الافتراضية.</p><select id="currencySelect" class="setting-select" onchange="setCurrency(this.value)"><option value="YER">🇾🇪 ريال يمني — YER</option><option value="SAR">🇸🇦 ريال سعودي — SAR</option><option value="USD">🇺🇸 دولار أمريكي — USD</option></select></div>                <div class="setting-card data-management-card">
                     <h4>🗂️ سجل المعاملات والنسخ الاحتياطي</h4>
                     <p class="setting-help">السجل محفوظ داخل التطبيق. صدّر جميع السندات في ملف واحد للاحتفاظ بنسخة على الهاتف أو فتحها في Excel.</p>
                     <div class="grid-btns two">
@@ -402,6 +402,22 @@
                     <input type="file" id="dataImporter" accept=".json,.csv,application/json,text/csv" style="display:none" onchange="importDataFile(event)">
                     <button type="button" class="tool-btn wide mt-2" onclick="openHistoryModal();toggleDrawer(false)">📂 فتح سجل السندات</button>
                 </div>
+
+                <div class="setting-card sync-card">
+                    <h4>☁️ المزامنة السحابية <span class="sync-badge" id="syncBadge">غير مفعّل</span></h4>
+                    <p class="setting-help">شارك بيانات المرضى والسندات بين أجهزة العيادة عبر «مفتاح العيادة». استخدم نفس المفتاح في كل جهاز. تُدمج البيانات بذكاء دون تكرار.</p>
+                    <label class="setting-label" for="syncKeyInput">مفتاح العيادة</label>
+                    <input type="password" id="syncKeyInput" class="live-input" placeholder="مثال: alssaedy-clinic-2026" onchange="saveSyncKey(this.value)">
+                    <label class="setting-label" for="syncUrlInput">عنوان خادم المزامنة (اختياري)</label>
+                    <input type="text" id="syncUrlInput" class="live-input" dir="ltr" placeholder="افتراضياً: نفس الموقع /api/clinic-sync" onchange="saveSyncUrl(this.value)">
+                    <label class="sync-auto-row"><input type="checkbox" id="syncAutoToggle" onchange="toggleSyncAuto(this.checked)"> رفع تلقائي بعد الحفظ</label>
+                    <div class="grid-btns two mt-2">
+                        <button type="button" class="tool-btn" onclick="syncBackupNow()">☁️ نسخ احتياطي الآن</button>
+                        <button type="button" class="tool-btn" onclick="syncRestoreNow()">⬇️ استعادة من السحابة</button>
+                    </div>
+                    <p class="sync-status sync-idle" id="syncStatus">أدخل مفتاح العيادة لتشغيل المزامنة.</p>
+                </div>
+
 
                 <div class="setting-card">
                     <h4>✏️ تحرير النصوص مباشرة</h4>
@@ -539,6 +555,7 @@
     <script src="js/templates.js?v=1.1.0"></script>
     <script src="js/app.js?v=1.1.0"></script>
     <script src="js/ui.js?v=1.1.0"></script>
+    <script src="js/sync.js?v=1.1.0"></script>
     <script src="android-app-bridge.js?v=1.1.0"></script>
 </body>
 </html>

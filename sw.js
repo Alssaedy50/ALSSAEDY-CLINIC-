@@ -17,6 +17,7 @@ const APP_SHELL = [
   './js/templates.js',
   './js/app.js',
   './js/ui.js',
+  './js/sync.js',
   './android-app-bridge.js',
   './vendor/html2canvas/html2canvas.min.js',
   './vendor/jspdf/jspdf.umd.min.js',
@@ -44,6 +45,8 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  // Never cache API traffic: the sync/backup endpoint must always hit the network.
+  if (url.pathname.startsWith('/api/')) return;
 
   event.respondWith(
     caches.match(req).then((cached) => {
