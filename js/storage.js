@@ -211,6 +211,8 @@ function loadReceipt(id) {
     document.getElementById('digTooth').value = item.tooth || '';
     document.getElementById('digTafqeet').value = item.tafqeet || '';
     document.getElementById('digRef').value = item.ref || '';
+    if (typeof setCurrency === 'function') setCurrency(item.currency || 'YER');
+    window.currentPatientId = item.patientId || '';
     setPayMethod(item.payMethod || 'نقداً');
     document.querySelectorAll('.custom-check-item').forEach((el, index) => {
         const label = el.innerText.replace('✓', '').trim();
@@ -224,6 +226,7 @@ function loadReceipt(id) {
 function deleteReceipt(id) {
     const history = safeHistory().filter(r => Number(r.id) !== Number(id));
     localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
+    clinicDBDelete('receipts', id).catch(()=>{});
     renderHistory();
     updateHistoryCount();
 }
@@ -231,6 +234,7 @@ function deleteReceipt(id) {
 function clearAllHistory() {
     if (confirm('هل أنت متأكد من حذف كامل سجل السندات؟')) {
         localStorage.removeItem('alssaedy_receipts_history');
+        clinicDBClear('receipts').catch(()=>{});
         renderHistory();
         updateHistoryCount();
     }
