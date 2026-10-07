@@ -39,11 +39,15 @@ const dateCheck = await page.evaluate(() => ({
   digitalDateInputs: document.querySelectorAll('#digDate').length,
   visibleDigitalDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none').length,
   visibleManualDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length,
+  printDateValue: document.getElementById('printDateValue')?.textContent || '',
   paperYear: document.getElementById('paperDateYear')?.textContent || '',
+  paperYearDigits: document.getElementById('paperYearDigits')?.textContent || '',
+  paperYearEra: document.getElementById('paperYearEra')?.textContent || '',
   paperYearDirection: getComputedStyle(document.getElementById('paperDateYear') || document.body).direction,
+  paperYearDisplay: getComputedStyle(document.getElementById('paperDateYear') || document.body).display,
   pickerHandler: typeof openDatePicker === 'function'
 }));
-if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler) {
+if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler || dateCheck.printDateValue !== '07/10/2026 م' || dateCheck.paperYearDigits !== '2026' || dateCheck.paperYearEra !== 'م' || dateCheck.paperYearDisplay !== 'inline-flex') {
   throw new Error('Digital receipt date visibility failed: ' + JSON.stringify(dateCheck));
 }
 
@@ -62,12 +66,43 @@ const blankCheck = await page.evaluate(() => {
   finishBlankTemplate(snapshot);
   return result;
 });
-if (blankCheck.date.year !== '202م' || blankCheck.date.year.includes('202م') === false ||
+if (blankCheck.date.year !== new Date().getFullYear() + 'م' ||
+    blankCheck.date.year.includes('202م') ||
     Object.values(blankCheck.values).some(Boolean) ||
-    blankCheck.date.day !== '' || blankCheck.date.month !== '' || blankCheck.date.year !== '202م' ||
+    blankCheck.date.day !== '' || blankCheck.date.month !== '' ||
     blankCheck.visibleDigital !== 0 || blankCheck.visibleManual !== 1) {
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
+
+const dateFormats = await page.evaluate(() => {
+  const input = document.getElementById('paperTemplateDate');
+  if (!input) throw new Error('Missing #paperTemplateDate');
+  const cases = [
+    ['07/10/2026', ['07','10','2026']],
+    ['7-10-2026', ['07','10','2026']],
+    ['2026/10/07', ['07','10','2026']],
+    ['٢٠٢٦/١٠/٠٧', ['07','10','2026']],
+    ['2026.10.07', ['07','10','2026']],
+    ['7 10 2026', ['07','10','2026']]
+  ];
+  return cases.map(([value, expected]) => {
+    setPaperTemplateDate(value);
+    return {
+      value,
+      day: document.getElementById('paperDateDay')?.textContent || '',
+      month: document.getElementById('paperDateMonth')?.textContent || '',
+      year: document.getElementById('paperYearDigits')?.textContent || '',
+      era: document.getElementById('paperYearEra')?.textContent || ''
+    };
+  });
+});
+for (const item of dateFormats) {
+  if (item.day !== item.value.includes('2026') ? item.day : item.day) {}
+  if (item.day !== '07' || item.month !== '10' || item.year !== '2026' || item.era !== 'م') {
+    throw new Error('Paper date format parsing failed: ' + JSON.stringify(item));
+  }
+}
+await page.evaluate(() => clearPaperTemplateDate());
 
 await page.evaluate(() => { window.__templateSnapshot=prepareBlankTemplate(); });
 await page.emulateMedia({ media: 'print' });
