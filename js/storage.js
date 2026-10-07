@@ -56,6 +56,7 @@ function collectReceiptData() {
         paid:String(paid),total:String(total),
         balance:String(Math.max(0,total-paid)),change:String(Math.max(0,paid-total)),
         tooth:document.getElementById('digTooth').value.trim(),
+        customService:document.getElementById('digCustomService')?.value.trim()||'',
         tafqeet:document.getElementById('digTafqeet').value.trim(),
         payMethod:document.getElementById('selectedPayMethod').value||'نقداً',
         ref:document.getElementById('digRef').value.trim(),
@@ -64,7 +65,7 @@ function collectReceiptData() {
     };
 }
 function receiptFingerprint(item){
-    return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.tooth,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),item.currency]);
+    return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.tooth,item.customService,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),item.currency]);
 }
 
 function saveReceiptLocally(){
@@ -209,6 +210,7 @@ function loadReceipt(id) {
     document.getElementById('digPaid').value = item.paid || '';
     document.getElementById('digTotal').value = item.total || '';
     document.getElementById('digTooth').value = item.tooth || '';
+    if(document.getElementById('digCustomService'))document.getElementById('digCustomService').value=item.customService||'';
     document.getElementById('digTafqeet').value = item.tafqeet || '';
     document.getElementById('digRef').value = item.ref || '';
     if (typeof setCurrency === 'function') setCurrency(item.currency || 'YER');
