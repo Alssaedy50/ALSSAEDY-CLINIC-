@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/receipt.css?v=20261007_14">
     <link rel="stylesheet" href="css/print.css?v=20261007_14">
 </head>
-<body data-mode="manual">
+<body data-mode="digital">
 
     <div class="site-bg-overlay"></div>
 
@@ -25,8 +25,8 @@
             </div>
             <div class="nav-controls">
                 <div class="mode-pill">
-                    <button type="button" class="btn-pill active" id="btnModeManual" onclick="setMode('manual')">📋 دفتر ورقي</button>
-                    <button type="button" class="btn-pill" id="btnModeDigital" onclick="setMode('digital')">💻 سند رقمي</button>
+                    <button type="button" class="btn-pill active" id="btnModeDigital" onclick="setMode('digital')">💻 سند رقمي</button>
+                    <button type="button" class="btn-pill" id="btnModeTemplates" onclick="openTemplateModal()">🖨️ نماذج الطباعة</button>
                 </div>
                 <button type="button" class="btn-tool" onclick="toggleDrawer(true)">⚙ الخيارات</button>
                 <button type="button" class="btn-tool" onclick="openHistoryModal()">📂 السجل (<span id="historyCount">0</span>)</button>
@@ -339,7 +339,7 @@
                         <output id="titleFontSizeValue">100%</output>
                         <button type="button" class="font-step" onclick="adjustReceiptTextSize('title',1)">+</button>
                     </div>
-                    <div class="date-setting-note">📅 تاريخ الورق قابل للتعديل من زر «تفعيل التعديل المباشر» أعلاه، مع بقاء التنسيق <bdi dir="ltr">__/__/202_م</bdi>.</div>
+                    <div class="date-setting-note">📅 السند الرقمي يستخدم تاريخ السند فقط. نماذج الطباعة تُنشأ منفصلة وتبقى حقولها فارغة للكتابة اليدوية.</div>
                     <label class="setting-label" for="accentColorInput">اللون الرئيسي</label>
                     <div class="color-control-row">
                         <input type="color" id="accentColorInput" value="#073b63" onchange="setReceiptColor(this.value)">
@@ -373,6 +373,37 @@
             </div>
         </div>
     </aside>
+
+    
+    <div class="no-print modal-screen" id="templateModal">
+        <div class="modal-box template-modal-box">
+            <button class="modal-close" type="button" onclick="closeTemplateModal()">×</button>
+            <h3>🖨️ نماذج السندات الجاهزة للطباعة</h3>
+            <p>نماذج فارغة تماماً للكتابة اليدوية — لا يتم إدخال رقم السند أو التاريخ أو بيانات المريض أو المبالغ تلقائياً.</p>
+            <div class="template-size-grid">
+                <button type="button" class="template-size-card active" id="templateSizeA5" onclick="selectTemplateSize('a5')">
+                    <strong>A5</strong><span>دفتر العيادة</span>
+                </button>
+                <button type="button" class="template-size-card" id="templateSizeA4" onclick="selectTemplateSize('a4')">
+                    <strong>A4</strong><span>طباعة مكتبية</span>
+                </button>
+                <button type="button" class="template-size-card" id="templateSizeThermal" onclick="selectTemplateSize('thermal')">
+                    <strong>80mm</strong><span>طابعة حرارية</span>
+                </button>
+            </div>
+            <div class="template-actions">
+                <button type="button" class="opt-card template-action" onclick="downloadBlankTemplatePDF()">
+                    <span class="opt-icon">📄</span>
+                    <div><strong>طباعة / حفظ PDF</strong><small>يفتح إعداد الطباعة بالمقاس المختار، ثم اختر حفظ كـ PDF.</small></div>
+                </button>
+                <button type="button" class="opt-card template-action" onclick="downloadBlankTemplateImage()">
+                    <span class="opt-icon">🖼️</span>
+                    <div><strong>تنزيل صورة فارغة</strong><small>صورة PNG عالية الدقة جاهزة للطباعة أو الإرسال للمطبعة.</small></div>
+                </button>
+            </div>
+            <div class="template-note">🔒 لا يتم حفظ النموذج الفارغ في سجل المرضى، ولا يغيّر بيانات السند الرقمي الحالي.</div>
+        </div>
+    </div>
 
     <div class="no-print modal-screen" id="shareModal">
         <div class="modal-box">
@@ -426,6 +457,7 @@
     <script src="js/tafqeet.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/export.js"></script>
+    <script src="js/templates.js"></script>
     <script src="js/app.js"></script>
     <script src="android-app-bridge.js"></script>
 </body>
