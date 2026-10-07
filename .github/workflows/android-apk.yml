@@ -34,29 +34,43 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Validate production signing configuration
+        env:
+          KEYSTORE_B64: ${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.ALSSAEDY_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ALSSAEDY_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ALSSAEDY_RELEASE_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_B64" || { echo "::error::Missing ALSSAEDY_RELEASE_KEYSTORE_B64"; exit 1; }
+          test -n "$STORE_PASSWORD" || { echo "::error::Missing ALSSAEDY_RELEASE_STORE_PASSWORD"; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "::error::Missing ALSSAEDY_RELEASE_KEY_ALIAS"; exit 1; }
+          test -n "$KEY_PASSWORD" || { echo "::error::Missing ALSSAEDY_RELEASE_KEY_PASSWORD"; exit 1; }
+
+      - name: Prepare production signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 }}
+        run: |
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > app/alssaedy-release.keystore
+          test -s app/alssaedy-release.keystore
+
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
 
-      - name: Prepare production signing
-        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 != '' && secrets.ALSSAEDY_RELEASE_STORE_PASSWORD != '' && secrets.ALSSAEDY_RELEASE_KEY_ALIAS != '' && secrets.ALSSAEDY_RELEASE_KEY_PASSWORD != '' }}
+      - name: Build signed production APK
         env:
-          KEYSTORE_B64: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 }}
-        run: |
-          echo "$KEYSTORE_B64" | base64 --decode > app/alssaedy-release.keystore
-          test -s app/alssaedy-release.keystore
-
-      - name: Build release APK
-        env:
-          ALSSAEDY_RELEASE_KEYSTORE: \${{ github.workspace }}/android-app/app/alssaedy-release.keystore
-          ALSSAEDY_RELEASE_STORE_PASSWORD: \${{ secrets.ALSSAEDY_RELEASE_STORE_PASSWORD }}
-          ALSSAEDY_RELEASE_KEY_ALIAS: \${{ secrets.ALSSAEDY_RELEASE_KEY_ALIAS }}
-          ALSSAEDY_RELEASE_KEY_PASSWORD: \${{ secrets.ALSSAEDY_RELEASE_KEY_PASSWORD }}
+          ALSSAEDY_RELEASE_KEYSTORE: ${{ github.workspace }}/android-app/app/alssaedy-release.keystore
+          ALSSAEDY_RELEASE_STORE_PASSWORD: ${{ secrets.ALSSAEDY_RELEASE_STORE_PASSWORD }}
+          ALSSAEDY_RELEASE_KEY_ALIAS: ${{ secrets.ALSSAEDY_RELEASE_KEY_ALIAS }}
+          ALSSAEDY_RELEASE_KEY_PASSWORD: ${{ secrets.ALSSAEDY_RELEASE_KEY_PASSWORD }}
         run: gradle assembleRelease --stacktrace
 
-      - name: Verify release signing
-        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 != '' && secrets.ALSSAEDY_RELEASE_STORE_PASSWORD != '' && secrets.ALSSAEDY_RELEASE_KEY_ALIAS != '' && secrets.ALSSAEDY_RELEASE_KEY_PASSWORD != '' }}
+      - name: Verify production APK signature
         run: |
-          \${ANDROID_HOME}/build-tools/35.0.0/apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
+          ${ANDROID_HOME}/build-tools/35.0.0/apksigner verify --verbose app/build/outputs/apk/release/app-release.apk
+
+      - name: Verify APK metadata
+        run: |
+          ${ANDROID_HOME}/build-tools/35.0.0/aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -E "package: name='com.alssaedy.clinic'|versionCode='6'|versionName='1.0.5'"
 
       - name: Remove temporary signing key
         if: always()
@@ -71,19 +85,9 @@ jobs:
           retention-days: 90
 
       - name: Upload signed production APK
-        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 != '' && secrets.ALSSAEDY_RELEASE_STORE_PASSWORD != '' && secrets.ALSSAEDY_RELEASE_KEY_ALIAS != '' && secrets.ALSSAEDY_RELEASE_KEY_PASSWORD != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: ALSSAEDY-CLINIC-v1.0.5-release-SIGNED
           path: android-app/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 90
-
-      - name: Upload unsigned release output (signing setup required)
-        if: \${{ secrets.ALSSAEDY_RELEASE_KEYSTORE_B64 == '' || secrets.ALSSAEDY_RELEASE_STORE_PASSWORD == '' || secrets.ALSSAEDY_RELEASE_KEY_ALIAS == '' || secrets.ALSSAEDY_RELEASE_KEY_PASSWORD == '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ALSSAEDY-CLINIC-v1.0.5-release-SIGNING-NOT-CONFIGURED
-          path: android-app/app/build/outputs/apk/release/app-release-unsigned.apk
-          if-no-files-found: error
-          retention-days: 30
