@@ -10,6 +10,12 @@ import android.content.ClipboardManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
+import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.print.PrintAttributes;
@@ -35,6 +41,8 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         setContentView(webView);
+        createReminderChannel();
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 2001);
 
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
@@ -80,6 +88,28 @@ public class MainActivity extends Activity {
         }
     }
 
+    public static class ReminderReceiver extends android.content.BroadcastReceiver {
+        @Override public void onReceive(Context context, Intent intent) {
+            String title=intent.getStringExtra("title");
+            String text=intent.getStringExtra("text");
+            NotificationManager nm=(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if(Build.VERSION.SDK_INT>=26){
+                NotificationChannel ch=new NotificationChannel("clinic_reminders","تنبيهات عيادة السعيدي",NotificationManager.IMPORTANCE_HIGH);
+                nm.createNotificationChannel(ch);
+            }
+            android.app.Notification.Builder b=Build.VERSION.SDK_INT>=26?new android.app.Notification.Builder(context,"clinic_reminders"):new android.app.Notification.Builder(context);
+            b.setSmallIcon(com.alssaedy.clinic.R.drawable.clinic_logo).setContentTitle(title).setContentText(text).setAutoCancel(true).setPriority(android.app.Notification.PRIORITY_HIGH);
+            nm.notify((int)System.currentTimeMillis(),b.build());
+        }
+    }
+
+    private void createReminderChannel(){
+        if(Build.VERSION.SDK_INT>=26){
+            NotificationManager nm=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+            nm.createNotificationChannel(new NotificationChannel("clinic_reminders","تنبيهات عيادة السعيدي",NotificationManager.IMPORTANCE_HIGH));
+        }
+    }
+
     public class AndroidBridge {
         private final Context context;
 
@@ -122,6 +152,19 @@ public class MainActivity extends Activity {
                 );
             }
             return PrintAttributes.MediaSize.ISO_A5;
+        }
+
+        @JavascriptInterface
+        public void scheduleReminder(long triggerAtMillis, String title, String text) {
+            try {
+                AlarmManager alarm=(AlarmManager)getSystemService(ALARM_SERVICE);
+                Intent intent=new Intent(MainActivity.this, ReminderReceiver.class);
+                intent.putExtra("title", title==null?"موعد عودة":title);
+                intent.putExtra("text", text==null?"لديك موعد متابعة في العيادة.":text);
+                int request=(int)(triggerAtMillis ^ (triggerAtMillis >>> 32));
+                PendingIntent pi=PendingIntent.getBroadcast(MainActivity.this,request,intent,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+                if(alarm!=null) alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,triggerAtMillis,pi);
+            } catch(Exception e) {}
         }
 
         @JavascriptInterface
