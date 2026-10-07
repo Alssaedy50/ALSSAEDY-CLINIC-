@@ -13,6 +13,7 @@ const APP_SHELL = [
   './css/templates.css' + V,
   './css/polish.css' + V,
   './js/tafqeet.js' + V,
+  './js/repository.js' + V,
   './js/storage.js' + V,
   './js/export.js' + V,
   './js/templates.js' + V,

@@ -257,7 +257,7 @@ function syncReceiptDateFromInput() {
 }
 
 function generateNextReceiptNo() {
-    const history = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
+    const history = typeof safeHistory === 'function' ? safeHistory() : [];
     const storedNext = parseInt(localStorage.getItem('alssaedy_next_receipt_number') || '1', 10);
     const maxExisting = history.reduce((max, item) => {
         const match = String(item.recNo || '').match(/(\d+)$/);

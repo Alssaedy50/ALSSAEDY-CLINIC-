@@ -1,35 +1,5 @@
-/* Durable local store: IndexedDB with localStorage compatibility mirror. */
-const CLINIC_DB_NAME='ALSSAEDY_CLINIC_DB';
-const CLINIC_DB_VERSION=2;
-function clinicDBOpen(){
-  if(window.__clinicDBPromise)return window.__clinicDBPromise;
-  window.__clinicDBPromise=new Promise((resolve,reject)=>{
-    const req=indexedDB.open(CLINIC_DB_NAME,CLINIC_DB_VERSION);
-    req.onupgradeneeded=()=>{const db=req.result;['receipts','patients','settings'].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s,{keyPath:'id'});});};
-    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
-  }); return window.__clinicDBPromise;
-}
-async function clinicDBAll(store){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const q=tx.objectStore(store).getAll();q.onsuccess=()=>resolve(q.result||[]);q.onerror=()=>reject(q.error);});}
-async function clinicDBPut(store,item){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(item);tx.oncomplete=()=>resolve(item);tx.onerror=()=>reject(tx.error);});}
-async function clinicDBDelete(store,id){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
-async function clinicDBClear(store){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
-async function hydrateDurableReceipts(){
-  try{
-    const durable=await clinicDBAll('receipts');
-    const legacy=safeHistory();
-    if(!durable.length && legacy.length){for(const item of legacy)await clinicDBPut('receipts',item);}
-    const merged=await clinicDBAll('receipts');
-    if(merged.length)localStorage.setItem('alssaedy_receipts_history',JSON.stringify(merged));
-  }catch(e){}
-}
-function safeHistory() {
-    try {
-        const parsed = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-        return [];
-    }
-}
+/* Receipt, patient and export domain logic. Persistence is owned by repository.js. */
+function safeHistory(){ return clinicRepositoryReceipts(); }
 
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -68,27 +38,22 @@ function receiptFingerprint(item){
     return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.tooth,item.customService,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),item.currency]);
 }
 
-function saveReceiptLocally(){
+async function saveReceiptLocally(){
   if(document.body.getAttribute('data-mode')!=='digital'){alert('الحفظ متاح للسند الرقمي فقط.');return;}
   if(!document.getElementById('digReceiptNo').value)generateNextReceiptNo();
   const data=collectReceiptData();
-  if(Number(data.paid)<0||Number(data.total)<0){alert('لا يمكن إدخال مبالغ سالبة.');return;}
   const history=safeHistory();
   const fp=receiptFingerprint(data);
-  if(history.some(item=>receiptFingerprint(item)===fp)){
-    if(typeof toast==='function')toast('هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.','error');else alert('⚠️ هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.');
-    return;
-  }
-  const numberDuplicate=history.some(item=>String(item.recNo)===String(data.recNo));
-  if(numberDuplicate){if(typeof toast==='function')toast('رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.','error');else alert('⚠️ رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.');return;}
-  history.unshift(data);
-  localStorage.setItem('alssaedy_receipts_history',JSON.stringify(history));
-  clinicDBPut('receipts',data).then(()=>clinicDBAll('receipts').then(all=>localStorage.setItem('alssaedy_receipts_history',JSON.stringify(all)))).catch(()=>{});
-  if(typeof upsertCurrentPatient==='function')upsertCurrentPatient(data);
-  updateHistoryCount();
-  localStorage.removeItem('alssaedy_draft');
-  if(typeof toast==='function')toast('تم حفظ السند بنجاح في السجل الدائم.');else alert('تم حفظ السند بنجاح في السجل الدائم.');
-  if(typeof autoSyncIfEnabled==='function')autoSyncIfEnabled();
+  if(history.some(item=>receiptFingerprint(item)===fp)){toast?.('هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.','error');return;}
+  if(history.some(item=>String(item.recNo)===String(data.recNo))){toast?.('رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.','error');return;}
+  try{
+    await clinicRepositoryPutReceipt(data);
+    if(typeof upsertCurrentPatient==='function') await upsertCurrentPatient(data);
+    updateHistoryCount();
+    localStorage.removeItem('alssaedy_draft');
+    toast?.('تم حفظ السند بنجاح في السجل الدائم.');
+    if(typeof autoSyncIfEnabled==='function')autoSyncIfEnabled();
+  }catch(e){ toast?.('تعذر حفظ السند: '+(e?.message||'خطأ غير معروف'),'error'); }
 }
 
 function getAllReceiptHistory() {
@@ -274,31 +239,22 @@ function loadReceipt(id) {
     closeHistoryModal();
 }
 
-function deleteReceipt(id) {
-    const history = safeHistory().filter(r => String(r.id) !== String(id));
-    localStorage.setItem('alssaedy_receipts_history', JSON.stringify(history));
-    clinicDBDelete('receipts', id).catch(()=>{});
-    renderHistory();
-    updateHistoryCount();
+async function deleteReceipt(id){
+  try{await clinicRepositoryDeleteReceipt(id);renderHistory();updateHistoryCount();}
+  catch(e){toast?.('تعذر حذف السند: '+(e?.message||'خطأ غير معروف'),'error');}
 }
 
-function clearAllHistory() {
-    if (confirm('هل أنت متأكد من حذف كامل سجل السندات؟')) {
-        localStorage.removeItem('alssaedy_receipts_history');
-        clinicDBClear('receipts').catch(()=>{});
-        renderHistory();
-        updateHistoryCount();
-    }
+async function clearAllHistory(){
+  if(!confirm('هل أنت متأكد من حذف كامل سجل السندات؟'))return;
+  try{await clinicRepositoryClearReceipts();renderHistory();updateHistoryCount();}
+  catch(e){toast?.('تعذر مسح السجل: '+(e?.message||'خطأ غير معروف'),'error');}
 }
 let currentPatientId='';
 
 function patientId(){
   return (window.currentPatientId||'').trim();
 }
-async function getPatients(){
-  try{return await clinicDBAll('patients');}
-  catch(e){return JSON.parse(localStorage.getItem('alssaedy_patients')||'[]');}
-}
+async function getPatients(){ return clinicRepositoryPatients(); }
 function patientFormValue(id){return document.getElementById(id)?.value?.trim()||'';}
 
 async function upsertCurrentPatient(receipt){
@@ -312,8 +268,7 @@ async function upsertCurrentPatient(receipt){
   p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
   if(!Array.isArray(p.visits))p.visits=[];
   if(!p.visits.some(v=>v.receiptId===receipt.id))p.visits.push({receiptId:receipt.id,date:receipt.date,total:receipt.total,paid:receipt.paid,currency:receipt.currency,services:receipt.services||[],tooth:receipt.tooth||''});
-  await clinicDBPut('patients',p);
-  localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
+  await clinicRepositoryPutPatient(p);
   currentPatientId=p.id; window.currentPatientId=p.id;
   return p;
 }
@@ -335,8 +290,7 @@ async function savePatientManual(){
   if(!p)p={id:(window.crypto?.randomUUID?window.crypto.randomUUID():'P-'+Date.now()),createdAt:new Date().toISOString(),visits:[]};
   p.name=name;p.gender=gender;p.age=age;p.phone=phone;p.nextVisit=nextVisit;
   p.problem=problem;p.medicalHistory=medicalHistory;p.notes=notes;p.updatedAt=new Date().toISOString();
-  await clinicDBPut('patients',p);
-  localStorage.setItem('alssaedy_patients',JSON.stringify(await clinicDBAll('patients')));
+  await clinicRepositoryPutPatient(p);
   currentPatientId=p.id;window.currentPatientId=p.id;
   renderPatients();renderPatientAccount(p);
   schedulePatientReminder(p);
@@ -478,8 +432,9 @@ async function importFullBackup(event){
     if(payload.settings?.size)localStorage.setItem('alssaedy_receipt_size',payload.settings.size);
     if(payload.settings?.theme)localStorage.setItem('alssaedy_theme',payload.settings.theme);
     if(payload.settings?.texts)localStorage.setItem('alssaedy_texts',payload.settings.texts);
-    localStorage.setItem('alssaedy_receipts_history',JSON.stringify(await clinicDBAll('receipts')));
+    
     if(typeof applyLogo==='function')applyLogo(localStorage.getItem('alssaedy_custom_logo')||OFFICIAL_LOGO_URL);
+    await clinicRepositoryHydrate();
     updateHistoryCount();renderHistory();
     alert('تمت استعادة البيانات بنجاح مع منع التكرارات.');
   }catch(e){alert('تعذر استيراد النسخة: '+e.message);}
@@ -511,9 +466,8 @@ async function importDataFile(event){
       if(!item.name)item.name='مريض بدون اسم';
       if(existing.some(x=>receiptFingerprint(x)===receiptFingerprint(item)))continue;
       if(existing.some(x=>String(x.recNo)===String(item.recNo)))continue;
-      await clinicDBPut('receipts',item);existing.push(item);added++;
+      await clinicRepositoryPutReceipt(item);existing.push(item);added++;
     }
-    localStorage.setItem('alssaedy_receipts_history',JSON.stringify(existing));
     updateHistoryCount();renderHistory();
     alert('تم استيراد '+added+' سند جديد مع منع التكرارات.');
   }catch(e){alert('تعذر استيراد الملف: '+e.message);}

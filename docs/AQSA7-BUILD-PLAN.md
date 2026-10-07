@@ -458,4 +458,17 @@ The current v1.2.1 implementation is functional enough to serve as a baseline, b
 ### Phase 0 — COMPLETE
 
 ### Phase 1 / Task 1.1 — Data repository architecture: IN PROGRESS
+
+Implementation branch: `refactor/phase1-repository`
+
+Current implementation scope:
+- Added `js/repository.js` as the single IndexedDB persistence boundary.
+- Upgraded DB schema version to 3 without changing existing store names.
+- Added safe migration that merges legacy receipt/patient localStorage mirrors into IndexedDB before removing those mirrors.
+- Added an in-memory repository projection used by synchronous history/UI reads; it is hydrated from IndexedDB and is not persisted independently.
+- Routed receipt save/delete/clear, patient writes, receipt-number generation, imports and sync-restore cache refresh through the repository.
+- Removed active receipt/patient localStorage mirror writes from the domain layer.
+- Added repository to HTML load order and service-worker app shell.
+
+Not yet complete in 1.1: centralized settings/logo storage. Those remain the next repository sub-step after this record migration is verified.
 Objective: establish one authoritative persistence boundary before removing mirrors or legacy storage paths.
