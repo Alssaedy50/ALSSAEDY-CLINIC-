@@ -353,9 +353,12 @@ function updateActionAvailability() {
 }
 
 let activeAppTab='receipt';
+let appRoute={screen:'receipt',patientId:''};
 function activateAppTab(tab){
-  activeAppTab=tab;
-  if(tab==='receipt'){closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;}
+  if(tab==='receipt'){
+    activeAppTab='receipt'; appRoute={screen:'receipt',patientId:''};
+    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
+  }
   if(tab==='patients'){openPatientsModal();return;}
   if(tab==='history'){openHistoryModal();return;}
   if(tab==='settings'){toggleDrawer(true);return;}
@@ -376,16 +379,16 @@ function closeAllAppPanels(){
 }
 window.addEventListener('popstate',(e)=>{
   const panel=e.state?.alssaedyPanel||'';
-  if(panel==='patients'){document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');return;}
-  if(panel==='patient-detail'){document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');return;}
+  if(panel==='patients'){appRoute={screen:'patients',patientId:''};document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');return;}
+  if(panel==='patient-detail'){appRoute={screen:'patient-detail',patientId:window.currentPatientId||''};document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');return;}
   if(panel==='history'){document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');return;}
   if(panel==='settings'){document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');return;}
   closeAllAppPanels();
 });
 function openShareModal(){document.getElementById('shareModal').classList.add('open');}
 function closeShareModal(){document.getElementById('shareModal').classList.remove('open');}
-function openHistoryModal(skipHistory=false){renderHistory();document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');if(!skipHistory)pushPanelState('history');}
-function closeHistoryModal(skipHistory=false){document.getElementById('historyModal')?.classList.remove('open');if(!skipHistory)closePanelState('history');}
+function openHistoryModal(skipHistory=false){renderHistory();document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');appRoute={screen:'history',patientId:''};if(!skipHistory)pushPanelState('history');}
+function closeHistoryModal(skipHistory=false){document.getElementById('historyModal')?.classList.remove('open');if(!skipHistory)closePanelState('history');if(appRoute.screen==='history')appRoute={screen:'receipt',patientId:''};}
 function showPatientListView(){document.querySelector('.patient-form')?.classList.remove('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.remove('patient-detail-hidden');document.getElementById('patientsList')?.classList.remove('patient-detail-hidden');document.getElementById('patientAccountPanel')?.setAttribute('hidden','');}
 function showPatientDetailView(){document.querySelector('.patient-form')?.classList.add('patient-detail-hidden');document.querySelector('.patients-list-title')?.classList.add('patient-detail-hidden');document.getElementById('patientsList')?.classList.add('patient-detail-hidden');document.getElementById('patientAccountPanel')?.removeAttribute('hidden');}
 
