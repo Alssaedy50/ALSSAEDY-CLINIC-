@@ -402,12 +402,18 @@ function closePatientsModal(skipHistory=false){
 }
 async function buildFullBackup(){
   const receipts=await clinicDBAll('receipts'),patients=await clinicDBAll('patients');
-  return {schema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:2,exportedAt:new Date().toISOString(),receipts,patients,settings:{
-    size:localStorage.getItem('alssaedy_receipt_size')||'a5',
-    theme:localStorage.getItem('alssaedy_theme')||'classic',
-    customLogo:await loadLogoDurably(),
-    texts:localStorage.getItem('alssaedy_texts')||'',
-    currency:localStorage.getItem('alssaedy_currency')||'YER'
+  const clinicSettings=clinicRepositoryGetSettingsSync();
+  return {schema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:3,exportedAt:new Date().toISOString(),receipts,patients,settings:{
+    clinic:{
+      currency:clinicSettings.currency||'YER',
+      size:clinicSettings.receiptSize||'a5',
+      texts:clinicSettings.receiptTexts||'',
+      customLogo:clinicSettings.customLogo||''
+    },
+    ui:{
+      theme:localStorage.getItem('alssaedy_theme')||'classic',
+      watermark:localStorage.getItem('alssaedy_watermark')||'on'
+    }
   }};
 }
 async function exportFullBackup(){
@@ -430,13 +436,17 @@ async function importFullBackup(event){
       const exists=(await clinicDBAll('receipts')).some(x=>receiptFingerprint(x)===receiptFingerprint(item));
       if(!exists)await clinicDBPut('receipts',item);
     }
-    if(payload.settings?.customLogo)await saveLogoDurably(payload.settings.customLogo);
-    if(payload.settings?.currency)localStorage.setItem('alssaedy_currency',payload.settings.currency);
-    if(payload.settings?.size)localStorage.setItem('alssaedy_receipt_size',payload.settings.size);
-    if(payload.settings?.theme)localStorage.setItem('alssaedy_theme',payload.settings.theme);
-    if(payload.settings?.texts)localStorage.setItem('alssaedy_texts',payload.settings.texts);
+    const incomingClinic=payload.settings?.clinic || payload.settings || {};
+    await clinicRepositoryPutSettings({
+      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'customLogo') ? {customLogo:incomingClinic.customLogo||''} : {}),
+      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'currency') ? {currency:incomingClinic.currency||'YER'} : {}),
+      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'size') ? {receiptSize:incomingClinic.size||'a5'} : {}),
+      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'texts') ? {receiptTexts:incomingClinic.texts||''} : {})
+    });
+    if(payload.settings?.ui?.theme) localStorage.setItem('alssaedy_theme',payload.settings.ui.theme);
+    if(payload.settings?.ui?.watermark) localStorage.setItem('alssaedy_watermark',payload.settings.ui.watermark);
     
-    if(typeof applyLogo==='function')applyLogo((await loadLogoDurably())||OFFICIAL_LOGO_URL);
+    if(typeof applyLogo==='function')applyLogo((clinicRepositoryGetSettingSync('customLogo'))||OFFICIAL_LOGO_URL);
     await clinicRepositoryHydrate();
     updateHistoryCount();renderHistory();
     alert('تمت استعادة البيانات بنجاح مع منع التكرارات.');
