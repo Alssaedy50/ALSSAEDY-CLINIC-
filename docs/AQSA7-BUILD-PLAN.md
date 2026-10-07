@@ -480,5 +480,6 @@ Objective: establish one authoritative persistence boundary before removing mirr
 
 Custom clinic logo is now owned by the repository settings store. Duplicate logo persistence helpers and direct localStorage logo writes were removed from the active domain flow. Import/sync restore use the repository API, and startup applies the repository logo after hydration.
 
-Next: **1.3 Export pipeline consolidation** — remove disconnected jsPDF/data-url PDF paths and minimize export/Android responsibilities with regression coverage.
+### Phase 1 / Task 1.3 — Export pipeline consolidation: IN PROGRESS
+Objective: retain one authoritative PDF/print path and one PNG path; remove proven disconnected export/bridge machinery without changing user-visible export capabilities.
 Objective: move durable clinic configuration (custom logo first) behind the repository boundary while leaving UI-only preferences isolated until their own migration.
