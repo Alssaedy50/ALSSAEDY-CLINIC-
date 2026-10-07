@@ -367,8 +367,23 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .date-sequence .date-part,
 .date-sequence .date-sep,
 .date-sequence .date-year{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  flex-direction:row!important;
+  align-items:baseline!important;
+  justify-content:flex-start!important;
+  gap:3px!important;
+  direction:ltr!important;
+  unicode-bidi:isolate!important;
+  min-width:48px!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+.date-sequence .paper-year-digits,
+.date-sequence .paper-year-era{
   display:inline-block!important;
   flex:0 0 auto!important;
+  direction:ltr!important;
   unicode-bidi:isolate!important;
   white-space:nowrap!important;
 }

@@ -154,23 +154,40 @@ function getLocalDateISO() {
 }
 
 function parseAnyDate(value) {
-    // Accepts ISO (YYYY-MM-DD), D/M/Y, D-M-Y, YYYY/M/D and Arabic-Indic digits.
-    // Returns {y,m,d} strings or null. Never throws.
+    // Common numeric forms: YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD,
+    // DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY, DD MM YYYY, with Arabic/Persian digits.
     const normalized = String(value ?? '')
         .trim()
         .replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
         .replace(/[۰-۹]/g, d => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
-        .replace(/[.\\]/g, '-');
+        .replace(/[./\\]/g, '-')
+        .replace(/[\s]+/g, '-')
+        .replace(/-+/g, '-');
     if (!normalized) return null;
-    let m = normalized.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
-    if (m) return { y: m[1], m: m[2].padStart(2, '0'), d: m[3].padStart(2, '0') };
-    m = normalized.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+
+    const valid = (y, m, d) => {
+        const year = Number(y), month = Number(m), day = Number(d);
+        if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
+        if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1) return null;
+        const probe = new Date(year, month - 1, day);
+        if (probe.getFullYear() !== year || probe.getMonth() !== month - 1 || probe.getDate() !== day) return null;
+        return { y: String(year).padStart(4, '0'), m: String(month).padStart(2, '0'), d: String(day).padStart(2, '0') };
+    };
+
+    let m = normalized.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return valid(m[1], m[2], m[3]);
+
+    m = normalized.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
     if (m) {
         let y = m[3];
         if (y.length === 2) y = (Number(y) > 50 ? '19' : '20') + y;
-        return { y, m: m[2].padStart(2, '0'), d: m[1].padStart(2, '0') };
+        return valid(y, m[2], m[1]);
     }
     return null;
+}
+
+function getPaperTemplateDateValue() {
+    return document.getElementById('paperTemplateDate')?.value?.trim() || '';
 }
 
 function syncPaperDate(dateValue) {
@@ -182,8 +199,22 @@ function syncPaperDate(dateValue) {
 
     if (day) day.textContent = parsed ? parsed.d : '';
     if (month) month.textContent = parsed ? parsed.m : '';
-    if (yearDigits) yearDigits.textContent = parsed ? parsed.y : '202';
+    if (yearDigits) yearDigits.textContent = parsed ? parsed.y : String(new Date().getFullYear());
     if (yearEra) yearEra.textContent = 'م';
+}
+
+function setPaperTemplateDate(value) {
+    const input = document.getElementById('paperTemplateDate');
+    if (input && input.value !== String(value ?? '')) input.value = String(value ?? '');
+    syncPaperDate(value);
+}
+
+function setPaperTemplateToday() {
+    setPaperTemplateDate(getLocalDateISO());
+}
+
+function clearPaperTemplateDate() {
+    setPaperTemplateDate('');
 }
 function openDatePicker() {
     const picker = document.getElementById('hiddenDatePicker');
@@ -353,6 +384,10 @@ function showPatientDetailView(){document.querySelector('.patient-form')?.classL
 window.addEventListener('DOMContentLoaded', () => {
     const datePicker = document.getElementById('hiddenDatePicker');
     const dateInput = document.getElementById('digDate');
+    if (dateInput) {
+        dateInput.addEventListener('input', syncReceiptDateFromInput);
+        dateInput.addEventListener('change', syncReceiptDateFromInput);
+    }
     if (datePicker && dateInput) {
         datePicker.addEventListener('change', () => {
             dateInput.value = datePicker.value || '';

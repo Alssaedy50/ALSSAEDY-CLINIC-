@@ -10,12 +10,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="vendor/html2canvas/html2canvas.min.js?v=1.1.4"></script>
-    <link rel="stylesheet" href="css/ui.css?v=1.1.4">
-    <link rel="stylesheet" href="css/receipt.css?v=1.1.4">
-    <link rel="stylesheet" href="css/print.css?v=1.1.4">
-    <link rel="stylesheet" href="css/templates.css?v=1.1.4">
-    <link rel="stylesheet" href="css/polish.css?v=1.1.4">
+    <script src="vendor/html2canvas/html2canvas.min.js?v=1.1.5"></script>
+    <link rel="stylesheet" href="css/ui.css?v=1.1.5">
+    <link rel="stylesheet" href="css/receipt.css?v=1.1.5">
+    <link rel="stylesheet" href="css/print.css?v=1.1.5">
+    <link rel="stylesheet" href="css/templates.css?v=1.1.5">
+    <link rel="stylesheet" href="css/polish.css?v=1.1.5">
 </head>
 <body data-mode="digital">
 
@@ -92,7 +92,8 @@
                         </div>
                     </div>
                     <div class="digital-only digital-date-control">
-                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو حر" dir="ltr" inputmode="numeric" autocomplete="off">
+                        <span id="printDateValue" class="print-date-value export-field-value" aria-hidden="true" dir="ltr"></span>
+                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو 07/10/2026 أو أي صيغة شائعة" dir="ltr" inputmode="numeric" autocomplete="off">
                         <button type="button" class="no-print date-picker-btn" aria-label="اختيار التاريخ" onclick="openDatePicker()">📅</button>
                         <input type="date" id="hiddenDatePicker" class="hidden-date-picker" tabindex="-1" aria-hidden="true">
                     </div>
@@ -441,6 +442,17 @@
                     <strong>80mm</strong><span>طابعة حرارية</span>
                 </button>
             </div>
+            <div class="template-date-editor">
+                <label for="paperTemplateDate">📅 تاريخ السند الورقي</label>
+                <div class="template-date-editor-row">
+                    <input type="text" id="paperTemplateDate" class="live-input" dir="ltr" inputmode="numeric"
+                           placeholder="07/10/2026 أو 2026-10-07 أو أي صيغة شائعة"
+                           oninput="setPaperTemplateDate(this.value)">
+                    <button type="button" class="tool-btn" onclick="setPaperTemplateToday()">اليوم</button>
+                    <button type="button" class="tool-btn" onclick="clearPaperTemplateDate()">فارغ</button>
+                </div>
+                <small>يمكن كتابة التاريخ بصيغ مثل: 07/10/2026، 7-10-2026، 2026/10/07، أو بالأرقام العربية.</small>
+            </div>
             <div class="template-actions">
                 <button type="button" class="opt-card template-action" onclick="downloadBlankTemplatePDF()">
                     <span class="opt-icon">📄</span>
@@ -546,13 +558,13 @@
         </div>
     </div>
 
-    <script src="js/tafqeet.js?v=1.1.4"></script>
-    <script src="js/storage.js?v=1.1.4"></script>
-    <script src="js/export.js?v=1.1.4"></script>
-    <script src="js/templates.js?v=1.1.4"></script>
-    <script src="js/app.js?v=1.1.4"></script>
-    <script src="js/ui.js?v=1.1.4"></script>
-    <script src="js/sync.js?v=1.1.4"></script>
-    <script src="android-app-bridge.js?v=1.1.4"></script>
+    <script src="js/tafqeet.js?v=1.1.5"></script>
+    <script src="js/storage.js?v=1.1.5"></script>
+    <script src="js/export.js?v=1.1.5"></script>
+    <script src="js/templates.js?v=1.1.5"></script>
+    <script src="js/app.js?v=1.1.5"></script>
+    <script src="js/ui.js?v=1.1.5"></script>
+    <script src="js/sync.js?v=1.1.5"></script>
+    <script src="android-app-bridge.js?v=1.1.5"></script>
 </body>
 </html>
