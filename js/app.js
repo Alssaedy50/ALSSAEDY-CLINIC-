@@ -384,6 +384,10 @@ function showPatientDetailView(){document.querySelector('.patient-form')?.classL
 window.addEventListener('DOMContentLoaded', () => {
     const datePicker = document.getElementById('hiddenDatePicker');
     const dateInput = document.getElementById('digDate');
+    if (dateInput) {
+        dateInput.addEventListener('input', syncReceiptDateFromInput);
+        dateInput.addEventListener('change', syncReceiptDateFromInput);
+    }
     if (datePicker && dateInput) {
         datePicker.addEventListener('change', () => {
             dateInput.value = datePicker.value || '';
