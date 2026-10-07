@@ -197,36 +197,6 @@ public class MainActivity extends Activity {
             return PrintAttributes.MediaSize.ISO_A5;
         }
 
-        /** Saves a PDF produced by jsPDF (passed as a data URL) straight into Downloads.
-            This keeps the exact on-screen A5/A4/80mm layout and avoids the WebView
-            snapshot path which could clip long thermal receipts. */
-        @JavascriptInterface
-        public void savePdfFromData(String dataUrl, String fileName){
-            try{
-                if(dataUrl==null||!dataUrl.contains(",")) throw new Exception("بيانات PDF غير صالحة");
-                byte[] bytes=Base64.getDecoder().decode(dataUrl.substring(dataUrl.indexOf(',')+1));
-                String safe=(fileName==null||fileName.trim().isEmpty()?"ALSSAEDY_Receipt":fileName)
-                    .replaceAll("[^A-Za-z0-9_\\-\\u0600-\\u06FF]","_")+".pdf";
-                ContentValues values=new ContentValues();
-                values.put(MediaStore.Downloads.DISPLAY_NAME,safe);
-                values.put(MediaStore.Downloads.MIME_TYPE,"application/pdf");
-                values.put(MediaStore.Downloads.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/ALSSAEDY Clinic");
-                values.put(MediaStore.Downloads.IS_PENDING,1);
-                Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
-                if(uri==null) throw new Exception("تعذر إنشاء ملف PDF");
-                try(OutputStream out=getContentResolver().openOutputStream(uri)){
-                    if(out==null) throw new Exception("تعذر فتح ملف PDF");
-                    out.write(bytes);
-                }
-                values.clear();
-                values.put(MediaStore.Downloads.IS_PENDING,0);
-                getContentResolver().update(uri,values,null,null);
-                runOnUiThread(()->Toast.makeText(MainActivity.this,"تم حفظ PDF الجاهز للطباعة في التنزيلات.",Toast.LENGTH_LONG).show());
-            }catch(Exception e){
-                runOnUiThread(()->Toast.makeText(MainActivity.this,"تعذر حفظ PDF: "+e.getMessage(),Toast.LENGTH_LONG).show());
-            }
-        }
-
         @JavascriptInterface
         public void scheduleReminder(long triggerAtMillis, String title, String text) {
             try {
@@ -292,18 +262,6 @@ public class MainActivity extends Activity {
             }catch(Exception e){
                 pendingImageBase64=null; pendingImageName=null;
                 runOnUiThread(()->Toast.makeText(MainActivity.this,"تعذر حفظ الصورة: "+e.getMessage(),Toast.LENGTH_LONG).show());
-            }
-        }
-
-        @JavascriptInterface
-        public void saveImage(String dataUrl, String fileName) {
-            try {
-                Uri uri = writeImageToMediaStore(dataUrl, fileName);
-                if (uri != null) {
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "تم حفظ الصورة في صور العيادة.", Toast.LENGTH_SHORT).show());
-                }
-            } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "تعذر حفظ الصورة.", Toast.LENGTH_SHORT).show());
             }
         }
 
