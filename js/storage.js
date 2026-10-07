@@ -430,3 +430,37 @@ async function importFullBackup(event){
   }catch(e){alert('تعذر استيراد النسخة: '+e.message);}
   event.target.value='';
 }
+
+async function importDataFile(event){
+  const file=event.target.files?.[0];if(!file)return;
+  try{
+    const text=await file.text();
+    const ext=(file.name.split('.').pop()||'').toLowerCase();
+    let imported=[];
+    if(ext==='csv'){
+      const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(Boolean);
+      if(lines.length<2)throw new Error('ملف CSV فارغ.');
+      const parseLine=line=>{const out=[];let cur='',quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'){cur+='"';i++;continue}if(c==='"'){quoted=!quoted;continue}if(c===','&&!quoted){out.push(cur);cur='';continue}cur+=c;}out.push(cur);return out;};
+      const headers=parseLine(lines[0]);imported=lines.slice(1).map(line=>{const vals=parseLine(line),o={};headers.forEach((h,i)=>o[h]=vals[i]||'');return {id:o.ID||('IMP-'+Date.now()+'-'+Math.random()),recNo:o['Receipt No']||o.recNo,date:o.Date||o.date,name:o['Patient Name']||o.name,patientPhone:o['Patient Phone']||'',paid:o.Paid||'0',total:o.Total||'0',balance:o.Balance||'0',change:o.Change||'0',tooth:o['Tooth / Location']||'',tafqeet:o['Amount in Words']||'',payMethod:o['Payment Method']||'نقداً',ref:o.Reference||'',services:String(o.Services||'').split(' | ').filter(Boolean),mode:o.Mode||'digital',size:o.Size||'a5',currency:o.Currency||'YER',currencyName:o.CurrencyName||'ريال يمني',currencySymbol:o.CurrencySymbol||'ر.ي'};});
+    }else{
+      const payload=JSON.parse(text);
+      imported=Array.isArray(payload)?payload:(payload.receipts||[]);
+    }
+    if(!imported.length)throw new Error('لم يتم العثور على سندات في الملف.');
+    let added=0;
+    const existing=await clinicDBAll('receipts');
+    for(const raw of imported){
+      const item={...raw,id:raw.id||('IMP-'+Date.now()+'-'+Math.random().toString(36).slice(2))};
+      if(!item.recNo)item.recNo='IMP-'+Date.now();
+      if(!item.date)item.date=getLocalDateISO();
+      if(!item.name)item.name='مريض بدون اسم';
+      if(existing.some(x=>receiptFingerprint(x)===receiptFingerprint(item)))continue;
+      if(existing.some(x=>String(x.recNo)===String(item.recNo)))continue;
+      await clinicDBPut('receipts',item);existing.push(item);added++;
+    }
+    localStorage.setItem('alssaedy_receipts_history',JSON.stringify(existing));
+    updateHistoryCount();renderHistory();
+    alert('تم استيراد '+added+' سند جديد مع منع التكرارات.');
+  }catch(e){alert('تعذر استيراد الملف: '+e.message);}
+  event.target.value='';
+}
