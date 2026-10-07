@@ -480,3 +480,57 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .sig-draw-line{margin-top:14px!important}
 .receipt-footer{border-radius:8px!important;margin-top:6px!important}
 @media screen and (max-width:700px){.receipt-paper{box-shadow:none!important;border-radius:7px!important}.receipt-header{column-gap:5px!important}.header-logo-wrap{transform:scale(.94)}}
+
+
+/* =========================================================
+   EXPORT RENDER CONTRACT — Arabic/Canvas stability
+   ========================================================= */
+body.exporting-receipt .receipt-paper,
+body.exporting-receipt .receipt-paper * {
+    font-family: "Cairo","Noto Kufi Arabic","Tajawal",sans-serif !important;
+    letter-spacing: normal !important;
+    font-feature-settings: "liga" 1, "calt" 1 !important;
+    -webkit-font-feature-settings: "liga" 1, "calt" 1 !important;
+    text-rendering: geometricPrecision !important;
+}
+body.exporting-receipt .receipt-paper {
+    direction: rtl !important;
+    transform: none !important;
+}
+body.exporting-receipt .receipt-header,
+body.exporting-receipt .title-strip,
+body.exporting-receipt .meta-data-strip,
+body.exporting-receipt .row-flex,
+body.exporting-receipt .paid-hero-bar,
+body.exporting-receipt .pay-opts-row,
+body.exporting-receipt .section-signatures {
+    transform: none !important;
+}
+body.exporting-receipt .main-voucher-title,
+body.exporting-receipt .row-label,
+body.exporting-receipt .meta-label,
+body.exporting-receipt .paid-title,
+body.exporting-receipt .paid-unit,
+body.exporting-receipt .tafqeet-text,
+body.exporting-receipt .tafqeet-closing,
+body.exporting-receipt .services-banner,
+body.exporting-receipt .custom-check-item,
+body.exporting-receipt .ledger-header,
+body.exporting-receipt .sig-title,
+body.exporting-receipt .footer-blessing,
+body.exporting-receipt .footer-address {
+    direction: rtl !important;
+    unicode-bidi: isolate !important;
+    letter-spacing: normal !important;
+}
+body.exporting-receipt .main-voucher-title {
+    display: inline-block !important;
+    white-space: nowrap !important;
+}
+body.exporting-receipt .row-label {
+    flex: 0 0 auto !important;
+}
+body.exporting-receipt .patient-contact-row .patient-phone-input {
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+}
