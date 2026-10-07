@@ -10,7 +10,7 @@ function setCurrency(code){
  localStorage.setItem('alssaedy_currency',info.code);
  const select=document.getElementById('currencySelect');if(select)select.value=info.code;
  ['paidCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.nameAr;});
- ['totalCurrencyLabel','paidTableCurrencyLabel','balanceCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.symbol;}); const badge=document.getElementById('receiptCurrencyBadge');if(badge)badge.textContent=info.nameAr+' · '+info.code;
+ ['totalCurrencyLabel','paidTableCurrencyLabel','balanceCurrencyLabel'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=info.symbol;}); const badge=document.getElementById('receiptCurrencyBadge');if(badge){badge.textContent=info.code;badge.setAttribute('aria-label',info.nameAr+' ('+info.code+')');}
  updateCurrencyInText(info);
 }
 function updateCurrencyInText(info){

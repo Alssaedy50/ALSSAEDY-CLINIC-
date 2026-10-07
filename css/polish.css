@@ -58,3 +58,28 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 .sync-status.sync-busy{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
 html[data-night="on"] .sync-badge{background:#1e293b;color:#cbd5e1}
 html[data-night="on"] .sync-status{background:#111c33;border-color:#1e293b;color:#cbd5e1}
+
+
+/* Patient + history UI polish */
+.patient-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.patient-field>span{font-size:10px;font-weight:800;color:#073b63;line-height:1.2}
+.patient-field .live-input{width:100%;box-sizing:border-box}
+.history-search{width:100%;max-width:100%;box-sizing:border-box;min-height:38px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patient-list-actions button{
+    appearance:none;border:1px solid #073b63;background:#073b63;color:#fff;
+    border-radius:8px;padding:7px 12px;font:inherit;font-size:10px;font-weight:800;
+    cursor:pointer;box-shadow:0 2px 7px rgba(7,59,99,.16);transition:.16s ease;
+}
+.patient-list-actions button:hover{background:#0f766e;border-color:#0f766e;transform:translateY(-1px)}
+.patient-list-actions button:focus-visible{outline:2px solid #14b8a6;outline-offset:2px}
+#receiptCurrencyBadge{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:28px;padding:2px 6px;border-radius:999px;
+    background:#e0f2fe;color:#073b63;border:1px solid #bae6fd;
+    font-size:8px;font-weight:900;line-height:1;direction:ltr;unicode-bidi:isolate;
+}
+@media(max-width:600px){
+    .patient-field>span{font-size:9px}
+    .patient-list-actions{width:100%}
+    .patient-list-actions button{width:100%;min-height:34px}
+}
