@@ -209,6 +209,8 @@ function getReceiptText() {
     const ref = document.getElementById('digRef')?.value || '';
     const services = Array.from(document.querySelectorAll('.custom-check-item.active'))
         .map(item => item.innerText.replace('✓','').trim());
+    const customService = document.getElementById('digCustomService')?.value?.trim();
+    if (customService && !services.includes(customService)) services.push(customService);
     const srvText = services.length ? 'الخدمات: ' + services.join('، ') : '';
     const refText = ref ? '\nالمرجع: ' + bidiIsolate(ref) : '';
     const patientPhoneText = patientPhone ? '\nرقم الهاتف: ' + bidiIsolate(patientPhone) : '';
