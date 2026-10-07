@@ -1,8 +1,8 @@
 /* ALSSAEDY Clinic — offline shell service worker.
    Strategy: cache-first for the app shell, network fallback, and a cached
    stale-while-revalidate path so the receipt tool works fully offline. */
-const CACHE_NAME = 'alssaedy-clinic-v1.1.5';
-const V = '?v=1.1.0';
+const CACHE_NAME = 'alssaedy-clinic-v1.2.0';
+const V = '?v=1.2.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -20,7 +20,6 @@ const APP_SHELL = [
   './js/ui.js' + V,
   './js/sync.js' + V,
   './android-app-bridge.js' + V,
-  './logo_data.js' + V,
   './vendor/html2canvas/html2canvas.min.js' + V,
   './vendor/jspdf/jspdf.umd.min.js' + V,
   './assets/Saedy_Dental_Logo.svg'
