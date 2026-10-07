@@ -75,32 +75,56 @@ for(const forbidden of ['2026-10-07','مريض الاختبار','TEST-001','250
 
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
-  const canvas = await generateReceiptCanvas();
-  const cloneCheck = (() => {
-    const source = document.getElementById('receiptPrintArea');
-    const cloned = source.cloneNode(true);
-    materializeReceiptDate(source, cloned);
-    materializeReceiptControls(source, cloned, document);
-    const fields = Array.from(cloned.querySelectorAll('.export-field-value')).map(el => el.textContent.trim());
-    // The date is exported as its human-readable form (DD/MM/YYYY م), which is
-    // the only date representation actually shown on the printed sheet.
-    const formattedDate = formatReceiptDate(document.getElementById('digDate')?.value || '');
-    return fields.includes('مريض الاختبار') && fields.includes('TEST-001') &&
-      (fields.includes(formattedDate) || cloned.querySelector('#printDateValue')?.textContent.trim() === formattedDate);
-  })();
-  if (!cloneCheck) throw new Error('Export clone did not preserve receipt fields.');
-  const pdfOk = await (async () => {
-    try { const blob = await buildReceiptPdfBlob(); return blob && blob.size > 2000 && blob.type === 'application/pdf'; }
-    catch (e) { return false; }
-  })();
-  if (!pdfOk) throw new Error('One-click PDF generation failed.');
-  return {
-    width: canvas.width,
-    height: canvas.height,
-    dataUrl: canvas.toDataURL('image/png')
-  };
-});
+  if (typeof generateReceiptCanvas !== 'function' || typeof buildReceiptPdfBlob !== 'function') {
+    throw new Error('Export pipeline functions are unavailable.');
+  }
 
+  const source = document.getElementById('receiptPrintArea');
+  const cloned = source.cloneNode(true);
+  materializeReceiptDate(source, cloned);
+  materializeReceiptControls(source, cloned, document);
+  const fields = Array.from(cloned.querySelectorAll('.export-field-value')).map(el => el.textContent.trim());
+  const formattedDate = formatReceiptDate(document.getElementById('digDate')?.value || '');
+  if (!fields.includes('مريض الاختبار') || !fields.includes('TEST-001') ||
+      (!fields.includes(formattedDate) && cloned.querySelector('#printDateValue')?.textContent.trim() !== formattedDate)) {
+    throw new Error('Export clone did not preserve receipt fields.');
+  }
+
+  const sizes = [
+    { id: 'a5', ratio: 148 / 210 },
+    { id: 'a4', ratio: 210 / 297 },
+    { id: 'thermal', ratio: 80 / 1 }
+  ];
+  const exports = {};
+  for (const size of sizes) {
+    setSize(size.id);
+    const canvas = await generateReceiptCanvas({ fullPage: true, scale: 2 });
+    if (size.id !== 'thermal') {
+      const actual = canvas.width / canvas.height;
+      if (Math.abs(actual - size.ratio) > 0.01) {
+        throw new Error('Wrong physical aspect ratio for ' + size.id + ': ' + actual);
+      }
+    }
+    const blob = await buildReceiptPdfBlob();
+    if (!blob || blob.size < 2000 || blob.type !== 'application/pdf') {
+      throw new Error('PDF generation failed for ' + size.id);
+    }
+    const reader = new FileReader();
+    const pdfData = await new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    exports[size.id] = {
+      width: canvas.width,
+      height: canvas.height,
+      dataUrl: canvas.toDataURL('image/png'),
+      pdfDataUrl: pdfData
+    };
+  }
+  setSize('a5');
+  return exports;
+});
 const base64 = result.dataUrl.split(',')[1];
 const pngPath = '/tmp/alssaedy-receipt-export.png';
 fs.writeFileSync(pngPath, Buffer.from(base64, 'base64'));
