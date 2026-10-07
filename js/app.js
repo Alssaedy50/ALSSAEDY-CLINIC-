@@ -24,10 +24,11 @@ function setMode(mode) {
     document.body.setAttribute('data-mode', mode);
     document.getElementById('btnModeManual').classList.toggle('active', mode === 'manual');
     document.getElementById('btnModeDigital').classList.toggle('active', mode === 'digital');
-    // Paper mode is a handwriting template: no digital payment selection is carried into it.
+    // Manual mode is used only by the blank printable-template generator.
+    // It must NEVER inherit the digital receipt date or patient/account data.
     if (mode === 'manual') {
         setPayMethod('');
-        syncPaperDate(document.getElementById('digDate')?.value || getLocalDateISO());
+        syncPaperDate('');
     } else {
         if (!document.getElementById('digDate').value) setTodayDate();
         if (!document.getElementById('digReceiptNo').value) generateNextReceiptNo();
@@ -285,7 +286,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedTheme) setTheme(savedTheme);
     if (localStorage.getItem('alssaedy_watermark') === 'off') document.body.classList.add('hide-watermark');
 
-    syncPaperDate(document.getElementById('digDate')?.value || getLocalDateISO());
+    // Digital receipt is the primary/default workflow.
+    // The paper template is generated separately and starts completely blank.
+    syncPaperDate('');
+    setMode('digital');
     const dateInput = document.getElementById('digDate');
     if (dateInput) dateInput.addEventListener('input', syncReceiptDateFromInput);
     updateHistoryCount();
