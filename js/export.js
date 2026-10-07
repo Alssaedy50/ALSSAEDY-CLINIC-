@@ -6,8 +6,26 @@ function getExportBox(profile) {
     return { width: profile.width, height: profile.height === 'auto' ? 'auto' : profile.height };
 }
 
-function ensureLibraries() {
-    if (typeof html2canvas !== 'function') throw new Error('مكتبة إنشاء الصور غير متاحة. تحقق من الاتصال بالإنترنت.');
+async function ensureLibraries() {
+    if (typeof html2canvas === 'function') return;
+    // Android/local deployments can occasionally finish parsing before the vendor
+    // script is available. Retry the bundled local library instead of showing
+    // the misleading "image tool unavailable" message.
+    await new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-html2canvas-retry]');
+        if (existing) {
+            existing.addEventListener('load', resolve, {once:true});
+            existing.addEventListener('error', () => reject(new Error('تعذر تحميل مكتبة إنشاء الصور المحلية.')), {once:true});
+            setTimeout(() => typeof html2canvas === 'function' ? resolve() : reject(new Error('مكتبة إنشاء الصور المحلية غير متاحة.')), 3000);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'vendor/html2canvas/html2canvas.min.js';
+        script.dataset.html2canvasRetry = '1';
+        script.onload = () => typeof html2canvas === 'function' ? resolve() : reject(new Error('مكتبة إنشاء الصور المحلية غير متاحة.'));
+        script.onerror = () => reject(new Error('تعذر تحميل مكتبة إنشاء الصور المحلية.'));
+        document.head.appendChild(script);
+    });
 }
 
 function withCaptureState(callback) {
@@ -264,10 +282,18 @@ async function downloadReceiptImage() {
     try {
         const canvas = await generateReceiptCanvas();
         const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
+        const dataUrl = canvas.toDataURL('image/png', 0.95);
+        const filename = 'سند_قبض_' + recNo;
+        if (window.Android && typeof Android.saveImage === 'function') {
+            Android.saveImage(dataUrl, filename);
+            return;
+        }
         const link = document.createElement('a');
-        link.download = 'سند_قبض_' + recNo + '.png';
-        link.href = canvas.toDataURL('image/png', 0.95);
+        link.download = filename + '.png';
+        link.href = dataUrl;
+        document.body.appendChild(link);
         link.click();
+        link.remove();
     } catch(e) {
         alert('تعذر إنشاء الصورة: ' + e.message);
     }
