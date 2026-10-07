@@ -62,7 +62,7 @@ if (Object.values(blankCheck.values).some(Boolean) ||
 }
 
 await page.evaluate(() => { window.__templateSnapshot=prepareBlankTemplate(); });
-await page.emulateMediaType('print');
+await page.emulateMedia({ media: 'print' });
 const pdfPath='/tmp/alssaedy-blank-template.pdf';
 await page.pdf({path:pdfPath,preferCSSPageSize:true,printBackground:true});
 await page.evaluate(() => { finishBlankTemplate(window.__templateSnapshot || null); setMode('digital'); });
