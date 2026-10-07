@@ -120,3 +120,5 @@ async function clinicRepositoryHydratePatients(){
   window.__clinicRepository.patients=await clinicDBAll('patients');
   return clinicRepositoryPatients();
 }
+
+async function hydrateDurableReceipts(){ return clinicRepositoryHydrate(); }
