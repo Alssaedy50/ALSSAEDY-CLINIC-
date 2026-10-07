@@ -91,8 +91,8 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
     if (cloned) {
         const value=String(source?.value||'').trim();
         const span=cloned.ownerDocument.createElement('span');
-        span.id='exportedReceiptDate';
-        span.className='exported-receipt-date';
+        span.id='printDateValue';
+        span.className='exported-receipt-date export-field-value';
         span.textContent=(typeof formatReceiptDate==='function' ? formatReceiptDate(value) : value);
         span.setAttribute('dir','ltr');
         span.style.cssText='display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;text-align:center!important;white-space:nowrap!important;width:120px!important;';
