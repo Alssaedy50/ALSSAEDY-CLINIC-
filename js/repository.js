@@ -89,8 +89,8 @@ async function clinicRepositoryHydrate(){
   repo.settings=settingsById;
   repo.hydrated=true;
   /* Legacy mirrors are migration inputs only; durable data now lives in IndexedDB. */
-  if(receipts.length || repo.receipts.length) localStorage.removeItem('alssaedy_receipts_history');
-  if(patients.length || repo.patients.length) localStorage.removeItem('alssaedy_patients');
+  if(repo.receipts.length) localStorage.removeItem('alssaedy_receipts_history');
+  if(repo.patients.length) localStorage.removeItem('alssaedy_patients');
   if(repo.settings.customLogo) localStorage.removeItem('alssaedy_custom_logo');
   return repo;
 }
