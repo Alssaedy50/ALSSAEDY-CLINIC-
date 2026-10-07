@@ -8,7 +8,7 @@ const page = await browser.newPage({ viewport: { width: 1100, height: 1400 }, de
 await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
 await page.evaluate(() => {
   if (typeof setMode !== 'function') throw new Error('setMode is unavailable');
-  setMode('digital');
+  finishBlankTemplate(snapshot);
   const set = (id, value) => {
     const el = document.getElementById(id);
     if (!el) throw new Error('Missing #' + id);
@@ -41,7 +41,7 @@ if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.visibleDigitalDateFields
 }
 
 const blankCheck = await page.evaluate(() => {
-  setMode('manual');
+  const snapshot = prepareBlankTemplate();
   const fields = ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'];
   const values = Object.fromEntries(fields.map(id => [id, document.getElementById(id)?.value || '']));
   const date = {
