@@ -71,7 +71,7 @@ function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument
     });
 }
 
-async async function generateReceiptCanvas() {
+async function generateReceiptCanvas() {
     ensureLibraries();
     await document.fonts.ready;
 
@@ -234,7 +234,7 @@ function sharePatientWhatsApp() {
     if (!popup) window.location.href = url;
 }
 
-async async function shareReceiptImage() {
+async function shareReceiptImage() {
     closeShareModal();
     try {
         const canvas = await generateReceiptCanvas();
@@ -260,7 +260,7 @@ async async function shareReceiptImage() {
     }
 }
 
-async async function downloadReceiptImage() {
+async function downloadReceiptImage() {
     try {
         const canvas = await generateReceiptCanvas();
         const recNo = document.getElementById('digReceiptNo')?.value || 'سند';
