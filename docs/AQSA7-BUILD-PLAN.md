@@ -339,6 +339,97 @@ Official logo: `assets/Saedy_Dental_Logo.svg` → `OFFICIAL_LOGO_URL` → `apply
 #### Phase 1 target
 Create one LogoRepository/manager with a single durable source, a single load/apply path, explicit raster quality policy, and explicit separation between receipt-rendering logo and Android launcher icon.
 
+
+### Phase 0 / Task 0.7 — Export/print/PDF/PNG/share audit: COMPLETE
+
+- **Authoritative PDF:** browser/WebView native print via `triggerNativePrint()` / `downloadReceiptPDF()`; this preserves real text instead of flattening the receipt to a canvas image.
+- **PNG:** `downloadReceiptImage()` → `generateReceiptCanvas()` → high-scale html2canvas → Android chunked MediaStore save or browser Blob download.
+- **Preview:** canvas at scale 2; intentionally a preview, not the production export.
+- **Image sharing:** Web Share API with file support; fallback downloads the image then opens WhatsApp/text sharing.
+- **Text sharing/copy:** generated from the current DOM receipt state; phone/reference/financial numerals use BiDi isolation where needed.
+- **Transaction exports:** CSV/JSON are generated from history and routed through Android Downloads or browser download.
+- **Blank templates:** temporary snapshot → manual/blank mode → print/image → restore snapshot; no receipt persistence intended.
+- **Legacy PDF path:** `buildReceiptPdfBlob()` plus `ensureJsPdf()` / `blobToDataUrl()` are disconnected from the active PDF button flow. They should be removed only in Phase 1 after repository-wide proof and regression tests.
+- **Legacy Android PDF/image bridge:** `savePdfFromData()` and `saveImage()` are exposed but have no active frontend callers; the chunked PNG bridge and native print are the active paths.
+- **Quality risk:** PNG is inherently raster; high scale improves it but cannot equal vector/text PDF. Native print is therefore the correct PDF architecture.
+- **Print CSS:** A5/A4/80mm dimensions are explicitly controlled, with zero page margins and a thermal auto-height path. This protected contract must remain regression-tested.
+
+### Phase 0 / Task 0.8 — Navigation audit: COMPLETE
+
+Current navigation is a hybrid of tab state, modal/drawer CSS state and browser history. The receipt tab is the base state; patients/history/settings are overlays.
+
+Confirmed issues:
+1. `activateAppTab('patients')` calls `openPatientsModal()`, but `openPatientsModal()` does not push a `history.state`; Back therefore cannot reliably return from the patient section through the same router mechanism.
+2. `selectPatient()` loads patient data and account content but does not call `showPatientDetailView()`; the detail/list transition is therefore implicit/incomplete.
+3. `startPatientVisit()` closes the patients modal and returns to the receipt, but does not establish a route/state describing the patient context.
+4. Share/template/preview modals do not participate in the same history state model.
+5. `closeAllAppPanels()` resets visual state but navigation ownership remains distributed across multiple functions.
+
+Target: one explicit route state (for example receipt/patients/patient-detail/history/settings plus transient modal state) with one router owner.
+
+### Phase 0 / Task 0.9 — Storage audit: COMPLETE
+
+- IndexedDB database: `ALSSAEDY_CLINIC_DB`, version 2, stores `receipts`, `patients`, `settings`.
+- localStorage contains settings, draft, sync configuration, patient mirror and full receipt-history mirror.
+- `safeHistory()` reads localStorage, so UI/history reads do not consistently come from IndexedDB.
+- Receipt writes first update localStorage and then IndexedDB; the async IndexedDB result rewrites localStorage. Failures are swallowed, allowing divergence.
+- Patient writes use IndexedDB then rewrite the localStorage mirror.
+- Backup reads IndexedDB for receipts/patients but localStorage for settings.
+- Import writes IndexedDB then rebuilds the receipt mirror.
+- Sync reads/writes IndexedDB for records but localStorage for settings/configuration.
+
+Primary remediation: IndexedDB repository becomes authoritative; localStorage is reduced to compatibility/preferences/draft only, with a controlled migration of existing mirrors.
+
+### Phase 0 / Task 0.10 — Android bridge audit: COMPLETE
+
+Active bridge responsibilities: native print, chunked PNG save, transaction-file save, patient reminder scheduling. Additional exposed methods include PDF data-URL save, single-call image save, shareText, copyText and openUrl. The frontend currently uses only the active set identified above; unused exposed methods are Phase 1 cleanup candidates.
+
+The bridge writes through MediaStore rather than legacy filesystem paths, uses scoped storage-compatible Downloads/Pictures locations, and uses a 300 DPI print resolution. Exact alarms have an inexact fallback when permission is unavailable.
+
+Risk: the bridge is larger than the current frontend needs, so unnecessary JS interfaces increase attack/maintenance surface. Phase 1 should minimize it to proven requirements.
+
+### Phase 0 / Task 0.11 — CSS cascade audit: COMPLETE
+
+The current print/export contract is spread across `ui.css`, `receipt.css`, `print.css`, `templates.css`, and `polish.css`. `print.css` contains repeated `@media print` blocks and explicit overrides for date, footer, size and blank-template behavior. This works but makes ownership difficult to reason about.
+
+Confirmed cleanup target: one base receipt layout layer, one interaction/UI layer, one print/export layer, and one optional theme layer. Do not change protected A5/A4/80mm geometry until regression snapshots exist.
+
+### Phase 0 / Task 0.12 — Sync/security audit: COMPLETE
+
+The endpoint derives a deterministic Blob path from the supplied clinic key and treats the bearer value itself as the clinic credential. There is no separate user identity, signed session, expiry, or per-clinic authorization record. Anyone possessing/guessing a valid key can address that clinic's blob.
+
+CORS currently reflects the request Origin. The endpoint validates key length and payload size and uses optimistic version checks, but there is no cryptographic authentication of the clinic identity beyond the secret key itself.
+
+Critical productization requirement: replace the current “shared secret = tenant identity + authorization” model with a proper clinic identity/credential boundary, rate limiting/abuse controls, and server-side tenant authorization before selling the product to other clinics.
+
+### Phase 0 / Task 0.13 — Service-worker/cache audit: COMPLETE
+
+- Cache name and asset query version are manually bumped per release.
+- Install pre-caches the application shell but silently ignores individual cache failures.
+- Fetch is cache-first and starts a background network fetch; API traffic is excluded.
+- Activation deletes every previous cache name.
+
+Risks: cache-first can serve stale HTML/JS until a new service worker activates; manually synchronized version strings are easy to miss; background cache writes are not awaited. Phase 1 should use an explicit asset-version strategy and an update/reload policy, with offline behavior preserved.
+
+### Phase 0 / Task 0.14 — Dead/legacy responsibility inventory: COMPLETE
+
+Proven disconnected candidates from the current call graph:
+- `persistLogoData()`
+- `loadCustomLogo()`
+- `buildReceiptPdfBlob()`
+- `blobToDataUrl()`
+- `getTransactionsSummary()`
+- Android `savePdfFromData()`
+- Android `saveImage()`
+
+Additional responsibility overlap (not yet dead):
+- logo persistence/application
+- receipt history persistence/mirroring
+- settings storage
+- navigation state
+- export/print orchestration
+
+These are removal/merge candidates, not yet deleted, because Phase 1 must first establish the replacement authoritative paths and regression coverage.
+
 ### Next task
-**0.7 Export/print/PDF/PNG/share audit — IN PROGRESS.**
-Focus: prove each export path, quality characteristics, filename/download behavior, Android bridge usage, print CSS, text selectability, blank-template behavior, and eliminate competing legacy paths only after call-graph proof.
+**0.15 Final audit report & remediation order — IN PROGRESS.**
