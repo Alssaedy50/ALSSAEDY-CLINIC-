@@ -302,7 +302,7 @@ async function loadCustomLogo(){
   }catch(_){}
   return localStorage.getItem('alssaedy_custom_logo')||'';
 }
-async function uploadLogo(event){
+async async function uploadLogo(event){
   const input=event?.target, file=input?.files?.[0];
   if(!file)return;
   const reader=new FileReader();
@@ -313,43 +313,29 @@ async function uploadLogo(event){
       if(file.type!=='image/svg+xml' && !/\.svg$/i.test(file.name)){
         const img=new Image();
         await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=raw;});
-        const sourceW=img.naturalWidth||img.width||1, sourceH=img.naturalHeight||img.height||1;
-        const max=4096;
-        if(Math.max(sourceW,sourceH)>max){
-          const scale=max/Math.max(sourceW,sourceH);
-          const canvas=document.createElement('canvas');
-          canvas.width=Math.max(1,Math.round(sourceW*scale));
-          canvas.height=Math.max(1,Math.round(sourceH*scale));
+        const w=img.naturalWidth||img.width||1, h=img.naturalHeight||img.height||1, max=4096;
+        if(Math.max(w,h)>max){
+          const scale=max/Math.max(w,h), canvas=document.createElement('canvas');
+          canvas.width=Math.round(w*scale); canvas.height=Math.round(h*scale);
           const ctx=canvas.getContext('2d',{alpha:true});
-          ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+          ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
           ctx.drawImage(img,0,0,canvas.width,canvas.height);
-          output=file.type==='image/jpeg'
-            ? canvas.toDataURL('image/jpeg',0.98)
-            : canvas.toDataURL('image/png');
+          output=file.type==='image/jpeg' ? canvas.toDataURL('image/jpeg',0.98) : canvas.toDataURL('image/png');
         }
       }
-      await persistLogoData(output);
+      try{localStorage.setItem('alssaedy_custom_logo',output);}catch(_){}
       applyLogo(output);
-      if(typeof toast==='function')toast('تم حفظ الشعار بجودته الأصلية/العالية.');else alert('تم حفظ الشعار بجودة عالية.');
-    }catch(e){
-      alert('تعذر حفظ الشعار: '+(e?.message||'خطأ غير معروف'));
-    }finally{if(input)input.value='';}
+      if(typeof toast==='function')toast('تم حفظ الشعار بجودة عالية.');else alert('تم حفظ الشعار بجودة عالية.');
+    }catch(e){alert('تعذر حفظ الشعار: '+(e?.message||'خطأ غير معروف'));}finally{if(input)input.value='';}
   };
-  reader.onerror=()=>alert('تعذر قراءة ملف الشعار.');
   reader.readAsDataURL(file);
 }
 function applyLogo(url){
-  const safe=String(url||OFFICIAL_LOGO_URL);
-  const img=document.getElementById('clinicLogoImg');
-  const wm=document.getElementById('watermarkLayer');
-  if(img){
-    img.src=safe; img.removeAttribute('width'); img.removeAttribute('height');
-    img.style.aspectRatio='1 / 1'; img.style.objectFit='contain'; img.style.objectPosition='center';
-  }
-  if(wm) wm.style.backgroundImage="url("+JSON.stringify(safe)+")";
+  const safe=String(url||OFFICIAL_LOGO_URL), img=document.getElementById('clinicLogoImg'), wm=document.getElementById('watermarkLayer');
+  if(img){img.src=safe;img.removeAttribute('width');img.removeAttribute('height');img.style.aspectRatio='1 / 1';img.style.objectFit='contain';img.style.objectPosition='center';}
+  if(wm)wm.style.backgroundImage='url('+JSON.stringify(safe)+')';
 }
-async function resetOfficialLogo(){
-  try{if(typeof clinicDBDelete==='function')await clinicDBDelete('settings','customLogo');}catch(_){}
+function resetOfficialLogo(){
   try{localStorage.removeItem('alssaedy_custom_logo');}catch(_){}
   const uploader=document.getElementById('logoUploader');if(uploader)uploader.value='';
   applyLogo(OFFICIAL_LOGO_URL);
