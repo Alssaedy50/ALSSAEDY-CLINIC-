@@ -1,7 +1,7 @@
 /* ALSSAEDY Clinic — offline shell service worker.
    Strategy: cache-first for the app shell, network fallback, and a cached
    stale-while-revalidate path so the receipt tool works fully offline. */
-const CACHE_NAME = 'alssaedy-clinic-v1.2.1';
+const CACHE_NAME = 'alssaedy-clinic-v1.2.1-core';
 const V = '?v=1.2.1';
 const APP_SHELL = [
   './',
@@ -48,6 +48,20 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   // Never cache API traffic: the sync/backup endpoint must always hit the network.
   if (url.pathname.startsWith('/api/')) return;
+  // The service worker script itself must never be served from its own cache.
+  // Navigation documents are network-first so a new app shell can activate promptly.
+  if (url.pathname.endsWith('/sw.js') || req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req).then((response) => {
+        if (response && response.status === 200 && req.mode === 'navigate') {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy));
+        }
+        return response;
+      }).catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(req).then((cached) => {
