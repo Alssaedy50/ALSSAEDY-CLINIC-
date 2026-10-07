@@ -468,8 +468,8 @@
       <input id="patientFormName" class="live-input" placeholder="اسم المريض *">
       <select id="patientFormGender" class="setting-select"><option value="">الجنس *</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
       <input id="patientFormAge" class="live-input" type="number" min="0" max="120" placeholder="العمر">
-      <input id="patientFormPhone" class="live-input" placeholder="رقم الهاتف">
-      <input id="patientFormVisit" class="live-input" type="date" title="موعد العودة">
+      <label class="patient-field"><span>رقم الهاتف</span><input id="patientFormPhone" class="live-input" placeholder="رقم الهاتف" aria-label="رقم الهاتف"></label>
+      <label class="patient-field"><span>موعد العودة</span><input id="patientFormVisit" class="live-input" type="date" title="موعد العودة" aria-label="موعد العودة">
       <input id="patientFormProblem" class="live-input" placeholder="المشكلة / المرض">
       <textarea id="patientFormHistory" class="live-input" placeholder="التاريخ المرضي إن وجد"></textarea>
       <textarea id="patientFormNotes" class="live-input" placeholder="ملاحظات إضافية"></textarea>
@@ -524,7 +524,7 @@
             <button class="modal-close" type="button" onclick="closeHistoryModal()">×</button>
             <h3>سجل السندات المحفوظة</h3>
             <div class="history-stats" id="historyStats"></div>
-            <input type="search" id="historySearch" class="live-input history-search" placeholder="🔎 ابحث بالاسم أو رقم السند أو التاريخ أو الخدمة..." oninput="renderHistory()">
+            <input type="search" id="historySearch" class="live-input history-search" placeholder="ابحث بالاسم أو رقم السند أو التاريخ أو الخدمة..." oninput="renderHistory()">
             <div class="history-container" id="historyList"></div>
             <div class="history-footer">
                 <button type="button" class="tool-btn" onclick="exportTransactionsFile('csv')">📊 تصدير CSV</button>
