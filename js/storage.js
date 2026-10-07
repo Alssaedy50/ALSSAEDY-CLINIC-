@@ -1,3 +1,27 @@
+/* Durable local store: IndexedDB with localStorage compatibility mirror. */
+const CLINIC_DB_NAME='ALSSAEDY_CLINIC_DB';
+const CLINIC_DB_VERSION=2;
+function clinicDBOpen(){
+  if(window.__clinicDBPromise)return window.__clinicDBPromise;
+  window.__clinicDBPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open(CLINIC_DB_NAME,CLINIC_DB_VERSION);
+    req.onupgradeneeded=()=>{const db=req.result;['receipts','patients','settings'].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s,{keyPath:'id'});});};
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  }); return window.__clinicDBPromise;
+}
+async function clinicDBAll(store){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const q=tx.objectStore(store).getAll();q.onsuccess=()=>resolve(q.result||[]);q.onerror=()=>reject(q.error);});}
+async function clinicDBPut(store,item){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(item);tx.oncomplete=()=>resolve(item);tx.onerror=()=>reject(tx.error);});}
+async function clinicDBDelete(store,id){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
+async function clinicDBClear(store){const db=await clinicDBOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
+async function hydrateDurableReceipts(){
+  try{
+    const durable=await clinicDBAll('receipts');
+    const legacy=safeHistory();
+    if(!durable.length && legacy.length){for(const item of legacy)await clinicDBPut('receipts',item);}
+    const merged=await clinicDBAll('receipts');
+    if(merged.length)localStorage.setItem('alssaedy_receipts_history',JSON.stringify(merged));
+  }catch(e){}
+}
 function safeHistory() {
     try {
         const parsed = JSON.parse(localStorage.getItem('alssaedy_receipts_history') || '[]');
