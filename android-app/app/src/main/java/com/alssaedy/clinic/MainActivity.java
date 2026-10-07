@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.AlarmManager;
@@ -29,7 +28,6 @@ import android.webkit.WebViewClient;
 import android.webkit.ValueCallback;
 import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Base64;
 
