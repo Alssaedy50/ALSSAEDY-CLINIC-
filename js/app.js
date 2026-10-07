@@ -396,9 +396,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // The paper template is generated separately and starts completely blank.
     syncPaperDate('');
     setMode('digital');
-    const dateInput = document.getElementById('digDate');
-    if (dateInput) dateInput.addEventListener('input', syncReceiptDateFromInput);
-    updatePrintDate(dateInput?.value||'');
     hydrateDurableReceipts().then(()=>updateHistoryCount()).catch(()=>updateHistoryCount());
     updateActionAvailability();
 });
