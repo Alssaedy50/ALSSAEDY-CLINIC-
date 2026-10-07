@@ -33,16 +33,32 @@ await page.waitForTimeout(500);
 
 const dateCheck = await page.evaluate(() => ({
   digitalDate: document.getElementById('digDate')?.value || '',
-  paperDay: document.getElementById('paperDateDay')?.textContent || '',
-  paperMonth: document.getElementById('paperDateMonth')?.textContent || '',
-  paperYear: document.getElementById('paperDateYear')?.textContent || ''
+  visibleDigitalDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none' && el.id !== 'hiddenDatePicker').length,
+  visibleManualDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length
 }));
-if (dateCheck.digitalDate !== '2026-10-07' ||
-    dateCheck.paperDay !== '07' ||
-    dateCheck.paperMonth !== '10' ||
-    dateCheck.paperYear !== '2026 م') {
-  throw new Error('Receipt date synchronization failed: ' + JSON.stringify(dateCheck));
+if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0) {
+  throw new Error('Digital receipt date visibility failed: ' + JSON.stringify(dateCheck));
 }
+
+const blankCheck = await page.evaluate(() => {
+  setMode('manual');
+  const fields = ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'];
+  const values = Object.fromEntries(fields.map(id => [id, document.getElementById(id)?.value || '']));
+  const date = {
+    day: document.getElementById('paperDateDay')?.textContent || '',
+    month: document.getElementById('paperDateMonth')?.textContent || '',
+    year: document.getElementById('paperDateYear')?.textContent || ''
+  };
+  const visibleDigital = Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none' && el.id !== 'hiddenDatePicker').length;
+  const visibleManual = Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length;
+  return {values,date,visibleDigital,visibleManual};
+});
+if (Object.values(blankCheck.values).some(Boolean) ||
+    blankCheck.date.day !== '' || blankCheck.date.month !== '' || blankCheck.date.year !== '____ م' ||
+    blankCheck.visibleDigital !== 0 || blankCheck.visibleManual !== 1) {
+  throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
+}
+setMode('digital');
 
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');
