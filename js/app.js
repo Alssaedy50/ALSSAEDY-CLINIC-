@@ -187,10 +187,9 @@ function syncPaperDate(dateValue) {
     if (year) {
         const yearValue = parsed ? parsed.y : '202';
         year.innerHTML =
-            '<span class="paper-year-digits" dir="ltr">' + yearValue + '</span>' +
-            '<span class="paper-year-era" dir="rtl">م</span>';
-        year.setAttribute('dir', 'rtl');
-        year.style.direction = 'rtl';
+            '<span class="paper-year-digits" dir="ltr">' + yearValue + '</span><span class="paper-year-era" dir="ltr">م</span>';
+        year.setAttribute('dir', 'ltr');
+        year.style.direction = 'ltr';
         year.style.unicodeBidi = 'isolate';
     }
 }
@@ -247,20 +246,46 @@ function toggleService(element) {
 }
 
 function uploadLogo(event){
-  const file=event.target.files?.[0];if(!file)return;
+  const input=event?.target;
+  const file=input?.files?.[0];
+  if(!file)return;
   const reader=new FileReader();
   reader.onload=()=>{
-    const raw=reader.result;
+    const raw=String(reader.result||'');
+    // Keep vector SVG files untouched; raster logos are resized only when truly
+    // oversized, preserving much more detail than the previous 900px limit.
+    if(file.type==='image/svg+xml' || /\\.svg$/i.test(file.name)){
+      try{localStorage.setItem('alssaedy_custom_logo',raw);applyLogo(raw);alert('تم حفظ الشعار الجديد بجودة أصلية.');}
+      catch(e){alert('تعذر حفظ الشعار. قد يكون ملف SVG كبيراً جداً.');}
+      if(input) input.value='';
+      return;
+    }
     const img=new Image();
     img.onload=()=>{
-      const max=900,scale=Math.min(1,max/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
-      const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));canvas.height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
-      const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      const compressed=canvas.toDataURL('image/png');
-      try{localStorage.setItem('alssaedy_custom_logo',compressed);applyLogo(compressed);alert('تم حفظ الشعار الجديد بنجاح.');}
-      catch(e){alert('تعذر حفظ الشعار. اختر صورة أصغر حجماً.');}
+      const sourceW=img.naturalWidth||img.width||1, sourceH=img.naturalHeight||img.height||1;
+      const max=2048;
+      const scale=Math.min(1,max/Math.max(sourceW,sourceH));
+      const width=Math.max(1,Math.round(sourceW*scale));
+      const height=Math.max(1,Math.round(sourceH*scale));
+      const canvas=document.createElement('canvas');
+      canvas.width=width; canvas.height=height;
+      const ctx=canvas.getContext('2d',{alpha:true});
+      if(!ctx){alert('تعذر معالجة الشعار.');return;}
+      ctx.imageSmoothingEnabled=true;
+      ctx.imageSmoothingQuality='high';
+      ctx.clearRect(0,0,width,height);
+      ctx.drawImage(img,0,0,width,height);
+      const output=canvas.toDataURL('image/png');
+      try{
+        localStorage.setItem('alssaedy_custom_logo',output);
+        applyLogo(output);
+        alert('تم حفظ الشعار الجديد بجودة عالية.');
+      }catch(e){
+        alert('تعذر حفظ الشعار. اختر صورة PNG/JPG أصغر حجماً.');
+      }
+      if(input) input.value='';
     };
-    img.onerror=()=>alert('صيغة الشعار غير مدعومة. اختر PNG أو JPG أو صورة SVG بسيطة.');
+    img.onerror=()=>alert('صيغة الشعار غير مدعومة. اختر PNG أو JPG أو SVG.');
     img.src=raw;
   };
   reader.readAsDataURL(file);
@@ -272,6 +297,8 @@ function applyLogo(url) {
 
 function resetOfficialLogo() {
     localStorage.removeItem('alssaedy_custom_logo');
+    const uploader=document.getElementById('logoUploader');
+    if(uploader) uploader.value='';
     applyLogo(OFFICIAL_LOGO_URL);
     alert('تمت استعادة الشعار الرسمي المعتمد للعيادة بنجاح.');
 }
