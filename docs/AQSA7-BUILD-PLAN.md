@@ -457,7 +457,9 @@ The current v1.2.1 implementation is functional enough to serve as a baseline, b
 
 ### Phase 0 — COMPLETE
 
-### Phase 1 / Task 1.1 — Data repository architecture: IN PROGRESS
+### Phase 1 / Task 1.1 — Data repository architecture: COMPLETE
+
+Receipt/patient repository migration merged to `main` in PR #33 (squashed commit `1ef58eb284f8d87ab3b40ff41ca882c3e7f8c771`). IndexedDB is now authoritative for receipt/patient records; legacy mirrors are migrated and retired.
 
 Implementation branch: `refactor/phase1-repository`
 
@@ -470,5 +472,9 @@ Current implementation scope:
 - Removed active receipt/patient localStorage mirror writes from the domain layer.
 - Added repository to HTML load order and service-worker app shell.
 
-Not yet complete in 1.1: centralized settings/logo storage. Those remain the next repository sub-step after this record migration is verified.
+The next repository boundary is clinic settings/logo storage; UI-only preferences may remain local until their ownership is explicitly consolidated.
 Objective: establish one authoritative persistence boundary before removing mirrors or legacy storage paths.
+
+
+### Phase 1 / Task 1.2 — Clinic settings & logo repository: IN PROGRESS
+Objective: move durable clinic configuration (custom logo first) behind the repository boundary while leaving UI-only preferences isolated until their own migration.
