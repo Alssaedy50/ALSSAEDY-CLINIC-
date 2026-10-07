@@ -61,7 +61,7 @@ async function buildSyncSnapshot() {
     const base = (typeof buildFullBackup === 'function') ? await buildFullBackup() : {};
     return {
         app: 'ALSSAEDY_CLINIC',
-        snapshotVersion: 1,
+        snapshotVersion: 2,
         updatedAt: new Date().toISOString(),
         receipts: await clinicDBAll('receipts'),
         patients: await clinicDBAll('patients'),
@@ -140,11 +140,18 @@ async function syncRestoreNow() {
         }
         await clinicRepositoryHydrate();
         if (snap.settings) {
-            if (snap.settings.customLogo) await saveLogoDurably(snap.settings.customLogo);
-            if (snap.settings.currency) localStorage.setItem('alssaedy_currency', snap.settings.currency);
-            if (snap.settings.size) localStorage.setItem('alssaedy_receipt_size', snap.settings.size);
-            if (snap.settings.theme) localStorage.setItem('alssaedy_theme', snap.settings.theme);
-            if (snap.settings.texts) localStorage.setItem('alssaedy_texts', snap.settings.texts);
+            const incomingClinic = snap.settings.clinic || snap.settings;
+            await clinicRepositoryPutSettings({
+                ...(Object.prototype.hasOwnProperty.call(incomingClinic,'customLogo') ? {customLogo:incomingClinic.customLogo||''} : {}),
+                ...(Object.prototype.hasOwnProperty.call(incomingClinic,'currency') ? {currency:incomingClinic.currency||'YER'} : {}),
+                ...(Object.prototype.hasOwnProperty.call(incomingClinic,'size') ? {receiptSize:incomingClinic.size||'a5'} : {}),
+                ...(Object.prototype.hasOwnProperty.call(incomingClinic,'texts') ? {receiptTexts:incomingClinic.texts||''} : {})
+            });
+            if (snap.settings.ui?.theme) localStorage.setItem('alssaedy_theme', snap.settings.ui.theme);
+            if (snap.settings.ui?.watermark) localStorage.setItem('alssaedy_watermark', snap.settings.ui.watermark);
+            if (typeof applyLogo === 'function') applyLogo(clinicRepositoryGetSettingSync('customLogo') || OFFICIAL_LOGO_URL);
+            if (typeof setCurrency === 'function') setCurrency(clinicRepositoryGetSettingSync('currency') || 'YER');
+            if (typeof setSize === 'function') setSize(clinicRepositoryGetSettingSync('receiptSize') || 'a5');
         }
         localStorage.setItem('alssaedy_last_sync', new Date().toISOString());
         if (typeof updateHistoryCount === 'function') updateHistoryCount();
