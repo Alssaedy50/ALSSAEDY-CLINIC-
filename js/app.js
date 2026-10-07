@@ -22,8 +22,9 @@ function toggleDrawer(open) {
 
 function setMode(mode) {
     document.body.setAttribute('data-mode', mode);
-    document.getElementById('btnModeManual').classList.toggle('active', mode === 'manual');
-    document.getElementById('btnModeDigital').classList.toggle('active', mode === 'digital');
+    document.getElementById('btnModeManual')?.classList.toggle('active', mode === 'manual');
+    document.getElementById('btnModeDigital')?.classList.toggle('active', mode === 'digital');
+    document.getElementById('btnModeTemplates')?.classList.toggle('active', false);
     // Manual mode is used only by the blank printable-template generator.
     // It must NEVER inherit the digital receipt date or patient/account data.
     if (mode === 'manual') {
