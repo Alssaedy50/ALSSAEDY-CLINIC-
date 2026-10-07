@@ -93,13 +93,13 @@ const result = await page.evaluate(async () => {
   const sizes = [
     { id: 'a5', ratio: 148 / 210 },
     { id: 'a4', ratio: 210 / 297 },
-    { id: 'thermal', ratio: 80 / 1 }
+    { id: 'thermal', ratio: null }
   ];
   const exports = {};
   for (const size of sizes) {
     setSize(size.id);
     const canvas = await generateReceiptCanvas({ fullPage: true, scale: 2 });
-    if (size.id !== 'thermal') {
+    if (size.ratio) {
       const actual = canvas.width / canvas.height;
       if (Math.abs(actual - size.ratio) > 0.01) {
         throw new Error('Wrong physical aspect ratio for ' + size.id + ': ' + actual);
@@ -125,24 +125,38 @@ const result = await page.evaluate(async () => {
   setSize('a5');
   return exports;
 });
-const base64 = result.dataUrl.split(',')[1];
-const pngPath = '/tmp/alssaedy-receipt-export.png';
-fs.writeFileSync(pngPath, Buffer.from(base64, 'base64'));
 
-const png = PNG.sync.read(fs.readFileSync(pngPath));
-if (png.width !== result.width || png.height !== result.height) throw new Error('PNG dimensions mismatch');
-if (png.width < 1000 || png.height < 1200) throw new Error(`Export unexpectedly small: ${png.width}x${png.height}`);
+const { execFileSync } = await import('node:child_process');
+const outputs = {};
+for (const [size, item] of Object.entries(result)) {
+  const pngPath = '/tmp/alssaedy-' + size + '.png';
+  const pdfPath = '/tmp/alssaedy-' + size + '.pdf';
+  fs.writeFileSync(pngPath, Buffer.from(item.dataUrl.split(',')[1], 'base64'));
+  fs.writeFileSync(pdfPath, Buffer.from(item.pdfDataUrl.split(',')[1], 'base64'));
 
-let lowerInk = 0;
-const yStart = Math.floor(png.height * 0.55);
-for (let y = yStart; y < png.height; y += 4) {
-  for (let x = 0; x < png.width; x += 4) {
-    const i = (y * png.width + x) * 4;
-    const r = png.data[i], g = png.data[i+1], b = png.data[i+2], a = png.data[i+3];
-    if (a > 0 && (r < 245 || g < 245 || b < 245)) lowerInk++;
+  const png = PNG.sync.read(fs.readFileSync(pngPath));
+  if (png.width !== item.width || png.height !== item.height) {
+    throw new Error('PNG dimensions mismatch for ' + size);
   }
-}
-if (lowerInk < 500) throw new Error(`Lower receipt area appears blank; ink samples=${lowerInk}`);
+  if (png.width < 1000 || png.height < 1000) {
+    throw new Error('Export unexpectedly small for ' + size + ': ' + png.width + 'x' + png.height);
+  }
 
-console.log(JSON.stringify({ ok: true, width: png.width, height: png.height, lowerInkSamples: lowerInk, pngPath }));
+  let ink = 0;
+  for (let y = Math.floor(png.height * 0.55); y < png.height; y += 4) {
+    for (let x = 0; x < png.width; x += 4) {
+      const i = (y * png.width + x) * 4;
+      if (png.data[i + 3] > 0 && (png.data[i] < 245 || png.data[i + 1] < 245 || png.data[i + 2] < 245)) ink++;
+    }
+  }
+  if (ink < 500) throw new Error('Lower receipt area appears blank for ' + size);
+
+  const info = execFileSync('pdfinfo', [pdfPath], {encoding:'utf8'});
+  const pages = /Pages:\s+(\d+)/.exec(info)?.[1];
+  const media = /Page size:\s+([0-9.]+) x ([0-9.]+) pts/.exec(info);
+  if (pages !== '1' || !media) throw new Error('Invalid PDF structure for ' + size);
+  outputs[size] = { png: [png.width, png.height], pdfPts: [Number(media[1]), Number(media[2])], ink };
+}
+
+console.log(JSON.stringify({ ok: true, outputs }));
 await browser.close();
