@@ -65,8 +65,8 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        if (webView != null && webView.canGoBack()) { webView.goBack(); return; }
+        super.onBackPressed();
     }
 
     private class ClinicWebViewClient extends WebViewClient {
