@@ -29,6 +29,22 @@ tasks.named("preBuild").configure {
 }
 
 android {
+    def releaseKeystore = System.getenv("ALSSAEDY_RELEASE_KEYSTORE")
+    def releaseStorePassword = System.getenv("ALSSAEDY_RELEASE_STORE_PASSWORD")
+    def releaseKeyAlias = System.getenv("ALSSAEDY_RELEASE_KEY_ALIAS")
+    def releaseKeyPassword = System.getenv("ALSSAEDY_RELEASE_KEY_PASSWORD")
+
+    signingConfigs {
+        release {
+            if (releaseKeystore && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                storeFile file(releaseKeystore)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
     namespace "com.alssaedy.clinic"
     compileSdk 35
 
@@ -49,6 +65,9 @@ android {
 
     buildTypes {
         release {
+            if (releaseKeystore && releaseStorePassword && releaseKeyAlias && releaseKeyPassword) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             shrinkResources false
         }
