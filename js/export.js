@@ -65,8 +65,6 @@ function withCaptureState(callback) {
 }
 
 function materializeReceiptDate(sourceReceipt, clonedReceipt) {
-    // Blank/manual paper templates are deliberately date-free. The pre-printed
-    // year marker is rendered by #paperDateYear; never copy the digital date into it.
     const isBlankTemplate =
         document.body.classList.contains('blank-template-export') ||
         document.body.getAttribute('data-mode') === 'manual';
@@ -76,34 +74,32 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
     const clonedPaperYear = clonedReceipt.querySelector('#paperDateYear');
 
     if (isBlankTemplate) {
-        if (cloned) {
-            cloned.value = '';
-            cloned.removeAttribute('value');
-        }
-        if (clonedPrintDate) clonedPrintDate.textContent = '';
+        if (cloned) cloned.value = '';
+        if (clonedPrintDate) clonedPrintDate.remove();
         if (clonedPaperYear) {
             clonedPaperYear.innerHTML =
-                '<span class="paper-year-digits" dir="ltr">202</span>' +
-                '<span class="paper-year-era" dir="rtl">م</span>';
-            clonedPaperYear.setAttribute('dir', 'rtl');
-            clonedPaperYear.style.direction = 'rtl';
-            clonedPaperYear.style.unicodeBidi = 'isolate';
+                '<span class="paper-year-digits" dir="ltr">202</span><span class="paper-year-era" dir="ltr">م</span>';
+            clonedPaperYear.setAttribute('dir','ltr');
+            clonedPaperYear.style.direction='ltr';
+            clonedPaperYear.style.unicodeBidi='isolate';
         }
         return;
     }
 
+    // Export/print must contain exactly one date. Replace the live input with
+    // one ordinary text span; do not keep a second print-date mirror.
     if (cloned) {
-        const value = String(source?.value || '').trim();
-        cloned.value = value;
-        cloned.setAttribute('value', value);
+        const value=String(source?.value||'').trim();
+        const span=cloned.ownerDocument.createElement('span');
+        span.id='exportedReceiptDate';
+        span.className='exported-receipt-date';
+        span.textContent=(typeof formatReceiptDate==='function' ? formatReceiptDate(value) : value);
+        span.setAttribute('dir','ltr');
+        span.style.cssText='display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:800!important;text-align:center!important;white-space:nowrap!important;width:120px!important;';
+        cloned.replaceWith(span);
     }
-    // Mirror the human-readable date into the print-only element so the rendered
-    // PNG/PDF shows "DD/MM/YYYY م" instead of the raw typed text.
-    if (clonedPrintDate && typeof formatReceiptDate === 'function') {
-        clonedPrintDate.textContent = formatReceiptDate(source?.value || '');
-    }
-  }
-
+    if (clonedPrintDate) clonedPrintDate.remove();
+}
 function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument) {
     // Android WebView/html2canvas can render the form control chrome but omit the
     // live .value property. Convert visible controls into ordinary text elements
@@ -188,7 +184,7 @@ async function generateReceiptCanvas(options = {}) {
         );
 
         return html2canvas(receipt, {
-            scale: options.scale || 6,
+            scale: options.scale || 8,
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -196,7 +192,8 @@ async function generateReceiptCanvas(options = {}) {
             // Do NOT use html2canvas letterRendering for Arabic: it can split
             // joined glyphs and place individual letters on top of each other.
             letterRendering: false,
-            imageTimeout: 15000,
+            imageTimeout: 20000,
+            removeContainer: true,
             windowWidth: captureWidth,
             windowHeight: captureHeight,
             onclone: (clonedDocument) => {
@@ -250,7 +247,14 @@ async function generateReceiptCanvas(options = {}) {
 
                 materializeReceiptDate(receipt, clonedReceipt);
                 materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
-                const logo=clonedReceipt.querySelector('#clinicLogoImg'); if(logo){logo.style.opacity='1';logo.style.filter='none';}
+                const logo=clonedReceipt.querySelector('#clinicLogoImg');
+                 if(logo){
+                     logo.style.opacity='1';
+                     logo.style.filter='none';
+                     logo.style.imageRendering='high-quality';
+                     logo.removeAttribute('width');
+                     logo.removeAttribute('height');
+                 }
             }
         });
     }).finally(() => document.body.classList.remove('exporting-receipt'));
