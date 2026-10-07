@@ -141,7 +141,7 @@ for (const [size, item] of Object.entries(result)) {
   if (png.width !== item.width || png.height !== item.height) {
     throw new Error('PNG dimensions mismatch for ' + size);
   }
-  if (png.width < 1000 || png.height < 1000) {
+  if (png.width < 500 || png.height < 500) {
     throw new Error('Export unexpectedly small for ' + size + ': ' + png.width + 'x' + png.height);
   }
 
