@@ -256,6 +256,40 @@ Authoritative runtime map established from the current `main` branch.
 
 The action inventory covers 89 inline handlers across 53 handler expressions, plus DOMContentLoaded, popstate, input/change, keyboard shortcut, service-worker and Android bridge events. The major action families are: receipt entry, quick actions, navigation, settings/theme/typography, logo, history, patient management, backup/import/export, sync, print/PDF/image/share and template generation.
 
+
+### Phase 0 / Task 0.4 — State & data-flow map: COMPLETE
+
+#### Authoritative state model (current implementation)
+| Domain | Current authoritative state | Mirrors / secondary state | Main mutation paths |
+|---|---|---|---|
+| Current receipt draft | Live DOM inputs under `#receiptPrintArea` | `alssaedy_draft` localStorage for recovery | input/change handlers, quick actions, payment/service/ledger functions |
+| Saved receipts | IndexedDB `receipts` is the intended durable store | `alssaedy_receipts_history` localStorage is a full mirror used by reads/UI | save/load/delete/clear/import/sync |
+| Patients | IndexedDB `patients` | `alssaedy_patients` localStorage mirror | manual save, receipt save/upsert, sync/import |
+| Settings | Mostly localStorage keys | some settings also copied into sync snapshots | setters in app.js, import/sync restore |
+| Custom logo | IndexedDB `settings/customLogo` is durable path | `alssaedy_custom_logo` localStorage; startup reads both | upload/reset/import/sync |
+| Selected patient | `currentPatientId` / `window.currentPatientId` | patient form hidden ID + receipt `patientId` when saved | select/save patient, load receipt |
+| Sync config | localStorage | none | sync settings UI |
+| Navigation | `activeAppTab` + DOM classes + browser history state | modal open classes | tab/modal functions + popstate |
+| Export snapshot | temporary DOM clone/canvas/print DOM | none intended | export functions |
+
+#### Data-flow conclusions
+1. The current receipt draft is correctly DOM-centric, but draft recovery is an independent localStorage state machine.
+2. IndexedDB is the stronger persistence layer, but the localStorage mirrors are actively read by `safeHistory()` and patient fallback paths; therefore deleting the mirrors without first changing readers would break functionality.
+3. Receipt save/delete/clear and patient save all perform explicit mirror writes, creating multiple synchronization points and possible divergence if one write succeeds and the other fails.
+4. Logo has two persistence paths with overlapping responsibilities; startup explicitly reads localStorage first and then IndexedDB, while reset/import/sync update localStorage directly. This must be consolidated in Phase 1.
+5. Settings are fragmented across at least 17 localStorage keys in app.js plus night/sync/draft/patient/receipt-history keys in other modules. There is no centralized settings repository.
+6. Navigation state is distributed between `activeAppTab`, modal classes, patient-detail visibility classes and `history.state`; there is no single route state owner.
+7. Sync snapshot is built from IndexedDB for receipts/patients but settings from localStorage, confirming the current data boundary is split between stores.
+
+#### Phase 1 remediation targets derived from 0.4
+- Introduce one repository/data layer with IndexedDB as the single durable source for receipts, patients and settings.
+- Treat localStorage only as a narrowly scoped compatibility/migration store, not a second database.
+- Centralize clinic settings and logo persistence.
+- Define one navigation state machine/router.
+- Define explicit receipt draft state separate from persisted receipt records.
+- Make sync consume repository snapshots rather than reaching into storage primitives directly.
+- Make export consume a read-only receipt snapshot and never mutate persistent state.
+
 ### Next task
-**0.4 State/data-flow map — IN PROGRESS.**
-Focus: identify every authoritative state owner, every mirror, every mutation path, and the exact boundaries between DOM state, IndexedDB, localStorage, sync snapshots, export snapshots and Android persistence.
+**0.5 Date pipeline audit — IN PROGRESS.**
+Focus: one date domain model from user input/native picker → normalized date → paper display → digital display → print/PDF → history/storage → backup/sync, including RTL/BiDi correctness.
