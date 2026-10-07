@@ -431,5 +431,31 @@ Additional responsibility overlap (not yet dead):
 
 These are removal/merge candidates, not yet deleted, because Phase 1 must first establish the replacement authoritative paths and regression coverage.
 
-### Next task
-**0.15 Final audit report & remediation order — IN PROGRESS.**
+
+### Phase 0 / Task 0.15 — Final audit report & remediation order: COMPLETE
+
+#### Final audit conclusion
+The current v1.2.1 implementation is functional enough to serve as a baseline, but its responsibilities are too distributed for AQSA7 productization. The dominant architectural problem is **state ownership fragmentation**, not missing individual features. The next phase must therefore restructure ownership before adding UX features.
+
+#### Remediation order (mandatory)
+1. **R1 — Data repository:** IndexedDB-backed repository for receipts, patients, settings; migrate readers away from localStorage mirrors.
+2. **R2 — Receipt state:** explicit draft/current-receipt model and canonical date/currency values.
+3. **R3 — Logo repository:** one persistence/apply path; remove duplicate logo helpers after migration.
+4. **R4 — Export engine:** keep native print as PDF authority; keep one PNG engine; remove disconnected jsPDF/data-url paths after tests.
+5. **R5 — Router/navigation:** one route owner and reliable Android/browser Back behavior.
+6. **R6 — Android bridge:** retain only active native capabilities and keep JS interface surface minimal.
+7. **R7 — Settings:** centralize settings access and persistence; keep only true preferences in localStorage.
+8. **R8 — Sync boundary:** make sync consume repository snapshots and redesign authentication/tenant isolation before productization.
+9. **R9 — Service worker:** explicit version/update lifecycle without sacrificing offline support.
+10. **R10 — CSS ownership:** consolidate cascade after architecture changes, with protected print geometry tests.
+
+#### Phase 0 exit criteria
+- All 0.1–0.15 tasks completed.
+- No production code was deleted during audit-only work.
+- Every proposed deletion has a dependency/call-graph basis.
+- Phase 1 can now proceed with R1 as the first implementation change.
+
+### Phase 0 — COMPLETE
+
+### Phase 1 / Task 1.1 — Data repository architecture: IN PROGRESS
+Objective: establish one authoritative persistence boundary before removing mirrors or legacy storage paths.
