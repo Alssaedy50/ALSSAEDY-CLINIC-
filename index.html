@@ -93,7 +93,7 @@
 
                     <!-- للوضع الرقمي: إدخال حر لجميع الصيغ واللغات مع تقويم اختياري -->
                     <div class="digital-only" style="display: inline-flex; align-items: center; gap: 4px;">
-                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو حر" dir="auto" style="text-align: center; width: 120px; font-weight: 700;">
+                        <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو حر" dir="auto" style="text-align: center; width: 120px; font-weight: 700;"><span class="print-only print-date-value" id="printDateValue"></span>
                         <button type="button" class="no-print" style="background: none; border: none; cursor: pointer; font-size: 12px;" onclick="document.getElementById('hiddenDatePicker').showPicker()">📅</button>
                         <input type="date" id="hiddenDatePicker" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" onchange="document.getElementById('digDate').value=this.value">
                     </div>
@@ -117,7 +117,7 @@
                     <span class="paid-title editable" data-key="paid_lbl">المبلغ المدفوع:</span>
                     <div class="manual-only paid-blank-line"></div>
                     <input type="number" class="digital-only live-input paid-numeric" id="digPaid" placeholder="" oninput="calculateLedger()">
-                    <span class="paid-unit editable" data-key="curr_lbl" id="paidCurrencyLabel">ريال يمني</span>
+                    <span class="paid-unit editable" data-key="curr_lbl" id="paidCurrencyLabel">ريال يمني</span><span id="receiptCurrencyBadge" aria-label="العملة">YER</span>
                 </div>
 
                 <div class="row-flex">
