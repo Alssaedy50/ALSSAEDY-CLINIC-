@@ -1,127 +1,32 @@
-@media print {
-html,body{margin:0!important;padding:0!important;background:#fff!important;width:148mm!important;height:210mm!important;min-height:210mm!important;overflow:hidden!important}
+@page{size:148mm 210mm;margin:0!important}
+@media print{
+html,body{margin:0!important;padding:0!important;background:#fff!important;width:148mm!important;min-height:210mm!important;overflow:hidden!important}
 .site-bg-overlay,.no-print,.quick-action-bar,.floating-action-dock,.settings-panel,.modal-screen{display:none!important}
-.page-canvas-wrapper{width:148mm!important;height:198mm!important;min-height:198mm!important;max-height:198mm!important;padding:0!important;margin:0!important;display:block!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important}
-.receipt-paper{width:148mm!important;max-width:148mm!important;min-width:148mm!important;height:198mm!important;min-height:198mm!important;max-height:198mm!important;margin:0!important;padding:5mm 7mm!important;box-sizing:border-box!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important;page-break-after:avoid!important;box-shadow:none!important}
-.date-container{display:inline-flex!important;align-items:center!important;gap:5px!important;direction:rtl!important;unicode-bidi:normal!important;white-space:nowrap!important}
-.date-sequence{display:inline-flex!important;flex:0 0 auto!important;flex-direction:row!important;align-items:center!important;gap:4px!important;direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important}
-.date-sequence .date-slot{width:25px!important;min-width:25px!important;height:15px!important;display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;border-bottom:1.5px dashed #64748b!important}
-.date-sequence .date-slash{direction:ltr!important;unicode-bidi:isolate!important}
-.date-sequence .date-year{direction:ltr!important;unicode-bidi:isolate!important;white-space:nowrap!important;font-weight:800!important;display:inline-block!important}
+.page-canvas-wrapper{width:148mm!important;height:210mm!important;min-height:210mm!important;padding:0!important;margin:0!important;display:block!important;overflow:hidden!important}
+.receipt-paper{width:148mm!important;height:210mm!important;min-width:148mm!important;max-width:148mm!important;min-height:210mm!important;max-height:210mm!important;margin:0!important;padding:5mm 7mm!important;box-sizing:border-box!important;overflow:hidden!important;box-shadow:none!important;break-inside:avoid!important;page-break-inside:avoid!important}
+.receipt-paper *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+.receipt-paper .clinic-logo{opacity:1!important;filter:none!important}
+.date-field-wrapper{direction:rtl!important;unicode-bidi:isolate!important;white-space:nowrap!important}
+.date-boxes-row{display:inline-flex!important;align-items:center!important;flex-direction:row!important;direction:rtl!important;unicode-bidi:isolate!important;gap:4px!important;white-space:nowrap!important}
+.date-line-slot{display:inline-block!important;width:25px!important;min-width:25px!important;height:15px!important;border-bottom:1.5px dashed #64748b!important}
+.date-slash{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important}
+.paper-year-fixed{display:inline-flex!important;flex-direction:row!important;align-items:center!important;direction:rtl!important;unicode-bidi:isolate!important;white-space:nowrap!important}
+.paper-year-digits{direction:ltr!important;unicode-bidi:isolate!important;display:inline-block!important}
+.paper-year-era{direction:rtl!important;unicode-bidi:isolate!important;display:inline-block!important}
+.date-field-wrapper .digital-only{display:inline-flex!important}
+.date-field-wrapper .manual-only{display:none!important}
+[data-mode="manual"] .date-field-wrapper .digital-only,body.blank-template-export .date-field-wrapper .digital-only{display:none!important}
+[data-mode="manual"] .date-field-wrapper .manual-only,body.blank-template-export .date-field-wrapper .manual-only{display:inline-flex!important}
+.date-field-wrapper #hiddenDatePicker,.date-field-wrapper #digDate{display:none!important}
+.date-field-wrapper .print-date-value{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:900!important;color:#073b63!important;white-space:nowrap!important}
+body.blank-template-export .paper-year-fixed,body.blank-template-export .paper-year-digits,body.blank-template-export .paper-year-era{font-size:10px!important;color:#073b63!important}
 .footer-meta-line{flex-direction:column!important;justify-content:center!important;gap:3px!important;text-align:center!important}
 .footer-address{white-space:nowrap!important;width:100%!important;text-align:center!important}
-.footer-phones{display:flex!important;width:100%!important;justify-content:center!important;align-items:center!important;gap:10px!important;white-space:nowrap!important;overflow:visible!important;direction:ltr!important;unicode-bidi:isolate!important;font-family:monospace,sans-serif!important;font-size:8.5px!important;font-weight:800!important;color:#073b63!important;padding:2px 0!important;border:0!important;background:transparent!important}
-html[data-size="a4"] body{width:210mm!important;height:297mm!important;min-height:297mm!important}
-html[data-size="a4"] .page-canvas-wrapper{width:210mm!important;height:291.06mm!important;min-height:291.06mm!important;max-height:291.06mm!important}
-html[data-size="a4"] .receipt-paper{width:210mm!important;min-width:210mm!important;height:291.06mm!important;min-height:291.06mm!important;max-height:291.06mm!important}
-html[data-size="thermal"] body{width:80mm!important;height:auto!important;min-height:0!important;overflow:visible!important}
-html[data-size="thermal"] .page-canvas-wrapper{width:80mm!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
-html[data-size="thermal"] .receipt-paper{width:80mm!important;min-width:80mm!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding:5mm 4mm!important}
-}
-@page{size:148mm 210mm;margin:0!important}
-@page:first{margin:0!important}
-@media print{
-  .receipt-paper .date-sequence{font-size:9px!important;line-height:1!important;font-weight:700!important;}
-  .receipt-paper .main-voucher-title{font-size:calc(15px * var(--receipt-title-scale))!important;}
-}
-
-/* FINAL PAPER DATE FIX — matches the live paper-date markup in index.html. */
-@media print {
-  .receipt-paper .date-boxes-row {
-    display:inline-flex!important;
-    flex-direction:row!important;
-    align-items:baseline!important;
-    gap:4px!important;
-    direction:ltr!important;
-    unicode-bidi:isolate!important;
-    white-space:nowrap!important;
-  }
-  .receipt-paper .date-line-slot {
-    display:inline-block!important;
-    width:25px!important;
-    min-width:25px!important;
-    height:15px!important;
-    border-bottom:1.5px dashed #64748b!important;
-    text-align:center!important;
-    direction:ltr!important;
-    unicode-bidi:isolate!important;
-  }
-  .receipt-paper .date-slash {
-    display:inline-block!important;
-    direction:ltr!important;
-    unicode-bidi:isolate!important;
-    font-weight:800!important;
-  }
-  .receipt-paper .date-year-label {
-    display:inline-block!important;
-    direction:ltr!important;
-    unicode-bidi:isolate!important;
-    white-space:nowrap!important;
-  }
-  .receipt-paper .date-field-wrapper {
-    break-inside:avoid!important;
-  }
-}
-
-/* Canonical date rendering: exactly one visible date source per mode. */
-.date-field-wrapper .digital-only{display:inline-flex!important;align-items:center!important;gap:4px!important}
-.date-field-wrapper .manual-only{display:none!important}
-[data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
-[data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
-#hiddenDatePicker{display:none!important}
-.date-boxes-row{direction:ltr!important;unicode-bidi:isolate!important;display:inline-flex!important;align-items:center!important;gap:4px!important;white-space:nowrap!important}
-.date-boxes-row .date-line-slot{display:inline-block!important;width:25px!important;height:15px!important;text-align:center!important;border-bottom:1.5px dashed #64748b!important}
-.date-boxes-row .date-slash{display:inline-block!important}
-.date-boxes-row .date-year-label{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;min-width:34px!important}
-@media print{
-  .date-field-wrapper #hiddenDatePicker{display:none!important}
-  .date-field-wrapper .digital-only{display:inline-flex!important}
-  .date-field-wrapper .manual-only{display:none!important}
-  [data-mode="manual"] .date-field-wrapper .digital-only{display:none!important}
-  [data-mode="manual"] .date-field-wrapper .manual-only{display:inline-flex!important}
-}
-
-/* BLANK TEMPLATE CONTRACT v2: never print a populated digital date. */
-body.blank-template-export .date-field-wrapper .digital-only{display:none!important}
-body.blank-template-export .date-field-wrapper .manual-only{display:inline-flex!important}
-body.blank-template-export .date-line-slot{color:transparent!important}
-body.blank-template-export .date-year-label{font-size:0!important;color:transparent!important}
-body.blank-template-export .date-year-label::before{content:"";font-size:0!important}
-body.blank-template-export #digDate,
-body.blank-template-export #hiddenDatePicker{display:none!important}
-
-/* v1.0.6: plain-text date source for reliable Android/WebView printing. */
-@media print{.date-field-wrapper .print-date-value{display:inline-block!important;direction:ltr!important;unicode-bidi:isolate!important;font-weight:900!important;color:#073b63!important;white-space:nowrap!important}.date-field-wrapper #digDate{display:none!important}.receipt-paper .clinic-logo{opacity:1!important;filter:none!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}.receipt-paper .paid-unit,.receipt-paper .currency-label{display:inline-block!important;opacity:1!important;color:#073b63!important;font-weight:900!important}}
-.print-date-value{display:none}
-
-
-/* Arabic manual-date contract:
-   Printed blank receipts show empty day/month fields and the fixed "202م" marker.
-   The year marker is isolated so the "م" stays visually to the LEFT of 202. */
-.receipt-paper .date-field-wrapper{direction:rtl!important;unicode-bidi:isolate!important}
-.receipt-paper .date-boxes-row{direction:rtl!important;unicode-bidi:isolate!important;flex-direction:row!important}
-.receipt-paper .paper-year-fixed{
-  direction:rtl!important;
-  unicode-bidi:isolate!important;
-  display:inline-flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  gap:0!important;
-  white-space:nowrap!important;
-}
-.receipt-paper .paper-year-fixed .paper-year-digits{
-  direction:ltr!important;
-  unicode-bidi:isolate!important;
-  display:inline-block!important;
-}
-.receipt-paper .paper-year-fixed .paper-year-era{
-  direction:rtl!important;
-  unicode-bidi:isolate!important;
-  display:inline-block!important;
-}
-@media print{
-  body.blank-template-export .digital-only{display:none!important}
-  body.blank-template-export .paper-year-fixed{direction:rtl!important;unicode-bidi:isolate!important}
-  body.blank-template-export .paper-year-digits{direction:ltr!important;unicode-bidi:isolate!important}
-  body.blank-template-export .paper-year-era{direction:rtl!important;unicode-bidi:isolate!important}
+.footer-phones{display:flex!important;width:100%!important;justify-content:center!important;gap:10px!important;white-space:nowrap!important;direction:ltr!important;unicode-bidi:isolate!important;font-size:8.5px!important;font-weight:800!important}
+html[data-size="a4"] body{width:210mm!important;min-height:297mm!important}
+html[data-size="a4"] .page-canvas-wrapper{width:210mm!important;height:297mm!important}
+html[data-size="a4"] .receipt-paper{width:210mm!important;height:297mm!important;min-width:210mm!important;max-width:210mm!important;min-height:297mm!important;max-height:297mm!important}
+html[data-size="thermal"] body{width:80mm!important;min-height:0!important;overflow:visible!important}
+html[data-size="thermal"] .page-canvas-wrapper{width:80mm!important;height:auto!important;overflow:visible!important}
+html[data-size="thermal"] .receipt-paper{width:80mm!important;height:auto!important;min-width:80mm!important;max-width:80mm!important;min-height:0!important;max-height:none!important;padding:5mm 4mm!important;overflow:visible!important}
 }
