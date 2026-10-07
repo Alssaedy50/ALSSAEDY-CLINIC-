@@ -278,3 +278,43 @@ async function selectPatient(id){
 }
 function openPatientsModal(){document.getElementById('patientsModal')?.classList.add('open');renderPatients();}
 function closePatientsModal(){document.getElementById('patientsModal')?.classList.remove('open');}
+
+async function buildFullBackup(){
+  const receipts=await clinicDBAll('receipts'),patients=await clinicDBAll('patients');
+  return {schema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:2,exportedAt:new Date().toISOString(),receipts,patients,settings:{
+    size:localStorage.getItem('alssaedy_receipt_size')||'a5',
+    theme:localStorage.getItem('alssaedy_theme')||'classic',
+    customLogo:localStorage.getItem('alssaedy_custom_logo')||'',
+    texts:localStorage.getItem('alssaedy_texts')||'',
+    currency:localStorage.getItem('alssaedy_currency')||'YER'
+  }};
+}
+async function exportFullBackup(){
+  try{
+    const payload=await buildFullBackup(),name='ALSSAEDY_Clinic_FULL_BACKUP_'+getLocalDateISO().replace(/-/g,'')+'.json';
+    downloadTextFile(name,JSON.stringify(payload,null,2),'application/json');
+    alert('تم إنشاء النسخة الاحتياطية الكاملة: المرضى + السندات + الإعدادات.');
+  }catch(e){alert('تعذر إنشاء النسخة الاحتياطية: '+e.message);}
+}
+async function importFullBackup(event){
+  const file=event.target.files?.[0];if(!file)return;
+  try{
+    const payload=JSON.parse(await file.text());
+    if(payload.schema!=='ALSSAEDY_CLINIC_BACKUP')throw new Error('صيغة النسخة غير معتمدة.');
+    const merge=confirm('هل تريد دمج البيانات مع البيانات الحالية؟ اضغط «إلغاء» للاستبدال الكامل.');
+    if(!merge&& !confirm('سيتم استبدال السجل الحالي. هل أنت متأكد؟'))return;
+    if(!merge)await clinicDBClear('receipts');
+    for(const p of (payload.patients||[]))await clinicDBPut('patients',p);
+    for(const item of (payload.receipts||[])){
+      const exists=(await clinicDBAll('receipts')).some(x=>receiptFingerprint(x)===receiptFingerprint(item));
+      if(!exists)await clinicDBPut('receipts',item);
+    }
+    if(payload.settings?.customLogo)localStorage.setItem('alssaedy_custom_logo',payload.settings.customLogo);
+    if(payload.settings?.currency)localStorage.setItem('alssaedy_currency',payload.settings.currency);
+    localStorage.setItem('alssaedy_receipts_history',JSON.stringify(await clinicDBAll('receipts')));
+    if(typeof applyLogo==='function')applyLogo(localStorage.getItem('alssaedy_custom_logo')||OFFICIAL_LOGO_URL);
+    updateHistoryCount();renderHistory();
+    alert('تمت استعادة البيانات بنجاح مع منع التكرارات.');
+  }catch(e){alert('تعذر استيراد النسخة: '+e.message);}
+  event.target.value='';
+}
