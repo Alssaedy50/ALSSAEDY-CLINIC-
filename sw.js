@@ -2,25 +2,27 @@
    Strategy: cache-first for the app shell, network fallback, and a cached
    stale-while-revalidate path so the receipt tool works fully offline. */
 const CACHE_NAME = 'alssaedy-clinic-v1.1.0';
+const V = '?v=1.1.0';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/ui.css',
-  './css/receipt.css',
-  './css/print.css',
-  './css/templates.css',
-  './css/polish.css',
-  './js/tafqeet.js',
-  './js/storage.js',
-  './js/export.js',
-  './js/templates.js',
-  './js/app.js',
-  './js/ui.js',
-  './js/sync.js',
-  './android-app-bridge.js',
-  './vendor/html2canvas/html2canvas.min.js',
-  './vendor/jspdf/jspdf.umd.min.js',
+  './css/ui.css' + V,
+  './css/receipt.css' + V,
+  './css/print.css' + V,
+  './css/templates.css' + V,
+  './css/polish.css' + V,
+  './js/tafqeet.js' + V,
+  './js/storage.js' + V,
+  './js/export.js' + V,
+  './js/templates.js' + V,
+  './js/app.js' + V,
+  './js/ui.js' + V,
+  './js/sync.js' + V,
+  './android-app-bridge.js' + V,
+  './logo_data.js' + V,
+  './vendor/html2canvas/html2canvas.min.js' + V,
+  './vendor/jspdf/jspdf.umd.min.js' + V,
   './assets/Saedy_Dental_Logo.svg'
 ];
 

@@ -28,7 +28,7 @@ function ensureJsPdf() {
             return;
         }
         const script = document.createElement('script');
-        script.src = 'vendor/jspdf/jspdf.umd.min.js';
+        script.src = 'vendor/jspdf/jspdf.umd.min.js?v=1.1.0';
         script.dataset.jspdfRetry = '1';
         script.onload = () => window.jspdf?.jsPDF ? resolve(window.jspdf.jsPDF) : reject(new Error('jsPDF غير متاح.'));
         script.onerror = () => reject(new Error('تعذر تحميل مكتبة PDF.'));

@@ -138,7 +138,7 @@ def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 12000
     os.makedirs(STORE_DIR, exist_ok=True)
     server = ThreadingHTTPServer(("0.0.0.0", port), ClinicHandler)
-    print(f"ALSSAEDY CLINIC serving {ROOT} on http://0.0.0.0:{port} (sync at /api/backup)")
+    print(f"ALSSAEDY CLINIC serving {ROOT} on http://0.0.0.0:{port} (sync at /api/clinic-sync)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
