@@ -40,6 +40,7 @@ function calculateLedger(){
 }
 
 function collectReceiptData() {
+    const billing = window.aqsa7BillingContract;
     const paid=Math.max(0,Number.parseFloat(document.getElementById('digPaid').value)||0);
     const total=Math.max(0,Number.parseFloat(document.getElementById('digTotal').value)||0);
     const currency=typeof getCurrencyInfo==='function'?getCurrencyInfo():{code:'YER',nameAr:'ريال يمني',symbol:'ر.ي'};
