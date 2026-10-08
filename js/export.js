@@ -354,11 +354,11 @@ function getReceiptText() {
     const customService = document.getElementById('digCustomService')?.value?.trim();
     if (customService && !services.includes(customService)) services.push(customService);
     const srvText = services.length ? 'الخدمات: ' + services.join('، ') : '';
-    const lineText = serviceItems.length ? '\nتفاصيل الخدمات: ' + serviceItems.map(item => (item.name || 'خدمة') + ' × ' + (Number(item.qty)||1) + ' = ' + ((Number(item.qty)||1)*(Number(item.unitPrice)||0).toLocaleString()) + ' ' + currency.symbol).join('؛ ') : '';
-    const statusText = lifecycle === 'voided' ? '\n⚠️ حالة السند: ملغى — لا يمثل مطالبة مالية سارية' : '';
     const refText = ref ? '\nالمرجع: ' + bidiIsolate(ref) : '';
     const patientPhoneText = patientPhone ? '\nرقم الهاتف: ' + bidiIsolate(patientPhone) : '';
     const currency = typeof getCurrencyInfo === 'function' ? getCurrencyInfo() : {nameAr:'ريال يمني',symbol:'ر.ي'};
+    const lineText = serviceItems.length ? '\nتفاصيل الخدمات: ' + serviceItems.map(item => (item.name || 'خدمة') + ' × ' + (Number(item.qty)||1) + ' = ' + (((Number(item.qty)||1)*(Number(item.unitPrice)||0)).toLocaleString()) + ' ' + currency.symbol).join('؛ ') : '';
+    const statusText = lifecycle === 'voided' ? '\n⚠️ حالة السند: ملغى — لا يمثل مطالبة مالية سارية' : '';
     const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + bidiIsolate(change) + ' ' + currency.nameAr : '';
     const clinicPhones = [
         '+967 716 339 366',
