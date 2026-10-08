@@ -113,7 +113,7 @@
     const response=await driveRequest('/files?'+params.toString(),{},accessToken);
     const body=await response.json();
     return {status:'success',items:(body.files||[]).map(file=>({
-      backupId:file.appProperties?.aqsa7BackupId || file.id,
+      backupId:file.id,
       providerId:file.id,
       name:file.name,
       createdTime:file.createdTime,
@@ -150,7 +150,7 @@
     });
     if(!response.ok) throw await readError(response);
     const file=await response.json();
-    return {status:'success',backupId,providerId:file.id,metadata:file};
+    return {status:'success',backupId:file.id,providerId:file.id,logicalBackupId:backupId,metadata:file};
   }
 
   async function get(request, options){
