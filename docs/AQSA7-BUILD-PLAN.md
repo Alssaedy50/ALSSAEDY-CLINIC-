@@ -2936,13 +2936,18 @@ Release decision:
 - Release verification must include signed APK, signature verification, metadata verification, SHA256, Runtime Smoke, Android, Pages and receipt-export gates.
 - A new public GitHub Release/tag `v1.4.0` may be created only from the verified release candidate.
 
-Phase 7.6 final gate:
+Phase 7.6 release-candidate gate:
 - Documentation reconciliation: PASS.
 - Architecture/ownership: PASS.
 - Reuse/traceability: PASS.
 - Product/UX acceptance: PASS from Phase 7.5 evidence.
-- Release authorization for v1.4.0: PASS.
-- Phase 7.6: COMPLETE.
+- PR #55 merged to main: PASS — merge commit `846294ac41464bc221769e97284be197f08092a9`.
+- Runtime Smoke #308 — run `37829043827`: PASS.
+- Android APK #544 — run `37829043813`: PASS, including signed production APK, signature verification, metadata verification and SHA256 generation.
+- GitHub Pages Source Verification #162 — run `37829043776`: PASS.
+- Receipt-export verification: required final gate on the merged main source; its evidence must be recorded before declaring the public release fully closed.
+- v1.4.0 release packaging: AUTHORIZED.
+- Phase 7.6 documentation/release-preparation gate: COMPLETE; public-release closure remains gated by receipt-export evidence.
 
 ### Phase 7 hard stop
 
@@ -2971,7 +2976,7 @@ The burden of proof is on **new implementation**, not on reuse.
 
 
 
-Last updated: 2026-10-08 (Phase 7.6 reconciled; v1.4.0 release preparation authorized; v1.3.0 remains historical release)
+Last updated: 2026-10-08 (v1.4.0 release candidate verified; receipt-export final gate pending; v1.3.0 remains historical release)
 
 ## Current authoritative decisions
 
