@@ -56,6 +56,7 @@ function setMode(mode) {
         if (!document.getElementById('selectedPayMethod').value) setPayMethod('نقداً');
     }
     updateActionAvailability();
+    if(typeof syncReceiptEditorState==='function')syncReceiptEditorState();
 }
 
 function syncPrintPageSize(size) {
@@ -276,7 +277,7 @@ function clearReceiptInputs() {
         });
         setPayMethod(document.body.getAttribute('data-mode') === 'digital' ? 'نقداً' : '');
         document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
-        window.aqsa7CurrentVisitId='';window.aqsa7VisitServiceItems=[];
+        window.aqsa7CurrentVisitId='';window.aqsa7VisitServiceItems=[];window.aqsa7EditingReceiptId='';
         if(typeof renderClinicServiceLines==='function')renderClinicServiceLines();
         localStorage.removeItem('alssaedy_draft');
         if (typeof calculateLedger === 'function') calculateLedger();
