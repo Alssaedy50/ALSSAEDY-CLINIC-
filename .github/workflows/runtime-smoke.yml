@@ -83,6 +83,18 @@ jobs:
           if (!designTokens.fontUi.includes('system-ui')) throw new Error('UI font token is not system-ui based');
           if (designTokens.tabHeight < 44) throw new Error('Receipt tab touch target is below 44px: '+designTokens.tabHeight);
 
+          const shell = await page.evaluate(() => ({
+            brand: document.querySelector('.brand-platform')?.textContent?.trim(),
+            clinic: document.querySelector('.brand-title')?.textContent?.trim(),
+            navCount: document.querySelectorAll('.app-tabs .app-tab').length,
+            activeCount: document.querySelectorAll('.app-tabs .app-tab.active').length,
+            currentCount: document.querySelectorAll('.app-tabs .app-tab[aria-current="page"]').length
+          }));
+          if (shell.brand !== 'AQSA7') throw new Error('AQSA7 product identity missing');
+          if (!shell.clinic) throw new Error('Clinic identity missing from app shell');
+          if (shell.navCount !== 4) throw new Error('Unexpected navigation item count: '+shell.navCount);
+          if (shell.activeCount !== 1 || shell.currentCount !== 1) throw new Error('Navigation active-state contract failed');
+
           for (const id of ['receiptPrintArea','digDate','tabPatients','tabHistory','tabSettings']) {
             if (!(await page.locator('#' + id).count())) throw new Error('Missing #' + id);
           }
