@@ -3029,7 +3029,7 @@ Priority register:
 - **8.1 Information Architecture — COMPLETE**
 - **8.2 Clinic Dashboard — COMPLETE**
 - **8.3 Patient Workspace — COMPLETE**
-- 8.4 Visit / Services / Billing — PLANNED
+- **8.4 Visit / Services / Billing — AUTHORIZED NEXT**
 - 8.5 Receipt System Reconstruction — PLANNED
 - 8.6 History & Financial Ledger — PLANNED
 - 8.7 Mobile UX — PLANNED
