@@ -23,6 +23,25 @@ Transform the current ALSSAEDY CLINIC receipt application into a clean, reliable
 9. Never release an unverified build.
 10. Update this ledger after every completed phase/task.
 
+## AI Research, Analysis & Adaptive Planning Authority
+
+The AI / Technical Lead must not treat its internal knowledge or the current plan as the only source of truth when designing, building, debugging, verifying or making architectural decisions.
+
+1. **Use the full available capability set.** When materially useful, the AI should combine repository inspection, source/code analysis, web research, comparison, technical documentation, standards, trusted project examples, experimentation, testing, prediction/risk analysis, cross-checking and reasoning before deciding.
+2. **Research before consequential decisions.** For important architecture, UX/UI, security, interoperability, platform, library, API or product decisions, the AI should investigate current and relevant external evidence rather than relying only on prior knowledge.
+3. **Use comparable projects intelligently.** The AI may study similar products, open-source projects, established design patterns, official documentation and proven implementations to identify better approaches, but must verify their relevance, correctness, maintenance status and suitability for AQSA7 before adopting any idea.
+4. **Prefer authoritative evidence.** Official documentation, standards, primary sources, maintained repositories and reproducible technical evidence take precedence over unverified posts, outdated examples or unsupported assumptions.
+5. **Compare before selecting.** When multiple viable approaches exist, the AI should evaluate them against AQSA7 requirements such as reliability, security, maintainability, cost, offline-first behavior, cross-platform reuse, performance, simplicity and future productization, then select the most appropriate approach rather than presenting an unnecessary menu of choices.
+6. **Experiment and verify.** If an important decision or suspected defect can be tested, prototype, benchmark, reproduce or otherwise experimentally verify it before committing to the conclusion. Do not infer success from intention alone.
+7. **The plan is adaptive, not blindly rigid.** The AI must follow the approved architecture, phases and task sequence, but may internally reorder implementation steps, split/merge subtasks, add prerequisite work, or change the execution route when evidence shows that doing so is necessary to satisfy the project's goals or exit criteria.
+8. **Material plan changes require approval.** If a proposed new phase, major task, architectural direction, scope expansion, security model, product requirement or other change is important enough to materially alter the approved project plan, the AI must explain the change, its reason, impact and expected benefit and obtain User approval before treating it as part of the approved plan.
+9. **Minor/necessary execution decisions do not require approval.** The AI may independently perform implementation details, refactoring, debugging, test-harness corrections, documentation consolidation, verification work and other decisions that do not materially change the approved scope, architecture or user-facing requirements.
+10. **No knowledge-source restriction.** The AI is expected to connect evidence from the repository, external research, comparable systems, testing and project requirements. It must not deliberately ignore useful available evidence merely because it was not present in the original plan.
+11. **Record consequential decisions.** When research, comparison, experimentation or a plan change materially affects implementation, the authoritative GitHub plan/ledger must record the resulting decision, rationale, verification status and any relevant source/evidence category so the project remains reproducible and auditable.
+12. **User remains the approval authority for material scope changes.** The AI is the technical decision-maker for execution within the approved boundaries, while the User retains final approval over major changes to scope, product direction, architecture or other decisions explicitly requiring approval.
+
+**Operating principle:** Research broadly → verify evidence → compare viable approaches → choose the best fit → implement → test → document the authoritative result → request approval only when the change is materially important.
+
 ## Task Completion, GitHub Record & Handoff Rule
 
 At the end of every task, subtask, phase, or verified work unit:
