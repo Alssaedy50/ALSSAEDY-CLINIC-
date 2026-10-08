@@ -1200,7 +1200,8 @@ Next authorized task:
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
 - Task 4.2 — Encryption & Integrity Layer — **COMPLETE**.
 - Task 4.3 — Generic Backup Engine — **COMPLETE**.
-- Next authorized task: **Task 4.4 — Generic Backup Provider Adapter Contract**.
+- Task 4.4 — Generic Backup Provider Adapter Contract — **PENDING VERIFICATION**.
+- Current next action: verify Task 4.4 Runtime Smoke on `cd05a343432e5a6b6c4b7e135f17c35021f1515f`.
 
 ### Phase 4 / Task 4.2 — Encryption & Integrity Layer
 
@@ -1507,6 +1508,87 @@ Task 4.3 gate decision:
 Next authorized task:
 - **Task 4.4 — Generic Backup Provider Adapter Contract**.
 
+### Phase 4 / Task 4.4 — Generic Backup Provider Adapter Contract
+
+Status: **PENDING VERIFICATION**
+
+Purpose:
+- Establish the stable provider-neutral contract between the Generic Backup Engine and future backup storage providers.
+- Keep cloud/provider mechanics outside AQSA7 domain logic while preserving local-first operation and encrypted-artifact ownership.
+
+Implementation decision:
+- Added `js/backup-provider.js` as the single Generic Backup Provider Adapter Contract boundary.
+- The contract defines adapter lifecycle/operation methods: `getDescriptor`, `health`, `list`, `put`, `get`, `delete`.
+- Provider operations transport the encrypted Backup Artifact as an opaque object. Adapters must not decrypt, rewrite or reinterpret domain payloads.
+- Every provider request is instance-scoped by `productId`, `tenantId`, and `instanceId`.
+- Provider descriptors are versioned and declare supported operations/platforms.
+- Normalized provider errors include unavailable/auth/permission/not-found/rate-limit/quota/conflict/network/provider failures without exposing secrets.
+- Credentials/tokens are explicitly outside this contract and may not be hardcoded or persisted by the adapter contract.
+- Provider availability must never become a dependency of Repository/IndexedDB or local application operation.
+- Added a fail-closed unavailable fallback; it does not store data and does not masquerade as a provider.
+- `index.html` loads the contract after the Generic Backup Engine.
+
+Contract boundary:
+`Repository / IndexedDB → Backup Engine → encrypted Backup Artifact → Backup Provider Adapter → provider-specific storage`
+
+Adapter ownership:
+- Own transport/protocol/provider mechanics only.
+- Must preserve supplied ownership and must not widen/rewrite `productId/tenantId/instanceId`.
+- May store provider-side metadata such as provider backup ID, version/ETag and timestamps.
+- Must not own domain state, Repository, IndexedDB, synchronization state machine, scheduling or business rules.
+
+Security rules:
+- Only encrypted `AQSA7_BACKUP_ARTIFACT` envelopes are accepted for provider transport.
+- Provider adapter never receives a plaintext domain artifact through this contract.
+- No password, derived key, OAuth token, refresh token or client secret is part of the contract payload.
+- Provider operations must support idempotency/conflict metadata where the provider can expose it; automatic retry policy remains a future engine/reliability concern and is not implemented here.
+- Provider failures return normalized errors and must fail soft to the local-first core.
+
+Files changed:
+- `js/backup-provider.js` — Generic Backup Provider Adapter Contract.
+- `index.html` — loads the provider contract.
+- `.github/workflows/runtime-smoke.yml` — contract, encrypted-artifact, ownership and fake-adapter execution verification.
+
+Explicitly out of scope:
+- Google Drive adapter implementation.
+- OAuth/token acquisition or storage.
+- Cloud upload/download against a real provider.
+- Scheduling/background jobs.
+- Backup sync/conflict engine.
+- Cloud recovery/lost-device flow.
+- Replacing legacy `js/sync.js` / `api/clinic-sync.js`.
+- New database/repository/state machine.
+- Phase 5 full regression.
+
+Verification evidence:
+- Source inspection completed against Task 4.1 artifact contract, Task 4.2 crypto layer, Task 4.3 engine, `js/product.js`, `js/repository.js`, `js/integrations.js` and the new provider contract.
+- Runtime verification is required before closing this task.
+- Verification checkpoint: `cd05a343432e5a6b6c4b7e135f17c35021f1515f`.
+- Required Runtime Smoke evidence: provider contract presence/versioning, fake-adapter descriptor validation, encrypted-artifact-only transport, ownership propagation/rejection, normalized execution result, existing backup crypto/engine checks, mobile browser smoke and desktop browser smoke.
+- Until the final Runtime Smoke workflow is green on the implementation checkpoint, Task 4.4 remains **PENDING VERIFICATION**.
+
+No Future Surprise gate:
+- Google Drive, OneDrive and Dropbox can implement this same adapter boundary without changing the Backup Engine or Repository.
+- Another product/tenant/instance can use the same contract through ownership data rather than provider-specific code.
+- Web/PWA/Desktop/Android share the same provider contract; platform adapters remain transport/OS-specific only.
+- OAuth and credential handling can be added behind a provider/security boundary without placing secrets in the artifact or generic engine.
+- Cloud outage remains non-fatal to local operation.
+- Provider-specific metadata cannot become a second business-data authority.
+
+Task 4.4 gate decision:
+- Stable provider-neutral contract: **MET**.
+- Encrypted artifact transport boundary: **MET**.
+- Ownership/tenant isolation boundary: **MET**.
+- Credential/secret separation: **MET**.
+- Local-first/no-provider dependency: **MET**.
+- Runtime verification: **PENDING**.
+- Task 4.4: **PENDING VERIFICATION**.
+
+Next action:
+- Run and verify the authoritative Runtime Smoke workflow on `cd05a343432e5a6b6c4b7e135f17c35021f1515f`.
+- If green, close Task 4.4 and authorize Task 4.5.
+- If red, fix only the Task 4.4 failure and repeat verification.
+
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
 
@@ -1565,7 +1647,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.3 complete; Phase 4 in progress; next authorized task Task 4.4)
+Last updated: 2026-10-08 (Task 4.4 implementation complete; verification pending; Phase 4 in progress)
 
 ## Current authoritative decisions
 
