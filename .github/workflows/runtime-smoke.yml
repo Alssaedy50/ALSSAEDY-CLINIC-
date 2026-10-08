@@ -1524,6 +1524,7 @@ jobs:
               const file = 'artifacts/phase-8-10/'+viewport.name+'/'+surface.id+'.png';
               await page.screenshot({path:file,fullPage:false,animations:'disabled'});
               report.push({...state,viewport:viewport.name,screenshot:file});
+              if (surface.id==='patient-workspace') await page.locator('#patientsModal .patient-workspace-close').click();
               if (surface.id==='history-financial-ledger') await page.locator('#historyModal .modal-close').click();
               if (surface.id==='settings') await page.locator('#settingsPanel .btn-close').click();
             }
