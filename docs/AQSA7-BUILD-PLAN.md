@@ -3053,7 +3053,28 @@ Priority register:
 **Phase 8.1: COMPLETE — CI GATE PASSED.**
 
 ### Phase 8.2 — Clinic Dashboard
-Status: IN PROGRESS — DAILY OPERATIONAL HOME
+Status: COMPLETE — DAILY OPERATIONAL HOME VERIFIED
+
+Implementation and gate:
+- Clinic-local **الرئيسية** dashboard added inside the Dental product context.
+- Dental product entry now opens the operational dashboard by default.
+- Dashboard uses existing repository-backed patients/receipts only.
+- Quick actions route to existing receipt, patient and history workflows.
+- Today's operational cards cover registered patients, today's receipts, paid amount and outstanding balance.
+- Today's activity and upcoming follow-ups use existing data fields; no appointment engine was introduced.
+- Receipt workflow remains separate and reachable through **السندات**.
+- Runtime Smoke #325: PASS.
+- GitHub Pages Source Verification #179: PASS.
+- Receipt image export #491: PASS.
+- Android APK #562: PASS.
+- Phase 7.4 cross-platform regression: PASS within Runtime Smoke #325.
+- Phase 5 full regression: PASS within Runtime Smoke #325.
+- No new router, repository, persistence path, billing ledger or patient schema was introduced.
+
+**Phase 8.2: COMPLETE.**
+
+### Next authorized task:
+**Phase 8.3 — Patient Workspace.**
 
 ### Phase 8 execution constraints
 - Do not repeat Phase 7 platform-shell work merely because the visual target changes.
@@ -3080,7 +3101,7 @@ Status: IN PROGRESS — DAILY OPERATIONAL HOME
 Objective: reconstruct the user-facing navigation/workspace hierarchy around daily clinic work while preserving `js/app.js` as the sole route/context owner and without implementing the Phase 8.5 receipt redesign early.
 
 
-Last updated: 2026-10-08 (Phase 8.1 CI gate passed and merged; Phase 8.2 dashboard implementation in progress)
+Last updated: 2026-10-08 (Phase 8.2 dashboard implemented, fully regression-verified and merged; Phase 8.3 authorized)
 
 ## Current authoritative decisions
 
