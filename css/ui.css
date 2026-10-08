@@ -750,3 +750,8 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
     position: relative;
     z-index: 2;
 }
+
+@media (min-width:761px){
+    .aqsa7-platform-screen{padding-top:100px}
+    .aqsa7-product-context{margin-top:70px}
+}
