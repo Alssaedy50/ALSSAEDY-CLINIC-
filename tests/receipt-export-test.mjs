@@ -219,7 +219,7 @@ for (const size of ['a5','a4']) {
   const normalizedText=text
     .replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g,'')
     .replace(/\s+/g,'');
-  const arabicCharCount=(normalizedText.match(/[\u0600-\u06ff]/g)||[]).length;
+  const arabicCharCount=(normalizedText.match(/\p{Script=Arabic}/gu)||[]).length;
   if(arabicCharCount < 20 || !normalizedText.includes('TEST-001') || !normalizedText.includes('07/10/2026') || !normalizedText.includes('771234567')) {
     throw new Error('PDF is missing selectable receipt text for '+size+': '+text.slice(0,500));
   }
