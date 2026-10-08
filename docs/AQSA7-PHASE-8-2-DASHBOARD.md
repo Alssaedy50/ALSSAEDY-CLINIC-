@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.2 Clinic Dashboard
 
-Status: IMPLEMENTED — PENDING CI GATE
+Status: COMPLETE — CI AND FULL REGRESSION VERIFIED
 Date: 2026-10-08
 Base: Phase 8.1 merged commit `3062921e470b027d296bf93ea5d3393fae2e15ba`
 
@@ -49,6 +49,15 @@ Phase 8.2 does not implement:
 - Mobile layout remains single-column and touch-safe.
 - Runtime Smoke verifies dashboard DOM and summary surfaces.
 
-## Next task
+## Verification
+
+- Runtime Smoke #325: PASS.
+- GitHub Pages Source Verification #179: PASS.
+- Receipt image export #491: PASS.
+- Android APK #562: PASS.
+- Phase 7.4 cross-platform regression: PASS within Runtime Smoke #325.
+- Phase 5 full regression: PASS within Runtime Smoke #325.
+
+## Next authorized task
 
 **Phase 8.3 — Patient Workspace.**
