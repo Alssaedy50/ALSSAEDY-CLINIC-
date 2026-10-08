@@ -2118,6 +2118,40 @@ Must verify:
 - cross-platform same-core behavior on mobile Web/PWA, desktop browser and Android wrapper
 - disaster recovery from lost/damaged device
 
+### Phase 5 — Full Regression — COMPLETE
+Verified on the Phase 5 regression branch after Task 4.11.
+
+Evidence:
+- AQSA7 Runtime Smoke run 37797851030 (#247): PASS
+- Build ALSSAEDY Clinic Android APK run 37797850801 (#471): PASS
+- GitHub Pages Source Verification run 37797851568 (#101): PASS
+- Verify receipt image export run 37797850848 (#420): PASS
+
+The executable Phase 5 regression gate covered:
+- Arabic RTL shell, primary navigation and core action surface
+- receipt create/edit/save with durable IndexedDB verification
+- patient create/edit/search and repository-owned patient deletion
+- history search/filter
+- encrypted backup round-trip, wrong-password rejection, plaintext rejection and foreign-tenant rejection
+- provider boundary, Google Drive adapter ownership preflight and cloud-recovery boundary using fake transport
+- sync GET/PUT conflict-retry path using a fake endpoint
+- print/preview/share plus CSV/JSON export surfaces
+- A5/A4/80mm size profiles
+- logo presence and BiDi isolation
+- service-worker control and offline cache recovery
+- synthetic regression-data cleanup and repository isolation
+
+Additional implementation fix discovered during regression:
+- restored the existing billing-contract reference in the receipt persistence path
+- added repository-owned patient deletion required for complete CRUD verification
+- invalidated runtime/service-worker asset versions after the scoped fix
+
+Verification limitation:
+- Live Google account OAuth upload/download/restore was not executed because no authorized production OAuth client/account credentials are available to the regression environment. Provider/auth behavior was verified with a deterministic fake transport and the previously verified ownership/security boundaries.
+- Android wrapper behavior was verified through the production APK build and shared-core/security checks; interactive device-specific back/share/print behavior requires a connected/emulated Android runtime and is not claimed as live-device evidence by this gate.
+
+Phase 5 is closed at the verification gate. No Phase 6 implementation was started without explicit authorization.
+
 ### Phase 6 — Release
 - version bump
 - CI build
@@ -2127,7 +2161,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.11 Security / Tenant / Platform Hardening verified complete; next authorized phase Phase 5 Full Regression)
+Last updated: 2026-10-08 (Phase 5 Full Regression verified complete; next authorized phase Phase 6 Release)
 
 ## Current authoritative decisions
 
