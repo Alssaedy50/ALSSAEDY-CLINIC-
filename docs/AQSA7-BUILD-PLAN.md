@@ -948,7 +948,7 @@ Verification performed:
 - Integration contract in-browser mock verification: PASS in 37726079886 for descriptor discovery, instance ownership propagation, idempotency guard, adapter execution, mapping, webhook verification/rejection and normalized errors.
 - Android debug + signed production build, signature and metadata verification: PASS in 37726079939.
 - Verification-only PR #41 was closed without merge; it was used only to trigger CI and contains no product implementation.
-- Remaining required verification before closure: final main-branch receipt/export and Pages/cross-platform checks on the documented commit.
+- Receipt/export verification: PASS in final-gate PR run 37726589591 (run against the Task 3.6 implementation; the only PR-side source difference was a non-functional verification marker).
 
 Task 3.6 exit criteria:
 1. One authoritative platform integration/interoperability contract exists.
@@ -972,8 +972,8 @@ Gate decision:
 - Provider independence/no vendor lock-in: MET.
 - Ownership/local-first/cross-platform boundaries: MET.
 - Static/browser/Android verification: MET.
-- Final main-branch receipt/export + Pages verification: **PENDING**.
-- Task 3.6 remains **PENDING VERIFICATION**.
+- Final Pages deployment evidence for the post-Task-3.6 main source commit `1de34a9c3bd8ef578a7fef50ee0fba2523529bb7`: **PENDING**.
+- Task 3.6 remains **PENDING VERIFICATION** until the Pages deployment gate is evidenced.
 - Task 3.7 is not authorized.
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
