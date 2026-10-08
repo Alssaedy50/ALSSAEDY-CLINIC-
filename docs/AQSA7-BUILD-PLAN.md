@@ -2025,10 +2025,12 @@ Task 4.10 gate:
 - Local-first / IndexedDB authority: **MET**.
 - Encrypted artifact boundary: **MET**.
 - Restore validation delegation: **MET**.
-- Runtime verification: **PENDING**.
+- Runtime verification: **PASS** — Runtime Smoke run 37793244184 (run #231).
+- Android APK: **PASS** — run 37793243952 (run #455).
+- GitHub Pages Source Verification: **PASS** — run 37793243708 (run #85).
 
-Next authorized task after verification:
-- **Task 4.10 verification/retry only; do not advance to Task 4.11 until Runtime Smoke is green.**
+Next authorized task:
+- **Task 4.11 — Security / Tenant / Platform Hardening.**
 
 ### Phase 5 — Full Regression
 Must verify:
@@ -2060,7 +2062,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.10 Cloud Recovery implemented; Runtime Smoke verification pending)
+Last updated: 2026-10-08 (Task 4.10 Cloud Recovery verified complete; next authorized task Task 4.11 Security / Tenant / Platform Hardening)
 
 ## Current authoritative decisions
 
