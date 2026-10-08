@@ -822,7 +822,7 @@ jobs:
           await page.locator('#tabPatients').click();
           if (await page.locator('#patientsModal').evaluate(e => e.hidden)) throw new Error('Desktop patient workspace did not open');
           if ((await page.locator('#patientsModal').evaluate(e => Math.round(e.getBoundingClientRect().width))) < 600) throw new Error('Desktop patients surface is unexpectedly narrow');
-          await page.locator('#patientsModal .modal-close').click();
+          await page.locator('#patientsModal .patient-workspace-close').click();
           if (!(await page.locator('#patientsModal').evaluate(e => e.hidden))) throw new Error('Desktop patient workspace did not close');
 
           await page.locator('#tabHistory').click();
