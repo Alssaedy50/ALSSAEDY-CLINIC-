@@ -800,6 +800,7 @@ jobs:
           await page.locator('#tabPlatformProducts').click();
           await page.locator('#dentalProductCard .platform-primary-btn').click();
           await page.locator('#productWorkspace').waitFor({state:'visible'});
+          await page.locator('#tabReceipt').click();
 
           const layout = await page.evaluate(() => {
             const width = el => el ? Math.round(el.getBoundingClientRect().width) : 0;
