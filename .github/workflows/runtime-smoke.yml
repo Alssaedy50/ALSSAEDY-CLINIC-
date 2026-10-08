@@ -413,6 +413,26 @@ jobs:
           if (!restoreMigration.prepared?.validated || restoreMigration.prepared?.migrationId !== 'AQSA7_BACKUP_5_IDENTITY') throw new Error('Restore preparation failed: '+JSON.stringify(restoreMigration));
           if (!restoreMigration.oldSchemaRejected || !restoreMigration.futureSchemaRejected || !restoreMigration.foreignRejected) throw new Error('Restore migration fail-closed compatibility/ownership checks failed: '+JSON.stringify(restoreMigration));
 
+          const localBackupUx = await page.evaluate(() => {
+            const ux = window.aqsa7LocalBackupUX;
+            if (!ux || typeof ux.markBackupCreated !== 'function' || typeof ux.openRestorePicker !== 'function') throw new Error('Local Backup / Recovery UX missing.');
+            const before = ux.getState();
+            ux.markBackupCreated();
+            const after = ux.getState();
+            return {
+              stateRecorded: !!after.lastBackupAt && after.lastBackupAt !== before.lastBackupAt,
+              statusExists: !!document.getElementById('backupLocalStatus'),
+              lastExists: !!document.getElementById('backupLastLocal'),
+              hintExists: !!document.getElementById('backupRecoveryHint'),
+              restoreInput: !!document.getElementById('backupImporter'),
+              encryptedLabel: document.body.innerText.includes('إنشاء Backup مشفر'),
+              recoveryLabel: document.body.innerText.includes('استعادة Backup')
+            };
+          });
+          if (!localBackupUx.stateRecorded || !localBackupUx.statusExists || !localBackupUx.lastExists || !localBackupUx.hintExists || !localBackupUx.restoreInput) throw new Error('Local Backup UX state/status contract failed: '+JSON.stringify(localBackupUx));
+          if (!localBackupUx.encryptedLabel || !localBackupUx.recoveryLabel) throw new Error('Local Backup UX actions are not visible: '+JSON.stringify(localBackupUx));
+
+
 
 
 
