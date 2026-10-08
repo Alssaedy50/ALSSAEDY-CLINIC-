@@ -3,7 +3,7 @@
 Status: ACTIVE
 Last updated: 2026-10-08
 Owner: Project technical/design lead (ChatGPT)
-Repository: ALSSAEDY-CLINIC-
+Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
 
 ## Mission
@@ -203,8 +203,39 @@ Completed:
 - Phase 1 / Task 1.6 — Settings Ownership Cleanup
 
 Current:
-- Phase 1 / Task 1.8 — CSS/UX Regression Verification
+- Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
 
+### Phase 1.8 — CSS/UX Regression Verification: COMPLETE
+
+Verification executed against current `main` after the CSS responsibility cleanup.
+
+Static regression checks:
+- All five active CSS files fetched successfully and have balanced braces.
+- Stylesheet load order verified: `ui.css → receipt.css → print.css → templates.css → polish.css`.
+- HTML IDs: 88; duplicate IDs: 0.
+- All inline onclick function references now resolve to defined project functions; browser-native `getElementById` is the only DOM method encountered and is not a project handler.
+- All core frontend JavaScript sources pass syntax compilation through the JavaScript parser.
+- Date-rendering IDs are single-instance: `digDate`, `printDateValue`, paper day/month/year and year-era nodes, and `paperTemplateDate`.
+- No stale `downloadReceiptPDF()` handler remains.
+- Sync presentation ownership was corrected: sync UI styles are now kept in `css/polish.css`, not duplicated in `css/ui.css`.
+- Print/PDF authority remains `triggerNativePrint()`; PNG remains the raster export path.
+
+Regression found and fixed during verification:
+1. The preview/settings PDF buttons still referenced the removed `downloadReceiptPDF()` function even though the native-print migration had already removed that function. This was a real user-visible dead action.
+2. Both PDF buttons were routed to the authoritative `triggerNativePrint()` path.
+3. Sync presentation selectors were duplicated between UI and polish layers; the duplicate ownership was removed and `sync-status` was consolidated with the sync feature presentation layer.
+
+Fix commits:
+- `93f11282c3257312424c756910bd6d169394a2bc` — route PDF actions through native print.
+- `633cc021a933395320fab1f477748b3c7a18c94f` — remove sync presentation duplication from UI layer.
+- `a18ae203f1e6190349c91dd537c67ebb17490e3b` — centralize sync presentation styles.
+- `a44927271303db5ce9e877d5780ff1801df158af8` — remove final stale PDF handler.
+
+Scope limitation:
+- This task was verified statically from the current GitHub source. A real browser/WebView visual smoke run (mobile layout, night mode, modal scrolling, patient navigation, print dialog and PNG/PDF rendering) requires an executable browser/Android runtime, which is not exposed by the current repository connector. It is therefore tracked explicitly as Phase 1 / Task 1.9 rather than being falsely marked as runtime-tested.
+
+Next:
+- Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
 ### Phase 1.7 — CSS Responsibility Cleanup: COMPLETE
 
 Implemented:
@@ -227,7 +258,7 @@ Validation:
 - No Phase 2 work has started.
 
 Next:
-- Phase 1 / Task 1.8 — CSS/UX Regression Verification
+- Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
 
 ### Phase 1.6 — Settings Ownership Cleanup: COMPLETE
 
