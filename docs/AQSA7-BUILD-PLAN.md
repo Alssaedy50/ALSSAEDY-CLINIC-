@@ -222,7 +222,7 @@ Status: COMPLETE
 Status: IN PROGRESS
 
 Current next task:
-- **Task 2.5 — Receipt Issuance Panel reconstruction**
+- **Task 2.6 — History / Receipts Ledger reconstruction**
 - Executor: **AI / Technical Lead**
 
 Completed Phase 2 tasks:
@@ -230,6 +230,40 @@ Completed Phase 2 tasks:
 - 2.2 Top App Shell & Navigation Dock — COMPLETE
 - 2.3 Patient Directory / Ledger Table — COMPLETE
 - 2.4 Patient Account Detail — COMPLETE
+- 2.5 Receipt Issuance Panel — COMPLETE
+
+### Phase 2 / Task 2.5 — Receipt Issuance Panel Reconstruction: COMPLETE
+
+Implementation:
+- Added a dedicated no-print Receipt Issuance Panel above the protected receipt paper.
+- Added live patient context, selected-service count/list, receipt number/date, financial summary and payment/reference status.
+- Added primary save, preview, print/PDF and share actions using the existing authoritative handlers.
+- Kept all actual receipt inputs inside the existing receipt DOM; the panel is a read/command surface, not a second input or persistence state.
+- Added the authoritative live calculateLedger() path and connected it to the issuance summary.
+- Connected payment-method and service-selection changes to the same live summary.
+- Applied Phase 2 design tokens, responsive mobile behavior and the 44px interaction contract.
+- Preserved IndexedDB/repository ownership and protected A5/A4/80mm print/export geometry.
+
+Files:
+- index.html
+- js/storage.js
+- js/app.js
+- js/ui.js
+- css/templates.css
+- .github/workflows/runtime-smoke.yml
+
+Verification:
+- AQSA7 Runtime Smoke 37712304937 — PASS on final application checkpoint 5cd3fa26edf1b549b7739a1c7ae20ac26bec4919.
+- Android APK 37712305064 — SUCCESS on the same application checkpoint.
+- GitHub Pages build 37712304503 — build job SUCCESS; deployment job was still processing when recorded.
+- Receipt image export 37712304962 — FAIL in the known pre-existing PDF selectable-text assertion after PDF generation; unrelated to Task 2.5.
+
+Exit decision:
+- Task 2.5 functional/design criteria: MET.
+- Browser runtime gate: PASS.
+- Android build: PASS.
+- Pages build: PASS.
+- Phase 2 remains IN PROGRESS.
 
 Known release/regression blocker:
 - Existing receipt image/PDF verification has a pre-existing PDF selectable-text assertion failure after PDF generation. This remains unresolved and must be cleared before Phase 2/full regression/release exit.
@@ -290,6 +324,8 @@ Must verify:
 - SHA256
 - GitHub release
 - final acceptance
+
+Last updated: 2026-10-08 (Phase 2 Task 2.5 completed)
 
 ## Current authoritative decisions
 
