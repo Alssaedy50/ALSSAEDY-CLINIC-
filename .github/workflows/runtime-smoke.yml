@@ -97,13 +97,18 @@ jobs:
               workspaceTitle: document.querySelector('#productWorkspaceTitle')?.textContent?.trim() || '',
               platformTabsHidden: document.querySelector('.platform-tabs')?.hidden === true,
               modeControlsVisible: visible('#dentalModeControls'),
+              clinicLocalNavVisible: visible('#dentalProductTabs'),
+              clinicLocalNavInsideContext: !!document.querySelector('#aqsa7ProductContext #dentalProductTabs'),
+              globalDentalNavCount: document.querySelectorAll('body > header #dentalProductTabs').length,
+              workflowToolInsideWorkspace: !!document.querySelector('#productWorkspace #dentalModeControls'),
               productContext: document.querySelector('#aqsa7ProductContext')?.textContent || '',
               traceableCount: traceable.length,
               traceableMissingOwner: traceable.filter(el => !el.dataset.owner || !el.dataset.action).map(el => el.id || el.dataset.uiId)
             };
           });
           if (!platformUx.workspaceHead || !/ALSSAEDY CLINIC/.test(platformUx.workspaceTitle)) throw new Error('Dental workspace header is missing or incoherent');
-          if (!platformUx.platformTabsHidden || !platformUx.modeControlsVisible) throw new Error('Platform/product navigation layers are not mutually exclusive');
+          if (!platformUx.platformTabsHidden || !platformUx.modeControlsVisible || !platformUx.clinicLocalNavVisible) throw new Error('Platform/product navigation layers are not mutually exclusive');
+          if (!platformUx.clinicLocalNavInsideContext || platformUx.globalDentalNavCount !== 0 || !platformUx.workflowToolInsideWorkspace) throw new Error('Clinic-local navigation or receipt workflow controls are outside their product/workflow boundary');
           if (!/Dental Clinic/.test(platformUx.productContext) || !/ALSSAEDY CLINIC/.test(platformUx.productContext)) throw new Error('Product context does not identify product and instance');
           if (platformUx.traceableMissingOwner.length) throw new Error('Visible platform/product action is missing traceability metadata: '+JSON.stringify(platformUx.traceableMissingOwner));
           if (platformUx.traceableCount < 8) throw new Error('Insufficient platform/product UI traceability coverage: '+platformUx.traceableCount);
