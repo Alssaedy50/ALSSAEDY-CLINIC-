@@ -432,6 +432,37 @@ jobs:
           if (!localBackupUx.stateRecorded || !localBackupUx.statusExists || !localBackupUx.lastExists || !localBackupUx.hintExists || !localBackupUx.restoreInput) throw new Error('Local Backup UX state/status contract failed: '+JSON.stringify(localBackupUx));
           if (!localBackupUx.restoreInput) throw new Error('Local Backup restore input is not available: '+JSON.stringify(localBackupUx));
 
+          const backupScheduling = await page.evaluate(() => {
+            const scheduler = window.aqsa7BackupScheduling;
+            const contract = window.AQSA7_BACKUP_SCHEDULING_CONTRACT;
+            if (!scheduler || !contract) throw new Error('Backup Scheduling / Reliability contract missing.');
+            if (contract.contractId !== 'aqsa7-backup-scheduling-reliability' || contract.schemaVersion !== 1 || contract.mode !== 'local-reminder') {
+              throw new Error('Backup Scheduling contract is incompatible: '+JSON.stringify(contract));
+            }
+            const original = scheduler.getStatus();
+            scheduler.setIntervalDays(7);
+            scheduler.setEnabled(true);
+            const configured = scheduler.getStatus();
+            scheduler.setEnabled(false);
+            const disabled = scheduler.getStatus();
+            scheduler.setEnabled(original.state.enabled);
+            scheduler.setIntervalDays(original.state.intervalDays);
+            scheduler.render();
+            return {
+              configuredInterval: configured.state.intervalDays,
+              configuredEnabled: configured.state.enabled,
+              disabledEnabled: disabled.state.enabled,
+              automaticBackgroundExport: contract.automaticBackgroundExport,
+              card: !!document.getElementById('backupScheduleCard'),
+              toggle: !!document.getElementById('backupScheduleToggle'),
+              interval: !!document.getElementById('backupScheduleInterval'),
+              status: !!document.getElementById('backupScheduleStatus')
+            };
+          });
+          if (backupScheduling.configuredInterval !== 7 || !backupScheduling.configuredEnabled || backupScheduling.disabledEnabled || backupScheduling.automaticBackgroundExport !== false || !backupScheduling.card || !backupScheduling.toggle || !backupScheduling.interval || !backupScheduling.status) {
+            throw new Error('Backup Scheduling / Reliability boundary failed: '+JSON.stringify(backupScheduling));
+          }
+
 
 
 
