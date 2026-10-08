@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0–8.8 COMPLETE / Phase 8.9 IN PROGRESS
-Last updated: 2026-10-09 (Phase 8.9 full regression opened after re-verifying Phase 8.8 main/PR state)
+Status: PHASE 8 ACTIVE — Phase 8.0–8.9 COMPLETE / Phase 8.10 AUTHORIZED NEXT
+Last updated: 2026-10-09 (Phase 8.9 full regression completed, all required gates passed, PR #66 merged and main verified)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3034,8 +3034,8 @@ Priority register:
 - **8.6 History & Financial Ledger — COMPLETE**
 - **8.7 Mobile UX — COMPLETE**
 - **8.8 Print / PDF / Physical Voucher QA — COMPLETE**
-- **8.9 Full Regression — IN PROGRESS**
-- **8.10 Rendered UX Acceptance — PLANNED**
+- **8.9 Full Regression — COMPLETE**
+- **8.10 Rendered UX Acceptance — AUTHORIZED NEXT**
 
 
 ### Phase 8.1 gate
@@ -3149,31 +3149,56 @@ Gate decision:
 
 **Phase 8.8: COMPLETE. Next authorized task: Phase 8.9 — Full Regression.**
 
+### Phase 8.9 — Full Regression
+Status: COMPLETE — ALL REQUIRED GITHUB GATES PASSED
+
+Authoritative phase document:
+- `docs/AQSA7-PHASE-8-9-FULL-REGRESSION.md`
+
+Implementation and verification:
+- PR #66 merged to `main`.
+- PR head: `10a5f4c5e808b13003aa91cdb31ca27c19fc37fe`.
+- Merge commit: `fbb1afad7b0b80a72bc39f662916236b9c4368fd`.
+- Runtime Smoke #373: PASS — [run 37855096854](https://github.com/Alssaedy50/AQSA7/actions/runs/37855096854).
+- Receipt Export #532: PASS — [run 37855096825](https://github.com/Alssaedy50/AQSA7/actions/runs/37855096825).
+- Pages Source Verification #227: PASS — [run 37855096823](https://github.com/Alssaedy50/AQSA7/actions/runs/37855096823).
+- Android Build #610: PASS — [run 37855096873](https://github.com/Alssaedy50/AQSA7/actions/runs/37855096873).
+- The new financial/date-range regression passed after isolating the synthetic Phase 5 receipt fixture from preceding Phase 8 visit-service state. The fix was confined to test setup; no product business logic or persistence architecture changed.
+- Vercel reported its external free-tier deployment-rate limit on the PR; this did not affect the four required AQSA7 GitHub gates and is not represented as a product pass.
+- Physical paper stock, binding, ink and real-printer scaling remain manual print-shop proof.
+
+Gate decision:
+- Functional Gate: PASS.
+- Architecture Gate: PASS — authoritative owners and persistence boundaries preserved.
+- Runtime regression gate: PASS.
+- Export/print regression gate: PASS.
+- Rendered cross-device Product/UX acceptance remains Phase 8.10 and is not claimed complete here.
+
+**Phase 8.9: COMPLETE. Next authorized task: Phase 8.10 — Rendered UX Acceptance.**
+
 ### Current phase
-**Phase 8.9 — Full Regression.**
+**Phase 8.10 — Rendered UX Acceptance.**
 
-Status: IN PROGRESS — branch `phase-8-9-full-regression` opened from verified `main` checkpoint `b011ac760da2be95392a4d2b9d627ccf838febb7`.
+Status: AUTHORIZED NEXT — do not mark complete from functional CI alone.
 
-Objective: run the complete application regression after Phase 8.2–8.8 clinic UX, patient workspace, visit/service billing, receipt lifecycle, financial history/ledger, mobile UX and print/PDF work. Validate previously verified behavior without creating parallel owners or changing product business logic.
+Objective: inspect and verify the actual rendered AQSA7 platform and Dental clinic workflows at mobile and desktop breakpoints, using the existing shared application core and authoritative runtime workflows. Validate the visible product composition and interaction outcomes, not just DOM presence or successful builds.
 
-Phase 8.9 scope:
-- Reuse the existing Runtime Smoke workflow and its current cross-phase browser assertions; add targeted financial/date-range/voided-receipt regression checks where coverage was incomplete.
-- Run Runtime Smoke, Pages Source Verification, Receipt Export and Android Build against the PR head.
-- Inspect all required check results and failed-job logs; fix root causes and rerun before merge.
-- Keep Functional, Architecture and Product/UX acceptance evidence distinct. Phase 8.10 owns rendered cross-device UX acceptance.
-- Do not change repository/persistence authority, receipt schema, route owner, export/print architecture or Android bridge unless a proven regression requires a narrowly scoped fix.
-- Physical stock, binding, ink and real printer scaling remain manual proof, not something CI can claim.
+Required scope:
+- Verify platform Home → Products/Projects → Dental product → clinic workspace navigation and context separation.
+- Review the actual rendered Dashboard, Patient Workspace, Visit/Services/Billing, Receipt Issuance, History/Financial Ledger and Settings surfaces.
+- Inspect mobile and desktop viewport behavior, overflow, touch targets, hierarchy, readable density, empty/error/success states, and primary action discoverability.
+- Capture/review rendered evidence at the approved representative viewport sizes and record concrete findings.
+- Fix only verified UX defects within the approved scope; preserve the route, product, capability, repository, storage and export owners.
+- Re-run all required regression gates for any shared source/CSS change. Keep physical print-shop proof separate from rendered-screen acceptance.
 
 Exit criteria:
-1. Existing Phase 8.2–8.8 regression assertions remain green.
-2. Date range filtering rejects out-of-range records and invalid reversed ranges.
-3. Financial summary excludes voided receipts from active totals while retaining void counts/history.
-4. Patient financial ledger renders from existing receipt records with no second persistence path.
-5. Required Runtime Smoke, Pages Source Verification, Receipt Export and Android Build gates pass on the final PR head.
-6. PR is merged only after required gates pass; final main SHA and phase status are re-verified.
-7. Phase 8.10 is authorized only after Phase 8.9 is COMPLETE.
+1. Rendered evidence covers the platform hierarchy and all Phase 8 core clinic workflows at mobile and desktop sizes.
+2. No blocking visual, navigation, overflow or interaction defects remain in the tested surfaces.
+3. Any fixes are minimal, traceable and regression-verified.
+4. Functional, Architecture and Product/UX gate decisions are recorded separately.
+5. The Build Plan and Phase 8.10 document record exact screenshots/evidence, final commit and next authorized action.
 
-Last updated: 2026-10-09 (Phase 8.9 full regression started after re-verifying Phase 8.8 completion and current main checkpoint).
+Last updated: 2026-10-09 (Phase 8.9 closed after all four required CI gates passed and PR #66 merged).
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED
