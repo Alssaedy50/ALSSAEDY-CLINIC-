@@ -15,14 +15,8 @@
     enabledByDefault: false,
     coreDependency: false,
     persistenceOwner: 'provider-adapter-external-storage',
-    supportedOperations: freeze([
-      'getDescriptor',
-      'health',
-      'list',
-      'put',
-      'get',
-      'delete'
-    ]),
+    requiredMethods: freeze(['getDescriptor','health','list','put','get','delete']),
+    providerOperations: freeze(['health','list','put','get','delete']),
     artifactRule: 'adapter transports opaque encrypted Backup Artifacts and must not rewrite plaintext/domain payloads',
     ownershipRule: 'provider objects must remain scoped to the supplied productId/tenantId/instanceId ownership',
     secretRule: 'credentials/tokens are resolved by a secure platform/provider boundary and never stored in this contract or source',
@@ -70,7 +64,7 @@
     if(!Array.isArray(descriptor.operations) || descriptor.operations.length===0){
       throw new Error('AQSA7_BACKUP_PROVIDER_OPERATIONS_REQUIRED');
     }
-    if(descriptor.operations.some(op=>!CONTRACT.supportedOperations.includes(op))){
+    if(descriptor.operations.some(op=>!CONTRACT.providerOperations.includes(op))){
       throw new Error('AQSA7_BACKUP_PROVIDER_OPERATION_UNSUPPORTED');
     }
     return freeze({...descriptor,operations:freeze([...descriptor.operations])});
@@ -78,7 +72,7 @@
 
   function validateAdapter(adapter){
     if(!adapter || typeof adapter!=='object') throw new Error('AQSA7_BACKUP_PROVIDER_ADAPTER_INVALID');
-    for(const method of CONTRACT.supportedOperations){
+    for(const method of CONTRACT.requiredMethods){
       if(typeof adapter[method]!=='function') throw new Error('AQSA7_BACKUP_PROVIDER_METHOD_MISSING:'+method);
     }
     return assertDescriptor(adapter.getDescriptor());
@@ -96,7 +90,7 @@
   }
 
   function createRequest(operation, identity, artifact, options={}){
-    if(!CONTRACT.supportedOperations.includes(operation)){
+    if(!CONTRACT.providerOperations.includes(operation)){
       throw new Error('AQSA7_BACKUP_PROVIDER_OPERATION_UNSUPPORTED');
     }
     const scoped=assertIdentity(identity);
