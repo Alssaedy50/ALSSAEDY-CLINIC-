@@ -276,6 +276,7 @@ function setPayMethod(method) {
     if (hidden) hidden.value = safeMethod;
     document.getElementById('optCash')?.classList.toggle('active', safeMethod === 'نقداً');
     document.getElementById('optBank')?.classList.toggle('active', safeMethod === 'محفظة / تحويل بنكي');
+    if (typeof updateReceiptIssuancePanel === 'function') updateReceiptIssuancePanel();
 }
 
 function toggleService(element) {
