@@ -668,7 +668,7 @@ jobs:
           }));
           if (shell.brand !== 'AQSA7') throw new Error('AQSA7 product identity missing');
           if (!shell.clinic) throw new Error('Clinic identity missing from app shell');
-          if (shell.navCount !== 4) throw new Error('Unexpected navigation item count: '+shell.navCount);
+          if (shell.navCount !== 5) throw new Error('Unexpected navigation item count: '+shell.navCount);
           if (shell.activeCount !== 1 || shell.currentCount !== 1) throw new Error('Navigation active-state contract failed');
 
           for (const id of ['receiptPrintArea','digDate','tabPatients','tabHistory','tabSettings']) {
