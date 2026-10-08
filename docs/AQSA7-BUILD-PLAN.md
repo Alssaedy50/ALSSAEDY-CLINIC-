@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: PHASE 8 ACTIVE — Phase 8.0–8.8 COMPLETE / Phase 8.9 AUTHORIZED NEXT
-Last updated: 2026-10-09 (Phase 8.6 History & Financial Ledger completed and verified)
+Last updated: 2026-10-09 (Phase 8.8 Print/PDF/Physical Voucher QA completed and verified; Phase 8.9 authorized)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3153,8 +3153,6 @@ Gate decision:
 **Phase 8.9 — Full Regression.**
 
 Objective: run the complete application regression after the Phase 8 clinic UX, receipt, ledger, mobile, and print/PDF reconstruction work. This phase must validate that no previously verified capability regressed.
-
-Objective: verify the separated digital receipt, PDF/image export, printer output boundary and physical blank paper-voucher master without changing the authoritative data/business model.
 
 
 Last updated: 2026-10-09 (Phase 8.8 print/PDF/physical voucher QA completed and verified; Phase 8.9 authorized)
