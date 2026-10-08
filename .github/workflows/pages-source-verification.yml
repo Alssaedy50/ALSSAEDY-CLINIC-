@@ -80,3 +80,5 @@ jobs:
           name: aqsa7-pages-verification-evidence
           path: aqsa7-pages-verification.txt
           if-no-files-found: ignore
+
+# Verification-only branch marker; no product implementation change.
