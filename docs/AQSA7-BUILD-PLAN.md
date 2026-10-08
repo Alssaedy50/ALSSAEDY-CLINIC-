@@ -1512,7 +1512,9 @@ Status: **IN PROGRESS**
 
 Task state:
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
-- Next authorized task: **Task 4.2 — Encryption & Integrity Layer**.
+- Task 4.2 — Encryption & Integrity Layer — **COMPLETE**.
+- Task 4.3 — Generic Backup Engine — **COMPLETE**.
+- Next authorized task: **Task 4.4 — Generic Backup Provider Adapter Contract**.
 
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
