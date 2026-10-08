@@ -172,7 +172,7 @@ jobs:
           if ((await page.locator('#historyList .history-ledger-row').count()) !== 0) throw new Error('History search unexpectedly matched unsaved smoke receipt');
           await page.locator('#historySearch').fill('');
           await page.locator('#historyFilter').selectOption('settled');
-          if ((await page.locator('#historyList .history-ledger-row').count()) < 0) throw new Error('History filter interaction failed');
+          if ((await page.locator('#historyFilter').inputValue()) !== 'settled') throw new Error('History filter interaction failed');
           await page.locator('#historyModal .modal-close').click();
           if (await page.locator('#historyModal').evaluate(e => e.classList.contains('open'))) throw new Error('History panel did not close');
 
