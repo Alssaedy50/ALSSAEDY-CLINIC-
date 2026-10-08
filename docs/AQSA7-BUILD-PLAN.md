@@ -222,7 +222,7 @@ Status: COMPLETE
 Status: IN PROGRESS
 
 Current next task:
-- **Task 2.6 — History / Receipts Ledger reconstruction**
+- **Task 2.6 — History / Receipts Ledger reconstruction — verification pending**
 - Executor: **AI / Technical Lead**
 
 Completed Phase 2 tasks:
@@ -231,6 +231,51 @@ Completed Phase 2 tasks:
 - 2.3 Patient Directory / Ledger Table — COMPLETE
 - 2.4 Patient Account Detail — COMPLETE
 - 2.5 Receipt Issuance Panel — COMPLETE
+
+### Phase 2 / Task 2.6 — History / Receipts Ledger Reconstruction: IMPLEMENTED / VERIFICATION PENDING
+
+Implementation:
+- Reconstructed the History surface as a responsive receipt-ledger pattern instead of the previous compact card list.
+- Added ledger columns for receipt number/date, patient/phone, services, total, paid, remaining balance, payment status and actions.
+- Added search across receipt number, patient name/phone, date, reference, service, tooth/location and amount-in-words fields.
+- Added authoritative financial filters: all receipts, receipts with remaining balance, and fully settled receipts.
+- Added deterministic newest-first ordering by receipt date with receipt-number tie-break.
+- Preserved the existing IndexedDB/repository as the single receipt source of truth.
+- Preserved existing loadReceipt(), deleteReceipt(), CSV export and full-clear workflows; no second history state machine was introduced.
+- Added responsive mobile transformation using the same ledger DOM, with 44px primary action targets.
+- Added empty/no-match states and live filtered ledger count.
+- Added runtime-smoke coverage for ledger structure, search interaction, filter interaction and four statistics cells.
+- Kept the protected receipt print/export surface unchanged.
+
+Files:
+- index.html
+- js/storage.js
+- css/polish.css
+- .github/workflows/runtime-smoke.yml
+
+Implementation commits:
+- 4b492f378ea92dffc10f4bfdaa1e1be2955cefa9 — History ledger shell.
+- 08cafd8773b186bd8eaa7bfbb48280d730a985de — History ledger rendering/filtering.
+- 334d92f542dca69adb23ddf41c25a29ec16fe50f — Responsive history ledger styling.
+- 4c561e96104f0d940180d0d6533bb698ca47f106 — Runtime smoke coverage.
+- 4f01c1a80f5ed93c59449970b10491cb440d58ca — Runtime smoke filter assertion correction.
+
+Verification:
+- Source-level implementation review completed after the final checkpoint.
+- GitHub workflow status for commit 4f01c1a80f5ed93c59449970b10491cb440d58ca did not expose a Runtime Smoke run during this execution window; therefore browser runtime verification is NOT claimed.
+- Local container clone/runtime verification was unavailable because the execution environment could not resolve github.com.
+- Existing Vercel status on the checkpoint reports the known build-rate-limit failure; this is not treated as evidence against the History implementation.
+
+Exit decision:
+- Implementation/design criteria: MET.
+- Browser runtime gate: PENDING.
+- Android build: PENDING for this task checkpoint.
+- Pages/deployment verification: PENDING for this task checkpoint.
+- Task 2.6 is therefore **VERIFICATION PENDING**, not marked COMPLETE.
+- Phase 2 remains IN PROGRESS.
+
+Next exact step:
+- Run/obtain the GitHub Runtime Smoke result for checkpoint 4f01c1a80f5ed93c59449970b10491cb440d58ca, then run the Android APK build and Pages build against the same application checkpoint. If those pass, update Task 2.6 to COMPLETE; otherwise fix the reported regression before proceeding to Task 2.7.
 
 ### Phase 2 / Task 2.5 — Receipt Issuance Panel Reconstruction: COMPLETE
 
