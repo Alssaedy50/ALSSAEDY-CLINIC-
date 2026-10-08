@@ -367,10 +367,70 @@ function updateActionAvailability() {
 }
 
 let activeAppTab='receipt';
-let appRoute={screen:'receipt',patientId:''};
+let appRoute={screen:'platform-home',patientId:'',productId:'',instanceId:''};
+let aqsa7PlatformRoute='home';
+const AQSA7_DENTAL_PRODUCT_ID='dental-clinic';
+
+function getAQSA7InstanceIdentitySafe(){
+  try{return typeof aqsa7GetInstanceIdentity==='function'?aqsa7GetInstanceIdentity():{productId:AQSA7_DENTAL_PRODUCT_ID,tenantId:'alssaedy-clinic',instanceId:'alssaedy-clinic-sana-a'};}
+  catch(_){return {productId:AQSA7_DENTAL_PRODUCT_ID,tenantId:'alssaedy-clinic',instanceId:'alssaedy-clinic-sana-a'};}
+}
+function setPlatformVisual(route){
+  const home=document.getElementById('platformHome'), products=document.getElementById('platformProducts'), workspace=document.getElementById('productWorkspace');
+  const context=document.getElementById('aqsa7ProductContext'), dentalTabs=document.getElementById('dentalProductTabs');
+  const isProduct=route==='dental';
+  if(home) home.hidden=route!=='home';
+  if(products) products.hidden=route!=='products';
+  if(workspace) workspace.hidden=!isProduct;
+  if(context) context.hidden=!isProduct;
+  if(dentalTabs) dentalTabs.hidden=!isProduct;
+  document.getElementById('tabPlatformHome')?.classList.toggle('active',route==='home');
+  document.getElementById('tabPlatformProducts')?.classList.toggle('active',route==='products');
+  const badge=document.getElementById('platformContextBadge');
+  const title=document.getElementById('platformBrandTitle');
+  if(isProduct){
+    if(badge) badge.textContent='Dental Clinic';
+    if(title) title.textContent='ALSSAEDY CLINIC';
+  }else{
+    if(badge) badge.textContent='Platform';
+    if(title) title.textContent='منصة AQSA7';
+  }
+}
+function setAQSA7Route(route, push=true){
+  const identity=getAQSA7InstanceIdentitySafe();
+  aqsa7PlatformRoute=route;
+  if(route==='dental'){
+    appRoute={screen:'product',patientId:'',productId:identity.productId,instanceId:identity.instanceId};
+  }else{
+    appRoute={screen:route==='products'?'platform-products':'platform-home',patientId:'',productId:'',instanceId:''};
+  }
+  setPlatformVisual(route);
+  const hash=route==='home'?'#platform':route==='products'?'#products':'#product-dental-clinic';
+  if(push && location.hash!==hash) history.pushState({aqsa7Route:route},'',hash);
+}
+function navigatePlatform(route){
+  if(route==='dental'){openConfiguredDentalProduct();return;}
+  setAQSA7Route(route,true);
+  if(route!=='dental'){
+    closeAllAppPanels();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+function openConfiguredDentalProduct(){
+  const identity=getAQSA7InstanceIdentitySafe();
+  if(identity.productId!==AQSA7_DENTAL_PRODUCT_ID){toast?.('المنتج المكوّن غير متاح حالياً.','error');return;}
+  setAQSA7Route('dental',true);
+  activeAppTab='receipt';
+  activateAppTabVisual('receipt');
+  if(!document.getElementById('digDate')?.value) setTodayDate();
+  if(!document.getElementById('digReceiptNo')?.value) generateNextReceiptNo();
+  if(!document.getElementById('selectedPayMethod')?.value) setPayMethod('نقداً');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 function activateAppTab(tab){
+  if(aqsa7PlatformRoute!=='dental') openConfiguredDentalProduct();
   if(tab==='receipt'){
-    activeAppTab='receipt'; appRoute={screen:'receipt',patientId:''};
+    activeAppTab='receipt'; appRoute={screen:'product',patientId:'',productId:AQSA7_DENTAL_PRODUCT_ID,instanceId:getAQSA7InstanceIdentitySafe().instanceId};
     closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
   }
   if(tab==='patients'){openPatientsModal();return;}
@@ -383,11 +443,13 @@ function activateAppTabVisual(tab){
     if(!button)return;
     const active=t===tab;
     button.classList.toggle('active',active);
-    if(active) button.setAttribute('aria-current','page');
-    else button.removeAttribute('aria-current');
+    if(active) button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
   });
 }
-function pushPanelState(name){if(history.state?.alssaedyPanel===name)return;history.pushState({alssaedyPanel:name},'', '#'+name);}
+function pushPanelState(name){
+  if(history.state?.alssaedyPanel===name)return;
+  history.pushState({alssaedyPanel:name,aqsa7Route:'dental'},'', '#product-dental-clinic/'+name);
+}
 function closePanelState(name){if(history.state?.alssaedyPanel===name){history.back();return true;}return false;}
 function closeAllAppPanels(){
   document.getElementById('patientsModal')?.classList.remove('open');
@@ -400,16 +462,19 @@ function closeAllAppPanels(){
 }
 window.addEventListener('popstate',(e)=>{
   const panel=e.state?.alssaedyPanel||'';
-  if(panel==='patients'){appRoute={screen:'patients',patientId:''};document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');return;}
-  if(panel==='patient-detail'){appRoute={screen:'patient-detail',patientId:window.currentPatientId||''};document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');return;}
-  if(panel==='history'){document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');return;}
-  if(panel==='settings'){document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');return;}
-  closeAllAppPanels();
+  if(panel==='patients'){setAQSA7Route('dental',false);appRoute={screen:'patients',patientId:''};document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');return;}
+  if(panel==='patient-detail'){setAQSA7Route('dental',false);appRoute={screen:'patient-detail',patientId:window.currentPatientId||''};document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');return;}
+  if(panel==='history'){setAQSA7Route('dental',false);document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');return;}
+  if(panel==='settings'){setAQSA7Route('dental',false);document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');return;}
+  const hash=location.hash;
+  if(hash==='#products'){setAQSA7Route('products',false);return;}
+  if(hash==='#product-dental-clinic'){setAQSA7Route('dental',false);return;}
+  setAQSA7Route('home',false);
 });
 function openShareModal(){document.getElementById('shareModal').classList.add('open');}
 function closeShareModal(){document.getElementById('shareModal').classList.remove('open');}
-function openHistoryModal(skipHistory=false){renderHistory();document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');appRoute={screen:'history',patientId:''};if(!skipHistory)pushPanelState('history');}
-function closeHistoryModal(skipHistory=false){document.getElementById('historyModal')?.classList.remove('open');if(!skipHistory)closePanelState('history');if(appRoute.screen==='history')appRoute={screen:'receipt',patientId:''};}
+function openHistoryModal(skipHistory=false){renderHistory();document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');appRoute={screen:'history',patientId:'',productId:AQSA7_DENTAL_PRODUCT_ID,instanceId:getAQSA7InstanceIdentitySafe().instanceId};if(!skipHistory)pushPanelState('history');}
+function closeHistoryModal(skipHistory=false){document.getElementById('historyModal')?.classList.remove('open');if(!skipHistory)closePanelState('history');if(appRoute.screen==='history')appRoute={screen:'product',patientId:'',productId:AQSA7_DENTAL_PRODUCT_ID,instanceId:getAQSA7InstanceIdentitySafe().instanceId};}
 function showPatientListView(){const form=document.querySelector('.patient-form');form?.classList.remove('patient-detail-hidden','patient-detail-edit-open');document.querySelector('.patients-list-title')?.classList.remove('patient-detail-hidden');document.getElementById('patientsList')?.classList.remove('patient-detail-hidden');document.getElementById('patientAccountPanel')?.setAttribute('hidden','');}
 function showPatientDetailView(){const form=document.querySelector('.patient-form');form?.classList.add('patient-detail-hidden');form?.classList.remove('patient-detail-edit-open');document.querySelector('.patients-list-title')?.classList.add('patient-detail-hidden');document.getElementById('patientsList')?.classList.add('patient-detail-hidden');document.getElementById('patientAccountPanel')?.removeAttribute('hidden');}
 
