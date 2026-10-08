@@ -284,6 +284,54 @@ jobs:
           if (backupCrypto.roundTrip?.artifactType !== 'AQSA7_BACKUP_ARTIFACT' || backupCrypto.roundTrip?.schemaVersion !== 5 || backupCrypto.roundTrip?.ownership?.instanceId !== 'instance-test') throw new Error('Encrypted backup round-trip lost artifact metadata or ownership');
           if (!backupCrypto.tamperRejected || !backupCrypto.wrongKeyRejected || !backupCrypto.metadataRejected || !backupCrypto.incompatibleRejected) throw new Error('Backup encryption fail-closed checks failed: '+JSON.stringify(backupCrypto));
 
+          const backupEngine = await page.evaluate(async () => {
+            const engine = window.aqsa7BackupEngine;
+            if (!engine || engine.contract?.id !== 'aqsa7-backup-engine' || engine.contract?.version !== 1) {
+              throw new Error('Generic Backup Engine contract missing.');
+            }
+            const artifact = await engine.createArtifact();
+            const password = 'AQSA7-' + crypto.randomUUID() + '-engine-test';
+            const envelope = await window.aqsa7EncryptBackupArtifact(artifact, password);
+            const validated = await engine.decryptAndValidate(envelope, password);
+            let plaintextRejected = false;
+            try {
+              await engine.decryptAndValidate(artifact, password);
+            } catch (_) { plaintextRejected = true; }
+            return {
+              contract: engine.contract,
+              artifact: {artifactType:artifact.artifactType,artifactVersion:artifact.artifactVersion,schemaVersion:artifact.schemaVersion},
+              ownership: artifact.ownership,
+              validatedOwnership: validated.ownership,
+              plaintextRejected
+            };
+          });
+          if (backupEngine.contract?.providerIndependent !== true || backupEngine.contract?.persistenceOwner !== 'repository-indexeddb') throw new Error('Backup Engine introduced provider/persistence ownership: '+JSON.stringify(backupEngine.contract));
+          if (backupEngine.artifact?.artifactType !== 'AQSA7_BACKUP_ARTIFACT' || backupEngine.artifact?.artifactVersion !== 1 || backupEngine.artifact?.schemaVersion !== 5) throw new Error('Backup Engine artifact contract failed: '+JSON.stringify(backupEngine.artifact));
+          if (!backupEngine.ownership?.tenantId || !backupEngine.ownership?.instanceId || backupEngine.ownership.tenantId !== backupEngine.validatedOwnership?.tenantId || backupEngine.ownership.instanceId !== backupEngine.validatedOwnership?.instanceId) throw new Error('Backup Engine lost ownership boundary: '+JSON.stringify(backupEngine));
+          if (!backupEngine.plaintextRejected) throw new Error('Backup Engine accepted plaintext as an encrypted artifact.');
+
+          const backupDelegation = await page.evaluate(async () => {
+            const originalPassword = window.aqsa7RequestBackupPassword;
+            const originalDownload = window.downloadTextFile;
+            const originalAlert = window.alert;
+            let captured = null;
+            window.aqsa7RequestBackupPassword = () => 'AQSA7-' + crypto.randomUUID() + '-export-test';
+            window.downloadTextFile = (filename, content, mime) => { captured = {filename, content, mime}; };
+            window.alert = () => {};
+            try {
+              await window.aqsa7BackupEngine.exportFullBackup();
+              return captured;
+            } finally {
+              window.aqsa7RequestBackupPassword = originalPassword;
+              window.downloadTextFile = originalDownload;
+              window.alert = originalAlert;
+            }
+          });
+          if (!backupDelegation?.filename?.endsWith('.aqsa7.json') || backupDelegation.mime !== 'application/json') throw new Error('Backup Engine export orchestration failed: '+JSON.stringify(backupDelegation));
+          const exportedEnvelope = JSON.parse(backupDelegation.content);
+          if (exportedEnvelope.artifactType !== 'AQSA7_BACKUP_ARTIFACT' || !exportedEnvelope.crypto || !exportedEnvelope.ciphertext) throw new Error('Backup Engine export did not produce an encrypted artifact.');
+
+
           const sharedCapabilities = await page.evaluate(() => ({
             ids: typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [],
             manifest: window.AQSA7_SHARED_CAPABILITY_MANIFEST || null,
