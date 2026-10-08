@@ -484,7 +484,7 @@ function togglePatientEdit(){const form=document.querySelector('.patient-form'),
 function returnToPatientDirectory(){showPatientListView();renderPatients();appRoute={screen:'patients',patientId:''};activateAppTabVisual('patients');if(history.state?.alssaedyPanel==='patient-detail')history.back();else if(location.hash==='#patient-detail')history.replaceState({alssaedyPanel:'patients'},'', '#patients');}
 
 function startPatientVisit(){
-  closePatientsModal();setMode('digital');document.getElementById('digClientName').value=document.getElementById('patientFormName').value||'';document.getElementById('digPatientPhone').value=document.getElementById('patientFormPhone').value||'';clearPatientVisitFields();
+  closePatientsModal();if(typeof setClinicWorkspaceView==='function')setClinicWorkspaceView('receipt');setMode('digital');document.getElementById('digClientName').value=document.getElementById('patientFormName').value||'';document.getElementById('digPatientPhone').value=document.getElementById('patientFormPhone').value||'';clearPatientVisitFields();
 }
 
 function clearPatientVisitFields(){
@@ -514,6 +514,7 @@ function createReceiptFromPatientAccount(){
   if(match)match.classList.add('active');
   calculateLedger();
   closePatientsModal();
+  if(typeof setClinicWorkspaceView==='function')setClinicWorkspaceView('receipt');
   alert('تم تجهيز السند من حساب المريض. راجعه ثم اضغط حفظ.');
 }
 
@@ -522,11 +523,13 @@ function startNewPatient(){
   ['patientFormId','patientFormName','patientFormAge','patientFormPhone','patientFormVisit','patientFormProblem','patientFormHistory','patientFormNotes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   const gender=document.getElementById('patientFormGender');if(gender)gender.value='';
   showPatientListView();
+  document.querySelector('.patient-form')?.classList.add('patient-detail-edit-open');
   document.getElementById('patientFormName')?.focus();
 }
 
 function openPatientsModal(skipHistory=false){
   document.getElementById('patientsModal')?.removeAttribute('hidden');
+  if(typeof setClinicWorkspaceView==='function')setClinicWorkspaceView('patients');
   renderPatients();showPatientListView();activateAppTabVisual('patients');appRoute={screen:'patients',patientId:''};
   if(!skipHistory)pushPanelState('patients');
 }
