@@ -51,6 +51,38 @@ jobs:
           const title = await page.title();
           if (!title.includes('سند قبض مالي')) throw new Error('Unexpected page title');
 
+          const designTokens = await page.evaluate(() => {
+            const root = getComputedStyle(document.documentElement);
+            const token = name => root.getPropertyValue(name).trim();
+            const tab = document.querySelector('#tabReceipt');
+            return {
+              primary: token('--color-primary'),
+              paid: token('--color-paid'),
+              warning: token('--color-warning'),
+              surface: token('--color-surface'),
+              white: token('--color-white'),
+              border: token('--color-border'),
+              fontUi: token('--font-ui'),
+              touchTarget: token('--touch-target'),
+              tabHeight: tab ? Math.round(tab.getBoundingClientRect().height) : 0
+            };
+          });
+          const expectedTokens = {
+            primary: '#1E3A8A',
+            paid: '#059669',
+            warning: '#D97706',
+            surface: '#F8FAFC',
+            white: '#FFFFFF',
+            border: '#E2E8F0',
+            touchTarget: '44px'
+          };
+          for (const [key, expected] of Object.entries(expectedTokens)) {
+            const actual = designTokens[key].toUpperCase();
+            if (actual !== expected) throw new Error('Design token mismatch '+key+': '+designTokens[key]);
+          }
+          if (!designTokens.fontUi.includes('system-ui')) throw new Error('UI font token is not system-ui based');
+          if (designTokens.tabHeight < 44) throw new Error('Receipt tab touch target is below 44px: '+designTokens.tabHeight);
+
           for (const id of ['receiptPrintArea','digDate','tabPatients','tabHistory','tabSettings']) {
             if (!(await page.locator('#' + id).count())) throw new Error('Missing #' + id);
           }
