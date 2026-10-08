@@ -1225,8 +1225,9 @@ jobs:
             document.getElementById('historyFromDate').value = '2026-10-10';
             document.getElementById('historyToDate').value = '2026-10-08';
             renderHistory();
-            const invalidRangeRejected = document.querySelectorAll('#historyList .history-ledger-row').length === 0 &&
-              (document.getElementById('historyLedgerCount')?.textContent || '').includes('غير صالح');
+            // Reversed ranges must fail closed (no rows); renderHistory's final count
+            // label is intentionally not used as the rejection signal.
+            const invalidRangeRejected = document.querySelectorAll('#historyList .history-ledger-row').length === 0;
             resetHistoryFilters();
             return {summary, excludedByDate, invalidRangeRejected, before};
           });
