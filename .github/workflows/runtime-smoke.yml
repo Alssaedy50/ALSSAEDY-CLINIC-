@@ -499,9 +499,16 @@ jobs:
             const providerContract = window.AQSA7_GOOGLE_DRIVE_PROVIDER_CONTRACT;
             const runtime = window.aqsa7BackupProviderRuntime;
             if (!providerFactory || !providerContract || !runtime) throw new Error('Google Drive provider boundary missing.');
+            const authContract = window.AQSA7_GOOGLE_DRIVE_AUTH_CONTRACT;
+            const authBoundary = window.aqsa7GoogleDriveAuth;
+            if (!authContract || !authBoundary || authContract.contractId !== 'aqsa7-google-drive-auth-boundary' || authContract.tokenPersistence !== 'none' || authContract.secretStorage !== false) {
+              throw new Error('Google Drive auth boundary missing or unsafe.');
+            }
             if (providerContract.id !== 'google-drive' || providerContract.apiVersion !== 'v3' || providerContract.storageSpace !== 'appDataFolder' || providerContract.oauthScope !== 'https://www.googleapis.com/auth/drive.appdata') {
               throw new Error('Google Drive provider contract incompatible: '+JSON.stringify(providerContract));
             }
+            authBoundary.clear();
+            authBoundary.configure({getAccessToken:async()=> 'smoke-token'});
             const originalFetch = window.fetch;
             const calls = [];
             let getPayload = null;
