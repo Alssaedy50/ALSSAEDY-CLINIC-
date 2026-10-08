@@ -26,3 +26,64 @@
 .template-date-editor-row #paperTemplateDate{flex:1;min-width:0;text-align:center;direction:ltr;unicode-bidi:isolate;}
 .template-date-editor small{display:block;margin-top:7px;line-height:1.5;opacity:.75;}
 @media (max-width:520px){.template-date-editor-row{flex-wrap:wrap}.template-date-editor-row #paperTemplateDate{width:100%;flex-basis:100%}}
+
+
+/* ===== AQSA7 Phase 2 / Task 2.3 — Patient Directory / Ledger Table ===== */
+.patient-directory{margin-top:4px}
+.patient-directory-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 9px}
+.patient-directory-head h4{margin:2px 0 0;color:var(--color-text);font-size:13px}
+.directory-kicker{display:block;color:var(--color-primary);font-size:8px;font-weight:900;letter-spacing:.08em;direction:ltr}
+.directory-count{flex:0 0 auto;padding:5px 8px;border-radius:999px;background:#eff6ff;color:var(--color-primary);font-size:9px;font-weight:800}
+.patient-directory-tools{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:7px;margin-bottom:9px}
+.patient-search-wrap{display:flex;align-items:center;gap:7px;min-height:44px;padding:0 10px;border:1px solid var(--color-border);border-radius:10px;background:var(--color-white);color:var(--color-text-muted)}
+.patient-search-wrap .live-input{border:0!important;box-shadow:none!important;outline:0!important;padding-inline:2px!important;min-width:0}
+.patient-directory-tools .setting-select{min-height:44px;width:100%}
+.patient-ledger-table{border:1px solid var(--color-border);border-radius:12px;overflow:hidden;background:var(--color-white)}
+.patient-ledger-head,.patient-ledger-row{display:grid;grid-template-columns:minmax(145px,1.55fr) minmax(100px,1fr) minmax(85px,.85fr) minmax(82px,.8fr) minmax(82px,.8fr) minmax(82px,.8fr) minmax(76px,.7fr) minmax(86px,.8fr);align-items:center;gap:8px;padding:9px 10px}
+.patient-ledger-head{background:var(--color-surface);border-bottom:1px solid var(--color-border);color:var(--color-text-muted);font-size:8px;font-weight:900}
+.patient-ledger-row{min-height:62px;border-bottom:1px solid #edf2f7;font-size:9px}
+.patient-ledger-row:last-child{border-bottom:0}
+.patient-identity{min-width:0}
+.patient-identity strong{display:block;color:var(--color-text);font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patient-identity small{display:block;margin-top:2px;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.patient-phone,.patient-last-visit{color:var(--color-text-muted);direction:ltr;text-align:right;white-space:nowrap}
+.patient-money{font-weight:800;color:var(--color-text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.patient-money small{font-size:7px;font-weight:700;color:var(--color-text-muted)}
+.patient-paid{color:var(--color-paid)}
+.patient-due{color:var(--color-warning)}
+.patient-zero{color:var(--color-text-muted)}
+.patient-status-cell{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.patient-status-cell small{color:var(--color-text-muted);font-size:7px;white-space:nowrap}
+.patient-status{display:inline-flex;align-items:center;padding:3px 6px;border-radius:999px;font-size:7.5px;font-weight:900}
+.patient-status-balance{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.patient-status-settled{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+.patient-next-visit{direction:ltr}
+.patient-muted{color:#94a3b8}
+.patient-list-actions{display:flex;justify-content:flex-end}
+.patient-open-btn{min-height:44px!important;padding:7px 9px!important;border:1px solid var(--color-primary)!important;border-radius:9px!important;background:var(--color-primary)!important;color:#fff!important;font-family:var(--font-ui)!important;font-size:8.5px!important;font-weight:800!important;cursor:pointer}
+.patient-open-btn:hover{filter:brightness(1.08)}
+.patient-ledger-empty{padding:28px 12px}
+@media(max-width:900px){
+ .patient-ledger-head{display:none}
+ .patient-ledger-row{grid-template-columns:minmax(0,1fr) auto;gap:7px;padding:11px}
+ .patient-identity{grid-column:1/-1;padding-bottom:4px;border-bottom:1px solid #f1f5f9}
+ .patient-phone,.patient-last-visit{font-size:8px}
+ .patient-money,.patient-status-cell,.patient-list-actions{min-width:0}
+ .patient-money::before,.patient-status-cell::before{content:attr(data-label);display:block;color:var(--color-text-muted);font-size:7px;font-weight:700;margin-bottom:2px}
+ .patient-list-actions{grid-column:2;grid-row:2 / span 4}
+ .patient-open-btn{width:92px}
+}
+@media(max-width:600px){
+ .patient-directory-tools{grid-template-columns:1fr}
+ .patient-ledger-row{grid-template-columns:1fr 1fr}
+ .patient-phone{grid-column:1}
+ .patient-last-visit{grid-column:2}
+ .patient-money{font-size:9px}
+ .patient-status-cell{grid-column:1}
+ .patient-list-actions{grid-column:2;grid-row:auto;align-items:end}
+ .patient-open-btn{width:100%}
+}
+html[data-night="on"] .patient-directory-head h4{color:#e2e8f0}
+html[data-night="on"] .patient-ledger-table,.html[data-night="on"] .patient-search-wrap{background:#111c33}
+html[data-night="on"] .patient-ledger-head{background:#0f172a}
+html[data-night="on"] .patient-ledger-row{border-color:#1e293b}
