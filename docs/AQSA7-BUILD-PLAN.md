@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: RELEASE CANDIDATE — v1.4.0
-Last updated: 2026-10-08 (Phase 7.6 documentation reconciled; v1.4.0 release packaging authorized)
+Status: PHASE 8 ACTIVE — Phase 8.0 COMPLETE / Phase 8.1 AUTHORIZED
+Last updated: 2026-10-08 (Phase 8.0 real-clinic UX audit completed; receipt model clarified; Phase 8.1 authorized)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -2982,7 +2982,87 @@ The burden of proof is on **new implementation**, not on reuse.
 
 
 
-Last updated: 2026-10-08 (v1.4.0 package prepared and verified; v1.3.0 remains historical release)
+## Phase 8 — Real Clinic UX/UI Reconstruction
+
+Status: ACTIVE — Phase 8.0 COMPLETE / Phase 8.1 AUTHORIZED
+
+Phase 7 is closed as the verified v1.4.0 release-candidate baseline. Further work is now governed by the Phase 8 UX/UI reconstruction program. Phase 8 does not invalidate Phase 7 functional or architectural evidence; it addresses the separate problem of making AQSA7 genuinely usable as a daily dental-clinic application.
+
+### Phase 8.0 — Real Clinic UX Audit
+Status: COMPLETE — AUDIT BASELINE ESTABLISHED
+
+Authoritative audit document:
+- `docs/AQSA7-PHASE-8-UX-AUDIT.md`
+
+Key decisions:
+- Separate **Digital Receipt** from **Blank Printed Voucher / Paper Receipt Template**.
+- The blank paper voucher exists primarily to produce a professional high-resolution master for printing physical receipt/voucher books for manual handwriting.
+- The blank paper voucher is not the digital receipt printed from a phone.
+- When a printer exists, the issued digital receipt may be printed directly; this is a separate workflow.
+- Classify paper-voucher content into static/pre-printed information, handwritten transaction information and digital/internal-only information before rebuilding the template.
+- Preserve the existing repository, IndexedDB, route/state, product, capability, backup/recovery and export/Android boundaries unless an actual dependency gap is proven.
+
+Audit findings now formally recorded:
+- receipt workflow/data-model ambiguity;
+- excessive information density and small typography;
+- platform-vs-clinic navigation overload;
+- patient/visit/billing/receipt separation gap;
+- modal-heavy patient/history/preview workflows;
+- hard-delete receipt lifecycle risk;
+- weak line-item service/billing representation;
+- incomplete patient financial ledger;
+- appointment workflow limitations;
+- mobile/desktop composition problems not fully represented by functional CI;
+- backup/sync configuration overload;
+- print/PDF/master-template distinction;
+- RTL/BiDi, accessibility and touch-target verification needs;
+- CSS layering/override maintainability risk;
+- need for a clinic dashboard as the daily operational home.
+
+Priority register:
+- P0: receipt concept separation, paper-template contract, receipt lifecycle safety, clinic workflow separation, dashboard, readability/information density.
+- P1: patient workspace, service line items, financial ledger, appointments, mobile/desktop reconstruction, modal reduction, backup/sync UX, print/PDF separation.
+- P2: reporting, daily closing, advanced search/tags, thermal optimization and accessibility hardening.
+
+### Phase 8 task sequence
+- **8.0 Real Clinic UX Audit — COMPLETE**
+- **8.1 Information Architecture — AUTHORIZED NEXT**
+- 8.2 Clinic Dashboard — PLANNED
+- 8.3 Patient Workspace — PLANNED
+- 8.4 Visit / Services / Billing — PLANNED
+- 8.5 Receipt System Reconstruction — PLANNED
+- 8.6 History & Financial Ledger — PLANNED
+- 8.7 Mobile UX — PLANNED
+- 8.8 Print / PDF / Physical Voucher QA — PLANNED
+- 8.9 Full Regression — PLANNED
+- 8.10 Rendered UX Acceptance — PLANNED
+
+### Phase 8 execution constraints
+- Do not repeat Phase 7 platform-shell work merely because the visual target changes.
+- Do not create a second router, repository, persistence path, product registry, receipt store or business state machine.
+- Do not rebuild receipt internals before Phase 8.5; Phase 8.0 only establishes the receipt contract and defects.
+- Treat rendered UI and physical/PDF output as separate acceptance dimensions from functional CI.
+- Stop at each task gate and document evidence before advancing.
+
+### Phase 8.0 gate
+- Source/current-state audit: PASS.
+- Real clinic workflow baseline: PASS.
+- Receipt concept separation: PASS.
+- Paper-voucher static/handwritten/digital-only classification: PASS.
+- P0/P1/P2 defect register: PASS.
+- Architecture preservation constraints: PASS.
+- Physical print validation: DEFERRED to Phase 8.8.
+- Rendered cross-device validation: DEFERRED to Phase 8.10.
+
+**Phase 8.0: COMPLETE.**
+
+### Next authorized task
+**Phase 8.1 — Information Architecture.**
+
+Objective: reconstruct the user-facing navigation/workspace hierarchy around daily clinic work while preserving `js/app.js` as the sole route/context owner and without implementing the Phase 8.5 receipt redesign early.
+
+
+Last updated: 2026-10-08 (Phase 8.0 audit complete; v1.4.0 remains the verified release-candidate baseline; Phase 8.1 is the next authorized task)
 
 ## Current authoritative decisions
 
