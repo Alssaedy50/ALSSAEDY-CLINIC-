@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
         never crash if the logo resource is missing from a build. */
     static int clinicIcon(Context context) {
         try {
-            return com.alssaedy.clinic.R.drawable.clinic_logo;
+            return com.alssaedy.clinic.R.drawable.aqsa7_launcher;
         } catch (Throwable t) {
             return android.R.drawable.ic_dialog_info;
         }
