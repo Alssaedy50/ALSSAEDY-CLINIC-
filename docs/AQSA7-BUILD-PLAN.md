@@ -582,6 +582,63 @@ Exit decision:
 ### Phase 3 — Productization & Multi-Product Platform Foundation
 Status: IN PROGRESS
 
+### Phase 3 / Task 3.3 — Generic Shared Capability / Module Boundaries: IN VERIFICATION
+
+Purpose:
+- Establish explicit reusable shared-business capability contracts between Platform Core and Vertical Products.
+- Keep genuinely generic business semantics reusable while leaving dental-specific clinical rules inside the Dental vertical.
+- Ensure the Dental product consumes shared capability definitions through the Product Manifest/Instance contract rather than inventing parallel capability definitions.
+
+Research / architecture basis:
+- Domain-driven bounded-context guidance was reviewed from Microsoft Learn: domain boundaries should follow cohesive business responsibilities and avoid unrelated model coupling.
+- Modular-monolith guidance was reviewed from Martin Fowler: a monolith can be modularized around business capabilities; strong module boundaries require explicit ownership and discipline.
+- JavaScript browser module guidance was reviewed from MDN; AQSA7 retains classic script loading for compatibility and establishes explicit runtime module contracts without introducing a bundler/runtime dependency at this stage.
+- Decision: use a lightweight registry/contract boundary inside the existing single application rather than microservices or separate physical databases. This is consistent with AQSA7 local-first, free, cross-platform constraints and avoids premature distribution complexity.
+
+Implementation:
+- Added js/capabilities.js as the single authoritative shared-business capability registry.
+- Registered reusable capabilities: people, appointments, catalog, inventory, purchasing, sales, billing, receipts, staff, branches, reporting, documents, messaging and workflow.
+- Each capability declares purpose, ownership, exclusions, logical data contracts and API surface. These are contracts only; physical persistence remains owned by the single AQSA7 repository/IndexedDB boundary.
+- Added a reusable billing capability contract for amount normalization, balance/change calculation and receivable summaries.
+- Bound the Dental Product Manifest to registered shared capabilities instead of maintaining an independent list. The Dental product currently enables people, appointments, catalog, billing and receipts.
+- Preserved Dental-specific entities such as clinical-visit, dental-service and treatment inside the Dental vertical domain definition; they were not moved into shared capability code.
+- Routed existing receipt ledger calculations and patient financial summaries through the shared billing contract, so the shared boundary is actively used rather than being documentation-only.
+- No second database, provider, state machine, backup path or AI dependency was introduced.
+
+Files changed:
+- js/capabilities.js
+- js/product.js
+- js/storage.js
+- index.html
+- .github/workflows/runtime-smoke.yml
+
+Execution exit criteria used from the approved plan:
+1. Shared capabilities have explicit ownership and exclusions.
+2. Dental-specific domain rules remain outside shared capability contracts.
+3. Product Manifest consumes the shared capability registry.
+4. At least one real shared business behavior is consumed by existing Dental workflows.
+5. No second durable data source or competing state machine is introduced.
+6. Shared capability contracts are platform/client independent and remain usable by Web/PWA/Desktop/Android shared core.
+7. JavaScript syntax/static validation passes.
+8. Mobile + desktop runtime smoke passes with no console/page errors.
+9. Receipt/export regression passes.
+10. Android and Pages gates pass.
+11. Any non-gating external CI failure is recorded and does not get silently ignored.
+
+Verification status:
+- Android APK 37719349319 — SUCCESS.
+- Receipt image/PDF export 37719349290 — SUCCESS.
+- GitHub Pages build/deployment 37719348937 — SUCCESS.
+- Runtime Smoke 37719349359 — PENDING/STALE VERIFICATION: GitHub runner remains stuck in "Install Chromium" before JavaScript syntax validation and browser tests; no failure result is available yet. This is an infrastructure verification blocker, not a product test pass.
+- Commit combined status also reports a Vercel context failure caused by the external Vercel build-rate-limit/upgrade gate. Vercel is not an AQSA7 required deployment target and this status is therefore non-gating, but it remains recorded.
+- Because the runtime smoke gate has not completed, Task 3.3 is NOT marked COMPLETE.
+
+Current phase-gate decision:
+- Implementation: MET.
+- Architecture boundary: MET.
+- Shared capability actively consumed: MET.
+- Static/runtime verification: PENDING.
+- Task 3.3: IN VERIFICATION; do not advance to Task 3.4 until Runtime Smoke completes successfully and the final checkpoint is revalidated.
 Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
 
 ### Phase 3 / Task 3.2 — Product Manifest & Instance Configuration Contract: COMPLETE
@@ -701,7 +758,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Phase 3 Task 3.2 COMPLETE; Task 3.3 next)
+Last updated: 2026-10-08 (Phase 3 Task 3.3 IN VERIFICATION; Task 3.4 blocked pending runtime gate)
 
 ## Current authoritative decisions
 
@@ -716,6 +773,7 @@ Last updated: 2026-10-08 (Phase 3 Task 3.2 COMPLETE; Task 3.3 next)
 - Platform/provider adapters must remain thin and must not duplicate domain logic.
 - Phase 3 owns multi-product architecture, product manifests, shared module boundaries, tenant/instance isolation contracts and AI/integration capability boundaries.
 - Task 3.2 establishes js/product.js as the single authoritative Product Definition + configured Instance/Tenant contract; no second manifest/configuration source is permitted.
+- Task 3.3 establishes js/capabilities.js as the single authoritative shared-business capability registry; physical persistence remains repository/IndexedDB-owned and capability contracts contain no provider or vertical clinical logic.
 - Product identity/organization defaults are separated from reusable product semantics; repository IndexedDB scope is selected from the configured instance contract.
 - Runtime/browser, receipt export, Pages and Android gates are green on final Task 3.2 checkpoint b61477028c0f2476b21a13e732c81b7506e88857.
 - Phase 4 owns backup/security implementation; Phase 5 owns cross-platform and disaster-recovery verification.
