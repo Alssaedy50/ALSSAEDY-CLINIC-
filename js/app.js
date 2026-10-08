@@ -448,7 +448,7 @@ function activateAppTabVisual(tab){
 }
 function pushPanelState(name){
   if(history.state?.alssaedyPanel===name)return;
-  history.pushState({alssaedyPanel:name,aqsa7Route:'dental'},'', '#product-dental-clinic/'+name);
+  history.pushState({alssaedyPanel:name,aqsa7Route:'dental'},'', '#'+name);
 }
 function closePanelState(name){if(history.state?.alssaedyPanel===name){history.back();return true;}return false;}
 function closeAllAppPanels(){
