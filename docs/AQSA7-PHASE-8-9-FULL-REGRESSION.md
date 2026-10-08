@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.9 Full Regression
 
-Status: IN PROGRESS — required CI evidence pending
+Status: COMPLETE — all required GitHub gates passed
 Date: 2026-10-09
 Branch: `phase-8-9-full-regression`
 Base `main` checkpoint: `b011ac760da2be95392a4d2b9d627ccf838febb7`
@@ -49,6 +49,29 @@ Run the complete regression after Phase 8.2–8.8 clinic UX, patient workspace, 
 9. Any required failures are inspected, corrected and rerun; no failure is waived without evidence.
 10. PR is merged only after required gates pass, and the final `main` commit and this phase record are verified.
 
-## Current decision
+## Verification results — final PR head
 
-Phase 8.9 is **IN PROGRESS**. No pass or completion is claimed before the required CI runs finish. Phase 8.10 — Rendered UX Acceptance — remains the next phase only after the 8.9 gate is met.
+Final PR head: `10a5f4c5e808b13003aa91cdb31ca27c19fc37fe`
+Merge commit on `main`: `fbb1afad7b0b80a72bc39f662916236b9c4368fd`
+
+- Runtime Smoke #373: PASS — https://github.com/Alssaedy50/AQSA7/actions/runs/37855096854
+- Receipt Export #532: PASS — https://github.com/Alssaedy50/AQSA7/actions/runs/37855096825
+- Pages Source Verification #227: PASS — https://github.com/Alssaedy50/AQSA7/actions/runs/37855096823
+- Android Build #610: PASS — https://github.com/Alssaedy50/AQSA7/actions/runs/37855096873
+- All four required checks completed successfully against the same final PR head before merge.
+- PR #66 merged successfully; final `main` state was re-checked.
+- An earlier Runtime Smoke attempt exposed test-fixture contamination: the Phase 5 receipt inherited Phase 8 visit-service items. The fixture now explicitly resets visit context and service items before creating its record. The complete Runtime Smoke then passed; no product code or persistence model was changed.
+- Vercel's external free-tier deployment-rate limit was reported separately and did not fail any required AQSA7 gate.
+
+## Gate decision
+
+- Functional Gate: PASS.
+- Architecture Gate: PASS — no production source or persistence authority changed; existing owners remain authoritative.
+- Runtime/browser regression: PASS.
+- Receipt export/print regression: PASS.
+- Product/UX rendered acceptance: deferred to Phase 8.10, as planned.
+- Physical paper stock, binding, ink and printer scaling: manual print-shop proof remains separate.
+
+## Final decision
+
+Phase 8.9 is **COMPLETE**. The authoritative Build Plan now authorizes **Phase 8.10 — Rendered UX Acceptance** as the next step. Phase 8.10 has not been started or pre-claimed complete.
