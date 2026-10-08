@@ -53,7 +53,11 @@
       {id:'owner', permissions: freeze(['*'])},
       {id:'staff', permissions: freeze(['patients.read','patients.write','receipts.read','receipts.write','history.read'])}
     ]),
-    integrations: freeze([]),
+    integrations: freeze({
+      contract: 'aqsa7-integration-adapter-contract',
+      enabledByDefault: false,
+      capabilities: freeze(['api','import','export','webhook','event','mapping'])
+    }),
     ai: freeze({
       enabledByDefault: false,
       capabilities: freeze(['search','summarize','extract','generate']),
@@ -114,7 +118,11 @@
     documentTemplates: freeze({
       receipt: freeze({defaultSize:'a5', allowedSizes: freeze(['a5','a4','80mm'])})
     }),
-    integrations: freeze({}),
+    integrations: freeze({
+      enabled: false,
+      adapterIds: freeze([]),
+      policy: freeze({allowExternalTransmission:false, allowInboundWebhooks:false})
+    }),
     aiPolicy: freeze({
       enabled: false,
       externalDataTransmission: false,
@@ -135,6 +143,10 @@
     if(!manifest.sharedCapabilities.every(id => sharedCapabilityIds.includes(id))) errors.push('manifest shared capability is not registered');
     if(!manifest.capabilities.length) errors.push('manifest capabilities');
     const aiContract = window.AQSA7_AI_MANIFEST;
+    const integrationContract = window.AQSA7_INTEGRATION_MANIFEST;
+    if(!integrationContract || integrationContract.contractId !== 'aqsa7-integration-adapter-contract' || integrationContract.providerIndependent !== true || integrationContract.coreDependency !== false) errors.push('integration platform contract');
+    if(!integrationContract?.capabilities || !manifest.integrations.capabilities.every(id => !!integrationContract.capabilities[id])) errors.push('product integration capability outside platform contract');
+    if(instance.integrations.adapterIds.some(id => typeof id !== 'string' || !id.trim())) errors.push('invalid integration adapter id');
     if(!aiContract || aiContract.contractId !== 'aqsa7-ai-capability-layer' || aiContract.providerIndependent !== true || aiContract.coreDependency !== false) errors.push('AI platform contract');
     if(!manifest.ai.capabilities.every(id => !!aiContract?.capabilities?.[id])) errors.push('manifest AI capability outside platform contract');
     if(!instance.aiPolicy.allowedCapabilities.every(id => manifest.ai.capabilities.includes(id))) errors.push('instance AI policy capability outside product contract');
