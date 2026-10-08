@@ -372,12 +372,14 @@ function patientReceipts(p){
 }
 function patientFinancialSummary(p){
   const rs=patientReceipts(p);
-  return {
-    receipts:rs,
-    total:rs.reduce((s,r)=>s+(Number(r.total)||0),0),
-    paid:rs.reduce((s,r)=>s+(Number(r.paid)||0),0),
-    balance:rs.reduce((s,r)=>s+(Number(r.balance)||0),0)
-  };
+  const billing=window.aqsa7BillingContract;
+  const summary=billing ? billing.summarizeReceivables(rs) : rs.reduce((s,r)=>({
+    count:s.count+1,
+    total:s.total+(Number(r.total)||0),
+    paid:s.paid+(Number(r.paid)||0),
+    balance:s.balance+(Number(r.balance)||0)
+  }),{count:0,total:0,paid:0,balance:0});
+  return {receipts:rs,total:summary.total,paid:summary.paid,balance:summary.balance};
 }
 
 async function renderPatients(){
