@@ -582,10 +582,27 @@
     <div class="no-print modal-screen" id="historyModal">
         <div class="modal-box modal-wide">
             <button class="modal-close" type="button" onclick="closeHistoryModal()">×</button>
-            <h3>سجل السندات المحفوظة</h3>
+            <div class="history-ledger-head">
+                <div>
+                    <span class="directory-kicker">RECEIPTS LEDGER</span>
+                    <h3>سجل السندات والمعاملات</h3>
+                    <p>بحث وتصفية ومراجعة السندات المحفوظة مع الحالة المالية والإجراءات.</p>
+                </div>
+                <span class="directory-count" id="historyLedgerCount">0 سند</span>
+            </div>
             <div class="history-stats" id="historyStats"></div>
-            <input type="search" id="historySearch" class="live-input history-search" placeholder="ابحث بالاسم أو رقم السند أو التاريخ أو الخدمة..." oninput="renderHistory()">
-            <div class="history-container" id="historyList"></div>
+            <div class="history-ledger-tools" role="search">
+                <label class="history-search-wrap">
+                    <span aria-hidden="true">🔎</span>
+                    <input type="search" id="historySearch" class="live-input history-search" placeholder="ابحث بالاسم أو رقم السند أو الهاتف أو الخدمة..." oninput="renderHistory()">
+                </label>
+                <select id="historyFilter" class="setting-select" aria-label="تصفية السندات" onchange="renderHistory()">
+                    <option value="all">كل السندات</option>
+                    <option value="balance">عليها متبقي</option>
+                    <option value="settled">مسددة بالكامل</option>
+                </select>
+            </div>
+            <div class="history-ledger-table" id="historyList"></div>
             <div class="history-footer">
                 <button type="button" class="tool-btn" onclick="exportTransactionsFile('csv')">📊 تصدير CSV</button>
                 <button type="button" class="tool-btn" onclick="clearAllHistory()">🗑️ مسح السجل بالكامل</button>
