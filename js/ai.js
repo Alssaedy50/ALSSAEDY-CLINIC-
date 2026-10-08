@@ -172,6 +172,22 @@
     };
   }
 
+  async function* stream(request, context){
+    const validation = validateRequest(request);
+    const adapter = context?.adapter || unavailableAdapter;
+    if (!adapter || typeof adapter.stream !== 'function') throw new Error('AQSA7_AI_STREAM_UNSUPPORTED');
+    if (typeof adapter.supports === 'function' && !adapter.supports(request.capabilityId)) {
+      throw new Error('AQSA7_AI_CAPABILITY_UNSUPPORTED');
+    }
+    for await (const event of adapter.stream({...request, capabilityId:validation.capability.id}, context)) {
+      yield {
+        capabilityId: validation.capability.id,
+        providerId: adapter.getDescriptor?.().id || 'unknown',
+        event
+      };
+    }
+  }
+
   function createProviderDescriptor(adapter){
     if (!adapter || typeof adapter.getDescriptor !== 'function') throw new Error('AQSA7_AI_ADAPTER_INVALID');
     const descriptor = adapter.getDescriptor();
@@ -187,6 +203,7 @@
   window.aqsa7GetAIPromptTemplate = id => manifest.promptTemplates[id] || null;
   window.aqsa7ValidateAIRequest = validateRequest;
   window.aqsa7ExecuteAI = execute;
+  window.aqsa7StreamAI = stream;
   window.aqsa7CreateAIProviderDescriptor = createProviderDescriptor;
   window.aqsa7GetDefaultAIAdapter = () => unavailableAdapter;
 })();
