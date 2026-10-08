@@ -584,7 +584,7 @@ Status: IN PROGRESS
 
 Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
 
-Current next task: **Task 3.1 — Reusable Dental Clinic Product Boundary**
+Current next task: **Task 3.2 — Product Manifest & Instance Configuration Contract**
 - Separate reusable Dental Clinic product from clinic configuration.
 - Clinic profile/configuration model.
 - Product defaults and Product Manifest foundation.
@@ -655,7 +655,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Multi-Product + AI architecture direction added; Phase 3 Task 3.1 next)
+Last updated: 2026-10-08 (Phase 3 Task 3.1 COMPLETE; Task 3.2 next)
 
 ## Current authoritative decisions
 
