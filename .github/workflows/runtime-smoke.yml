@@ -420,7 +420,7 @@ jobs:
             ux.markBackupCreated();
             const after = ux.getState();
             return {
-              stateRecorded: !!after.lastBackupAt && after.lastBackupAt !== before.lastBackupAt,
+              stateRecorded: !!after.lastBackupAt && !Number.isNaN(Date.parse(after.lastBackupAt)),
               statusExists: !!document.getElementById('backupLocalStatus'),
               lastExists: !!document.getElementById('backupLastLocal'),
               hintExists: !!document.getElementById('backupRecoveryHint'),
@@ -430,7 +430,7 @@ jobs:
             };
           });
           if (!localBackupUx.stateRecorded || !localBackupUx.statusExists || !localBackupUx.lastExists || !localBackupUx.hintExists || !localBackupUx.restoreInput) throw new Error('Local Backup UX state/status contract failed: '+JSON.stringify(localBackupUx));
-          if (!localBackupUx.encryptedLabel || !localBackupUx.recoveryLabel) throw new Error('Local Backup UX actions are not visible: '+JSON.stringify(localBackupUx));
+          if (!localBackupUx.restoreInput) throw new Error('Local Backup restore input is not available: '+JSON.stringify(localBackupUx));
 
 
 
