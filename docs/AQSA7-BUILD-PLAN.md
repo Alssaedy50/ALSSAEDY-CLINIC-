@@ -989,7 +989,7 @@ Gate decision:
 - Task 3.6: **COMPLETE**.
 ### Phase 3 / Task 3.7 — Reliability, Backup & Security Boundary Contract / Phase 4 Readiness
 
-Status: **DEFINED / READY FOR EXECUTION**
+Status: **COMPLETE**
 
 Purpose:
 - Formalize and reconcile the already-partially-implemented local backup and legacy cloud snapshot architecture into the canonical AQSA7 Backup/Recovery/Security boundary before Phase 4 implementation begins.
@@ -1142,11 +1142,45 @@ Verification Requirements:
 - Phase 4 readiness review.
 - Verification is architectural/documentation verification; no runtime implementation tests are required for Task 3.7 itself.
 
-Gate decision:
-- Task 3.7 is **DEFINED / READY FOR EXECUTION**, not COMPLETE.
-- Phase 4 remains planned/not started.
-- Tasks 3.1–3.6 remain unchanged and retain their existing completion states.
-- No source implementation is authorized by this definition.
+Task 3.7 completion summary:
+- Architectural gap between Phase 3 and Phase 4 is closed at the documentation/contract level.
+- IndexedDB is confirmed as the single durable application authority; the repository remains the live persistence boundary.
+- Existing local JSON backup/restore is documented as the current backup/recovery mechanism, including ownership validation and schemaVersion 5.
+- Existing `js/sync.js` + `api/clinic-sync.js` are documented as the transitional, non-authoritative legacy clinic-specific cloud snapshot path using Vercel Blob and optimistic version/conflict behavior.
+- The canonical future direction is explicitly `IndexedDB → Backup Boundary → Provider Adapter → provider-specific storage`; cloud remains optional disaster recovery and never the live database.
+- Known Phase 4 gaps are explicitly recorded, including plaintext local backup/encryption, generic migration, runtime Backup Engine, provider implementation, scheduling/reliability and security/platform hardening.
+- No Phase 4 runtime implementation, source abstraction, new persistence layer or user-facing feature was introduced.
+
+Files changed:
+- docs/AQSA7-BUILD-PLAN.md
+
+Verification:
+- Source inspection completed for `js/storage.js`, `js/repository.js`, `js/product.js`, `js/sync.js` and `api/clinic-sync.js`.
+- Backup/storage/repository ownership and IndexedDB authority were audited.
+- Legacy cloud snapshot path and optimistic version/conflict behavior were audited.
+- Dependency direction and no-second-store constraints were reviewed.
+- Product/tenant/instance ownership propagation and backup-scope validation were reviewed.
+- Existing version metadata was reconciled: backup schemaVersion 5, Product schemaVersion 2, IndexedDB version 3 and transaction-export versioning; no generic migration engine was found.
+- Local-first/offline and cloud-optional boundaries were reviewed.
+- No Future Surprise / Phase 4 readiness review completed: no current evidence requires a new abstraction or source file to close Task 3.7.
+- No runtime implementation tests were added or required because this task is architectural/documentation work.
+
+Deferred Phase 4 work:
+- Backup Artifact & Schema runtime contract.
+- Encryption & Integrity Layer.
+- Generic Backup Engine runtime.
+- Restore & Migration Engine.
+- Local Backup / Recovery UX.
+- Scheduling / Reliability.
+- Backup Provider Adapter implementation.
+- Google Drive Adapter and OAuth.
+- Cloud Recovery.
+- Security / Tenant / Platform Hardening.
+- Any replacement, migration, wrapping/adoption or removal of the legacy cloud snapshot path.
+
+Next authorized task:
+- Phase 4 — Reliability & Security.
+- Phase 4 remains **planned/not started**; its first authorized work is the dependency-map item `Backup Artifact & Schema Contract`, not broad Phase 4 implementation.
 
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
