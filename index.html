@@ -39,7 +39,7 @@
                 <button type="button" class="app-tab" id="tabHistory" data-ui-id="UI-DENT-003" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(history)" onclick="activateAppTab('history')"><span class="app-tab-icon" aria-hidden="true">📂</span><b>السجل</b></button>
                 <button type="button" class="app-tab" id="tabSettings" data-ui-id="UI-DENT-004" data-owner="index.html + js/app.js + js/ui.js" data-action="activateAppTab(settings)" onclick="activateAppTab('settings')"><span class="app-tab-icon" aria-hidden="true">⚙️</span><b>الإعدادات</b></button>
             </nav>
-            <div class="nav-controls" aria-label="وضع السند">
+            <div class="nav-controls" id="dentalModeControls" aria-label="وضع السند">
                 <div class="mode-pill">
                     <button type="button" class="btn-pill active" id="btnModeDigital" onclick="setMode('digital')">💻 سند رقمي</button>
                     <button type="button" class="btn-pill" id="btnModeTemplates" onclick="openTemplateModal()">🖨️ نماذج الطباعة</button>
@@ -49,9 +49,9 @@
     </header>
 
     <div class="no-print aqsa7-product-context" id="aqsa7ProductContext" hidden>
-        <button type="button" class="context-back-btn" onclick="navigatePlatform('products')">← المنتجات</button>
+        <button type="button" class="context-back-btn" data-ui-id="UI-PLAT-005" data-owner="index.html + js/app.js" data-action="navigatePlatform(products)" onclick="navigatePlatform('products')">← المنتجات</button>
         <div class="context-breadcrumb"><span>AQSA7</span><span>›</span><span>Dental Clinic</span><span>›</span><strong>ALSSAEDY CLINIC</strong></div>
-        <button type="button" class="context-home-btn" onclick="navigatePlatform('home')">🏠 منصة AQSA7</button>
+        <button type="button" class="context-home-btn" data-ui-id="UI-PLAT-005-HOME" data-owner="index.html + js/app.js" data-action="navigatePlatform(home)" onclick="navigatePlatform('home')">🏠 منصة AQSA7</button>
     </div>
 
     <section class="no-print aqsa7-platform-screen" id="platformHome" aria-labelledby="platformHomeTitle">
