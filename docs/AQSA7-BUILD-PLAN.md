@@ -1200,8 +1200,8 @@ Next authorized task:
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
 - Task 4.2 — Encryption & Integrity Layer — **COMPLETE**.
 - Task 4.3 — Generic Backup Engine — **COMPLETE**.
-- Task 4.4 — Generic Backup Provider Adapter Contract — **PENDING VERIFICATION**.
-- Current next action: verify Task 4.4 Runtime Smoke on `cd05a343432e5a6b6c4b7e135f17c35021f1515f`.
+- Task 4.4 — Generic Backup Provider Adapter Contract — **COMPLETE**.
+- Next authorized task: **Task 4.5 — Restore & Migration Engine Contract/Implementation**.
 
 ### Phase 4 / Task 4.2 — Encryption & Integrity Layer
 
@@ -1510,7 +1510,7 @@ Next authorized task:
 
 ### Phase 4 / Task 4.4 — Generic Backup Provider Adapter Contract
 
-Status: **PENDING VERIFICATION**
+Status: **COMPLETE**
 
 Purpose:
 - Establish the stable provider-neutral contract between the Generic Backup Engine and future backup storage providers.
@@ -1562,10 +1562,12 @@ Explicitly out of scope:
 
 Verification evidence:
 - Source inspection completed against Task 4.1 artifact contract, Task 4.2 crypto layer, Task 4.3 engine, `js/product.js`, `js/repository.js`, `js/integrations.js` and the new provider contract.
-- Runtime verification is required before closing this task.
-- Verification checkpoint: `cd05a343432e5a6b6c4b7e135f17c35021f1515f`.
-- Required Runtime Smoke evidence: provider contract presence/versioning, fake-adapter descriptor validation, encrypted-artifact-only transport, ownership propagation/rejection, normalized execution result, existing backup crypto/engine checks, mobile browser smoke and desktop browser smoke.
-- Until the final Runtime Smoke workflow is green on the implementation checkpoint, Task 4.4 remains **PENDING VERIFICATION**.
+- Runtime verification completed on final implementation/main checkpoint `b11e4a883be6c9f4f642610d28486042f94452ab`.
+- Authoritative Runtime Smoke run `37787511262`: **SUCCESS**; Chromium install, JavaScript syntax validation, mobile browser smoke and desktop browser integration smoke all passed, including provider-contract checks.
+- Android APK run `37787511418`: **SUCCESS**.
+- Receipt export verification run `37787511373`: **SUCCESS**.
+- GitHub Pages source verification run `37787511356`: **SUCCESS**.
+- Pages build/deployment run `37787511116`: **SUCCESS**.
 
 No Future Surprise gate:
 - Google Drive, OneDrive and Dropbox can implement this same adapter boundary without changing the Backup Engine or Repository.
@@ -1581,13 +1583,11 @@ Task 4.4 gate decision:
 - Ownership/tenant isolation boundary: **MET**.
 - Credential/secret separation: **MET**.
 - Local-first/no-provider dependency: **MET**.
-- Runtime verification: **PENDING**.
-- Task 4.4: **PENDING VERIFICATION**.
+- Runtime verification: **MET**.
+- Task 4.4: **COMPLETE**.
 
-Next action:
-- Run and verify the authoritative Runtime Smoke workflow on `cd05a343432e5a6b6c4b7e135f17c35021f1515f`.
-- If green, close Task 4.4 and authorize Task 4.5.
-- If red, fix only the Task 4.4 failure and repeat verification.
+Next authorized task:
+- **Task 4.5 — Restore & Migration Engine Contract/Implementation**, according to the authoritative Phase 4 sequence.
 
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
@@ -1647,7 +1647,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.4 implementation complete; verification pending; Phase 4 in progress)
+Last updated: 2026-10-08 (Task 4.4 complete; Phase 4 in progress; next authorized task Task 4.5)
 
 ## Current authoritative decisions
 
