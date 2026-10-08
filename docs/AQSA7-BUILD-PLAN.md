@@ -988,6 +988,167 @@ Gate decision:
 - The final documentation commit is docs-only; the authoritative Task 3.6 source file js/integrations.js remains byte-identical to the verified source and retains the verified live SHA-256.
 - Task 3.6: **COMPLETE**.
 - Task 3.7: **NEXT AUTHORIZED TASK**.
+### Phase 3 / Task 3.7 — Reliability, Backup & Security Boundary Contract / Phase 4 Readiness
+
+Status: **DEFINED / READY FOR EXECUTION**
+
+Purpose:
+- Formalize and reconcile the already-partially-implemented local backup and legacy cloud snapshot architecture into the canonical AQSA7 Backup/Recovery/Security boundary before Phase 4 implementation begins.
+- This is an architectural/documentation task only. It must not implement Phase 4 runtime behavior.
+
+Current Architecture Reconciliation:
+- Local JSON backup/restore already exists in `js/storage.js` through `buildFullBackup()`, `exportFullBackup()` and `importFullBackup()`.
+- The current backup artifact carries `schema: AQSA7_PRODUCT_BACKUP`, `schemaVersion: 5`, export metadata, ownership metadata, `productId`, `tenantId`, `instanceId` and the configured database name, together with the current application data.
+- Existing restore logic validates backup scope and ownership and validates/stamps incoming tenant-scoped records before repository persistence; merge/replace behavior already exists.
+- The current local backup representation is plaintext JSON. The Product contract may declare the target `encrypted-json` format, but encryption is not implemented in this task.
+- A functioning legacy cloud snapshot/sync path already exists in `js/sync.js` and `api/clinic-sync.js`.
+- The legacy path uses a clinic-keyed cloud record, persists snapshots through Vercel Blob, carries version/client/timestamp metadata and uses optimistic version/conflict behavior.
+- IndexedDB remains the single durable application authority for live clinic data. The existing cloud snapshot is an optional recovery copy and is not the primary application database.
+- The legacy cloud snapshot path is not the basis for the Phase 4 Backup Engine architecture and must not be extended into the canonical architecture without an explicitly approved reconciliation decision.
+
+Canonical Future Boundary:
+```
+Product / Tenant / Instance
+          ↓
+Repository / IndexedDB
+          ↓
+Backup Engine
+          ↓
+Backup Artifact Contract
+          ↓
+Backup Provider Adapter
+          ↓
+Provider-specific storage
+```
+- IndexedDB remains the live source of truth.
+- Backup Artifact is a versioned output/representation, not a persistence authority.
+- The Backup Provider Adapter transports/stores backup artifacts and must not own business/domain state.
+- Provider-specific logic must remain outside the Backup Engine.
+- Provider adapters must not know or manipulate business/domain entities directly.
+
+Backup Engine Responsibility — Contract Only:
+- Define the boundary for serialization and backup metadata.
+- Carry product/tenant/instance ownership and schema/version information.
+- Define integrity and validation requirements.
+- Define the encryption boundary without implementing encryption here.
+- Define restore preparation and pre-restore validation.
+- Define the migration boundary between stored artifact versions and the current application representation.
+- Define failure, partial-failure and recovery semantics.
+- Preserve the rule that the Backup Engine reads from the authoritative repository and never becomes a second database or repository.
+
+Backup Provider Adapter — Contract Only:
+- provider discovery/capability description;
+- authentication reference, without owning raw credentials in domain code;
+- upload;
+- download;
+- listing/version lookup;
+- optional retention/deletion;
+- provider availability, quota and normalized error reporting.
+No provider implementation is created by Task 3.7.
+
+Local vs Cloud Recovery:
+- Local encrypted backup is an independent recovery layer.
+- Cloud storage is optional disaster recovery.
+- Cloud availability is never required for core AQSA7 operation.
+- Cloud storage must never replace IndexedDB as the live authority.
+- The architecture must support recovery after device loss while preserving local-first operation.
+
+Security Boundary:
+- **Current gap:** current local backup is plaintext JSON.
+- **Target:** encrypted backup artifact.
+- **Status:** encryption implementation is deferred to Phase 4.
+- Ownership propagation, authentication references, authorization boundaries, credential handling and key-management boundaries are defined as contracts in this task; runtime security implementation remains Phase 4.
+- The final architecture must not imply that the existing legacy cloud snapshot path is already compliant with the target encrypted-artifact security model.
+
+Schema / Migration Boundary:
+- Backup `schemaVersion: 5` already exists.
+- Product `schemaVersion: 2` already exists.
+- IndexedDB database version `3` already exists.
+- Transaction export has its own version metadata.
+- These version numbers are related but do not yet constitute one generic backup migration engine.
+- Task 3.7 therefore defines the migration contract/boundary and compatibility expectations; migration runtime implementation remains Phase 4.
+
+Legacy Cloud Snapshot Disposition:
+- `js/sync.js` + `api/clinic-sync.js` are classified as:
+  **Legacy clinic-specific cloud snapshot/sync path — transitional/non-authoritative for the canonical AQSA7 Backup architecture.**
+- The path is a real existing cloud snapshot/recovery mechanism, but it is not the canonical primary sync architecture and must not silently become one.
+- Task 3.7 must define the eventual disposition decision space for this path: retention, migration, wrapping/adoption, deprecation or removal.
+- The eventual decision must include an explicit exit condition so the transitional path cannot become permanent by omission.
+- Task 3.7 records the boundary and required decision; it does not execute the disposition.
+
+Settings Ownership Distinction:
+- Business records require explicit ownership enforcement at the appropriate repository/backup boundaries.
+- Instance configuration/settings are governed by Product/Instance configuration rather than being assumed to have identical tenant-record semantics.
+- Future backup/restore design must preserve this distinction and must not incorrectly apply one ownership model to every stored object.
+
+Explicit Out of Scope:
+- Backup Engine runtime.
+- Encryption runtime.
+- Google Drive.
+- OAuth.
+- Cloud upload/download implementation.
+- Scheduling or background jobs.
+- Sync engine.
+- Conflict-resolution engine.
+- Authentication system.
+- Authorization system.
+- Replacement of `js/sync.js`.
+- Replacement of `api/clinic-sync.js`.
+- Any Phase 4 implementation.
+- A second database.
+- A second repository.
+- A second state machine.
+- Any mandatory cloud dependency.
+
+Phase 4 Dependency Map — Plan Only:
+1. Backup Artifact & Schema Contract.
+2. Encryption & Integrity Layer.
+3. Generic Backup Engine.
+4. Restore & Migration Engine.
+5. Local Backup / Recovery UX.
+6. Scheduling / Reliability.
+7. Backup Provider Adapter implementation.
+8. Google Drive Adapter.
+9. Cloud Recovery.
+10. Security / Tenant / Platform Hardening.
+
+This is a dependency map only. It is not implementation work authorized under Task 3.7.
+
+Task 3.7 Exit Criteria:
+1. Authoritative data authority is explicitly documented.
+2. Backup Engine boundary is explicitly documented.
+3. Backup Artifact contract is explicitly documented.
+4. Backup Provider Adapter boundary is explicitly documented.
+5. Encryption boundary is explicitly documented, including the current plaintext gap and Phase 4 target.
+6. Restore validation boundary is documented.
+7. Migration boundary is documented.
+8. Product/tenant/instance ownership propagation is documented.
+9. Local/cloud recovery separation is documented.
+10. Cross-platform responsibility is documented.
+11. Legacy cloud snapshot disposition and its required exit condition are documented.
+12. Phase 4 dependency sequence is documented.
+13. No Future Surprise assessment is completed and recorded.
+14. The task remains documentation/architecture scope only and does not claim Phase 4 implementation.
+
+Verification Requirements:
+- Source inspection.
+- Backup/storage/repository ownership audit.
+- Legacy sync audit.
+- Dependency-direction audit.
+- No-second-store audit.
+- Tenant/instance isolation audit.
+- Schema/migration readiness audit.
+- Local-first/offline audit.
+- No Future Surprise Gate.
+- Phase 4 readiness review.
+- Verification is architectural/documentation verification; no runtime implementation tests are required for Task 3.7 itself.
+
+Gate decision:
+- Task 3.7 is **DEFINED / READY FOR EXECUTION**, not COMPLETE.
+- Phase 4 remains planned/not started.
+- Tasks 3.1–3.6 remain unchanged and retain their existing completion states.
+- No source implementation is authorized by this definition.
+
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
