@@ -396,7 +396,7 @@ function setClinicWorkspaceView(view){
 
 function renderClinicDashboard(){
   const today=getLocalDateISO();
-  const receipts=typeof safeHistory==='function'?safeHistory():[];
+  const receipts=typeof activeReceiptHistory==='function'?activeReceiptHistory():(typeof safeHistory==='function'?safeHistory():[]);
   const patients=typeof clinicRepositoryPatients==='function'?clinicRepositoryPatients():[];
   const todayReceipts=receipts.filter(item=>String(item.date||'')===today);
   const paid=todayReceipts.reduce((sum,item)=>sum+(Number(item.paid)||0),0);
