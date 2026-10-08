@@ -775,6 +775,7 @@ Files changed:
 - js/repository.js
 - js/storage.js
 - .github/workflows/runtime-smoke.yml
+- .github/workflows/pages-source-verification.yml
 - docs/AQSA7-BUILD-PLAN.md
 
 Task 3.4 exit criteria:
@@ -949,9 +950,9 @@ Verification performed:
 - Integration contract in-browser mock verification: PASS in the Task 3.6 final verification set for descriptor discovery, instance ownership propagation, idempotency guard, adapter execution, mapping, webhook verification/rejection and normalized errors.
 - Android debug + signed production build, signature and metadata verification: PASS in Android run 37728098568.
 - Receipt/export verification: PASS in final-gate run 37726589591; the Pages-evidence fix changed only CI verification infrastructure and did not modify receipt/export implementation.
-- GitHub Pages independent source verification: PASS in run 37728098581. The verifier resolved the actual remote main ref, checked out that exact main state (3c5ecb4df62542c7a628ff3dc7ea5a7361c3968c), fetched the live Pages js/integrations.js, and compared SHA-256 hashes.
-- Pages evidence artifact 11529145121 records:
-  - source_commit=3c5ecb4df62542c7a628ff3dc7ea5a7361c3968c
+- GitHub Pages independent source verification: PASS in final verification run 37728292037. The verifier resolved the actual remote main ref, checked out that exact main state (faca058e8bb83ce7446f25453cd9545a13db9476), fetched the live Pages js/integrations.js, and compared SHA-256 hashes.
+- Pages evidence artifact 11528691666 records:
+  - source_commit=faca058e8bb83ce7446f25453cd9545a13db9476
   - live URL=https://alssaedy50.github.io/AQSA7/
   - live integration URL=https://alssaedy50.github.io/AQSA7/js/integrations.js
   - source_integrations_sha256=cf30c03f706305057ac94cd17644e7f0d2bad4cc23223f1a520b4f29bd1aa9cc
@@ -983,7 +984,8 @@ Gate decision:
 - Static/browser/Android verification: MET.
 - GitHub Pages live-source gate: MET.
 - The available GitHub connector did not expose the Pages REST deployment/build endpoints directly, so the smallest safe fix was a verification-only GitHub Actions workflow that resolves the actual remote main ref and compares the live Pages integration-contract bytes against the checked-out source.
-- Independent deployment-to-source evidence is now reproducible from GitHub Actions run 37728098581 and artifact 11529145121.
+- Independent deployment-to-source evidence is reproducible from GitHub Actions run 37728292037 and artifact 11528691666.
+- The final documentation commit is docs-only; the authoritative Task 3.6 source file js/integrations.js remains byte-identical to the verified source and retains the verified live SHA-256.
 - Task 3.6: **COMPLETE**.
 - Task 3.7: **NEXT AUTHORIZED TASK**.
 ### Phase 4 — Reliability & Security
