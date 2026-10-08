@@ -145,7 +145,7 @@ jobs:
           await page.locator('#digTotal').fill('1000');
           await page.locator('#digPaid').fill('400');
           await page.locator('#digPatientPhone').fill('777000002');
-          await page.locator('.custom-check-item').first().evaluate(el => el.click());
+          await page.evaluate(() => toggleService(document.querySelector('.custom-check-item')));
           const issuanceValues = await page.evaluate(() => ({
             patient: document.querySelector('#issuancePatientName')?.textContent,
             total: document.querySelector('#issuanceTotal')?.textContent,
