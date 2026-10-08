@@ -3046,14 +3046,14 @@ Priority register:
 - Existing `js/app.js` route/context ownership preserved: PASS.
 - Existing product/repository/business/export boundaries preserved: PASS.
 - Mobile/print layout rules updated for the new ownership: PASS.
-- Runtime regression assertions added for the IA boundary: PASS in source; CI verification is required before phase closure.
+- Runtime regression assertions added for the IA boundary: PASS.
+- GitHub Actions verification on Phase 8.1 head `0d302a2f584a4a4adc48434050e735a0005bda25`: PASS — Runtime Smoke #316, Pages Source Verification #170, Receipt Export #482, Android APK #553.
+- Vercel status reported `failure` because of the external build-rate-limit/quota target; it is not a source/CI product failure and does not block AQSA7 GitHub gates.
 
-**Phase 8.1 implementation: COMPLETE — pending CI gate.**
+**Phase 8.1: COMPLETE — CI GATE PASSED.**
 
-### Next authorized task
-**Phase 8.2 — Clinic Dashboard.**
-
-Objective: create the daily operational clinic home using existing repository/data capabilities, while preserving the Phase 8.1 navigation boundary and deferring receipt reconstruction to Phase 8.5.
+### Phase 8.2 — Clinic Dashboard
+Status: IN PROGRESS — DAILY OPERATIONAL HOME
 
 ### Phase 8 execution constraints
 - Do not repeat Phase 7 platform-shell work merely because the visual target changes.
@@ -3080,7 +3080,7 @@ Objective: create the daily operational clinic home using existing repository/da
 Objective: reconstruct the user-facing navigation/workspace hierarchy around daily clinic work while preserving `js/app.js` as the sole route/context owner and without implementing the Phase 8.5 receipt redesign early.
 
 
-Last updated: 2026-10-08 (Phase 8.1 Information Architecture implemented; CI gate pending; Phase 8.2 is the next authorized task)
+Last updated: 2026-10-08 (Phase 8.1 CI gate passed and merged; Phase 8.2 dashboard implementation in progress)
 
 ## Current authoritative decisions
 
