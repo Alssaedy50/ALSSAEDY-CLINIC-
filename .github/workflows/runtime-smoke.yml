@@ -197,6 +197,55 @@ jobs:
           await browser.close();
           NODE
 
+      - name: Run desktop browser integration smoke
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+
+          const browser = await chromium.launch({headless:true});
+          const page = await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+          const errors = [];
+          page.on('pageerror', e => errors.push(String(e)));
+          page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+
+          await page.goto('http://127.0.0.1:4173/index.html', {waitUntil:'networkidle'});
+
+          const layout = await page.evaluate(() => {
+            const width = el => el ? Math.round(el.getBoundingClientRect().width) : 0;
+            const receipt = document.querySelector('#receiptPrintArea');
+            const issuance = document.querySelector('#receiptIssuancePanel');
+            return {
+              shell: width(document.querySelector('.site-navbar')),
+              nav: width(document.querySelector('.app-tabs')),
+              receipt: width(receipt),
+              issuance: width(issuance),
+              receiptOverflow: receipt ? Math.max(0, receipt.scrollWidth - receipt.clientWidth) : 0,
+              issuanceOverflow: issuance ? Math.max(0, issuance.scrollWidth - issuance.clientWidth) : 0
+            };
+          });
+          if (layout.shell !== 1440) throw new Error('Desktop shell does not span viewport: '+JSON.stringify(layout));
+          if (layout.nav <= 0 || layout.receipt <= 0 || layout.issuance <= 0) throw new Error('Desktop core surface missing: '+JSON.stringify(layout));
+          if (layout.receiptOverflow > 2 || layout.issuanceOverflow > 2) throw new Error('Desktop horizontal overflow detected: '+JSON.stringify(layout));
+
+          await page.locator('#tabPatients').click();
+          if (!(await page.locator('#patientsModal').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop patients surface did not open');
+          if ((await page.locator('#patientsModal').evaluate(e => Math.round(e.getBoundingClientRect().width))) < 900) throw new Error('Desktop patients surface is unexpectedly narrow');
+
+          await page.locator('#tabHistory').click();
+          if (!(await page.locator('#historyModal').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop history surface did not open');
+          if ((await page.locator('#historyModal').evaluate(e => Math.round(e.getBoundingClientRect().width))) < 900) throw new Error('Desktop history surface is unexpectedly narrow');
+
+          await page.locator('#tabSettings').click();
+          if (!(await page.locator('#settingsPanel').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop settings surface did not open');
+          if ((await page.locator('#settingsPanel').evaluate(e => Math.round(e.getBoundingClientRect().width))) < 480) throw new Error('Desktop settings surface is unexpectedly narrow');
+
+          await page.locator('#settingsPanel .btn-close').click();
+          await page.locator('#tabReceipt').click();
+
+          if (errors.length) throw new Error(errors.join('\n'));
+          await browser.close();
+          NODE
+
       - name: Upload runtime screenshot
         if: always()
         uses: actions/upload-artifact@v4
