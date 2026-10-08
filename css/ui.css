@@ -754,3 +754,111 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
     .aqsa7-platform-screen{padding-top:100px}
     .aqsa7-product-context{margin-top:70px}
 }
+
+
+/* ===== AQSA7 Phase 8.1 — Clinic Information Architecture =====
+   The platform shell owns platform navigation.
+   The Dental product context owns clinic-local navigation.
+   Receipt mode controls are local to the receipt workflow, not global app navigation.
+*/
+.aqsa7-product-context{
+    display:block;
+    padding-top:0;
+    padding-bottom:0;
+}
+.context-topline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-height:50px;
+}
+.context-topline .context-breadcrumb{
+    flex:1;
+}
+.clinic-local-nav{
+    width:fit-content;
+    max-width:100%;
+    margin:0 auto 9px;
+    justify-content:center;
+    background:#f8fafc;
+    border-color:#dbe4ef;
+    box-shadow:0 3px 12px rgba(15,23,42,.05);
+}
+.clinic-local-nav .app-tab{
+    color:#475569;
+    min-width:92px;
+}
+.clinic-local-nav .app-tab.active{
+    background:#0f3f66;
+    color:#fff;
+}
+.clinic-workflow-tools{
+    max-width:1180px;
+    margin:0 auto 10px;
+    padding:9px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    border:1px solid #dbe4ef;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 4px 16px rgba(15,23,42,.04);
+}
+.clinic-workflow-tools-label{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    min-width:0;
+}
+.clinic-workflow-tools-label span{
+    font-size:11px;
+    font-weight:900;
+    color:#0f172a;
+}
+.clinic-workflow-tools-label small{
+    color:#64748b;
+    font-size:9px;
+}
+.clinic-workflow-tools .mode-pill{
+    flex:0 0 auto;
+}
+@media(max-width:700px){
+    .context-topline{
+        min-height:46px;
+        flex-wrap:wrap;
+    }
+    .context-topline .context-breadcrumb{
+        order:3;
+        flex-basis:100%;
+        padding-bottom:5px;
+    }
+    .clinic-local-nav{
+        width:100%;
+        margin-bottom:8px;
+        overflow-x:auto;
+        justify-content:stretch;
+    }
+    .clinic-local-nav .app-tab{
+        flex:1 1 0;
+        min-width:72px;
+    }
+    .clinic-workflow-tools{
+        margin:0 10px 9px;
+        padding:8px 9px;
+        align-items:stretch;
+        flex-direction:column;
+    }
+    .clinic-workflow-tools-label{
+        justify-content:space-between;
+    }
+    .clinic-workflow-tools .mode-pill{
+        width:100%;
+    }
+    .clinic-workflow-tools .btn-pill{
+        flex:1;
+    }
+}
+@media print{
+    .clinic-workflow-tools,.clinic-local-nav{display:none!important}
+}
