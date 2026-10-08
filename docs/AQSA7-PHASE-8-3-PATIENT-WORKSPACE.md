@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.3 Patient Workspace
 
-Status: IMPLEMENTED — PENDING CI GATE
+Status: COMPLETE — CI AND REGRESSION VERIFIED
 Date: 2026-10-08
 Base: Phase 8.2 merged main
 
@@ -63,12 +63,13 @@ Those remain governed by Phases 8.4–8.10.
 
 ## Gate
 
-Pending GitHub Actions:
-- Runtime Smoke
-- Pages Source Verification
-- Receipt Image Export
-- Android APK
+- Runtime Smoke #331: PASS.
+- Pages Source Verification #185: PASS.
+- Receipt Image Export #497: PASS.
+- Android APK #568: PASS.
+- Desktop patient workspace acceptance: PASS within Runtime Smoke #331.
+- Phase 8.3 merged to `main` as `25a9e128204427b7a204b40f253edba1ab1dd75c`.
 
-## Next task
+## Next authorized task
 
-**Phase 8.4 — Visit / Services / Billing**, only after Phase 8.3 is green and merged.
+**Phase 8.4 — Visit / Services / Billing.**
