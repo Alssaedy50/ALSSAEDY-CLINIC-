@@ -1124,3 +1124,39 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   /* Mobile reconstruction must never alter physical receipt/export dimensions. */
   .clinic-dashboard,.clinic-patient-workspace{display:none!important}
 }
+
+/* Phase 8.10 — keep the persistent action dock fully usable on narrow screens. */
+@media screen and (max-width:700px){
+  .floating-action-dock{
+    inset-inline:8px!important;
+    left:8px!important;
+    right:8px!important;
+    width:auto!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    gap:3px!important;
+    padding:4px!important;
+    transform:none!important;
+  }
+  .floating-action-dock .dock-btn{
+    min-width:0!important;
+    width:100%!important;
+    padding:4px 2px!important;
+    flex:initial!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:2px!important;
+    white-space:nowrap!important;
+    font-size:9px!important;
+    line-height:1.1!important;
+  }
+  .floating-action-dock .dock-icon{font-size:13px!important;line-height:1!important}
+  .floating-action-dock .dock-text{font-size:8px!important;line-height:1.1!important;text-align:center!important}
+  .page-canvas-wrapper{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}
+}
