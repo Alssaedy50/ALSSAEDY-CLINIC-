@@ -92,6 +92,31 @@
     ].join(' and ');
   }
 
+  function assertRemoteOwnership(file, identity){
+    const props=file?.appProperties || {};
+    if(
+      String(props.aqsa7ProductId||'')!==String(identity.productId) ||
+      String(props.aqsa7TenantId||'')!==String(identity.tenantId) ||
+      String(props.aqsa7InstanceId||'')!==String(identity.instanceId)
+    ){
+      const e=new Error('AQSA7_GOOGLE_DRIVE_OWNERSHIP_MISMATCH');
+      e.code='FORBIDDEN';
+      throw e;
+    }
+    return file;
+  }
+
+  async function getRemoteMetadata(backupId,accessToken){
+    const response=await driveRequest('/files/'+encodeURIComponent(backupId)+'?fields=id,appProperties,trashed',{},accessToken);
+    const file=await response.json();
+    if(file?.trashed) {
+      const e=new Error('AQSA7_GOOGLE_DRIVE_BACKUP_TRASHED');
+      e.code='NOT_FOUND';
+      throw e;
+    }
+    return file;
+  }
+
   async function health(request, options){
     const accessToken=await token(options);
     const response=await requestPath('/about?fields=user,storageQuota',{},accessToken);
@@ -155,6 +180,8 @@
 
   async function get(request, options){
     const accessToken=await token(options);
+    const metadata=await getRemoteMetadata(request.backupId,accessToken);
+    assertRemoteOwnership(metadata,request.ownership);
     const response=await driveRequest('/files/'+encodeURIComponent(request.backupId)+'?alt=media',{},accessToken);
     const artifact=await response.json();
     return {status:'success',backupId:request.backupId,artifact};
@@ -162,6 +189,8 @@
 
   async function remove(request, options){
     const accessToken=await token(options);
+    const metadata=await getRemoteMetadata(request.backupId,accessToken);
+    assertRemoteOwnership(metadata,request.ownership);
     await driveRequest('/files/'+encodeURIComponent(request.backupId),{method:'DELETE'},accessToken);
     return {status:'success',backupId:request.backupId};
   }

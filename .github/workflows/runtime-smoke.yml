@@ -40,6 +40,17 @@ jobs:
             exit 1
           fi
 
+      - name: Verify Android and service-worker security boundaries
+        run: |
+          grep -q 'android:allowBackup="false"' android-app/app/src/main/AndroidManifest.xml
+          grep -q 'android:dataExtractionRules="@xml/data_extraction_rules"' android-app/app/src/main/AndroidManifest.xml
+          grep -q 'android:fullBackupContent="@xml/backup_rules"' android-app/app/src/main/AndroidManifest.xml
+          grep -q 'setAllowFileAccessFromFileURLs(false)' android-app/app/src/main/java/com/alssaedy/clinic/MainActivity.java
+          grep -q 'setAllowUniversalAccessFromFileURLs(false)' android-app/app/src/main/java/com/alssaedy/clinic/MainActivity.java
+          grep -q "const CACHE_NAME = 'alssaedy-clinic-v1.2.2-core'" sw.js
+          grep -q './js/google-drive-provider.js?v=1.0.0' sw.js
+          grep -q './js/cloud-recovery.js?v=1.0.0' sw.js
+
       - name: Start static server
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/aqsa7-http.log 2>&1 &
@@ -516,7 +527,8 @@ jobs:
               calls.push({url:String(url),method:init.method||'GET'});
               if (String(url).includes('/about?')) return new Response(JSON.stringify({user:{emailAddress:'smoke@example.com'},storageQuota:{usage:'1'}}),{status:200,headers:{'Content-Type':'application/json'}});
               if (String(url).includes('/files?') && (init.method||'GET') === 'GET') return new Response(JSON.stringify({files:[{id:'drive-file-1',name:'AQSA7-backup-drive-file-1.aqsa7.json',appProperties:{aqsa7ProductId:'aqsa7',aqsa7TenantId:'tenant-1',aqsa7InstanceId:'instance-1',aqsa7BackupId:'logical-1'}}]}),{status:200,headers:{'Content-Type':'application/json'}});
-              if (String(url).includes('uploadType=multipart')) return new Response(JSON.stringify({id:'drive-file-1',name:'AQSA7-backup-drive-file-1.aqsa7.json',appProperties:{aqsa7BackupId:'logical-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
+              if (String(url).includes('uploadType=multipart')) return new Response(JSON.stringify({id:'drive-file-1',name:'AQSA7-backup-drive-file-1.aqsa7.json',appProperties:{aqsa7ProductId:'aqsa7',aqsa7TenantId:'tenant-1',aqsa7InstanceId:'instance-1',aqsa7BackupId:'logical-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
+              if (String(url).includes('/files/drive-file-1?fields=')) return new Response(JSON.stringify({id:'drive-file-1',trashed:false,appProperties:{aqsa7ProductId:'aqsa7',aqsa7TenantId:'tenant-1',aqsa7InstanceId:'instance-1',aqsa7BackupId:'logical-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
               if (String(url).includes('alt=media')) return new Response(JSON.stringify({artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}),{status:200,headers:{'Content-Type':'application/json'}});
               if ((init.method||'GET') === 'DELETE') return new Response(null,{status:204});
               throw new Error('Unexpected Google Drive smoke request: '+url);
@@ -535,16 +547,18 @@ jobs:
               const list=await window.aqsa7ExecuteBackupProvider(adapter,'list',identity);
               const artifact={artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'};
               const put=await window.aqsa7ExecuteBackupProvider(adapter,'put',identity,{artifact});
+              const foreignGet=await window.aqsa7ExecuteBackupProvider(adapter,'get',{productId:'aqsa7',tenantId:'foreign-tenant',instanceId:'instance-1'},{backupId:'drive-file-1'});
               const get=await window.aqsa7ExecuteBackupProvider(adapter,'get',identity,{backupId:'drive-file-1'});
+              const foreignDelete=await window.aqsa7ExecuteBackupProvider(adapter,'delete',{productId:'aqsa7',tenantId:'foreign-tenant',instanceId:'instance-1'},{backupId:'drive-file-1'});
               const del=await window.aqsa7ExecuteBackupProvider(adapter,'delete',identity,{backupId:'drive-file-1'});
-              return {health:health.status,list:list.status,put:put.status,putId:put.backupId,get:get.status,getArtifact:get.artifact?.artifactType,del:del.status,missingAuth,calls:calls.length};
+              return {health:health.status,list:list.status,put:put.status,putId:put.backupId,get:get.status,getArtifact:get.artifact?.artifactType,del:del.status,foreignGet:foreignGet.error?.code,foreignDelete:foreignDelete.error?.code,missingAuth,calls:calls.length};
             } finally {
               window.fetch=originalFetch;
               window.aqsa7GoogleDriveAuth.clear();
               runtime.clear();
             }
           });
-          if (googleDriveProviderSmoke.health !== 'success' || googleDriveProviderSmoke.list !== 'success' || googleDriveProviderSmoke.put !== 'success' || googleDriveProviderSmoke.putId !== 'drive-file-1' || googleDriveProviderSmoke.get !== 'success' || googleDriveProviderSmoke.getArtifact !== 'AQSA7_BACKUP_ARTIFACT' || googleDriveProviderSmoke.del !== 'success' || !googleDriveProviderSmoke.missingAuth) {
+          if (googleDriveProviderSmoke.health !== 'success' || googleDriveProviderSmoke.list !== 'success' || googleDriveProviderSmoke.put !== 'success' || googleDriveProviderSmoke.putId !== 'drive-file-1' || googleDriveProviderSmoke.get !== 'success' || googleDriveProviderSmoke.getArtifact !== 'AQSA7_BACKUP_ARTIFACT' || googleDriveProviderSmoke.del !== 'success' || googleDriveProviderSmoke.foreignGet !== 'FORBIDDEN' || googleDriveProviderSmoke.foreignDelete !== 'FORBIDDEN' || !googleDriveProviderSmoke.missingAuth) {
             throw new Error('Google Drive provider smoke failed: '+JSON.stringify(googleDriveProviderSmoke));
           }
 

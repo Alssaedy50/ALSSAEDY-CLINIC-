@@ -53,6 +53,10 @@ public class MainActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
+        // The app loads only its bundled file:// assets. Prevent bundled pages
+        // from granting file-origin JavaScript access to arbitrary local/content URLs.
+        s.setAllowFileAccessFromFileURLs(false);
+        s.setAllowUniversalAccessFromFileURLs(false);
         s.setBuiltInZoomControls(false);
         s.setDisplayZoomControls(false);
         s.setSupportZoom(false);
@@ -105,6 +109,11 @@ public class MainActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri uri = request.getUrl();
             String scheme = uri.getScheme();
+            if ("file".equalsIgnoreCase(scheme)) {
+                String path = uri.getPath();
+                // Keep only the app's bundled HTML/assets inside the WebView.
+                return path == null || !path.startsWith("/android_asset/");
+            }
             if ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme) ||
                 "whatsapp".equalsIgnoreCase(scheme) || "mailto".equalsIgnoreCase(scheme) ||
                 "tel".equalsIgnoreCase(scheme)) {
@@ -115,7 +124,8 @@ public class MainActivity extends Activity {
                 }
                 return true;
             }
-            return false;
+            // Never hand unknown/custom schemes to the WebView.
+            return true;
         }
     }
 
@@ -234,7 +244,14 @@ public class MainActivity extends Activity {
         public void openUrl(String url) {
             runOnUiThread(() -> {
                 try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    Uri uri = Uri.parse(url == null ? "" : url);
+                    String scheme = uri.getScheme();
+                    if (!("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme) ||
+                          "whatsapp".equalsIgnoreCase(scheme) || "mailto".equalsIgnoreCase(scheme) ||
+                          "tel".equalsIgnoreCase(scheme))) {
+                        throw new IllegalArgumentException("unsupported URL scheme");
+                    }
+                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "تعذر فتح الرابط.", Toast.LENGTH_SHORT).show();
                 }
