@@ -1840,12 +1840,80 @@ Task 4.7 gate decision:
 - Reminder state contains no secrets/business records: **MET**.
 - Fail-soft reliability behavior: **MET**.
 - Static JavaScript syntax verification for the new scheduler: **PASS** (`node --check`).
-- Runtime Smoke workflow was updated and committed, but the available GitHub workflow connector exposes commit-associated **pull-request runs only**; it returned no run for the final main commit. Therefore the required push-triggered Runtime Smoke evidence cannot be independently observed through the available execution interface.
-- Runtime verification: **PENDING — GitHub Actions push-run evidence not observable yet**.
-- Task 4.7: **PENDING VERIFICATION**.
+- Final verification branch/PR: verify/task-4-7-runtime / PR #46.
+- Authoritative Runtime Smoke run 37791014188: **SUCCESS** on verification head bb740b630419da2009ec7dece986b6f3550fc32c; mobile browser smoke and desktop browser integration smoke both passed.
+- Android APK run 37791014126: **SUCCESS**.
+- GitHub Pages Source Verification run 37791014071: **SUCCESS**.
+- The combined-status Vercel context remains a non-gating failure unrelated to AQSA7 Runtime Smoke; the required Runtime Smoke job itself is green.
+- Runtime verification: **MET**.
+- Task 4.7: **COMPLETE**.
+
+### Phase 4 / Task 4.8 — Backup Provider Adapter implementation
+
+Status: **IMPLEMENTED — VERIFICATION PENDING**
+
+Purpose:
+- Provide the runtime registration/lifecycle boundary needed to host concrete backup-provider adapters without placing provider SDKs, credentials, persistence, or cloud behavior inside the generic Backup Engine or business modules.
+- Keep the provider adapter contract from Task 4.4 executable at runtime before the first concrete provider implementation (Google Drive).
+
+Implementation decision:
+- Added js/backup-provider-runtime.js as the single in-memory provider-adapter registry/runtime boundary.
+- The runtime validates adapters through the existing Task 4.4 contract before registration.
+- Provider descriptors are registered by stable provider ID; duplicate provider IDs are rejected.
+- Runtime health execution delegates through the existing provider adapter execution boundary and preserves normalized results.
+- Registry state is memory-only and contains no backup artifacts, passwords, keys, OAuth tokens, provider credentials or business records.
+- Provider availability remains optional; no provider is enabled by default.
+- The runtime does not introduce a second repository, database, queue, state machine, cloud scheduler or provider SDK.
+- Google Drive/OAuth remains the next concrete provider implementation and is not implemented in Task 4.8.
+
+Boundary:
+Business/Backup Engine → Backup Provider Contract → Provider Runtime Registry → Concrete Provider Adapter
+
+Files changed:
+- js/backup-provider-runtime.js — provider adapter registry/runtime lifecycle boundary.
+- index.html — registers the provider runtime after the generic provider contract.
+- .github/workflows/runtime-smoke.yml — validates runtime contract, registration, duplicate rejection, health delegation and cleanup.
+
+Contract:
+- contractId: aqsa7-backup-provider-runtime
+- schemaVersion: 1
+- providerIndependent: true
+- enabledByDefault: false
+- persistence: memory-only
+- secretStorage: false
+
+Explicitly out of scope:
+- Google Drive implementation.
+- OAuth/token acquisition or storage.
+- Any provider SDK.
+- Cloud backup upload/download.
+- Automatic cloud scheduling.
+- Replacing legacy js/sync.js / api/clinic-sync.js.
+- New durable persistence/repository/state machine.
+- Making cloud backup mandatory.
+- Phase 5 disaster-recovery/cross-platform full regression.
+
+Verification:
+- Static JavaScript syntax verification is required.
+- Runtime Smoke must verify provider runtime registration/lifecycle and all existing Phase 4 regression checks.
+- Android/Pages/source checks remain required for the final implementation checkpoint.
+
+No Future Surprise gate:
+- Google Drive can register behind the same runtime without changing the Backup Engine or Repository.
+- Future providers can coexist by stable provider IDs without cloning the core backup flow.
+- Provider credentials remain outside the registry and contract.
+- Registry failure cannot make local IndexedDB unavailable because the runtime is memory-only and downstream of local backup.
+- Web/PWA/Desktop/Android share the same runtime boundary; provider-specific platform mechanics remain inside concrete adapters.
+
+Task 4.8 gate:
+- Provider runtime boundary: **MET**.
+- Contract validation before registration: **MET**.
+- Duplicate provider protection: **MET**.
+- Secret/persistence isolation: **MET**.
+- Runtime verification: **PENDING**.
 
 Next authorized task after verification:
-- **Task 4.7 verification/retry only; do not advance to Task 4.8 until Runtime Smoke is green.**
+- **Task 4.8 verification/retry only; do not advance to Task 4.9 until Runtime Smoke is green.**
 
 ### Phase 5 — Full Regression
 Must verify:
@@ -1877,7 +1945,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.7 implementation complete; final CI gate pending; next authorized task Task 4.8 after verification)
+Last updated: 2026-10-08 (Task 4.7 verified complete; Task 4.8 implemented and awaiting Runtime Smoke verification; next authorized task Task 4.8 verification)
 
 ## Current authoritative decisions
 
