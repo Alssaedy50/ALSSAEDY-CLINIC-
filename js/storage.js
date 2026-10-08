@@ -208,28 +208,69 @@ function renderHistory() {
     const container = document.getElementById('historyList');
     if (!container) return;
     const query = document.getElementById('historySearch')?.value || '';
-    const filtered = filterHistory(history, query);
-    renderHistoryStats(filtered.length === history.length ? history : filtered);
+    const filter = document.getElementById('historyFilter')?.value || 'all';
+    let filtered = filterHistory(history, query);
+
+    if (filter === 'balance') filtered = filtered.filter(item => Number(item.balance) > 0);
+    if (filter === 'settled') filtered = filtered.filter(item => Number(item.balance) <= 0 && Number(item.total) > 0);
+
+    filtered = filtered.slice().sort((a, b) => {
+        const dateA = String(a.date || '');
+        const dateB = String(b.date || '');
+        if (dateA !== dateB) return dateB.localeCompare(dateA);
+        return String(b.recNo || '').localeCompare(String(a.recNo || ''), undefined, {numeric:true});
+    });
+
+    renderHistoryStats(filtered.length === history.length && !query && filter === 'all' ? history : filtered);
+
+    const count = document.getElementById('historyLedgerCount');
+    if (count) count.textContent = filtered.length + ' سند';
+
     if (!history.length) {
-        container.innerHTML = '<p style="text-align:center; padding:15px; color:#64748b; font-size:11px;">لا توجد سندات محفوظة حتى الآن.</p>';
+        container.innerHTML = '<div class="history-ledger-empty"><strong>لا توجد سندات محفوظة حتى الآن.</strong><span>أنشئ سنداً رقمياً واحفظه ليظهر هنا في السجل.</span></div>';
         return;
     }
     if (!filtered.length) {
-        container.innerHTML = '<p style="text-align:center; padding:15px; color:#64748b; font-size:11px;">لا توجد نتائج مطابقة للبحث.</p>';
+        container.innerHTML = '<div class="history-ledger-empty"><strong>لا توجد نتائج مطابقة.</strong><span>جرّب تغيير البحث أو التصفية.</span></div>';
         return;
     }
-    container.innerHTML = filtered.map(item => {
+
+    const rows = filtered.map(item => {
         const name = escapeHTML(item.name || 'مريض بدون اسم');
+        const phone = escapeHTML(item.patientPhone || '—');
         const recNo = escapeHTML(item.recNo || '---');
         const date = escapeHTML(typeof formatReceiptDate === 'function' ? formatReceiptDate(item.date) : (item.date || '---'));
-        const paid = escapeHTML(item.paid || '0');
-        const total = escapeHTML(item.total || '0');
-        const balance = escapeHTML(item.balance || '0');
+        const paid = escapeHTML(Number(item.paid || 0).toLocaleString());
+        const total = escapeHTML(Number(item.total || 0).toLocaleString());
+        const balanceValue = Number(item.balance || 0);
+        const balance = escapeHTML(balanceValue.toLocaleString());
         const cur = escapeHTML(item.currencySymbol || item.currencyName || 'ر.ي');
         const services = Array.isArray(item.services) && item.services.length ? escapeHTML(item.services.join('، ')) : '—';
-        const id = escapeHTML(String(item.id).replace(/'/g, ''));
-        return '<div class="history-entry"><div class="history-entry-main"><strong>' + name + ' <span class="history-recno">(' + recNo + ')</span></strong><small>' + date + ' • ' + escapeHTML(services) + '</small><small>مدفوع ' + paid + ' ' + cur + ' / إجمالي ' + total + ' ' + cur + ' / متبقٍ ' + balance + ' ' + cur + '</small></div><div class="history-entry-btns"><button type="button" title="استرجاع" onclick="loadReceipt(\'' + id + '\')">📥</button><button type="button" title="حذف" onclick="deleteReceipt(\'' + id + '\')" style="color:#b91c1c;">✕</button></div></div>';
+        const id = escapeHTML(String(item.id || '').replace(/'/g, ''));
+        const settled = balanceValue <= 0 && Number(item.total || 0) > 0;
+        const status = settled
+            ? '<span class="history-status history-status-paid">مسدد</span>'
+            : '<span class="history-status history-status-due">متبقي</span>';
+
+        return '<div class="history-ledger-row">' +
+            '<div class="history-receipt-cell" data-label="السند"><strong>' + recNo + '</strong><small>' + date + '</small></div>' +
+            '<div class="history-patient-cell" data-label="المريض"><strong>' + name + '</strong><small>' + phone + '</small></div>' +
+            '<div class="history-service-cell" data-label="الخدمة">' + services + '</div>' +
+            '<div class="history-money" data-label="الإجمالي"><span>' + total + '</span><small>' + cur + '</small></div>' +
+            '<div class="history-money" data-label="المدفوع"><span>' + paid + '</span><small>' + cur + '</small></div>' +
+            '<div class="history-money" data-label="المتبقي"><span>' + balance + '</span><small>' + cur + '</small></div>' +
+            '<div class="history-status-cell" data-label="الحالة">' + status + '</div>' +
+            '<div class="history-list-actions" aria-label="إجراءات السند">' +
+              '<button type="button" class="history-action history-open" title="فتح السند" aria-label="فتح السند ' + recNo + '" onclick="loadReceipt(\'' + id + '\')">📥 فتح</button>' +
+              '<button type="button" class="history-action history-delete" title="حذف السند" aria-label="حذف السند ' + recNo + '" onclick="deleteReceipt(\'' + id + '\')">🗑️ حذف</button>' +
+            '</div>' +
+        '</div>';
     }).join('');
+
+    container.innerHTML =
+        '<div class="history-ledger-head-row">' +
+          '<span>السند</span><span>المريض</span><span>الخدمة</span><span>الإجمالي</span><span>المدفوع</span><span>المتبقي</span><span>الحالة</span><span>إجراء</span>' +
+        '</div>' + rows;
 }
 
 function loadReceipt(id) {
