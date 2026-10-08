@@ -1,12 +1,29 @@
 :root {
-    --primary: #073b63;
-    --teal: #079db5;
-    --text-main: #0f172a;
-    --text-muted: #475569;
-    --line-border: #64748b;
-    --border-soft: #cbd5e1;
-    --bg-strip: #f8fafc;
-    --accent-red: #b91c1c;
+    /* AQSA7 Phase 2 — authoritative design tokens */
+    --color-primary: #1E3A8A;
+    --color-paid: #059669;
+    --color-warning: #D97706;
+    --color-surface: #F8FAFC;
+    --color-white: #FFFFFF;
+    --color-border: #E2E8F0;
+    --color-text: #0F172A;
+    --color-text-muted: #475569;
+    --color-danger: #B91C1C;
+    --font-ui: system-ui, -apple-system, sans-serif;
+    --touch-target: 44px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+
+    /* Legacy aliases retained so existing feature styles keep one source of truth. */
+    --primary: var(--color-primary);
+    --teal: var(--color-paid);
+    --text-main: var(--color-text);
+    --text-muted: var(--color-text-muted);
+    --line-border: #64748B;
+    --border-soft: var(--color-border);
+    --bg-strip: var(--color-surface);
+    --accent-red: var(--color-danger);
     --font-scale: 1;
     --receipt-font-family: 'Cairo', sans-serif;
     --receipt-font-weight: 700;
@@ -31,7 +48,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family: 'Cairo', sans-serif;
+    font-family: var(--font-ui);
     background-color: #0b1329;
     color: var(--text-main);
     min-height: 100vh;
@@ -375,7 +392,7 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 
 /* v1.0.6 professional navigation and patient UX */
 .app-tabs{display:flex;align-items:center;gap:5px;padding:4px;border:1px solid rgba(148,163,184,.28);background:rgba(255,255,255,.78);backdrop-filter:blur(12px);border-radius:14px;box-shadow:0 5px 20px rgba(15,23,42,.07)}
-.app-tab{border:0;background:transparent;color:#64748b;border-radius:10px;padding:7px 10px;display:flex;align-items:center;gap:5px;font:inherit;cursor:pointer;transition:.18s ease}.app-tab b{font-size:10px}.app-tab.active{background:#073b63;color:#fff;box-shadow:0 4px 12px rgba(7,59,99,.18)}
+.app-tab{border:0;background:transparent;color:#64748b;border-radius:10px;padding:7px 10px;display:flex;align-items:center;gap:5px;font:inherit;cursor:pointer;transition:.18s ease}.app-tab b{font-size:10px}.app-tab.active{background:var(--color-primary);color:#fff;box-shadow:0 4px 12px rgba(7,59,99,.18)}
 .patient-detail-hidden{display:none!important}.patient-account-panel[hidden]{display:none!important}.patient-account-head{position:sticky;top:0;z-index:2;background:#f8fafc;padding:8px 0;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:7px}
 @media(max-width:900px){.app-tabs{order:3;width:100%;justify-content:space-between}.app-tab{flex:1;justify-content:center;padding:7px 5px}.site-navbar .nav-container{flex-wrap:wrap}.nav-controls{flex:1 1 100%;justify-content:center}}@media print{.app-tabs{display:none!important}}
 
@@ -426,3 +443,24 @@ html[data-night="on"] .history-entry,html[data-night="on"] .patient-card,html[da
 html[data-night="on"] .site-navbar{background:rgba(2,6,23,.96)}
 html[data-night="on"] .page-canvas-wrapper{background:transparent}
 
+
+
+/* ===== AQSA7 Phase 2 — shared interaction contract ===== */
+@media screen {
+  button, input, select, textarea { font-family: var(--font-ui); }
+  .app-tab, .btn-pill, .btn-tool, .tool-btn, .dock-btn, .btn-close,
+  .font-step, .date-picker-btn { min-height: var(--touch-target); }
+  .app-tab:focus-visible, .btn-pill:focus-visible, .btn-tool:focus-visible,
+  .tool-btn:focus-visible, .dock-btn:focus-visible, .btn-close:focus-visible,
+  .font-step:focus-visible, .date-picker-btn:focus-visible,
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Numeric information is aligned consistently across the clinical UI. */
+#historyCount, #receiptCurrencyBadge, .history-entry, .history-stats,
+.ledger-box, .ledger-field, .currency-label, .patient-phone-input {
+  font-variant-numeric: tabular-nums;
+}
