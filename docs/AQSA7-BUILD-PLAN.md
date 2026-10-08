@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08 (Phase 1 runtime exit gate completed)
+Last updated: 2026-10-08 (Phase 2 Task 2.2 completed)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -167,6 +167,46 @@ Verification:
 Next Phase 2 task:
 - **Task 2.2 — Top App Shell & Navigation Dock reconstruction**.
 - Executor: **AI / Technical Lead**.
+
+### Phase 2 / Task 2.2 — Top App Shell & Navigation Dock: COMPLETE
+
+Implemented the shared AQSA7 application shell and navigation dock as the authoritative Phase 2 navigation surface.
+
+Implementation:
+- Reconstructed the top application shell in index.html with explicit AQSA7 platform identity, Dental Clinic product identity, clinic identity, saved-receipt count and section navigation.
+- Kept the existing four navigation responsibilities authoritative: Receipt, Patients, History and Settings.
+- Preserved the existing activateAppTab() routing/state behavior; no competing navigation state machine was introduced.
+- Added accessible active-state semantics through aria-current="page" in activateAppTabVisual().
+- Added responsive navigation behavior:
+  - desktop: product identity + section navigation + receipt mode controls in one shell
+  - mobile/tablet: product identity, full-width section dock and touch-first controls
+  - mobile navigation remains horizontally safe without creating a second navigation path
+- Applied Phase 2 design tokens and the 44px interaction contract to navigation controls.
+- Added clear hover, active, focus and selected-state treatment.
+- Preserved print behavior by excluding the application shell from print output.
+- Added runtime smoke assertions for AQSA7 identity, clinic identity, four navigation items and exactly one active/current navigation item.
+
+Files:
+- index.html
+- css/ui.css
+- js/app.js
+- .github/workflows/runtime-smoke.yml
+
+Verification:
+- AQSA7 Runtime Smoke run 37709928853 — PASS on commit 383448a9160faef3246362692ffd404c4d47bea5.
+- Pages deployment run 37709928883 — SUCCESS on the same commit.
+- Verify receipt image export run 37709928831 — FAIL, but the failure is the pre-existing PDF selectable-text assertion in tests/receipt-export-test.mjs for A5 after the PDF was generated. The exported text is present in the PDF extraction output, but the test's expected selectable-text condition still fails. This is unrelated to Task 2.2 shell/navigation behavior and remains an explicit release/regression blocker.
+- Android APK build run 37709928867 — IN PROGRESS at ledger update time; its result must not be interpreted as a Task 2.2 runtime pass until completed.
+
+Exit decision:
+- Task 2.2 functional/design exit criteria: MET.
+- Browser runtime gate for the task: PASS.
+- Navigation architecture remains single-owner and behavior-preserving.
+- Phase 2 remains IN PROGRESS.
+
+Next Phase 2 task:
+- Task 2.3 — Patient Directory / Ledger Table reconstruction.
+- Executor: AI / Technical Lead.
 
 ### AQSA7 Design System Specification — Phase 2 Mandatory Foundation
 
