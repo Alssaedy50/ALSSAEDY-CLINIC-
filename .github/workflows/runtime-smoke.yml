@@ -110,6 +110,30 @@ jobs:
           if (!productContract.enabledModules.every(id => productContract.modules.includes(id))) throw new Error('Instance enables a module outside the product definition');
           if (!productContract.allowedReceiptSizes.includes(productContract.defaultReceiptSize)) throw new Error('Instance receipt default is outside the product template contract');
           if (!productContract.databaseName) throw new Error('Instance storage contract missing database name');
+          const isolation = await page.evaluate(async () => {
+            const identity = typeof window.aqsa7GetInstanceIdentity === 'function' ? window.aqsa7GetInstanceIdentity() : null;
+            const owned = typeof window.aqsa7OwnRecord === 'function' ? window.aqsa7OwnRecord({id:'isolation-smoke'}) : null;
+            let recordMismatchRejected = false;
+            let partialIdentityRejected = false;
+            let backupMismatchRejected = false;
+            try { window.aqsa7OwnRecord({...owned, tenantId:'foreign-tenant'}); } catch (_) { recordMismatchRejected = true; }
+            try { window.aqsa7OwnRecord({id:'partial', tenantId:identity?.tenantId}); } catch (_) { partialIdentityRejected = true; }
+            try { window.aqsa7ValidateBackupScope({...identity, tenantId:'foreign-tenant'}); } catch (_) { backupMismatchRejected = true; }
+            const backup = typeof window.buildFullBackup === 'function' ? await window.buildFullBackup() : null;
+            return {
+              identity, owned, recordMismatchRejected, partialIdentityRejected, backupMismatchRejected,
+              backupOwnership: backup?.ownership || null,
+              backupSchemaVersion: backup?.schemaVersion || null,
+              backupRecordIdentities: [...(backup?.receipts || []), ...(backup?.patients || [])].map(r => ({productId:r.productId, tenantId:r.tenantId, instanceId:r.instanceId}))
+            };
+          });
+          if (!isolation.identity?.productId || !isolation.identity?.tenantId || !isolation.identity?.instanceId) throw new Error('Instance identity contract missing');
+          if (isolation.owned.productId !== isolation.identity.productId || isolation.owned.tenantId !== isolation.identity.tenantId || isolation.owned.instanceId !== isolation.identity.instanceId) throw new Error('Unscoped record was not adopted into current instance scope');
+          if (!isolation.recordMismatchRejected || !isolation.partialIdentityRejected || !isolation.backupMismatchRejected) throw new Error('Tenant/instance isolation fail-closed checks failed: '+JSON.stringify(isolation));
+          if (isolation.backupOwnership?.scope !== 'instance' || isolation.backupOwnership.tenantId !== isolation.identity.tenantId || isolation.backupOwnership.instanceId !== isolation.identity.instanceId) throw new Error('Backup ownership scope missing');
+          if (isolation.backupSchemaVersion !== 5) throw new Error('Backup schema was not upgraded for isolation contract');
+          if (isolation.backupRecordIdentities.some(r => r.productId !== isolation.identity.productId || r.tenantId !== isolation.identity.tenantId || r.instanceId !== isolation.identity.instanceId)) throw new Error('Backup contains a record outside current instance scope');
+
           const sharedCapabilities = await page.evaluate(() => ({
             ids: typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [],
             manifest: window.AQSA7_SHARED_CAPABILITY_MANIFEST || null,
