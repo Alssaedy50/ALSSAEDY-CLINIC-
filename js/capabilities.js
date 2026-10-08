@@ -1,6 +1,6 @@
 /* AQSA7 Shared Business Capability Registry
  * One authoritative contract for reusable business capabilities.
- * No persistence, DOM, provider, or vertical-domain ownership lives here.
+ * No persistence implementation, DOM, provider, or vertical-domain ownership lives here. dataCollections are logical data contracts only; the repository owns the physical IndexedDB stores.
  */
 (function(){
   const freeze = value => Object.freeze(value);
@@ -13,7 +13,7 @@
       owns: ['party identity', 'contact details', 'party status'],
       excludes: ['clinical history', 'dental findings', 'retail pricing', 'restaurant workflow'],
       entities: ['party', 'contact'],
-      repositoryStores: ['people'],
+      dataCollections: ['people'],
       api: ['list', 'get', 'create', 'update', 'search']
     },
     appointments: {
@@ -23,7 +23,7 @@
       owns: ['appointment lifecycle', 'queue state', 'appointment scheduling'],
       excludes: ['clinical diagnosis', 'treatment rules', 'restaurant kitchen workflow'],
       entities: ['appointment', 'queue-entry'],
-      repositoryStores: ['appointments'],
+      dataCollections: ['appointments'],
       api: ['list', 'get', 'create', 'update', 'cancel', 'search']
     },
     catalog: {
@@ -33,7 +33,7 @@
       owns: ['catalog identity', 'service/product definition', 'base pricing metadata'],
       excludes: ['dental treatment rules', 'inventory quantities', 'clinical outcomes'],
       entities: ['catalog-item', 'service'],
-      repositoryStores: ['catalog'],
+      dataCollections: ['catalog'],
       api: ['list', 'get', 'create', 'update', 'search']
     },
     inventory: {
@@ -43,7 +43,7 @@
       owns: ['stock levels', 'stock movements', 'inventory availability'],
       excludes: ['supplier contracts', 'sales order lifecycle', 'clinical treatment'],
       entities: ['stock-item', 'stock-movement'],
-      repositoryStores: ['inventory'],
+      dataCollections: ['inventory'],
       api: ['getBalance', 'recordMovement', 'listMovements']
     },
     purchasing: {
@@ -53,7 +53,7 @@
       owns: ['purchase lifecycle', 'supplier references', 'purchase lines'],
       excludes: ['sales orders', 'clinical procurement rules'],
       entities: ['supplier', 'purchase', 'purchase-line'],
-      repositoryStores: ['purchasing'],
+      dataCollections: ['purchasing'],
       api: ['list', 'get', 'create', 'update', 'receive']
     },
     sales: {
@@ -63,7 +63,7 @@
       owns: ['order lifecycle', 'order lines', 'sales totals'],
       excludes: ['restaurant kitchen workflow', 'dental treatment plans'],
       entities: ['order', 'order-line'],
-      repositoryStores: ['sales'],
+      dataCollections: ['sales'],
       api: ['list', 'get', 'create', 'update', 'cancel']
     },
     billing: {
@@ -73,7 +73,7 @@
       owns: ['amount normalization', 'balance calculation', 'change calculation', 'financial summary'],
       excludes: ['payment-provider integration', 'clinical pricing rules', 'tax policy unless configured by product/instance'],
       entities: ['charge', 'payment', 'receivable'],
-      repositoryStores: ['billing'],
+      dataCollections: ['billing'],
       api: ['normalizeAmount', 'calculateBalance', 'calculateChange', 'summarizeReceivables']
     },
     receipts: {
@@ -83,7 +83,7 @@
       owns: ['document numbering contract', 'receipt/invoice record lifecycle', 'receipt status'],
       excludes: ['print rendering', 'clinical content', 'provider/cloud storage'],
       entities: ['receipt', 'invoice'],
-      repositoryStores: ['receipts'],
+      dataCollections: ['receipts'],
       api: ['create', 'get', 'update', 'delete', 'list']
     },
     staff: {
@@ -93,7 +93,7 @@
       owns: ['staff identity', 'role assignment', 'staff status'],
       excludes: ['platform authentication implementation', 'clinical authorization decisions'],
       entities: ['staff-member', 'role-assignment'],
-      repositoryStores: ['staff'],
+      dataCollections: ['staff'],
       api: ['list', 'get', 'create', 'update', 'assignRole']
     },
     branches: {
@@ -103,7 +103,7 @@
       owns: ['branch identity', 'branch status', 'operational location metadata'],
       excludes: ['tenant identity/security boundary'],
       entities: ['branch'],
-      repositoryStores: ['branches'],
+      dataCollections: ['branches'],
       api: ['list', 'get', 'create', 'update']
     },
     reporting: {
@@ -113,7 +113,7 @@
       owns: ['report definitions', 'report query contracts', 'aggregated business views'],
       excludes: ['new source-of-truth data', 'vertical clinical interpretation'],
       entities: ['report-definition', 'report-view'],
-      repositoryStores: [],
+      dataCollections: [],
       api: ['define', 'run', 'export']
     },
     documents: {
@@ -123,7 +123,7 @@
       owns: ['document metadata', 'attachment references', 'document lifecycle'],
       excludes: ['receipt rendering engine', 'clinical interpretation'],
       entities: ['document', 'attachment'],
-      repositoryStores: ['documents'],
+      dataCollections: ['documents'],
       api: ['list', 'get', 'create', 'delete']
     },
     messaging: {
@@ -133,7 +133,7 @@
       owns: ['message intent', 'delivery status', 'notification preference contract'],
       excludes: ['provider credentials', 'clinical advice content'],
       entities: ['message', 'notification'],
-      repositoryStores: ['messages'],
+      dataCollections: ['messages'],
       api: ['compose', 'send', 'schedule', 'status']
     },
     workflow: {
@@ -143,7 +143,7 @@
       owns: ['task lifecycle', 'workflow state', 'assignment'],
       excludes: ['vertical-specific clinical or kitchen state machines'],
       entities: ['task', 'workflow-item'],
-      repositoryStores: ['workflow'],
+      dataCollections: ['workflow'],
       api: ['create', 'transition', 'assign', 'list']
     }
   };
@@ -156,7 +156,7 @@
         owns: freeze([...definition.owns]),
         excludes: freeze([...definition.excludes]),
         entities: freeze([...definition.entities]),
-        repositoryStores: freeze([...definition.repositoryStores]),
+        dataCollections: freeze([...definition.dataCollections]),
         api: freeze([...definition.api])
       })
     ])
