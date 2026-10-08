@@ -494,7 +494,7 @@ function activateAppTab(tab){
   }
   if(tab==='receipt'){
     activeAppTab='receipt'; appRoute={screen:'product',patientId:'',productId:AQSA7_DENTAL_PRODUCT_ID,instanceId:getAQSA7InstanceIdentitySafe().instanceId};
-    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
+    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');setClinicWorkspaceView('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
   }
   if(tab==='patients'){openPatientsModal();return;}
   if(tab==='history'){openHistoryModal();return;}
