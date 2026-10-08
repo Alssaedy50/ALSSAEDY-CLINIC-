@@ -496,8 +496,28 @@
     </div>
     <div id="patientAccountPanel" class="patient-account-panel" hidden></div>
     <hr>
-    <h4 class="patients-list-title">سجل المرضى</h4>
-    <div id="patientsList"></div>
+    <section class="patient-directory" aria-labelledby="patientsDirectoryTitle">
+      <div class="patient-directory-head">
+        <div>
+          <span class="directory-kicker">PATIENT DIRECTORY</span>
+          <h4 class="patients-list-title" id="patientsDirectoryTitle">سجل المرضى والحسابات</h4>
+        </div>
+        <span class="directory-count" id="patientsDirectoryCount">0 مريض</span>
+      </div>
+      <div class="patient-directory-tools" role="search">
+        <label class="patient-search-wrap">
+          <span aria-hidden="true">🔎</span>
+          <input id="patientDirectorySearch" class="live-input" type="search" placeholder="ابحث بالاسم أو الهاتف أو المشكلة..." oninput="renderPatients()">
+        </label>
+        <select id="patientDirectoryFilter" class="setting-select" aria-label="تصفية المرضى" onchange="renderPatients()">
+          <option value="all">كل المرضى</option>
+          <option value="balance">عليهم متبقي</option>
+          <option value="settled">حساب مسدد</option>
+          <option value="visit">لديهم موعد قادم</option>
+        </select>
+      </div>
+      <div class="patient-ledger-table" id="patientsList"></div>
+    </section>
   </div>
 </div>
     <div class="no-print modal-screen" id="shareModal">
