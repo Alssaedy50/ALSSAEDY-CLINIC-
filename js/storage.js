@@ -517,9 +517,22 @@ function createReceiptFromPatientAccount(){
   alert('تم تجهيز السند من حساب المريض. راجعه ثم اضغط حفظ.');
 }
 
-function openPatientsModal(skipHistory=false){document.getElementById('patientsModal')?.classList.add('open');renderPatients();showPatientListView();activateAppTabVisual('patients');appRoute={screen:'patients',patientId:''};if(!skipHistory)pushPanelState('patients');}
+function startNewPatient(){
+  currentPatientId='';window.currentPatientId='';
+  ['patientFormId','patientFormName','patientFormAge','patientFormPhone','patientFormVisit','patientFormProblem','patientFormHistory','patientFormNotes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const gender=document.getElementById('patientFormGender');if(gender)gender.value='';
+  showPatientListView();
+  document.getElementById('patientFormName')?.focus();
+}
+
+function openPatientsModal(skipHistory=false){
+  document.getElementById('patientsModal')?.removeAttribute('hidden');
+  renderPatients();showPatientListView();activateAppTabVisual('patients');appRoute={screen:'patients',patientId:''};
+  if(!skipHistory)pushPanelState('patients');
+}
 function closePatientsModal(skipHistory=false){
-  document.getElementById('patientsModal')?.classList.remove('open');showPatientListView();
+  document.getElementById('patientsModal')?.setAttribute('hidden','');
+  showPatientListView();
   if(!skipHistory && (appRoute.screen==='patients'||appRoute.screen==='patient-detail')){
     if(window.aqsa7PlatformRoute==='dental'){
       history.replaceState({aqsa7Route:'dental'},'',location.pathname+location.search+'#product-dental-clinic');
@@ -528,6 +541,8 @@ function closePatientsModal(skipHistory=false){
       history.replaceState(null,'',location.pathname+location.search);
     }
   }
+  if(typeof setClinicWorkspaceView==='function') setClinicWorkspaceView('dashboard');
+  activeAppTab='dashboard';activateAppTabVisual('dashboard');
   appRoute={screen:'product',patientId:'',productId:window.AQSA7_PRODUCT_MANIFEST?.productId||'dental-clinic',instanceId:window.AQSA7_CLINIC_CONFIG?.instanceId||'alssaedy-clinic-sana-a'};
 }
 
