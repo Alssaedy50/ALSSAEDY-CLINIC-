@@ -129,6 +129,29 @@ jobs:
             throw new Error('Patient directory ledger contract failed');
           }
 
+          const issuance = await page.evaluate(() => ({
+            panel: !!document.querySelector('#receiptIssuancePanel'),
+            context: !!document.querySelector('#issuancePatientName'),
+            finance: document.querySelectorAll('.receipt-issuance-finance > div').length,
+            actions: document.querySelectorAll('.receipt-issuance-actions .issuance-action').length,
+            calculator: typeof window.calculateLedger === 'function'
+          }));
+          if (!issuance.panel || !issuance.context || issuance.finance !== 4 || issuance.actions !== 4 || !issuance.calculator) throw new Error('Receipt issuance panel contract failed');
+          await page.locator('#digClientName').fill('اختبار إصدار السند');
+          await page.locator('#digTotal').fill('1000');
+          await page.locator('#digPaid').fill('400');
+          await page.locator('#digPatientPhone').fill('777000002');
+          await page.locator('.custom-check-item').first().click();
+          const issuanceValues = await page.evaluate(() => ({
+            patient: document.querySelector('#issuancePatientName')?.textContent,
+            total: document.querySelector('#issuanceTotal')?.textContent,
+            paid: document.querySelector('#issuancePaid')?.textContent,
+            balance: document.querySelector('#issuanceBalance')?.textContent,
+            serviceCount: document.querySelector('#issuanceServiceCount')?.textContent,
+            method: document.querySelector('#issuancePayMethod')?.textContent
+          }));
+          if (issuanceValues.patient !== 'اختبار إصدار السند' || issuanceValues.total !== '1,000' || issuanceValues.paid !== '400' || issuanceValues.balance !== '600' || issuanceValues.serviceCount !== '1' || issuanceValues.method !== 'نقداً') throw new Error('Receipt issuance live summary failed');
+
           await page.goBack();
           if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Patients panel did not close on Back');
 
