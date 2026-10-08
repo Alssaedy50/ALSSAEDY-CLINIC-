@@ -1,5 +1,7 @@
 /* AQSA7 Data Repository — single durable source for clinic records. */
-const CLINIC_DB_NAME = typeof window.aqsa7GetInstanceStorageConfig === 'function'\n  ? window.aqsa7GetInstanceStorageConfig().databaseName\n  : 'ALSSAEDY_CLINIC_DB';
+const CLINIC_DB_NAME = typeof window.aqsa7GetInstanceStorageConfig === 'function'
+  ? window.aqsa7GetInstanceStorageConfig().databaseName
+  : 'ALSSAEDY_CLINIC_DB';
 const CLINIC_DB_VERSION = 3;
 const CLINIC_DB_STORES = ['receipts','patients','settings'];
 
