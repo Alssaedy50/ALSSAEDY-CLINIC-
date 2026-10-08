@@ -1,6 +1,6 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0–8.5 COMPLETE / Phase 8.6 AUTHORIZED NEXT
+Status: PHASE 8 ACTIVE — Phase 8.0–8.6 COMPLETE / Phase 8.7 IN PROGRESS
 Last updated: 2026-10-09 (Phase 8.6 History & Financial Ledger completed and verified)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
@@ -3032,8 +3032,8 @@ Priority register:
 - **8.4 Visit / Services / Billing — COMPLETE**
 - **8.5 Receipt System Reconstruction — COMPLETE**
 - **8.6 History & Financial Ledger — COMPLETE**
-- **8.7 Mobile UX — AUTHORIZED NEXT**
-- 8.7 Mobile UX — PLANNED
+- **8.7 Mobile UX — IN PROGRESS**
+- 8.8 Print / PDF / Physical Voucher QA — PLANNED
 - 8.8 Print / PDF / Physical Voucher QA — PLANNED
 - 8.9 Full Regression — PLANNED
 - 8.10 Rendered UX Acceptance — PLANNED
@@ -3074,41 +3074,26 @@ Implementation and gate:
 
 **Phase 8.2: COMPLETE.**
 
-### Phase 8.6 — History & Financial Ledger
-Status: COMPLETE — CI AND REGRESSION VERIFIED
+### Phase 8.7 — Mobile UX
+Status: IN PROGRESS — MOBILE RECONSTRUCTION IMPLEMENTED, CI GATE PENDING
 
 Authoritative phase document:
-- `docs/AQSA7-PHASE-8-6-HISTORY-FINANCIAL-LEDGER.md`
+- `docs/AQSA7-PHASE-8-7-MOBILE-UX.md`
 
-Implementation:
-- Converted the existing transaction history into a patient/transaction history plus financial ledger projection.
-- Added active financial metrics: active receipts, unique patients, total billed, total paid, outstanding balance and voided receipt count.
-- Added date-range filtering alongside existing search and lifecycle filters.
-- Added patient-level financial summaries using existing receipt records, with patientId/phone/name fallback for legacy data.
-- Kept voided receipts in historical transaction views while excluding them from active financial totals.
-- Removed the user-facing destructive clear-all receipt-history action.
-- Preserved the existing repository, IndexedDB, receipt lifecycle, export, route and billing-capability boundaries.
-- No new persistence store or parallel financial data source introduced.
+Implementation checkpoint:
+- Branch: `phase-8-7-mobile-ux`.
+- Base: `639c188d48e4e08dd98feb0652b9c82b40257941`.
+- Mobile composition implemented in `css/ui.css` only for the approved presentation scope.
+- Runtime Smoke extended with a 390px mobile acceptance contract.
+- No new router, repository, persistence path, business state machine, receipt model or UI framework introduced.
 
-Verification evidence:
-- PR #63 merged to `main`.
-- Verified Phase 8.6 head: `37d10de1676cd3e99710af0aa9a95c4687ea5896`.
-- Merge commit: `b90ebc4333e21d51e260ad92d1262ca149336ed2`.
-- Browser Smoke: PASS.
-- Pages Source Verification: PASS.
-- Receipt Export: PASS.
-- Android/Build: PASS.
-- Workers Builds: external deployment-rate-limit failure; non-blocking for the required AQSA7 GitHub gates.
+Gate status:
+- Functional Gate: PENDING CI.
+- Architecture Gate: PASS by source-scope inspection; final phase gate remains pending CI.
+- Product/UX Gate: PENDING mobile runtime/rendered evidence.
+- Required next evidence: Runtime Smoke, Pages Source Verification, Receipt Export, Android/Build, then PR merge.
 
-Gate decision:
-- Functional Gate: PASS.
-- Architecture Gate: PASS.
-- Product/UX Gate: PASS at functional/browser contract level; mobile reconstruction remains Phase 8.7 and rendered cross-device acceptance remains Phase 8.10.
-- **Phase 8.6: COMPLETE.**
-
-### Next authorized task
-**Phase 8.7 — Mobile UX.**
-
+**Phase 8.7: IN PROGRESS — do not advance to 8.8 until the phase gate is closed.**
 
 ### Phase 8.5 — Receipt System Reconstruction
 Status: COMPLETE — CI AND REGRESSION VERIFIED
@@ -3133,12 +3118,12 @@ Status: COMPLETE — CI AND REGRESSION VERIFIED
 **Phase 8.0: COMPLETE.**
 
 ### Current phase
-**Phase 8.6 — History & Financial Ledger.**
+**Phase 8.7 — Mobile UX.**
 
-Objective: reconstruct patient/transaction history and financial ledger semantics after the Phase 8.5 receipt lifecycle gate closes.
+Objective: reconstruct the clinic experience for narrow touch screens without changing business/data/export ownership.
 
 
-Last updated: 2026-10-09 (Phase 8.5 receipt reconstruction merged and all required CI gates passed)
+Last updated: 2026-10-09 (Phase 8.7 mobile UX implementation started; CI gate pending)
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED
