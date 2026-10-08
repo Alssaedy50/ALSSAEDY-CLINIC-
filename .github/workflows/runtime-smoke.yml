@@ -78,7 +78,7 @@ jobs:
           };
           for (const [key, expected] of Object.entries(expectedTokens)) {
             const actual = designTokens[key].toUpperCase();
-            if (actual !== expected) throw new Error('Design token mismatch '+key+': '+designTokens[key]);
+            if (actual !== expected.toUpperCase()) throw new Error('Design token mismatch '+key+': '+designTokens[key]);
           }
           if (!designTokens.fontUi.includes('system-ui')) throw new Error('UI font token is not system-ui based');
           if (designTokens.tabHeight < 44) throw new Error('Receipt tab touch target is below 44px: '+designTokens.tabHeight);
