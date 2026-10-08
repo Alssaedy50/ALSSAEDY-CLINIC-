@@ -129,6 +129,7 @@ jobs:
             throw new Error('Patient directory ledger contract failed');
           }
 
+          await page.locator('#tabReceipt').click();
           const issuance = await page.evaluate(() => ({
             panel: !!document.querySelector('#receiptIssuancePanel'),
             context: !!document.querySelector('#issuancePatientName'),
