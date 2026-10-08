@@ -787,6 +787,60 @@ jobs:
           await page.locator('#tabReceipt').click();
           if (await page.locator('#settingsPanel').evaluate(e => e.classList.contains('open'))) throw new Error('Settings panel did not close');
 
+          // Phase 8.7 — Mobile UX: prove the clinic is composed for a 390px touch viewport,
+          // not merely scaled down from desktop.
+          const mobileUx = await page.evaluate(() => {
+            const visible = el => {
+              if (!el) return false;
+              const s = getComputedStyle(el);
+              const r = el.getBoundingClientRect();
+              return !el.hidden && s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+            };
+            const overflow = selector => {
+              const el = document.querySelector(selector);
+              return el ? Math.max(0, el.scrollWidth - el.clientWidth) : 0;
+            };
+            const touchTargets = [...document.querySelectorAll('button, input, select, textarea, a')]
+              .filter(visible)
+              .filter(el => !el.closest('.receipt-paper'));
+            return {
+              viewportWidth: window.innerWidth,
+              bodyOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+              localNavOverflow: overflow('#dentalProductTabs'),
+              workspaceOverflow: overflow('#productWorkspace'),
+              dashboardLayout: (() => {
+                document.querySelector('#tabDashboard')?.click();
+                const grid = document.querySelector('.clinic-dashboard-stats');
+                return grid ? getComputedStyle(grid).gridTemplateColumns : '';
+              })(),
+              patientWorkspace: (() => {
+                document.querySelector('#tabPatients')?.click();
+                const el = document.querySelector('#patientsModal');
+                return {visible: visible(el), fixed: el ? getComputedStyle(el).position === 'fixed' : false};
+              })(),
+              visitLayout: (() => {
+                document.querySelector('#tabReceipt')?.click();
+                const lines = document.querySelector('.clinic-service-line');
+                return {visible: visible(document.querySelector('#clinicVisitBillingPanel')), columns: lines ? getComputedStyle(lines).gridTemplateColumns : ''};
+              })(),
+              historyLedger: (() => {
+                document.querySelector('#tabHistory')?.click();
+                const row = document.querySelector('#historyPatientLedgerList .history-patient-ledger-row');
+                return {visible: visible(document.querySelector('#historyModal')), twoColumn: row ? getComputedStyle(row).gridTemplateColumns.split(' ').length >= 2 : false};
+              })(),
+              touchBelow44: touchTargets.filter(el => Math.round(el.getBoundingClientRect().height) < 44)
+                .map(el => el.id || el.className || el.tagName).slice(0,12)
+            };
+          });
+          if (mobileUx.viewportWidth !== 390) throw new Error('Phase 8.7 mobile viewport contract failed: '+JSON.stringify(mobileUx));
+          if (mobileUx.bodyOverflow > 2 || mobileUx.localNavOverflow > 2 || mobileUx.workspaceOverflow > 2) throw new Error('Phase 8.7 horizontal overflow detected: '+JSON.stringify(mobileUx));
+          if (!mobileUx.dashboardLayout || !/minmax|1fr/.test(mobileUx.dashboardLayout)) throw new Error('Phase 8.7 dashboard did not collapse to a mobile grid: '+JSON.stringify(mobileUx));
+          if (!mobileUx.patientWorkspace.visible || mobileUx.patientWorkspace.fixed) throw new Error('Phase 8.7 patient workspace regressed to a fixed/mobile modal: '+JSON.stringify(mobileUx));
+          if (!mobileUx.visitLayout.visible || !mobileUx.visitLayout.columns) throw new Error('Phase 8.7 visit/service mobile layout missing: '+JSON.stringify(mobileUx));
+          if (!mobileUx.historyLedger.visible || !mobileUx.historyLedger.twoColumn) throw new Error('Phase 8.7 history ledger mobile layout missing: '+JSON.stringify(mobileUx));
+          if (mobileUx.touchBelow44.length) throw new Error('Phase 8.7 visible touch control below 44px: '+JSON.stringify(mobileUx.touchBelow44));
+
+          await page.locator('#tabReceipt').click();
           await page.screenshot({path:'aqsa7-runtime-receipt.png',fullPage:true});
 
           if (errors.length) throw new Error(errors.join('\n'));
