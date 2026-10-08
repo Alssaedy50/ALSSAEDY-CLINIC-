@@ -58,7 +58,8 @@
       enabledByDefault: false,
       capabilities: freeze(['search','summarize','extract','generate']),
       requiresExplicitPolicy: true,
-      coreDependency: false
+      coreDependency: false,
+      contract: 'aqsa7-ai-capability-layer'
     }),
     storage: freeze({
       primary: 'indexeddb',
@@ -117,7 +118,9 @@
     aiPolicy: freeze({
       enabled: false,
       externalDataTransmission: false,
-      humanReviewRequired: true
+      humanReviewRequired: true,
+      allowSensitiveData: false,
+      allowedCapabilities: freeze(['search','summarize','extract','generate'])
     }),
     storage: freeze({
       databaseName: 'ALSSAEDY_CLINIC_DB'
@@ -131,6 +134,10 @@
     if(!manifest.modules.every(id => sharedCapabilityIds.includes(id))) errors.push('manifest module is not a registered shared capability');
     if(!manifest.sharedCapabilities.every(id => sharedCapabilityIds.includes(id))) errors.push('manifest shared capability is not registered');
     if(!manifest.capabilities.length) errors.push('manifest capabilities');
+    const aiContract = window.AQSA7_AI_MANIFEST;
+    if(!aiContract || aiContract.contractId !== 'aqsa7-ai-capability-layer' || aiContract.providerIndependent !== true || aiContract.coreDependency !== false) errors.push('AI platform contract');
+    if(!manifest.ai.capabilities.every(id => !!aiContract?.capabilities?.[id])) errors.push('manifest AI capability outside platform contract');
+    if(!instance.aiPolicy.allowedCapabilities.every(id => manifest.ai.capabilities.includes(id))) errors.push('instance AI policy capability outside product contract');
     if(instance.productId !== manifest.productId) errors.push('instance/product mismatch');
     if(!instance.productVersion || instance.productVersion !== manifest.productVersion) errors.push('instance/product version mismatch');
     if(!instance.tenantId || !instance.instanceId) errors.push('tenant/instance identity');
