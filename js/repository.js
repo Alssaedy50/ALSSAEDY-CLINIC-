@@ -12,14 +12,6 @@ function assertOwnedRecord(item, options){
   return window.aqsa7OwnRecord(item, {allowUnscoped: options?.allowUnscoped !== false});
 }
 
-function isOwnedRecord(item){
-  try {
-    assertOwnedRecord(item, {store:'receipts', allowUnscoped:false});
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
 
 function clinicDBOpen(){
   if(window.__clinicDBPromise) return window.__clinicDBPromise;
