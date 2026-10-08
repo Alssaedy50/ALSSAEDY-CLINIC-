@@ -1,0 +1,49 @@
+name: AQSA7 Runtime Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Chromium
+        run: npx --yes playwright@1.55.0 install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/aqsa7-http.log 2>&1 &
+          echo $! >/tmp/aqsa7-http.pid
+          sleep 2
+
+      - name: Run browser smoke tests
+        run: npx --yes playwright@1.55.0 test tests/runtime-smoke.spec.mjs
+
+      - name: Upload runtime screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aqsa7-runtime-smoke
+          path: test-results/
+          if-no-files-found: ignore
+
+      - name: Stop static server
+        if: always()
+        run: |
+          if [ -f /tmp/aqsa7-http.pid ]; then kill $(cat /tmp/aqsa7-http.pid) || true; fi
