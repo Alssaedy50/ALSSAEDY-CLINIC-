@@ -536,8 +536,8 @@ Completed Phase 2 tasks:
 - 2.6 History / Receipts Ledger Reconstruction — COMPLETE
 - 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
-Current next task:
-- **Phase 3 / Task 3.5 — AI Capability Layer & Provider Adapter Contract**
+Current next authorized task:
+- **Phase 3 / Task 3.6 — Integration / Interoperability Adapter Contract**
 - Status: **NOT STARTED**
 - Executor: **AI / Technical Lead**
 
