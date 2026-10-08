@@ -376,16 +376,28 @@ function getAQSA7InstanceIdentitySafe(){
   catch(_){return {productId:AQSA7_DENTAL_PRODUCT_ID,tenantId:'alssaedy-clinic',instanceId:'alssaedy-clinic-sana-a'};}
 }
 function setPlatformVisual(route){
-  const home=document.getElementById('platformHome'), products=document.getElementById('platformProducts'), workspace=document.getElementById('productWorkspace');
-  const context=document.getElementById('aqsa7ProductContext'), dentalTabs=document.getElementById('dentalProductTabs');
+  const home=document.getElementById('platformHome');
+  const products=document.getElementById('platformProducts');
+  const workspace=document.getElementById('productWorkspace');
+  const context=document.getElementById('aqsa7ProductContext');
+  const dentalTabs=document.getElementById('dentalProductTabs');
+  const platformTabs=document.querySelector('.platform-tabs');
+  const dentalModeControls=document.getElementById('dentalModeControls');
   const isProduct=route==='dental';
+
   if(home) home.hidden=route!=='home';
   if(products) products.hidden=route!=='products';
   if(workspace) workspace.hidden=!isProduct;
   if(context) context.hidden=!isProduct;
   if(dentalTabs) dentalTabs.hidden=!isProduct;
+  // Platform navigation and Dental navigation are mutually exclusive visual layers.
+  // The existing appRoute remains the single state owner.
+  if(platformTabs) platformTabs.hidden=isProduct;
+  if(dentalModeControls) dentalModeControls.hidden=!isProduct;
+
   document.getElementById('tabPlatformHome')?.classList.toggle('active',route==='home');
   document.getElementById('tabPlatformProducts')?.classList.toggle('active',route==='products');
+
   const badge=document.getElementById('platformContextBadge');
   const title=document.getElementById('platformBrandTitle');
   if(isProduct){
