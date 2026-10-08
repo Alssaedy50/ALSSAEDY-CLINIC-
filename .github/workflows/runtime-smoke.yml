@@ -164,6 +164,51 @@ jobs:
           if (mockAI.result?.status !== 'success' || mockAI.result?.providerId !== 'test-local' || mockAI.result?.result?.text !== 'mock-summary') throw new Error('AI provider execute contract failed: '+JSON.stringify(mockAI));
           if (mockAI.events?.length !== 2 || mockAI.events?.[1]?.text !== 'stream') throw new Error('AI provider streaming contract failed: '+JSON.stringify(mockAI));
           if (!productContract.validation?.valid) throw new Error('Product definition validation failed after AI contract integration: '+JSON.stringify(productContract.validation));
+          const integrationContract = await page.evaluate(async () => {
+            const manifest = window.AQSA7_INTEGRATION_MANIFEST || null;
+            const descriptor = (() => {
+              try { return window.aqsa7CreateIntegrationAdapterDescriptor(window.aqsa7GetDefaultIntegrationAdapter()); } catch (e) { return {error:String(e)}; }
+            })();
+            const scoped = (() => {
+              try { return window.aqsa7ValidateIntegrationRequest({capabilityId:'api',operation:'read',method:'GET'}); } catch (e) { return {error:String(e)}; }
+            })();
+            const idempotencyDenied = (() => {
+              try { window.aqsa7ValidateIntegrationRequest({capabilityId:'api',operation:'write',method:'POST',retryPolicy:{automatic:true}}); return null; } catch (e) { return String(e); }
+            })();
+            const mock = {
+              getDescriptor:()=>({id:'test-provider',name:'Test Provider',kind:'mock',version:'1.0',capabilities:['api','mapping','webhook'],local:true,platforms:['web','pwa','desktop','android']}),
+              supports:(cap,op)=>cap==='api' && op==='read',
+              async execute(req){ return {echo:req.payload || null, ownership:req.ownership}; },
+              mapToExternal:(payload,profile)=>({profile:profile.id+':'+profile.version,value:payload.value}),
+              mapFromExternal:(payload,profile)=>({profile:profile.id+':'+profile.version,value:payload.value}),
+              verifyWebhook:(event)=>({valid:event.signature==='ok',deliveryId:event.deliveryId,eventType:event.type,payload:event.payload})
+            };
+            const result=await window.aqsa7ExecuteIntegration({integrationId:'test',capabilityId:'api',operation:'read',method:'GET',payload:{value:7}}, {adapter:mock});
+            const mapped=window.aqsa7MapIntegrationData(mock,'toExternal',{value:8},{id:'test-map',version:'1'});
+            const webhook=window.aqsa7VerifyIntegrationWebhook(mock,{signature:'ok',deliveryId:'d1',type:'test.event',payload:{ok:true}},{});
+            const err=window.aqsa7NormalizeIntegrationError({code:'RATE_LIMITED',providerCode:'429',message:'rate',retryable:true},{integrationId:'test',providerId:'test-provider'});
+            return {manifest,descriptor,scoped,idempotencyDenied,result,mapped,webhook,err};
+          });
+          if (!integrationContract.manifest || integrationContract.manifest.layer !== 'platform-integration' || integrationContract.manifest.providerIndependent !== true || integrationContract.manifest.coreDependency !== false) throw new Error('Integration platform contract missing/provider-coupled');
+          if (integrationContract.manifest.persistence !== 'none' || integrationContract.manifest.secrets !== 'none') throw new Error('Integration contract owns persistence/secrets');
+          for (const id of ['api','import','export','webhook','event','mapping']) if (!integrationContract.manifest.capabilities[id]) throw new Error('Missing integration capability: '+id);
+          if (!integrationContract.descriptor?.id || !integrationContract.descriptor?.capabilities) throw new Error('Default integration adapter descriptor missing');
+          if (!integrationContract.scoped?.identity?.tenantId || !integrationContract.scoped?.identity?.instanceId) throw new Error('Integration request lost instance ownership');
+          if (integrationContract.idempotencyDenied !== 'Error: AQSA7_INTEGRATION_IDEMPOTENCY_REQUIRED') throw new Error('Integration retry/idempotency boundary failed');
+          if (integrationContract.result?.status !== 'success' || integrationContract.result?.providerId !== 'test-provider' || integrationContract.result?.data?.ownership?.tenantId !== integrationContract.scoped.identity.tenantId) throw new Error('Integration adapter execute contract failed: '+JSON.stringify(integrationContract.result));
+          if (integrationContract.mapped?.profile !== 'test-map:1' || integrationContract.mapped?.value !== 8) throw new Error('Integration mapping contract failed');
+          if (integrationContract.webhook?.status !== 'verified' || integrationContract.webhook?.deliveryId !== 'd1' || integrationContract.webhook?.ownership?.instanceId !== integrationContract.scoped.identity.instanceId) throw new Error('Integration webhook boundary failed');
+          if (integrationContract.err?.code !== 'RATE_LIMITED' || integrationContract.err?.providerCode !== '429' || integrationContract.err?.retryable !== true) throw new Error('Integration error normalization failed');
+          const badWebhook = await page.evaluate(() => {
+            try {
+              const adapter={getDescriptor:()=>({id:'test',name:'Test',kind:'mock',version:'1',capabilities:['webhook']}),verifyWebhook:()=>({valid:false})};
+              window.aqsa7VerifyIntegrationWebhook(adapter,{signature:'bad'},{});
+              return null;
+            } catch(e) { return String(e); }
+          });
+          if (badWebhook !== 'Error: AQSA7_INTEGRATION_WEBHOOK_REJECTED') throw new Error('Webhook rejection boundary failed');
+          if (!productContract.validation?.valid) throw new Error('Product definition validation failed after integration contract integration: '+JSON.stringify(productContract.validation));
+
           const isolation = await page.evaluate(async () => {
             const identity = typeof window.aqsa7GetInstanceIdentity === 'function' ? window.aqsa7GetInstanceIdentity() : null;
             const owned = typeof window.aqsa7OwnRecord === 'function' ? window.aqsa7OwnRecord({id:'isolation-smoke'}) : null;
