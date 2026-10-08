@@ -675,6 +675,13 @@ jobs:
             if (!(await page.locator('#' + id).count())) throw new Error('Missing #' + id);
           }
 
+          await page.locator('#tabReceipt').click();
+          const receiptSurfaceVisible = await page.evaluate(() => {
+            const el=document.querySelector('#digDate');
+            return !!el && !el.hidden && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
+          });
+          if (!receiptSurfaceVisible) throw new Error('Receipt workflow did not become visible after selecting السندات');
+
           const fns = await page.evaluate(() => ({
             activateAppTab: typeof window.activateAppTab,
             setMode: typeof window.setMode,
