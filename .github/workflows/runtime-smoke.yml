@@ -29,6 +29,10 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: JavaScript syntax validation
+        run: |
+          for file in js/*.js; do node --check "$file"; done
+
       - name: Start static server
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/aqsa7-http.log 2>&1 &
@@ -102,10 +106,25 @@ jobs:
             databaseName: window.aqsa7GetInstanceStorageConfig?.()?.databaseName || ''
           }));
           if (!productContract.validation?.valid) throw new Error('Product definition validation failed: '+JSON.stringify(productContract.validation));
-          if (!productContract.modules.includes('billing-payments') || !productContract.modules.includes('receipts')) throw new Error('Shared module contract incomplete');
+          if (!productContract.modules.includes('billing') || !productContract.modules.includes('receipts')) throw new Error('Shared module contract incomplete');
           if (!productContract.enabledModules.every(id => productContract.modules.includes(id))) throw new Error('Instance enables a module outside the product definition');
           if (!productContract.allowedReceiptSizes.includes(productContract.defaultReceiptSize)) throw new Error('Instance receipt default is outside the product template contract');
           if (!productContract.databaseName) throw new Error('Instance storage contract missing database name');
+          const sharedCapabilities = await page.evaluate(() => ({
+            ids: typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [],
+            manifest: window.AQSA7_SHARED_CAPABILITY_MANIFEST || null,
+            product: typeof window.aqsa7GetProductCapabilities === 'function' ? window.aqsa7GetProductCapabilities() : [],
+            billing: window.aqsa7BillingContract ? {
+              balance: window.aqsa7BillingContract.calculateBalance(1000, 400),
+              change: window.aqsa7BillingContract.calculateChange(1000, 1200),
+              summary: window.aqsa7BillingContract.summarizeReceivables([{total:'1000',paid:'400',balance:'600'}])
+            } : null
+          }));
+          if (!sharedCapabilities.manifest || sharedCapabilities.manifest.layer !== 'shared-business-capabilities') throw new Error('Shared capability registry missing');
+          if (!sharedCapabilities.ids.includes('people') || !sharedCapabilities.ids.includes('catalog') || !sharedCapabilities.ids.includes('billing') || !sharedCapabilities.ids.includes('receipts')) throw new Error('Required generic shared capabilities missing');
+          if (sharedCapabilities.product.length !== 5 || !sharedCapabilities.product.every(cap => sharedCapabilities.ids.includes(cap.id))) throw new Error('Dental product capability selection is not registry-backed');
+          if (sharedCapabilities.product.some(cap => cap.id === 'dental' || cap.id === 'odontogram' || cap.id === 'clinical')) throw new Error('Dental-specific domain leaked into shared capability registry');
+          if (sharedCapabilities.billing?.balance !== 600 || sharedCapabilities.billing?.change !== 200 || sharedCapabilities.billing?.summary?.balance !== 600) throw new Error('Shared billing capability contract failed');
 
           const shell = await page.evaluate(() => ({
             brand: document.querySelector('.brand-platform')?.textContent?.trim(),
