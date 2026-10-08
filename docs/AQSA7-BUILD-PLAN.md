@@ -23,6 +23,25 @@ Transform the current ALSSAEDY CLINIC receipt application into a clean, reliable
 9. Never release an unverified build.
 10. Update this ledger after every completed phase/task.
 
+## Balanced Scope, Speed & Precision — Mandatory Execution Discipline
+
+AQSA7 must preserve a deliberate balance between architectural quality, execution speed and task focus. The purpose of planning and future-proofing is to prevent avoidable rework, not to turn every task into a broad architecture project.
+
+1. **One task, one primary outcome.** Every task must have one clearly defined primary objective and the minimum deliverables required to close that objective.
+2. **Minimum sufficient scope.** Execute only the work necessary to satisfy the current task's purpose and exit criteria. Do not expand a task merely because related future concerns are interesting or potentially useful.
+3. **Separate thinking from building.** Future requirements may be analyzed, classified, documented or bounded without implementing them early.
+4. **Boundary before implementation, not implementation before need.** Establish a contract or architectural boundary early only when it prevents a likely rewrite or is required by the approved plan. Do not create speculative abstractions, files, services or frameworks without evidence of need.
+5. **Phase discipline.** Do not pull implementation work forward from a later phase merely because it is technically related to the current task. A current task may define or constrain future work, but must not silently execute it.
+6. **Prefer the smallest safe change.** When several changes satisfy the same exit criteria, choose the smallest reversible change with the lowest maintenance and verification cost.
+7. **No architecture inflation.** A task must not become a redesign of adjacent systems unless the current task cannot be closed correctly without that redesign. If such expansion appears necessary, stop and reassess scope.
+8. **Evidence over speculation.** Inspect the actual repository and verify the need before introducing a new abstraction, persistence path, state machine, dependency or architectural layer.
+9. **Concise execution handoffs.** Execution instructions should state the objective, required checks, hard constraints, explicit out-of-scope items and completion evidence. Avoid repeating the entire future architecture when a concise task-specific instruction is sufficient.
+10. **Future-proofing is a constraint, not a workload multiplier.** Use the Future Surprise Gate to prevent bad decisions, then defer implementation that is not required now.
+11. **Stop at the gate.** Once the task's purpose and exit criteria are satisfied, close the task. Do not continue into the next task or phase without explicit authorization.
+12. **Escalate genuine scope conflicts.** If closing the task requires a material scope, architecture or security change, do not improvise. Record the conflict and request the required approval.
+
+**Operating principle:** Minimum sufficient scope → inspect actual need → make the smallest safe change → verify → document → close → move to the next authorized step.
+
 ## Project Control & Governance — Mandatory Operating Rules
 
 This section governs how AQSA7 is controlled, handed off, verified and advanced. It is authoritative and applies to every task, phase, release and execution handoff.
@@ -447,8 +466,7 @@ Every AQSA7 product must have a machine-readable or equivalently authoritative *
 
 A configured business instance must consume this product definition rather than hardcoding the product identity throughout the application. Product identity, clinic/store names, labels, logos and defaults must not be scattered through core code.
 
-### Generic domain/data architecture
-The platform must avoid naming the core data layer around a single vertical. For example, \x60clinicDB\x60, patient-only assumptions, dental-specific receipt schemas or ALSSAEDY-specific identifiers must not become permanent AQSA7 core contracts. Existing Dental-specific code is legacy/product-domain implementation and must be progressively moved behind the Dental product boundary during Phase 3.
+### Generic domain/data architectureThe platform must avoid naming the core data layer around a single vertical. For example, \x60clinicDB\x60, patient-only assumptions, dental-specific receipt schemas or ALSSAEDY-specific identifiers must not become permanent AQSA7 core contracts. Existing Dental-specific code is legacy/product-domain implementation and must be progressively moved behind the Dental product boundary during Phase 3.
 
 The target is:
 **Platform Core → Shared Capability Modules → Vertical Product → Configured Instance/Tenant**
@@ -898,7 +916,6 @@ Gate decision:
 - Task 3.6 followed this completed Task 3.5 checkpoint and is now COMPLETE.
 
 ### Phase 3 / Task 3.6 — Integration / Interoperability Adapter Contract
-
 Status: **COMPLETE**
 
 Purpose:
