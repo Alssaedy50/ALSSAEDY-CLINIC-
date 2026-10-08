@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08 (Phase 6 Release v1.3.0 and final main acceptance verified complete)
+Last updated: 2026-10-08 (corrective platform-transition plan authorized; Phase 0–6 remain historical; Phase 7.0 is the only next execution step)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -134,7 +134,7 @@ Minimum impact scan:
 
 **changed owner → dependents → user-visible surfaces → data paths → platform clients → tests**
 
-This follows established traceability/change-management practice: requirements and implementation artifacts should remain linked so a change can be assessed for its downstream impact rather than handled as an isolated edit. citeturn0search4turn0search12
+This follows established traceability/change-management practice: requirements and implementation artifacts should remain linked so a change can be assessed for its downstream impact rather than handled as an isolated edit.
 
 ### 8. No documentation inflation
 
