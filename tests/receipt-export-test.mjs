@@ -94,6 +94,25 @@ if (blankCheck.date.year !== new Date().getFullYear() + 'م' ||
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
 
+// Phase 8.9 — preparing the blank paper master must restore the original
+// digital transaction and must not switch the receipt into manual mode.
+const restoredAfterBlank = await page.evaluate(() => ({
+  mode: document.body.getAttribute('data-mode'),
+  receiptNo: document.getElementById('digReceiptNo')?.value || '',
+  date: document.getElementById('digDate')?.value || '',
+  name: document.getElementById('digClientName')?.value || '',
+  phone: document.getElementById('digPatientPhone')?.value || '',
+  paid: document.getElementById('digPaid')?.value || ''
+}));
+if (restoredAfterBlank.mode !== 'digital' ||
+    restoredAfterBlank.receiptNo !== 'TEST-001' ||
+    restoredAfterBlank.date !== '2026-10-07' ||
+    restoredAfterBlank.name !== 'مريض الاختبار' ||
+    restoredAfterBlank.phone !== '771234567' ||
+    restoredAfterBlank.paid !== '25000') {
+  throw new Error('Phase 8.9 blank-template preparation corrupted the digital receipt: ' + JSON.stringify(restoredAfterBlank));
+}
+
 const blankTemplateContract = await page.evaluate(() => {
   const dateEditor=document.getElementById('paperTemplateDate');
   document.getElementById('digDate').value='07/10/2026';
