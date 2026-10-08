@@ -136,7 +136,37 @@ Status: COMPLETE
 - clean CSS responsibilities
 
 ### Phase 2 — UX/UI Reconstruction
+Status: IN PROGRESS
 
+### Phase 2 / Task 2.1 — Design System Foundation: COMPLETE
+
+Implemented the mandatory Phase 2 foundation without changing protected receipt print geometry or replacing existing application behavior.
+
+Implementation:
+- Added authoritative AQSA7 design tokens to `css/ui.css`:
+  - Primary `#1E3A8A`
+  - Paid/success `#059669`
+  - Warning/balance `#D97706`
+  - Surface `#F8FAFC`
+  - White `#FFFFFF`
+  - Border `#E2E8F0`
+- Added shared UI typography token using `system-ui, -apple-system, sans-serif`.
+- Added a 44px shared touch-target token and applied it to primary navigation/action controls on screen.
+- Added shared visible focus treatment for keyboard/accessibility navigation.
+- Added tabular numeric presentation to core financial/ledger/phone UI surfaces.
+- Retained legacy CSS aliases so existing feature styles continue to resolve through one token source rather than duplicating values.
+- Preserved the configurable receipt font family and receipt-specific geometry.
+
+Verification:
+- GitHub Actions `AQSA7 Runtime Smoke`: run `37709542791` — **PASS**.
+- Runtime smoke now verifies the required design-token values, system UI font token and 44px navigation touch target in addition to the existing application smoke checks.
+- Android APK workflow on the same checkpoint: run `37709542785` — **SUCCESS**.
+- Pages deployment: run `37709541569` — **SUCCESS**.
+- `Verify receipt image export`: run `37709542776` — **FAIL**, but the failure is in the existing PDF text-selection assertion (`tests/receipt-export-test.mjs`) after the PDF was generated; it is not a design-token/runtime failure. It remains explicitly unresolved and must be cleared before Phase 2 exit/full regression.
+
+Next Phase 2 task:
+- **Task 2.2 — Top App Shell & Navigation Dock reconstruction**.
+- Executor: **AI / Technical Lead**.
 
 ### AQSA7 Design System Specification — Phase 2 Mandatory Foundation
 
@@ -200,7 +230,7 @@ The following components are mandatory shared patterns:
 - New CSS must respect existing ownership boundaries.
 - Do not redesign protected receipt print geometry merely for visual consistency.
 - Phase 2 visual work must preserve the functional architecture established in Phase 1.
-Status: NOT STARTED
+Status: IN PROGRESS
 - AQSA7 app shell
 - clear section navigation
 - Dental Clinic dashboard
@@ -386,9 +416,7 @@ Validation:
 - JavaScript runtime sources remain syntactically valid.
 - CSS files remain text-valid and preserve the existing stylesheet load order.
 - No Phase 2 work has started.
-
-Next:
-- Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
+ (browser/Android)
 
 ### Phase 1.6 — Settings Ownership Cleanup: COMPLETE
 
