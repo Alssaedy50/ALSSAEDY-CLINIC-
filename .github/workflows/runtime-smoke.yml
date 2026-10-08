@@ -699,7 +699,7 @@ jobs:
           if (!printDate.includes('07/10/2026')) throw new Error('Date rendering failed: ' + printDate);
 
           await page.locator('#tabPatients').click();
-          if (!(await page.locator('#patientsModal').evaluate(e => e.classList.contains('open')))) throw new Error('Patients panel did not open');
+          if (await page.locator('#patientsModal').evaluate(e => e.hidden)) throw new Error('Patients workspace did not open');
           if (!page.url().endsWith('#patients')) throw new Error('Patients route state missing');
 
           if (typeof await page.evaluate(() => typeof window.renderPatients) !== 'string' || await page.evaluate(() => typeof window.renderPatients !== 'function')) throw new Error('renderPatients runtime function missing');
@@ -716,7 +716,7 @@ jobs:
           }
 
           await page.goBack();
-          if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Patients panel did not close on Back');
+          if (!(await page.locator('#patientsModal').evaluate(e => e.hidden))) throw new Error('Patients workspace did not close on Back');
 
           await page.locator('#tabReceipt').click();
           const issuance = await page.evaluate(() => ({
@@ -820,10 +820,10 @@ jobs:
           if (layout.receiptOverflow > 2 || layout.issuanceOverflow > 2) throw new Error('Desktop horizontal overflow detected: '+JSON.stringify(layout));
 
           await page.locator('#tabPatients').click();
-          if (!(await page.locator('#patientsModal').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop patients surface did not open');
+          if (await page.locator('#patientsModal').evaluate(e => e.hidden)) throw new Error('Desktop patient workspace did not open');
           if ((await page.locator('#patientsModal').evaluate(e => Math.round(e.getBoundingClientRect().width))) < 600) throw new Error('Desktop patients surface is unexpectedly narrow');
-          await page.locator('#patientsModal .modal-close').click();
-          if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Desktop patients surface did not close');
+          await page.locator('#patientsModal .patient-workspace-close').click();
+          if (!(await page.locator('#patientsModal').evaluate(e => e.hidden))) throw new Error('Desktop patient workspace did not close');
 
           await page.locator('#tabHistory').click();
           if (!(await page.locator('#historyModal').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop history surface did not open');
@@ -953,6 +953,30 @@ jobs:
           if (shell.dir !== 'rtl' || shell.lang !== 'ar') fail('RTL/Arabic shell contract failed', shell);
           if (shell.tabs.length !== 5) fail('Primary navigation coverage failed', shell);
           if (shell.functions.length !== 9) fail('Core action function coverage failed', shell);
+
+          // Phase 8.3 — Patient Workspace: persistent product surface, not a modal.
+          await page.locator('#tabPatients').click();
+          await page.locator('#patientsModal').waitFor({state:'visible'});
+          const patientWorkspace = await page.evaluate(() => {
+            const el=document.querySelector('#patientsModal');
+            const shell=el?.querySelector('.patient-workspace-shell');
+            const directory=el?.querySelector('#patientsList');
+            const dashboard=document.querySelector('#clinicDashboard');
+            const rect=el?.getBoundingClientRect();
+            const style=el ? getComputedStyle(el) : null;
+            return {
+              hidden: Boolean(el?.hidden),
+              position: style?.position || '',
+              display: style?.display || '',
+              hasShell:Boolean(shell),
+              hasDirectory:Boolean(directory),
+              dashboardHidden:Boolean(dashboard?.hidden)
+            };
+          });
+          if (patientWorkspace.hidden || patientWorkspace.position === 'fixed' || patientWorkspace.display === 'none' || !patientWorkspace.hasShell || !patientWorkspace.hasDirectory || !patientWorkspace.dashboardHidden) {
+            fail('Phase 8.3 patient workspace contract failed', patientWorkspace);
+          }
+          await page.locator('#tabDashboard').click();
 
           // 2) Receipt create/edit/save and durable repository verification.
           await page.evaluate(() => {

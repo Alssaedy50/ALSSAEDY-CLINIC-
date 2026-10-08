@@ -381,10 +381,14 @@ function setClinicWorkspaceView(view){
   const tools=document.getElementById('dentalModeControls');
   const receiptSurface=document.querySelector('#productWorkspace .page-canvas-wrapper');
   const isDashboard=view==='dashboard';
+  const isPatients=view==='patients';
+  const patientWorkspace=document.getElementById('patientsModal');
   if(dashboard) dashboard.hidden=!isDashboard;
-  if(tools) tools.hidden=isDashboard;
-  if(receiptSurface) receiptSurface.hidden=isDashboard;
+  if(tools) tools.hidden=isDashboard||isPatients;
+  if(receiptSurface) receiptSurface.hidden=isDashboard||isPatients;
+  if(patientWorkspace) patientWorkspace.hidden=!isPatients;
   if(isDashboard && typeof renderClinicDashboard==='function') renderClinicDashboard();
+  if(isPatients && typeof renderPatients==='function') renderPatients();
 }
 
 function renderClinicDashboard(){
@@ -515,7 +519,7 @@ function pushPanelState(name){
 }
 function closePanelState(name){if(history.state?.alssaedyPanel===name){history.back();if(aqsa7PlatformRoute==='dental')setPlatformVisual('dental');return true;}return false;}
 function closeAllAppPanels(){
-  document.getElementById('patientsModal')?.classList.remove('open');
+  document.getElementById('patientsModal')?.setAttribute('hidden','');
   document.getElementById('historyModal')?.classList.remove('open');
   document.getElementById('settingsPanel')?.classList.remove('open');
   document.getElementById('shareModal')?.classList.remove('open');
@@ -525,8 +529,8 @@ function closeAllAppPanels(){
 }
 window.addEventListener('popstate',(e)=>{
   const panel=e.state?.alssaedyPanel||'';
-  if(panel==='patients'){setAQSA7Route('dental',false);appRoute={screen:'patients',patientId:''};document.getElementById('patientsModal')?.classList.add('open');showPatientListView();activateAppTabVisual('patients');return;}
-  if(panel==='patient-detail'){setAQSA7Route('dental',false);appRoute={screen:'patient-detail',patientId:window.currentPatientId||''};document.getElementById('patientsModal')?.classList.add('open');showPatientDetailView();activateAppTabVisual('patients');return;}
+  if(panel==='patients'){setAQSA7Route('dental',false);appRoute={screen:'patients',patientId:''};activeAppTab='patients';activateAppTabVisual('patients');setClinicWorkspaceView('patients');return;}
+  if(panel==='patient-detail'){setAQSA7Route('dental',false);appRoute={screen:'patient-detail',patientId:window.currentPatientId||''};activeAppTab='patients';activateAppTabVisual('patients');setClinicWorkspaceView('patients');showPatientDetailView();return;}
   if(panel==='history'){setAQSA7Route('dental',false);document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');return;}
   if(panel==='settings'){setAQSA7Route('dental',false);document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');return;}
   const hash=location.hash;
