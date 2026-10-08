@@ -1526,7 +1526,9 @@ jobs:
               if (!state.visible) throw new Error('Phase 8.10 surface not visibly rendered: '+JSON.stringify(state));
               if (state.viewportWidth !== viewport.width) throw new Error('Phase 8.10 viewport mismatch: '+JSON.stringify(state));
               if (state.documentOverflow > 2) throw new Error('Phase 8.10 horizontal page overflow: '+JSON.stringify(state));
-              if (state.dock.buttonCount !== 5 || state.dock.visibleButtons !== 5 || state.dock.left < -1 || state.dock.right > viewport.width+1) throw new Error('Phase 8.10 action dock is clipped or outside the viewport: '+JSON.stringify(state.dock));
+              const productSurface = !['platform-home','products-projects'].includes(surface.id);
+              if (productSurface && (state.dock.buttonCount !== 5 || state.dock.visibleButtons !== 5 || state.dock.left < -1 || state.dock.right > viewport.width+1)) throw new Error('Phase 8.10 action dock is clipped or outside the viewport: '+JSON.stringify(state.dock));
+              if (!productSurface && state.dock.visibleButtons !== 0) throw new Error('Phase 8.10 product action dock leaked into the platform-only surface: '+JSON.stringify(state.dock));
               const file = 'artifacts/phase-8-10/'+viewport.name+'/'+surface.id+'.png';
               await page.screenshot({path:file,fullPage:false,animations:'disabled'});
               report.push({...state,viewport:viewport.name,screenshot:file});
