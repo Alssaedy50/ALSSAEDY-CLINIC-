@@ -1,31 +1,32 @@
 # ALSSAEDY CLINIC — Receipt Voucher
 
-Professional dental clinic receipt system for daily use, electronic filling, printing, image export, PDF export, and sharing.
+Production dental clinic receipt system within the AQSA7 umbrella.
 
+## Current release
+
+- **Version:** v1.3.0
+- **Android:** versionCode 18, signed production APK
 - **Primary size:** A5 Portrait (148 × 210 mm)
 - **Other sizes:** A4 and 80mm thermal
-- **Orientation:** Portrait (A5/A4) and optimized 80mm thermal
+- **Orientation:** Portrait for A5/A4; optimized thermal layout for 80mm
 - **Typography:** RTL Arabic primary + LTR English identity
-- **Logo & background:** replaceable locally with no application-imposed file-size limit
-- **Local persistence:** receipt settings in localStorage; uploaded logo/background in IndexedDB
-- **Synchronization:** intentionally disabled for the current version; central synchronization will be added later
-- **Print:** browser print engine with exact A5 (148×210mm), A4 (210×297mm), and 80mm thermal profiles
-- **Export:** PNG, one-click PDF (jsPDF), and system file sharing when supported; PDF follows the selected document size
-- **Official logo:** assets/Saedy_Dental_Logo.svg
+- **Official logo:** `assets/Saedy_Dental_Logo.svg`
 
-## v1.1.0 highlights
+## Core architecture
 
-- **One-click PDF**: dialog-free, correctly sized A5/A4/80mm PDF via bundled jsPDF
-  (`vendor/jspdf/`), with native print as a fallback.
-- **Real print preview**: `👁️ معاينة` renders the exact sheet before printing.
-- **Robust dates**: `parseAnyDate()` accepts ISO, `DD/MM/YYYY`, `D-M-Y` and
-  Arabic-Indic digits; printed/exported dates now render correctly.
-- **History upgrades**: search/filter plus a live totals dashboard (count, totals,
-  paid, outstanding).
-- **PWA / offline**: installable with a service worker caching the full app shell.
-- **Night mode**, toast notifications, keyboard shortcuts (`Ctrl+S/P/E/K`), and
-  automatic draft recovery.
-- **Android**: fixed export (`vendor/**` now packaged), exact-alarm scheduling with
-  graceful fallback, safer notification icon, and a native PDF save bridge.
-- See `AGENTS.md` for architecture and `docs/DESIGN-CONTRACT.md` for protected rules.
+- **Local-first:** IndexedDB is the authoritative durable application store.
+- **Backup:** encrypted local JSON backup is supported; cloud recovery is optional.
+- **Cloud provider boundary:** Google Drive is implemented behind the generic Backup Provider Adapter contract. Live production Google OAuth upload/download/restore is not claimed without authorized production credentials.
+- **Synchronization:** the existing keyed sync path (`js/sync.js` + `api/clinic-sync.js`) is optional/transitional and is not the authoritative local data store.
+- **Print:** native browser/WebView print engine with A5, A4 and 80mm profiles.
+- **Image export:** bundled local `html2canvas`.
+- **PWA/offline:** service worker caches the production app shell.
+- **Android:** shared Web/PWA core with a native WebView bridge.
 
+## Release verification
+
+v1.3.0 passed the final main-branch release gate, including Runtime Smoke, Android APK, GitHub Pages source/deployment verification and receipt export.
+
+Known release limitations:
+- Live Google production OAuth upload/download/restore requires an authorized production OAuth client/account and is not covered by CI.
+- Live-device Android interaction requires a connected/emulated Android runtime and is not claimed by the automated release gate.

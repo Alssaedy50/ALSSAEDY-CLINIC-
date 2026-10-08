@@ -1736,7 +1736,7 @@ Next authorized task:
 - **Task 4.7 — Scheduling / Reliability**, according to the authoritative Phase 4 sequence.
 
 ### Phase 4 — Reliability & Security
-Status: **IN PROGRESS**
+Status: **COMPLETE**
 
 Task state:
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
@@ -1746,7 +1746,12 @@ Task state:
 - Task 4.5 — Restore & Migration Engine Contract/Implementation — **COMPLETE**.
 - Task 4.6 — Local Backup / Recovery UX — **COMPLETE**.
 - Task 4.7 — Scheduling / Reliability — **COMPLETE**.
-- Next authorized task: **Task 4.8 — Backup Provider Adapter implementation**.
+- Task 4.8 — Backup Provider Adapter implementation — **COMPLETE**.
+- Task 4.9 — Google Drive Adapter implementation — **COMPLETE** at the contract/runtime boundary; live production OAuth upload/download/restore remains explicitly unverified because no authorized production OAuth credentials are available.
+- Task 4.10 — Cloud Recovery implementation — **COMPLETE**.
+- Task 4.11 — Security / Tenant / Platform Hardening — **COMPLETE**.
+- Phase 4 gate: **CLOSED**.
+- Next authorized phase: **Phase 5 — Full Regression** (historical sequence; already completed).
 
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
@@ -1850,7 +1855,7 @@ Task 4.7 gate decision:
 
 ### Phase 4 / Task 4.8 — Backup Provider Adapter implementation
 
-Status: **IMPLEMENTED — PR RUNTIME VERIFICATION REQUESTED**
+Status: **COMPLETE**
 
 Purpose:
 - Provide the runtime registration/lifecycle boundary needed to host concrete backup-provider adapters without placing provider SDKs, credentials, persistence, or cloud behavior inside the generic Backup Engine or business modules.
@@ -1969,10 +1974,11 @@ Task 4.9 gate:
 - Secure auth boundary: **MET**.
 - Encrypted opaque artifact transport: **MET**.
 - Ownership isolation: **MET**.
-- Runtime verification: **PENDING**.
+- Runtime verification: **PASS** — Runtime Smoke run 37791893257 (run #205).
+- Android APK: **PASS** — run 37791893221 (run #429).
+- GitHub Pages Source Verification: **PASS** — run 37791893164 (run #59).
 
-Next authorized task after verification:
-- **Task 4.9 verification/retry only; do not advance to Task 4.10 until Runtime Smoke is green.**
+Task 4.9 gate is closed. Live production Google OAuth upload/download/restore remains outside CI because no authorized production OAuth client/account credentials are available.
 
 ### Phase 4 / Task 4.10 — Cloud Recovery implementation
 
@@ -2198,7 +2204,7 @@ Final main-branch acceptance verification:
 
 Phase 6 release gate is CLOSED. No Phase 7 implementation is authorized by this plan without explicit approval.
 
-Last updated: 2026-10-08 (Phase 5 Full Regression verified complete; next authorized phase Phase 6 Release)
+Last updated: 2026-10-08 (post-release consistency cleanup; Phase 0–6 complete, v1.3.0 accepted, no Phase 7 authorized)
 
 ## Current authoritative decisions
 

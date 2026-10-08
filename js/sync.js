@@ -1,6 +1,7 @@
-/* Cloud sync layer — keyed snapshot backup/restore with version conflict handling.
-   Works against the bundled scripts/serve.py API or any compatible endpoint.
-   The feature is fully optional: the app remains usable offline with no key. */
+/* Transitional optional cloud sync layer — keyed snapshot backup/restore with version conflict handling.
+   Uses the configured compatible endpoint (production: /api/clinic-sync); no local
+   Python server or second sync implementation is part of the production architecture.
+   The feature is optional: the app remains usable offline with no key. */
 
 const SYNC_KEY_STORAGE = 'alssaedy_sync_key';
 const SYNC_URL_STORAGE = 'alssaedy_sync_url';
