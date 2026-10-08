@@ -267,10 +267,7 @@ function renderHistory() {
         '</div>';
     }).join('');
 
-    container.innerHTML =
-        '<div class="history-ledger-head-row">' +
-          '<span>السند</span><span>المريض</span><span>الخدمة</span><span>الإجمالي</span><span>المدفوع</span><span>المتبقي</span><span>الحالة</span><span>إجراء</span>' +
-        '</div>' + rows;
+    container.innerHTML = rows;
 }
 
 function loadReceipt(id) {
