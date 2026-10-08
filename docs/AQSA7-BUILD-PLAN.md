@@ -706,14 +706,15 @@ Gate decision:
 - Static/isolation verification: MET.
 - Cross-platform CI verification: MET.
 - Task 3.4: COMPLETE.
-- Task 3.5 is now authorized to start.
+- Task 3.5: COMPLETE.
+- Task 3.6 is now the next authorized task; it has not been started.
 
 Next authorized task:
-- Task 3.5 — AI Capability Layer & Provider Adapter Contract — PENDING VERIFICATION (implementation complete; final main-branch export/Pages gate pending).
+- Task 3.5 — AI Capability Layer & Provider Adapter Contract — COMPLETE.
 
 ### Phase 3 / Task 3.5 — AI Capability Layer & Provider Adapter Contract
 
-Status: **PENDING VERIFICATION** (implementation complete; final main-branch cross-platform/export verification still required)
+Status: **COMPLETE**
 
 Purpose:
 - Establish one platform-level, provider-independent AI capability boundary reusable by Dental, medical, retail, supermarket, restaurant, café and future products.
@@ -751,14 +752,18 @@ Files changed:
 - .github/workflows/runtime-smoke.yml
 - docs/AQSA7-BUILD-PLAN.md
 
-Verification performed:
-- JavaScript syntax validation: PASS in Runtime Smoke PR run `37724762032`.
-- AI vendor isolation assertion: PASS in `37724762032`; no direct provider/SDK reference is permitted in product/shared capability/repository/storage/app modules.
-- Mobile browser smoke: PASS in `37724762032`.
-- Desktop browser integration smoke: PASS in `37724762032`.
-- Android debug + signed production build, signature and metadata verification: PASS in `37724762052`.
-- Initial verification run `37724650951` failed only because the new shell grep assertion had invalid quoting; root cause was test-harness syntax, not application code. The assertion was simplified, rerun, and passed in `37724762032`.
-- Remaining required verification before closure: main-branch receipt/export and Pages/Cloudflare checks on the final documented commit.
+Verification completed:
+- JavaScript syntax validation: PASS in final Runtime Smoke `37725061960`.
+- AI vendor isolation assertion: PASS in `37725061960`; no direct provider/SDK reference is permitted in product/shared capability/repository/storage/app modules.
+- AI policy contract checks: PASS in `37725061960` for disabled fail-closed behavior, external-transmission denial, sensitive-data denial, immutable manifest/capability contracts and unconfigured fail-soft provider state.
+- Provider adapter execution + streaming contract: PASS in `37725061960` using an in-browser local mock adapter; no external provider/SDK was invoked.
+- Mobile browser smoke: PASS in `37725061960`.
+- Desktop browser integration smoke: PASS in `37725061960`.
+- Android debug + signed production build, signature and metadata verification: PASS in `37725061931`.
+- Receipt/export verification: PASS in `37725061918`.
+- GitHub Pages build/deployment: PASS in `37725062094`.
+- Initial verification run `37724650951` failed only because the new shell grep assertion had invalid quoting; the root cause was test-harness syntax, not application code. The assertion was simplified and passed in the subsequent verification runs.
+- Final implementation verification source commit: `0733d0c8ed993d9c35f14a44f4582ddb9ba96c85`.
 
 Task 3.5 exit criteria:
 1. Platform-level AI boundary exists independently of any product/provider.
@@ -782,8 +787,9 @@ Gate decision:
 - Provider independence/no vendor leakage: MET.
 - Safety/local-first/no persistence or secret ownership: MET.
 - Static/mobile/desktop/Android verification: MET.
-- Final main-branch export/Pages verification: **PENDING**.
-- Task 3.5 remains **PENDING VERIFICATION** and Task 3.6 is not authorized.
+- Final main-branch export/Pages verification: MET.
+- Task 3.5: **COMPLETE**.
+- Task 3.6 is the next authorized task but was not started.
 
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
@@ -835,11 +841,13 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 3.5 implementation complete; final main-branch verification pending)
+Last updated: 2026-10-08 (Task 3.5 fully verified and closed; Task 3.6 authorized but not started)
 
 ## Current authoritative decisions
 
 - AQSA7 core remains 100% free/local-first by architecture.
+- AI is a Platform Core capability behind `aqsa7-ai-capability-layer`; AI is optional/disabled by default, provider-independent, non-persistent, secret-free and fail-soft.
+- Business/vertical modules must call AQSA7 AI capability contracts rather than vendor SDKs; provider adapters own only transport/auth/model invocation.
 - IndexedDB remains the single durable local application database.
 - Cloud backup is optional disaster recovery, not the primary database.
 - Cloud backup artifacts must be encrypted before upload.
