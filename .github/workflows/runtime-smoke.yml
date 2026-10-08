@@ -978,6 +978,40 @@ jobs:
           }
           await page.locator('#tabDashboard').click();
 
+          // Phase 8.4 — Visit / Services / Billing: line-item workflow and billing summary.
+          await page.locator('#tabReceipt').click();
+          await page.locator('#clinicVisitBillingPanel').waitFor({state:'visible'});
+          const visitSurface = await page.evaluate(() => ({
+            panelVisible: !document.querySelector('#clinicVisitBillingPanel')?.hidden,
+            linesRoot: Boolean(document.querySelector('#clinicServiceLines')),
+            summary: Boolean(document.querySelector('#clinicServicesSubtotal') && document.querySelector('#clinicServicesPaid') && document.querySelector('#clinicServicesBalance')),
+            helpers: ['addClinicServiceLine','updateClinicServiceLine','removeClinicServiceLine','resetClinicVisit','updateClinicVisitBilling'].every(n => typeof window[n] === 'function')
+          }));
+          if (!visitSurface.panelVisible || !visitSurface.linesRoot || !visitSurface.summary || !visitSurface.helpers) fail('Phase 8.4 visit/services/billing surface contract failed', visitSurface);
+          await page.evaluate(() => {
+            window.aqsa7CurrentVisitId = 'PH8-4-VISIT-001';
+            window.aqsa7VisitServiceItems = [];
+            document.getElementById('digReceiptNo').value = 'PH8-4-001';
+            document.getElementById('digDate').value = '2026-10-08';
+            document.getElementById('digClientName').value = 'Phase8.4 Visit Patient';
+            document.getElementById('digPatientPhone').value = '777000084';
+            document.getElementById('digPaid').value = '1200';
+            addClinicServiceLine('كشف ومعاينة', 500, 2);
+            addClinicServiceLine('أشعة تشخيصية', 1000, 1);
+            calculateLedger();
+          });
+          const visitBilling = await page.evaluate(() => ({
+            items: window.aqsa7VisitServiceItems,
+            total: document.getElementById('digTotal')?.value,
+            paid: document.getElementById('clinicServicesPaid')?.textContent,
+            balance: document.getElementById('clinicServicesBalance')?.textContent,
+            collected: collectReceiptData()
+          }));
+          if (visitBilling.items.length !== 2 || Number(visitBilling.total) !== 2000 || Number(visitBilling.collected?.serviceItems?.length) !== 2 || Number(visitBilling.collected?.total) !== 2000 || visitBilling.collected?.visitId !== 'PH8-4-VISIT-001') fail('Phase 8.4 line-item billing calculation failed', visitBilling);
+          await page.evaluate(async () => { await saveReceiptLocally(); });
+          const persistedVisit = await page.evaluate(async () => (await clinicRepositoryReceipts()).find(r => r.recNo === 'PH8-4-001'));
+          if (!persistedVisit || persistedVisit.visitId !== 'PH8-4-VISIT-001' || !Array.isArray(persistedVisit.serviceItems) || persistedVisit.serviceItems.length !== 2 || Number(persistedVisit.total) !== 2000) fail('Phase 8.4 visit/service persistence failed', persistedVisit);
+
           // 2) Receipt create/edit/save and durable repository verification.
           await page.evaluate(() => {
             document.getElementById('digReceiptNo').value = 'PH5-001';
