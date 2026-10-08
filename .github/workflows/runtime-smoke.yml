@@ -47,7 +47,7 @@ jobs:
           grep -q 'android:fullBackupContent="@xml/backup_rules"' android-app/app/src/main/AndroidManifest.xml
           grep -q 'setAllowFileAccessFromFileURLs(false)' android-app/app/src/main/java/com/alssaedy/clinic/MainActivity.java
           grep -q 'setAllowUniversalAccessFromFileURLs(false)' android-app/app/src/main/java/com/alssaedy/clinic/MainActivity.java
-          grep -q "const CACHE_NAME = 'alssaedy-clinic-v1.2.2-core'" sw.js
+          grep -q "const CACHE_NAME = 'alssaedy-clinic-v1.2.3-core'" sw.js
           grep -q './js/google-drive-provider.js?v=1.0.0' sw.js
           grep -q './js/cloud-recovery.js?v=1.0.0' sw.js
 
