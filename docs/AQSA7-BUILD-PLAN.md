@@ -482,7 +482,7 @@ Completed Phase 2 tasks:
 - 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
 Current next task:
-- **Phase 3 / Task 3.1 — Reusable Dental Clinic Product Boundary**
+- **Phase 3 / Task 3.3 — Generic Shared Capability / Module Boundaries**
 - Executor: **AI / Technical Lead**
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
@@ -584,26 +584,72 @@ Status: IN PROGRESS
 
 Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
 
-Current next task: **Task 3.2 — Product Manifest & Instance Configuration Contract**
-- Separate reusable Dental Clinic product from clinic configuration.
-- Clinic profile/configuration model.
-- Product defaults and Product Manifest foundation.
-- Tenant/clinic identity boundaries.
-- Remove/contain Dental-specific assumptions at platform boundaries.
-- Prepare the shared capability/module boundaries.
-- Establish the AI capability boundary without making AI a core dependency.
+### Phase 3 / Task 3.2 — Product Manifest & Instance Configuration Contract: COMPLETE
+
+Purpose:
+- Formalize one authoritative machine-readable Product Definition for reusable vertical behavior.
+- Separate product semantics from concrete organization/tenant configuration.
+- Make enabled modules, domain entities, navigation, defaults, templates, roles, integrations, AI policy and migration version explicit.
+- Make instance/tenant ownership explicit and derive durable storage scope from the instance contract.
+- Avoid introducing a second manifest or competing configuration state source.
+
+Implementation:
+- js/product.js is now the single authoritative Product Definition + Instance Configuration boundary.
+- Product manifest schema version is 2 and declares product identity/version, vertical, reusable modules, capabilities, domain entities/relationships, navigation, product defaults, document templates, roles, integrations, AI capability policy and migration contract.
+- Concrete ALSSAEDY CLINIC configuration is a separate instance definition with explicit tenantId, instanceId, productId, organization identity, branding/locale, enabled modules, feature flags, permissions, document defaults, integration configuration, AI policy and instance storage.
+- Added runtime contract APIs: aqsa7GetProductManifest(), aqsa7GetClinicConfig(), aqsa7GetInstanceStorageConfig(), aqsa7ValidateProductDefinition(), aqsa7StampRecord().
+- Product validation rejects product/instance version mismatch, unknown enabled modules, invalid receipt defaults and invalid storage scope.
+- index.html now loads the product contract before the repository so repository initialization can consume instance configuration safely.
+- js/repository.js derives the IndexedDB database name from the configured instance storage boundary while retaining the existing ALSSAEDY database name for this configured instance; IndexedDB remains the sole durable data store.
+- No duplicate product manifest, product state machine or second persistence path was introduced.
+- Runtime smoke now verifies the product/instance contract, shared module declarations, enabled-module validity, receipt-template defaults and instance database scope.
+
+Files changed:
+- js/product.js
+- js/repository.js
+- index.html
+- .github/workflows/runtime-smoke.yml
+
+Verification:
+- Runtime Smoke 37718680604 — PASS; mobile and desktop browser integration both passed on checkpoint b61477028c0f2476b21a13e732c81b7506e88857.
+- Receipt image/PDF export 37718680570 — SUCCESS on the same checkpoint.
+- GitHub Pages build/deployment 37718679562 — SUCCESS on the same checkpoint.
+- Android APK 37718680556 — SUCCESS on the same checkpoint.
+- During verification, a test-harness race in the existing patient-directory assertion was isolated; the smoke test was corrected to await the rendered ledger before asserting it. A transient repository script syntax defect introduced while changing script order was also caught by runtime verification and fixed at root before the final green checkpoint.
+- No receipt geometry/export regression was introduced.
+
+Exit decision:
+- Product Definition contract: MET.
+- Instance/Tenant configuration contract: MET.
+- Repository storage boundary consumes instance configuration: MET.
+- Browser mobile/desktop gate: PASS.
+- Receipt export: PASS.
+- Pages: PASS.
+- Android: PASS.
+- Task 3.2: COMPLETE.
+
+### Phase 3 — Productization & Multi-Product Platform Foundation
+Status: IN PROGRESS
+
+Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
+
+Current next task: **Task 3.3 — Generic Shared Capability / Module Boundaries**
+- Identify reusable business capabilities independently of Dental-specific screens.
+- Define authoritative module contracts and ownership.
+- Move shared semantics behind generic capability boundaries without cloning or over-generalizing dental rules.
+- Preserve the Product Manifest/Instance Configuration contract established in Task 3.2.
 
 Planned Phase 3 architectural gates/tasks:
-- 3.1 Reusable Dental Clinic Product Boundary — current next task.
-- 3.2 Product Manifest & Instance Configuration Contract.
-- 3.3 Generic Shared Capability / Module Boundaries.
+- 3.1 Reusable Dental Clinic Product Boundary — COMPLETE.
+- 3.2 Product Manifest & Instance Configuration Contract — COMPLETE.
+- 3.3 Generic Shared Capability / Module Boundaries — NEXT.
 - 3.4 Tenant / Instance Isolation Contract.
 - 3.5 AI Capability Layer & Provider Adapter Contract.
 - 3.6 Integration / Interoperability Adapter Contract.
 - 3.7 Second-Vertical Architecture Proof — model a non-dental product without cloning AQSA7; exact vertical selected by research.
 - 3.8 Cross-Product Architecture Verification Gate.
 
-These are planning-level tasks. Implementation order may be adaptively reordered when necessary, but material scope or architecture changes remain subject to User approval under the AI Research, Analysis & Adaptive Planning Authority above.
+ Implementation order may be adaptively reordered when necessary, but material scope or architecture changes remain subject to User approval under the AI Research, Analysis & Adaptive Planning Authority above.
 
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
@@ -655,7 +701,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Phase 3 Task 3.1 COMPLETE; Task 3.2 next)
+Last updated: 2026-10-08 (Phase 3 Task 3.2 COMPLETE; Task 3.3 next)
 
 ## Current authoritative decisions
 
@@ -669,4 +715,7 @@ Last updated: 2026-10-08 (Phase 3 Task 3.1 COMPLETE; Task 3.2 next)
 - Web/PWA/Desktop browser/Android share one application core.
 - Platform/provider adapters must remain thin and must not duplicate domain logic.
 - Phase 3 owns multi-product architecture, product manifests, shared module boundaries, tenant/instance isolation contracts and AI/integration capability boundaries.
+- Task 3.2 establishes js/product.js as the single authoritative Product Definition + configured Instance/Tenant contract; no second manifest/configuration source is permitted.
+- Product identity/organization defaults are separated from reusable product semantics; repository IndexedDB scope is selected from the configured instance contract.
+- Runtime/browser, receipt export, Pages and Android gates are green on final Task 3.2 checkpoint b61477028c0f2476b21a13e732c81b7506e88857.
 - Phase 4 owns backup/security implementation; Phase 5 owns cross-platform and disaster-recovery verification.
