@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: PHASE 8 ACTIVE — Phase 8.0–8.5 COMPLETE / Phase 8.6 AUTHORIZED NEXT
-Last updated: 2026-10-09 (Phase 8.5 Receipt System Reconstruction completed and verified)
+Last updated: 2026-10-09 (Phase 8.6 History & Financial Ledger implementation in progress; CI pending)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3031,7 +3031,8 @@ Priority register:
 - **8.3 Patient Workspace — COMPLETE**
 - **8.4 Visit / Services / Billing — COMPLETE**
 - **8.5 Receipt System Reconstruction — COMPLETE**
-- **8.6 History & Financial Ledger — AUTHORIZED NEXT**
+- **8.6 History & Financial Ledger — IN PROGRESS**
+- 8.7 Mobile UX — PLANNED
 - 8.7 Mobile UX — PLANNED
 - 8.8 Print / PDF / Physical Voucher QA — PLANNED
 - 8.9 Full Regression — PLANNED
@@ -3073,6 +3074,32 @@ Implementation and gate:
 
 **Phase 8.2: COMPLETE.**
 
+### Phase 8.6 — History & Financial Ledger
+Status: IN PROGRESS — CI GATE PENDING
+
+Authoritative phase document:
+- `docs/AQSA7-PHASE-8-6-HISTORY-FINANCIAL-LEDGER.md`
+
+Objective:
+- Convert the existing receipt history into a patient/transaction history and financial ledger projection without creating a second persistence model.
+
+Implementation:
+- Added patient-level financial ledger summaries from the existing receipt repository.
+- Added active financial summary metrics: active receipts, patients, billed, paid, outstanding and voided count.
+- Added date-range filters while preserving existing search/status filters.
+- Removed the user-facing destructive clear-all-receipt-history action.
+- Preserved issued/voided lifecycle semantics and existing repository/export boundaries.
+- No new IndexedDB store, router, repository or financial persistence path introduced.
+
+Gate decision:
+- Functional Gate: PENDING CI.
+- Architecture Gate: PASS by implementation review.
+- Product/UX Gate: PENDING browser/runtime evidence.
+
+### Next authorized task
+**Phase 8.7 — Mobile UX.**
+
+
 ### Phase 8.5 — Receipt System Reconstruction
 Status: COMPLETE — CI AND REGRESSION VERIFIED
 
@@ -3095,7 +3122,7 @@ Status: COMPLETE — CI AND REGRESSION VERIFIED
 
 **Phase 8.0: COMPLETE.**
 
-### Next authorized task
+### Current phase
 **Phase 8.6 — History & Financial Ledger.**
 
 Objective: reconstruct patient/transaction history and financial ledger semantics after the Phase 8.5 receipt lifecycle gate closes.
