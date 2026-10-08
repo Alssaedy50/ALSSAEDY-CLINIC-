@@ -95,10 +95,12 @@ window.addEventListener('DOMContentLoaded', () => {
     maybeRestoreDraft();
     initShortcuts();
     initPWA();
+    if (typeof updateReceiptIssuancePanel === 'function') updateReceiptIssuancePanel();
 
     const receiptArea = document.getElementById('receiptPrintArea');
     if (receiptArea) {
         receiptArea.addEventListener('input', saveDraft, { passive: true });
+        receiptArea.addEventListener('input', () => { if (typeof updateReceiptIssuancePanel === 'function') updateReceiptIssuancePanel(); }, { passive: true });
         receiptArea.addEventListener('click', (e) => {
             if (e.target.closest('.custom-check-item')) saveDraft();
         });
