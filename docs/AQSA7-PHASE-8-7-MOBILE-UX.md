@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.7 Mobile UX
 
-Status: IN PROGRESS — MOBILE RECONSTRUCTION IMPLEMENTED, CI GATE PENDING
+Status: COMPLETE — CI AND MOBILE REGRESSION VERIFIED
 Branch: `phase-8-7-mobile-ux`
 Base: `639c188d48e4e08dd98feb0652b9c82b40257941`
 
@@ -75,6 +75,23 @@ The implementation reuses existing DOM surfaces and existing responsive architec
 6. PR merged to `main`.
 7. Build Plan updated to mark 8.7 COMPLETE and authorize 8.8 only after all gates pass.
 
-## Current gate
+## Final gate evidence
 
-**IN PROGRESS — implementation committed; required CI verification and merge are still pending.**
+- PR #64 merged to `main`.
+- PR head: `47f8cbd45e8d5c494054227fad78a6a9d95ac67a`.
+- Merge commit: `ddceebf57509bb2d0b217c05c8359b157217cd7a`.
+- Runtime/Browser Smoke #358: PASS.
+- GitHub Pages Source Verification #212: PASS.
+- Receipt Export #524: PASS.
+- Android/Build #595: PASS.
+- Runtime mobile acceptance passed at 390px after correcting the regression probes and touch-target rule.
+- Vercel remained a known external free-tier deployment-rate-limit failure; it is not an AQSA7 GitHub source/CI gate.
+
+## Gate decision
+
+- Functional Gate: PASS.
+- Architecture Gate: PASS.
+- Product/UX Gate: PASS for the Phase 8.7 mobile runtime contract.
+- Rendered cross-device and physical print acceptance remain in their approved later phases.
+
+**Phase 8.7: COMPLETE. Next authorized task: Phase 8.8 — Print / PDF / Physical Voucher QA.**
