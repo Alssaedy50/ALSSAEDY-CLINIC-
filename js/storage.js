@@ -681,59 +681,20 @@ async function buildFullBackup(){
     }
   };
 }
-async function exportFullBackup(){
-  try{
-    const payload=await buildFullBackup();
-    payload.artifactType='AQSA7_BACKUP_ARTIFACT';
-    payload.artifactVersion=1;
-    const password=aqsa7RequestBackupPassword(true);
-    const encrypted=await aqsa7EncryptBackupArtifact(payload,password);
-    const product=typeof aqsa7GetProductManifest==='function'?aqsa7GetProductManifest():{productName:'AQSA7_Product'};
-    const name=(product.productName||'AQSA7_Product').replace(/[^A-Za-z0-9_-]+/g,'_')+'_ENCRYPTED_BACKUP_'+getLocalDateISO().replace(/-/g,'')+'.aqsa7.json';
-    downloadTextFile(name,JSON.stringify(encrypted,null,2),'application/json');
-    alert('تم إنشاء النسخة الاحتياطية المشفرة. احتفظ بكلمة المرور؛ لا يتم تخزينها داخل AQSA7.');
-  }catch(e){alert('تعذر إنشاء النسخة الاحتياطية: '+e.message);}
+
+window.aqsa7BuildFullBackup=buildFullBackup;async function exportFullBackup(){
+  if(typeof window.aqsa7BackupEngine?.exportFullBackup!=='function'){
+    throw new Error('Backup Engine غير متاح.');
+  }
+  return window.aqsa7BackupEngine.exportFullBackup();
 }
 async function importFullBackup(event){
-  const file=event.target.files?.[0];if(!file)return;
-  try{
-    const parsed=JSON.parse(await file.text());
-    if(parsed?.artifactType==='AQSA7_BACKUP_ARTIFACT' && parsed?.crypto){
-      const password=aqsa7RequestBackupPassword(false);
-      const payload=await aqsa7DecryptBackupArtifact(parsed,password);
-      if(payload.schema!=='AQSA7_PRODUCT_BACKUP' || Number(payload.schemaVersion)!==5) throw new Error('إصدار النسخة التطبيقية غير مدعوم.');
-      const scope=typeof aqsa7ValidateBackupScope==='function' ? aqsa7ValidateBackupScope(payload) : {scoped:true};
-      if(scope.scoped===false) throw new Error('النسخة المشفرة غير مرتبطة بنطاق Instance صالح.');
-      const own=record=>typeof aqsa7OwnRecord==='function'?aqsa7OwnRecord(record,{allowUnscoped:true}):record;
-      const incomingPatients=(payload.patients||[]).map(own);
-      const incomingReceipts=(payload.receipts||[]).map(own);
-      const merge=confirm('هل تريد دمج البيانات مع البيانات الحالية؟ اضغط «إلغاء» للاستبدال الكامل.');
-      if(!merge && !confirm('سيتم استبدال السجل الحالي. هل أنت متأكد؟'))return;
-      if(!merge){await clinicDBClear('receipts');await clinicDBClear('patients');}
-      for(const p of incomingPatients)await clinicRepositoryPutPatient(p);
-      const existingReceipts=clinicRepositoryReceipts();
-      for(const item of incomingReceipts){
-        const exists=existingReceipts.some(x=>receiptFingerprint(x)===receiptFingerprint(item));
-        if(!exists){await clinicRepositoryPutReceipt(item);existingReceipts.push(item);}
-      }
-      const incomingClinic=payload.settings?.clinic || payload.settings || {};
-      await clinicRepositoryPutSettings({
-        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'customLogo') ? {customLogo:incomingClinic.customLogo||''} : {}),
-        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'currency') ? {currency:incomingClinic.currency||'YER'} : {}),
-        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'size') ? {receiptSize:incomingClinic.size||'a5'} : {}),
-        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'texts') ? {receiptTexts:incomingClinic.texts||''} : {})
-      });
-      if(payload.settings?.ui?.theme) localStorage.setItem('alssaedy_theme',payload.settings.ui.theme);
-      if(payload.settings?.ui?.watermark) localStorage.setItem('alssaedy_watermark',payload.settings.ui.watermark);
-      if(typeof applyLogo==='function')applyLogo((clinicRepositoryGetSettingSync('customLogo'))||OFFICIAL_LOGO_URL);
-      await clinicRepositoryHydrate();
-      updateHistoryCount();renderHistory();
-      alert('تمت استعادة النسخة المشفرة بنجاح مع التحقق من السلامة والملكية ومنع التكرارات.');
-      return;
-    }
-    throw new Error('النسخة غير مشفرة أو غير متوافقة. استخدم نسخة AQSA7 المشفرة الجديدة.');
-  }catch(e){alert('تعذر استيراد النسخة: '+e.message);}
-  event.target.value='';
+  if(typeof window.aqsa7BackupEngine?.importFullBackup!=='function'){
+    alert('تعذر استعادة النسخة: Backup Engine غير متاح.');
+    if(event?.target)event.target.value='';
+    return;
+  }
+  return window.aqsa7BackupEngine.importFullBackup(event);
 }
 
 async function importDataFile(event){
