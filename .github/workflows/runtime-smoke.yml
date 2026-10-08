@@ -875,7 +875,7 @@ jobs:
 
           // 5) Backup engine: encrypted round-trip + ownership + plaintext rejection + restore preparation.
           const backup = await page.evaluate(async () => {
-            const identity = window.aqsa7GetCurrentInstanceIdentity();
+            const identity = window.aqsa7GetInstanceIdentity();
             const artifact = await window.aqsa7BackupEngine.buildArtifact();
             const encrypted = await window.aqsa7BackupEngine.encryptArtifact(artifact, 'phase5-pass-123');
             const prepared = await window.aqsa7BackupEngine.decryptAndValidate(encrypted, 'phase5-pass-123');
@@ -900,7 +900,7 @@ jobs:
           // 6) Provider + Google Drive + cloud recovery with fake transport; no real credentials.
           const provider = await page.evaluate(async () => {
             const originalFetch = window.fetch;
-            const identity = window.aqsa7GetCurrentInstanceIdentity();
+            const identity = window.aqsa7GetInstanceIdentity();
             let stored = null;
             window.fetch = async (url, init = {}) => {
               const u = String(url);
@@ -927,7 +927,7 @@ jobs:
 
           // 7) Cloud recovery contract delegates to provider boundary and remains non-persistent.
           const cloud = await page.evaluate(async () => {
-            const identity = window.aqsa7GetCurrentInstanceIdentity();
+            const identity = window.aqsa7GetInstanceIdentity();
             let getCalls = 0;
             const fake = { getDescriptor:()=>({id:'phase5-provider',name:'Phase5 Provider',kind:'test',version:1,providerIndependent:true}), health:async()=>({status:'success'}), list:async()=>({status:'success',backups:[]}), put:async()=>({status:'success'}), get:async()=>{getCalls++; return {status:'success',artifact:{artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}}}, delete:async()=>({status:'success'}) };
             window.aqsa7BackupProviderRuntime.register(fake);
