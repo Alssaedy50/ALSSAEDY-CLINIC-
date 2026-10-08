@@ -58,9 +58,21 @@ function setMode(mode) {
     updateActionAvailability();
 }
 
+function syncPrintPageSize(size) {
+    const profile = SIZE_PROFILES[size] || SIZE_PROFILES.a5;
+    let style = document.getElementById('dynamicPrintPageSize');
+    if (!style) {
+        style = document.createElement('style');
+        style.id = 'dynamicPrintPageSize';
+        document.head.appendChild(style);
+    }
+    style.textContent = '@page{size:'+profile.printSize+';margin:0!important}';
+}
+
 function setSize(size) {
     if (!SIZE_PROFILES[size]) return;
     document.documentElement.setAttribute('data-size', size);
+    syncPrintPageSize(size);
     document.getElementById('btnSizeA5').classList.toggle('active', size === 'a5');
     document.getElementById('btnSizeA4').classList.toggle('active', size === 'a4');
     document.getElementById('btnSizeThermal').classList.toggle('active', size === 'thermal');
