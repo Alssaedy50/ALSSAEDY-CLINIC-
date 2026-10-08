@@ -847,7 +847,7 @@ jobs:
           // 1) Platform route is the default and product entry is addressable.
           if (!(await page.locator('#platformHome').isVisible())) fail('Platform home is not the default route');
           await page.locator('#tabPlatformProducts').click();
-          if (!page.url().includes('#platform-products')) fail('Products route was not reflected in browser history');
+          if (!page.url().includes('#products')) fail('Products route was not reflected in browser history');
           await page.locator('#dentalProductCard .platform-primary-btn').click();
           if (!page.url().includes('#product-dental-clinic')) fail('Dental product route was not reflected in browser history');
           if (!(await page.locator('#productWorkspace').isVisible())) fail('Dental workspace did not open from addressable route');
