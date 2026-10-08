@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: PHASE 8 ACTIVE — Phase 8.0–8.5 COMPLETE / Phase 8.6 AUTHORIZED NEXT
-Last updated: 2026-10-09 (Phase 8.6 History & Financial Ledger implementation in progress; CI pending)
+Last updated: 2026-10-09 (Phase 8.6 History & Financial Ledger completed and verified)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3031,8 +3031,8 @@ Priority register:
 - **8.3 Patient Workspace — COMPLETE**
 - **8.4 Visit / Services / Billing — COMPLETE**
 - **8.5 Receipt System Reconstruction — COMPLETE**
-- **8.6 History & Financial Ledger — IN PROGRESS**
-- 8.7 Mobile UX — PLANNED
+- **8.6 History & Financial Ledger — COMPLETE**
+- **8.7 Mobile UX — AUTHORIZED NEXT**
 - 8.7 Mobile UX — PLANNED
 - 8.8 Print / PDF / Physical Voucher QA — PLANNED
 - 8.9 Full Regression — PLANNED
@@ -3075,26 +3075,36 @@ Implementation and gate:
 **Phase 8.2: COMPLETE.**
 
 ### Phase 8.6 — History & Financial Ledger
-Status: IN PROGRESS — CI GATE PENDING
+Status: COMPLETE — CI AND REGRESSION VERIFIED
 
 Authoritative phase document:
 - `docs/AQSA7-PHASE-8-6-HISTORY-FINANCIAL-LEDGER.md`
 
-Objective:
-- Convert the existing receipt history into a patient/transaction history and financial ledger projection without creating a second persistence model.
-
 Implementation:
-- Added patient-level financial ledger summaries from the existing receipt repository.
-- Added active financial summary metrics: active receipts, patients, billed, paid, outstanding and voided count.
-- Added date-range filters while preserving existing search/status filters.
-- Removed the user-facing destructive clear-all-receipt-history action.
-- Preserved issued/voided lifecycle semantics and existing repository/export boundaries.
-- No new IndexedDB store, router, repository or financial persistence path introduced.
+- Converted the existing transaction history into a patient/transaction history plus financial ledger projection.
+- Added active financial metrics: active receipts, unique patients, total billed, total paid, outstanding balance and voided receipt count.
+- Added date-range filtering alongside existing search and lifecycle filters.
+- Added patient-level financial summaries using existing receipt records, with patientId/phone/name fallback for legacy data.
+- Kept voided receipts in historical transaction views while excluding them from active financial totals.
+- Removed the user-facing destructive clear-all receipt-history action.
+- Preserved the existing repository, IndexedDB, receipt lifecycle, export, route and billing-capability boundaries.
+- No new persistence store or parallel financial data source introduced.
+
+Verification evidence:
+- PR #63 merged to `main`.
+- Verified Phase 8.6 head: `37d10de1676cd3e99710af0aa9a95c4687ea5896`.
+- Merge commit: `b90ebc4333e21d51e260ad92d1262ca149336ed2`.
+- Browser Smoke: PASS.
+- Pages Source Verification: PASS.
+- Receipt Export: PASS.
+- Android/Build: PASS.
+- Workers Builds: external deployment-rate-limit failure; non-blocking for the required AQSA7 GitHub gates.
 
 Gate decision:
-- Functional Gate: PENDING CI.
-- Architecture Gate: PASS by implementation review.
-- Product/UX Gate: PENDING browser/runtime evidence.
+- Functional Gate: PASS.
+- Architecture Gate: PASS.
+- Product/UX Gate: PASS at functional/browser contract level; mobile reconstruction remains Phase 8.7 and rendered cross-device acceptance remains Phase 8.10.
+- **Phase 8.6: COMPLETE.**
 
 ### Next authorized task
 **Phase 8.7 — Mobile UX.**
