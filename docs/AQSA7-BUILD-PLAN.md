@@ -1198,7 +1198,9 @@ Deferred Phase 4 work:
 Next authorized task:
 - Phase 4 — Reliability & Security.
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
-- Next authorized task: **Task 4.2 — Encryption & Integrity Layer**.
+- Task 4.2 — Encryption & Integrity Layer — **COMPLETE**.
+- Task 4.3 — Generic Backup Engine — **PENDING VERIFICATION**.
+- Current next action: verify Task 4.3 Runtime Smoke on commit `d80c26c7fd8da416210dc2f1cfffb743805cd45d`.
 
 ### Phase 4 / Task 4.2 — Encryption & Integrity Layer
 
@@ -1429,6 +1431,81 @@ Next authorized task:
 - Task 4.2 — Encryption & Integrity Layer.
 
 
+### Phase 4 / Task 4.3 — Generic Backup Engine
+
+Status: **PENDING VERIFICATION**
+
+Purpose:
+- Establish the single provider-neutral orchestration boundary for backup creation, encrypted artifact export, validation and restore.
+- Keep Repository/IndexedDB as the only durable application authority.
+- Make the Task 4.1 artifact contract and Task 4.2 encryption/integrity layer consumable without moving persistence, cloud storage, scheduling or provider logic into the engine.
+
+Implementation decision:
+- Introduced one engine module: `js/backup.js`.
+- The engine is orchestration-only. It does not own IndexedDB, a second repository, cloud storage, provider SDKs, scheduling, sync, authentication or secrets.
+- The engine consumes the existing artifact builder and Web Crypto layer through explicit runtime functions exposed by the existing storage boundary.
+- `js/storage.js` now delegates the user-facing full-backup export/import entry points to the engine instead of owning a competing backup workflow.
+- `index.html` loads the engine immediately after `js/storage.js`.
+- The engine contract is versioned as `aqsa7-backup-engine`, version 1, and explicitly declares provider independence and Repository/IndexedDB persistence ownership.
+- Restore performs artifact/schema/ownership validation before any repository write and preserves the existing merge/replace behavior.
+- Plaintext backup input remains rejected; encrypted artifact decryption remains owned by the Task 4.2 cryptographic layer.
+
+Authoritative engine responsibilities:
+1. Build and validate the current Backup Artifact from the authoritative Repository/IndexedDB-derived builder.
+2. Validate artifact identity, artifactVersion, schemaVersion, timestamp, ownership and payload shape.
+3. Validate current Product/Tenant/Instance backup scope before export or restore.
+4. Delegate encryption/decryption to the existing Task 4.2 Web Crypto functions.
+5. Orchestrate encrypted local export without introducing a provider.
+6. Parse encrypted import input and fail closed on plaintext/invalid input.
+7. Validate decrypted artifacts before restore.
+8. Apply accepted data through the existing repository functions only.
+9. Preserve merge/replace semantics and duplicate receipt protection.
+10. Refresh the existing repository/UI projection after successful restore.
+
+Files changed:
+- `js/backup.js` — new Generic Backup Engine.
+- `js/storage.js` — backup export/import entry points delegate to the engine; existing artifact builder remains the repository-derived data boundary.
+- `index.html` — loads the engine after storage.
+- `.github/workflows/runtime-smoke.yml` — verifies engine contract, artifact validation, ownership preservation, plaintext rejection and encrypted export orchestration.
+
+Explicitly out of scope:
+- Google Drive/OAuth/provider implementation.
+- Backup Provider Adapter implementation.
+- Scheduling/background backup jobs.
+- Sync replacement or rewrite of `js/sync.js` / `api/clinic-sync.js`.
+- Migration runtime.
+- Authentication/authorization.
+- New database/repository/state machine/persistence path.
+- Phase 5 full disaster-recovery/cross-platform regression.
+
+Verification evidence:
+- Source-level inspection completed against `js/storage.js`, `js/repository.js`, `js/product.js`, `js/backup.js`, `index.html` and the Runtime Smoke workflow.
+- Runtime verification is required before closing this task.
+- Current verification checkpoint commit: `d80c26c7fd8da416210dc2f1cfffb743805cd45d`.
+- Required Runtime Smoke evidence: engine contract, artifact/schema/ownership validation, plaintext rejection, encrypted export orchestration, existing encryption/integrity checks, mobile browser smoke and desktop browser smoke.
+- Until the corrected Runtime Smoke workflow is green on the implementation checkpoint, Task 4.3 must remain **PENDING VERIFICATION**.
+
+No Future Surprise gate:
+- Future provider storage can consume the encrypted artifact without changing the engine's domain ownership.
+- A second product/tenant/instance continues to use the same engine because ownership remains data-driven and validated through the existing Product boundary.
+- Web/PWA/Desktop/Android continue to share the same engine because no platform-specific persistence or provider SDK was introduced.
+- Schema migration remains a future explicit responsibility; unknown future artifact versions fail closed.
+- Scheduling, provider adapters and cloud recovery remain downstream tasks and are not accidentally coupled to the engine.
+
+Task 4.3 gate decision:
+- Single generic backup orchestration boundary: **MET**.
+- Repository/IndexedDB remains the sole durable authority: **MET**.
+- Provider/cloud neutrality: **MET**.
+- Artifact/schema/ownership validation before restore: **MET**.
+- Encrypted export/import delegation: **MET**.
+- Runtime verification: **PENDING**.
+- Task 4.3: **PENDING VERIFICATION**.
+
+Next action:
+- Run and verify the authoritative Runtime Smoke workflow on commit `d80c26c7fd8da416210dc2f1cfffb743805cd45d`.
+- If green, close Task 4.3 and authorize Task 4.4 according to the ledger.
+- If red, fix only the Task 4.3 failure and repeat verification.
+
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
 
@@ -1485,7 +1562,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.1 complete; Phase 4 in progress; next authorized task Task 4.2)
+Last updated: 2026-10-08 (Task 4.3 implementation complete; verification pending; Phase 4 in progress)
 
 ## Current authoritative decisions
 
