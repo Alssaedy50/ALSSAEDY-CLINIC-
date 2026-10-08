@@ -2070,7 +2070,7 @@ Verification:
 - PR #50: https://github.com/Alssaedy50/AQSA7/pull/50
 - Runtime Smoke: PASS — run 37794161248 (#234); security-boundary step, JavaScript syntax validation, mobile browser smoke and desktop browser smoke all passed.
 - Android APK: PASS — run 37794161261 (#458); debug APK build, signed production APK build, signature verification and metadata verification all passed.
-- Receipt export: NON-GATING / PENDING — run 37794395940 (#409) remained in Chromium installation and did not complete; Task 4.11 does not depend on receipt rendering/export behavior, and the dedicated Runtime Smoke + Android + Pages gates passed.
+- Receipt export: PASS — run 37795008856 (#410).
 - GitHub Pages Source Verification: PASS — run 37794161454 (#88).
 - Provider smoke specifically verified foreign-tenant Google Drive get and delete requests are rejected as FORBIDDEN.
 - Platform smoke specifically verified Android backup flags, extraction rules, WebView file-origin restrictions and service-worker Phase 4 cache coverage.
