@@ -503,7 +503,9 @@ function closePatientsModal(skipHistory=false){
 async function buildFullBackup(){
   const receipts=await clinicDBAll('receipts'),patients=await clinicDBAll('patients');
   const clinicSettings=clinicRepositoryGetSettingsSync();
-  return {schema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:3,exportedAt:new Date().toISOString(),receipts,patients,settings:{
+  const product=typeof aqsa7GetProductManifest==='function'?aqsa7GetProductManifest():{productId:'dental-clinic'};
+  const clinic=typeof aqsa7GetClinicConfig==='function'?aqsa7GetClinicConfig():{tenantId:'alssaedy-clinic',instanceId:'alssaedy-clinic-sana-a'};
+  return {schema:'AQSA7_PRODUCT_BACKUP',legacySchema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:4,exportedAt:new Date().toISOString(),productId:product.productId,tenantId:clinic.tenantId,instanceId:clinic.instanceId,receipts,patients,settings:{
     clinic:{
       currency:clinicSettings.currency||'YER',
       size:clinicSettings.receiptSize||'a5',
@@ -518,7 +520,7 @@ async function buildFullBackup(){
 }
 async function exportFullBackup(){
   try{
-    const payload=await buildFullBackup(),name='ALSSAEDY_Clinic_FULL_BACKUP_'+getLocalDateISO().replace(/-/g,'')+'.json';
+    const payload=await buildFullBackup(),product=typeof aqsa7GetProductManifest==='function'?aqsa7GetProductManifest():{productName:'AQSA7_Product'},name=(product.productName||'AQSA7_Product').replace(/[^A-Za-z0-9_-]+/g,'_')+'_FULL_BACKUP_'+getLocalDateISO().replace(/-/g,'')+'.json';
     downloadTextFile(name,JSON.stringify(payload,null,2),'application/json');
     alert('تم إنشاء النسخة الاحتياطية الكاملة: المرضى + السندات + الإعدادات.');
   }catch(e){alert('تعذر إنشاء النسخة الاحتياطية: '+e.message);}
@@ -527,7 +529,7 @@ async function importFullBackup(event){
   const file=event.target.files?.[0];if(!file)return;
   try{
     const payload=JSON.parse(await file.text());
-    if(payload.schema!=='ALSSAEDY_CLINIC_BACKUP')throw new Error('صيغة النسخة غير معتمدة.');
+    if(!['AQSA7_PRODUCT_BACKUP','ALSSAEDY_CLINIC_BACKUP'].includes(payload.schema))throw new Error('صيغة النسخة غير معتمدة.');
     const merge=confirm('هل تريد دمج البيانات مع البيانات الحالية؟ اضغط «إلغاء» للاستبدال الكامل.');
     if(!merge&& !confirm('سيتم استبدال السجل الحالي. هل أنت متأكد؟'))return;
     if(!merge){await clinicDBClear('receipts');await clinicDBClear('patients');}
