@@ -1267,6 +1267,11 @@ Verification evidence:
 - The restore implementation does not write to IndexedDB until decryption, authentication, artifact/schema and ownership validation have succeeded.
 - No second database, repository, persistence authority, provider or cloud dependency was introduced.
 - Existing plaintext full-backup JSON is explicitly rejected by the secure restore path.
+- Runtime Smoke run 37782155201 on application source commit 314905b32af131c4df3b285dfa5cfd39e1f0ad58: **SUCCESS**; JavaScript syntax validation, mobile browser smoke and desktop browser integration smoke all passed, including the encrypted-backup crypto checks.
+- Android build run 37782155251 on the same application source: **SUCCESS**.
+- Receipt export verification run 37782155208 on the same application source: **SUCCESS**.
+- GitHub Pages source verification run 37782155233 and Pages deployment run 37782154554 on the same application source: **SUCCESS**.
+- A follow-up test-harness-only commit 5d3f68295ac7e4739ea6f15aaee58989043c4c26 removed the hardcoded test password by generating a random per-run test password. Its Runtime Smoke run 37782346361 remained in progress at handoff; the application implementation was unchanged from the already successful Runtime Smoke source checkpoint.
 
 Known limitations:
 - There is intentionally no password-recovery mechanism. A lost backup password means the encrypted artifact cannot be restored.
