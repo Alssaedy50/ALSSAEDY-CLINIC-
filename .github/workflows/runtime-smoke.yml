@@ -178,6 +178,13 @@ jobs:
 
           await page.locator('#tabSettings').click();
           if (!(await page.locator('#settingsPanel').evaluate(e => e.classList.contains('open')))) throw new Error('Settings panel did not open');
+          const settingsSurface = await page.evaluate(() => ({
+            overview: !!document.querySelector('.settings-overview'),
+            chips: document.querySelectorAll('.settings-overview-chips span').length,
+            cards: document.querySelectorAll('#settingsPanel .setting-card').length,
+            touch: [...document.querySelectorAll('#settingsPanel button, #settingsPanel select')].filter(e => Math.round(e.getBoundingClientRect().height) < 44).length
+          }));
+          if (!settingsSurface.overview || settingsSurface.chips !== 6 || settingsSurface.cards < 6 || settingsSurface.touch) throw new Error('Settings dashboard contract failed: '+JSON.stringify(settingsSurface));
           await page.locator('#settingsPanel .btn-close').click();
           if (await page.locator('#settingsPanel').evaluate(e => e.classList.contains('open'))) throw new Error('Settings panel did not close');
 
