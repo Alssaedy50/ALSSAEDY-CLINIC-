@@ -1,6 +1,6 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0–8.7 COMPLETE / Phase 8.8 IN PROGRESS
+Status: PHASE 8 ACTIVE — Phase 8.0–8.8 COMPLETE / Phase 8.9 AUTHORIZED NEXT
 Last updated: 2026-10-09 (Phase 8.6 History & Financial Ledger completed and verified)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
@@ -3033,7 +3033,7 @@ Priority register:
 - **8.5 Receipt System Reconstruction — COMPLETE**
 - **8.6 History & Financial Ledger — COMPLETE**
 - **8.7 Mobile UX — COMPLETE**
-- **8.8 Print / PDF / Physical Voucher QA — IN PROGRESS**
+- **8.8 Print / PDF / Physical Voucher QA — COMPLETE**
 - 8.9 Full Regression — PLANNED
 - 8.10 Rendered UX Acceptance — PLANNED
 
@@ -3124,33 +3124,40 @@ Status: COMPLETE — CI AND REGRESSION VERIFIED
 **Phase 8.0: COMPLETE.**
 
 ### Phase 8.8 — Print / PDF / Physical Voucher QA
-Status: IN PROGRESS — QA IMPLEMENTED, CI GATE PENDING
+Status: COMPLETE — PRINT/PDF/PHYSICAL VOUCHER QA VERIFIED
 
 Authoritative phase document:
 - `docs/AQSA7-PHASE-8-8-PRINT-PDF-PHYSICAL-VOUCHER-QA.md`
 
-Implementation checkpoint:
+Implementation and verification:
 - Branch: `phase-8-8-print-pdf-physical-voucher-qa`.
-- Base: `1886b02eda12a412525f5270f80ae763ca2e0137`.
-- Runtime Smoke extended with application-side print/PDF/blank-voucher acceptance.
-- A5 physical geometry, print CSS, blank-template data isolation and state restoration are regression-checked.
-- Existing A5/A4/80mm, Arabic/RTL, print/preview/share/export and Android boundaries remain covered.
+- PR #65 merged to `main`.
+- PR head: `984dd9db14754bdbc2a658b85dec41f25f9bc4b4`.
+- Merge commit: `9309582937a5cf0bb45a58625784c1b85cc3a32c`.
+- Runtime Smoke #365: PASS, including the Phase 8.8 A5/blank-voucher contract.
+- Pages Source Verification #219: PASS.
+- Android/Build #602: PASS.
+- Receipt Export baseline #524 remains valid because Phase 8.8 did not modify export implementation or receipt/print CSS.
+- Vercel free-tier deployment-rate-limit and Cloudflare preview deployment failures are external integration failures, not required AQSA7 GitHub gates.
+- Manual physical print-shop proof remains explicitly required for paper/binding/ink/scaling acceptance.
 
-Gate status:
-- Functional Gate: PENDING CI.
-- Architecture Gate: PASS by source-scope inspection.
-- Physical printer/ink/paper inspection: manual only; not claimable from CI.
-- Required next evidence: Runtime Smoke, Pages Source Verification, Receipt Export, Android/Build, then PR merge.
+Gate decision:
+- Functional Gate: PASS.
+- Architecture Gate: PASS.
+- Product/Print contract Gate: PASS.
+- Physical paper proof: manual follow-up, not a CI blocker for application-side completion.
 
-**Phase 8.8: IN PROGRESS — do not advance to 8.9 until the phase gate is closed.**
+**Phase 8.8: COMPLETE. Next authorized task: Phase 8.9 — Full Regression.**
 
 ### Current phase
-**Phase 8.8 — Print / PDF / Physical Voucher QA.**
+**Phase 8.9 — Full Regression.**
+
+Objective: run the complete application regression after the Phase 8 clinic UX, receipt, ledger, mobile, and print/PDF reconstruction work. This phase must validate that no previously verified capability regressed.
 
 Objective: verify the separated digital receipt, PDF/image export, printer output boundary and physical blank paper-voucher master without changing the authoritative data/business model.
 
 
-Last updated: 2026-10-09 (Phase 8.7 mobile UX completed and verified; Phase 8.8 authorized)
+Last updated: 2026-10-09 (Phase 8.8 print/PDF/physical voucher QA completed and verified; Phase 8.9 authorized)
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED
