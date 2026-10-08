@@ -1940,9 +1940,9 @@ Implementation:
 - No legacy `js/sync.js` / `api/clinic-sync.js` replacement was made.
 
 Security / architecture decision:
-- Google documentation recommends Google Identity Services and the Authorization Code flow with PKCE for modern browser applications; the AQSA7 adapter therefore depends on a secure external OAuth resolver rather than embedding an insecure implicit-flow implementation. urlGoogle Identity Services OAuth guidancehttps://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow
-- Google Drive's `appDataFolder` is intended for per-user application data, and the `drive.appdata` scope limits access to the application's own data. urlGoogle Drive app-data storage documentationhttps://developers.google.com/workspace/drive/api/guides/about-files
-- Google Drive private `appProperties` can be used for application metadata and searched server-side. urlGoogle Drive custom properties documentationhttps://developers.google.com/workspace/drive/api/guides/properties
+- Google documentation recommends Google Identity Services and the Authorization Code flow with PKCE for modern browser applications; the AQSA7 adapter therefore depends on a secure external OAuth resolver rather than embedding an insecure implicit-flow implementation. Google Identity Services OAuth guidance: https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow
+- Google Drive's `appDataFolder` is intended for per-user application data, and the `drive.appdata` scope limits access to the application's own data. Google Drive app-data storage documentation: https://developers.google.com/workspace/drive/api/guides/about-files
+- Google Drive private `appProperties` can be used for application metadata and searched server-side. Google Drive custom properties documentation: https://developers.google.com/workspace/drive/api/guides/properties
 
 Files:
 - `js/google-drive-auth.js`
