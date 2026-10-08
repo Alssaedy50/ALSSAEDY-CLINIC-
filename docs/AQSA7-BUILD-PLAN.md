@@ -639,10 +639,11 @@ Completed Phase 2 tasks:
 - 2.6 History / Receipts Ledger Reconstruction — COMPLETE
 - 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
-Current next authorized task:
+Current task:
 - **Phase 3 / Task 3.6 — Integration / Interoperability Adapter Contract**
-- Status: **PENDING VERIFICATION** (implementation complete; final main-branch gate pending)
+- Status: **COMPLETE**
 - Executor: **AI / Technical Lead**
+- Next authorized task: **Phase 3 / Task 3.7**
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
 
@@ -811,7 +812,7 @@ Gate decision:
 - Cross-platform CI verification: MET.
 - Task 3.4: COMPLETE.
 - Task 3.5: COMPLETE.
-- Task 3.6 is the next authorized task; it has not been started.
+- Task 3.6 was subsequently executed and is now COMPLETE after the final independent Pages verification gate.
 
 Next authorized task:
 - Task 3.6 — Integration / Interoperability Adapter Contract — NOT STARTED.
@@ -893,11 +894,11 @@ Gate decision:
 - Static/mobile/desktop/Android verification: MET.
 - Final main-branch export/Pages verification: MET.
 - Task 3.5: **COMPLETE**.
-- Task 3.6 is the next authorized task but was not started.
+- Task 3.6 followed this completed Task 3.5 checkpoint and is now COMPLETE.
 
 ### Phase 3 / Task 3.6 — Integration / Interoperability Adapter Contract
 
-Status: **PENDING VERIFICATION**
+Status: **COMPLETE**
 
 Purpose:
 - Establish one platform-level, provider-independent integration/interoperability boundary reusable across Dental, Medical, Hospital, Supermarket, Restaurant/Café and future verticals.
@@ -941,14 +942,22 @@ Files changed:
 - docs/AQSA7-BUILD-PLAN.md
 
 Verification performed:
-- JavaScript syntax validation: PASS in Runtime Smoke PR 37726079886.
-- AI vendor isolation: PASS in 37726079886.
-- Mobile browser smoke: PASS in 37726079886.
-- Desktop browser integration smoke: PASS in 37726079886.
-- Integration contract in-browser mock verification: PASS in 37726079886 for descriptor discovery, instance ownership propagation, idempotency guard, adapter execution, mapping, webhook verification/rejection and normalized errors.
-- Android debug + signed production build, signature and metadata verification: PASS in 37726079939.
-- Verification-only PR #41 was closed without merge; it was used only to trigger CI and contains no product implementation.
-- Receipt/export verification: PASS in final-gate PR run 37726589591 (run against the Task 3.6 implementation; the only PR-side source difference was a non-functional verification marker).
+- JavaScript syntax validation: PASS in Runtime Smoke 37728098566.
+- AI vendor isolation: PASS in Runtime Smoke 37728098566.
+- Mobile browser smoke: PASS in Runtime Smoke 37728098566.
+- Desktop browser integration smoke: PASS in Runtime Smoke 37728098566.
+- Integration contract in-browser mock verification: PASS in the Task 3.6 final verification set for descriptor discovery, instance ownership propagation, idempotency guard, adapter execution, mapping, webhook verification/rejection and normalized errors.
+- Android debug + signed production build, signature and metadata verification: PASS in Android run 37728098568.
+- Receipt/export verification: PASS in final-gate run 37726589591; the Pages-evidence fix changed only CI verification infrastructure and did not modify receipt/export implementation.
+- GitHub Pages independent source verification: PASS in run 37728098581. The verifier resolved the actual remote main ref, checked out that exact main state (3c5ecb4df62542c7a628ff3dc7ea5a7361c3968c), fetched the live Pages js/integrations.js, and compared SHA-256 hashes.
+- Pages evidence artifact 11529145121 records:
+  - source_commit=3c5ecb4df62542c7a628ff3dc7ea5a7361c3968c
+  - live URL=https://alssaedy50.github.io/AQSA7/
+  - live integration URL=https://alssaedy50.github.io/AQSA7/js/integrations.js
+  - source_integrations_sha256=cf30c03f706305057ac94cd17644e7f0d2bad4cc23223f1a520b4f29bd1aa9cc
+  - live_integrations_sha256=cf30c03f706305057ac94cd17644e7f0d2bad4cc23223f1a520b4f29bd1aa9cc
+  - result=PASS
+- Verification-only PR #44 was closed without merge; it contained only the temporary pull-request trigger needed to expose the reproducible Pages verification run through the available GitHub CI surfaces.
 
 Task 3.6 exit criteria:
 1. One authoritative platform integration/interoperability contract exists.
@@ -972,9 +981,11 @@ Gate decision:
 - Provider independence/no vendor lock-in: MET.
 - Ownership/local-first/cross-platform boundaries: MET.
 - Static/browser/Android verification: MET.
-- GitHub Pages is configured for the repository (`has_pages: true`, homepage `https://alssaedy50.github.io/AQSA7/`), but independent evidence tying the live Pages deployment to the final Task 3.6 main source state is not exposed by the available GitHub connector surfaces: **PENDING**.
-- Task 3.6 remains **PENDING VERIFICATION** until deployment-to-commit evidence is independently evidenced.
-- Task 3.7 is not authorized.
+- GitHub Pages live-source gate: MET.
+- The available GitHub connector did not expose the Pages REST deployment/build endpoints directly, so the smallest safe fix was a verification-only GitHub Actions workflow that resolves the actual remote main ref and compares the live Pages integration-contract bytes against the checked-out source.
+- Independent deployment-to-source evidence is now reproducible from GitHub Actions run 37728098581 and artifact 11529145121.
+- Task 3.6: **COMPLETE**.
+- Task 3.7: **NEXT AUTHORIZED TASK**.
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
@@ -1025,7 +1036,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Long-Term Architectural Foresight rules integrated; Task 3.5 fully verified and closed; Task 3.6 authorized but not started)
+Last updated: 2026-10-08 (Task 3.6 independently verified and closed; Pages source-to-live evidence recorded; Task 3.7 authorized)
 
 ## Current authoritative decisions
 
