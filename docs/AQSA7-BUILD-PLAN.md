@@ -641,7 +641,7 @@ Completed Phase 2 tasks:
 
 Current next authorized task:
 - **Phase 3 / Task 3.6 — Integration / Interoperability Adapter Contract**
-- Status: **NOT STARTED**
+- Status: **PENDING VERIFICATION** (implementation complete; final main-branch gate pending)
 - Executor: **AI / Technical Lead**
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
@@ -895,6 +895,86 @@ Gate decision:
 - Task 3.5: **COMPLETE**.
 - Task 3.6 is the next authorized task but was not started.
 
+### Phase 3 / Task 3.6 — Integration / Interoperability Adapter Contract
+
+Status: **PENDING VERIFICATION**
+
+Purpose:
+- Establish one platform-level, provider-independent integration/interoperability boundary reusable across Dental, Medical, Hospital, Supermarket, Restaurant/Café and future verticals.
+- Keep Business Modules and Vertical Domains independent from external providers, APIs, SDKs, transport protocols and credential formats.
+- Preserve local-first operation, tenant/instance ownership, cross-platform shared core and the existing AI boundary.
+
+Research and architectural decision:
+- OpenAPI 3.1 is the interoperability reference for HTTP interface descriptions, reusable callbacks and webhooks, not a runtime dependency. citeturn0search0turn0search2
+- RFC 9110 establishes the HTTP retry/idempotency basis: safe/idempotent methods may be retried, while unknown side-effecting writes require an explicit idempotency strategy. citeturn0search7
+- RFC 9457 provides a standard machine-readable Problem Details model for HTTP API errors; AQSA7 adopts the normalized-error principle while keeping the adapter transport-neutral. citeturn0search4
+- GitHub webhook guidance was used as a maintained concrete example for HTTPS, signature verification, event filtering and delivery identifiers/replay handling; AQSA7 records these as generic adapter responsibilities. citeturn0search3turn0search8
+- JSON Schema 2020-12 is the current JSON Schema specification and is the reference for future schema validation/mapping contracts, without adding a runtime validator now. citeturn1search2turn1search11
+- HL7 FHIR R5 remains the healthcare interoperability direction. AQSA7 establishes the generic boundary now and defers concrete FHIR implementation to the appropriate healthcare product/integration requirement. citeturn1search0turn1search3
+
+Future-fitness classification:
+- Implement now: one authoritative integration contract; provider descriptors/capability discovery; versioned request/response boundary; instance ownership propagation; auth/authorization boundary; normalized errors; retry/idempotency policy; webhook verification boundary; import/export/mapping boundary; offline fail-soft behavior; cross-platform adapter strategy; safe observability.
+- Establish contract now, implement later: concrete provider adapters; OAuth/API-key/service-account implementations; webhook delivery infrastructure/queues; sync/event queues; retry persistence; provider-specific rate/quota handling; concrete OpenAPI clients; healthcare FHIR adapters; vertical-specific mappings.
+- Document and defer: generic durable integration queue/outbox, background sync/conflict resolution, audit/event store, concrete interoperability profiles, and domain-specific standards beyond the healthcare FHIR watchpoint.
+- Reject: provider SDKs in business modules, mandatory cloud integration, a second integration database/store, integration-owned business state machines, hardcoded credentials, or making one industry standard mandatory for all verticals.
+
+Implementation:
+- Added js/integrations.js as the single authoritative Platform Integration / Interoperability Contract.
+- Versioned contract ID: aqsa7-integration-adapter-contract, schemaVersion 1.
+- Reusable capabilities: api, import, export, webhook, event, mapping.
+- Adapter descriptor contract: id/name/kind/version/capabilities/local/platforms; optional health/subscribe/unsubscribe/webhook verification/import/export/mapping methods.
+- Request/response contract carries capability, operation, version-neutral payload/query metadata, opaque auth reference, idempotency key/retry policy and mandatory current product/tenant/instance ownership.
+- Authentication boundary keeps credential material outside business modules and source; authorization remains AQSA7-owned before adapter execution.
+- Retry policy is conservative: no automatic retry for unknown side effects; safe HTTP methods may be retried; automatic retry of non-idempotent writes requires an explicit idempotency key.
+- Webhook boundary requires adapter-side authenticity/event/delivery/freshness validation before normalization and application processing; secrets never belong in payloads or source.
+- Import/export/mapping boundary requires explicit versioned mapping profiles; external payloads are untrusted until validated/mapped.
+- Normalized integration errors expose safe machine-readable categories while preserving non-sensitive provider codes.
+- Default integration adapter is a local fail-soft/unavailable adapter; core business operation remains local and authoritative when integrations are unavailable.
+- Cross-platform contract is shared by Web/PWA/Desktop/Android; only transport/OS-specific mechanics may be implemented in platform adapters.
+- No Repository, State Machine, IndexedDB store, queue, vendor SDK, API key or secret was added.
+
+Files changed:
+- js/integrations.js
+- js/product.js
+- index.html
+- .github/workflows/runtime-smoke.yml
+- docs/AQSA7-BUILD-PLAN.md
+
+Verification performed:
+- JavaScript syntax validation: PASS in Runtime Smoke PR 37726079886.
+- AI vendor isolation: PASS in 37726079886.
+- Mobile browser smoke: PASS in 37726079886.
+- Desktop browser integration smoke: PASS in 37726079886.
+- Integration contract in-browser mock verification: PASS in 37726079886 for descriptor discovery, instance ownership propagation, idempotency guard, adapter execution, mapping, webhook verification/rejection and normalized errors.
+- Android debug + signed production build, signature and metadata verification: PASS in 37726079939.
+- Verification-only PR #41 was closed without merge; it was used only to trigger CI and contains no product implementation.
+- Remaining required verification before closure: final main-branch receipt/export and Pages/cross-platform checks on the documented commit.
+
+Task 3.6 exit criteria:
+1. One authoritative platform integration/interoperability contract exists.
+2. Business/vertical modules have no direct provider/API/SDK dependency.
+3. Provider descriptors and capability discovery are versioned.
+4. Authentication/authorization boundaries are explicit and ownership-aware.
+5. Request/response and normalized error contracts exist.
+6. Retry/idempotency rules prevent unsafe automatic duplication of side effects.
+7. Webhook/event boundary includes authenticity, delivery/replay and validation responsibilities.
+8. Import/export and explicit data-mapping boundaries exist.
+9. External data is treated as untrusted until validated/mapped.
+10. Integration failure never makes the local core unavailable.
+11. Tenant/instance ownership is propagated and cannot be widened by an adapter.
+12. Observability excludes credentials/tokens/raw sensitive payloads.
+13. Web/PWA/Desktop/Android share the same contract.
+14. Static JS, browser mobile/desktop, Android, receipt/export and Pages verification pass on the final main commit.
+15. Build Plan records research, decisions, implementation, failures/resolution, commit SHA and blockers.
+
+Gate decision:
+- Architecture/implementation: MET.
+- Provider independence/no vendor lock-in: MET.
+- Ownership/local-first/cross-platform boundaries: MET.
+- Static/browser/Android verification: MET.
+- Final main-branch receipt/export + Pages verification: **PENDING**.
+- Task 3.6 remains **PENDING VERIFICATION**.
+- Task 3.7 is not authorized.
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
