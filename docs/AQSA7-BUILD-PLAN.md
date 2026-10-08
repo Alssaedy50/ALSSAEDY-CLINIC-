@@ -23,6 +23,21 @@ Transform the current ALSSAEDY CLINIC receipt application into a clean, reliable
 9. Never release an unverified build.
 10. Update this ledger after every completed phase/task.
 
+## Project Control & Governance — Mandatory Operating Rules
+
+This section governs how AQSA7 is controlled, handed off, verified and advanced. It is authoritative and applies to every task, phase, release and execution handoff.
+
+1. **GitHub is the single authoritative project state.** The current repository, authoritative plan/ledger, source code, tests, CI evidence and committed decisions take precedence over conversation memory or undocumented claims.
+2. **This Build Plan is the Project Master Ledger.** It is the authoritative operational and architectural memory of AQSA7: current architecture, approved plan, task/phase status, constraints, success criteria, verification state, decisions, blockers, research conclusions, release gates and handoff state.
+3. **The latest authoritative state wins.** Obsolete, superseded or contradictory instructions/statuses must be consolidated or removed; historical evidence may remain only when it is necessary to explain a decision or verification result.
+4. **No task or phase advances on intention alone.** A task may be marked COMPLETE only after its documented exit criteria and required verification evidence are satisfied. A phase may advance only after its phase gate is satisfied.
+5. **Every completed work unit must leave GitHub self-contained.** The record must state what changed, where it changed, how it was verified, relevant failures and resolutions, decisions, commit SHA, remaining blockers and the exact next authorized step.
+6. **Unverified work must be explicit.** If required verification cannot be performed, the authoritative state must remain PENDING, BLOCKED or UNVERIFIED and must name the exact missing evidence or reason.
+7. **Control decisions must not live only in chat.** Any requirement, constraint, success condition, architectural decision or consequential execution rule needed for future success must be recorded in this Build Plan or an explicitly referenced authoritative project document.
+8. **Code, Git history and CI remain evidence layers.** The Build Plan records the authoritative current state and points to evidence; it does not replace source code, commits, tests or CI artifacts and does not need to reproduce every line of code or every terminal command.
+9. **Handoffs must be lossless.** A new execution conversation or technical lead must be able to recover the current project state and next permitted action from GitHub without relying on undocumented chat context.
+10. **Execution follows the control loop:** Inspect → Decide → Execute → Test → Verify → Document → Commit → Gate → Next. No step may be silently skipped when it is required by the applicable task/phase criteria.
+
 ## AI Research, Analysis & Adaptive Planning Authority
 
 The AI / Technical Lead must not treat its internal knowledge or the current plan as the only source of truth when designing, building, debugging, verifying or making architectural decisions.
