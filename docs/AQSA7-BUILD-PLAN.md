@@ -339,7 +339,9 @@ Therefore:
 - Phase 1 remains **IN PROGRESS**.
 - Phase 2 must **not** be started until the browser smoke actually executes and passes, followed by the Android/WebView baseline or an explicitly documented acceptance boundary.
 
-The next engineering action is to fix the smoke runner's Playwright dependency resolution at its root, rerun the workflow, inspect the actual browser assertions, then perform the Android/WebView baseline.
+The smoke runner dependency defect was fixed on main in commit `5bf37d15b25f5939a764562ba1b1c893a0f15d4a`: Playwright `1.55.0` is now installed as a local workflow dependency with `npm install --no-save`, Chromium is installed through the resolved local Playwright CLI, and the smoke script imports that local package directly. This removes the failing `npx --yes -p ... node` module-resolution pattern.
+
+Post-fix verification status: the repository connector currently exposes no push-triggered workflow run for commit `5bf37d15b25f5939a764562ba1b1c893a0f15d4a` yet, so no browser PASS is claimed. The next required action is to inspect the newly triggered `AQSA7 Runtime Smoke` run and, once it executes, fix any real application assertion failures before proceeding to Android/WebView baseline.
 
 #### Phase 1 exit gate
 
