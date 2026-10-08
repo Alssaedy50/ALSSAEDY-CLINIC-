@@ -194,25 +194,257 @@ AQSA7 should follow a practical 3-layer protection model:
 
 This is the target model; it does not make a cloud provider mandatory for core operation.
 
+## AQSA7 Multi-Product Platform Vision — Mandatory Architectural Direction
+
+AQSA7 is not intended to become only a Dental Clinic application. The Dental Clinic product is the **first vertical product used to prove the platform architecture**. The approved long-term direction is a reusable, configurable, multi-product business/application platform capable of producing different industry applications from one shared AQSA7 core.
+
+### Product families in scope
+The architecture must be capable of supporting, without rebuilding the core platform:
+- Dental Clinic
+- General Medical Clinic
+- Medical Center / Health Center
+- Hospital
+- Pharmacy and related healthcare operations
+- Supermarket / grocery retail
+- Mini-market / convenience store
+- Restaurant
+- Café
+- Other retail, service, appointment, inventory, billing and operations businesses as future verticals
+
+This list is an architectural target, not a commitment to implement every vertical immediately. Each vertical must be introduced as a product package/domain configuration with only the modules and workflows it actually needs.
+
+### Required separation of concerns
+AQSA7 must evolve into four explicit layers:
+
+1. **AQSA7 Platform Core** — reusable infrastructure shared by every product:
+   - application shell and navigation framework
+   - identity/session and permissions boundaries
+   - configuration and product manifest system
+   - generic repository/data-access contracts
+   - local-first persistence abstraction
+   - backup/restore engine and provider adapters
+   - export/print/share framework
+   - notifications and scheduling abstractions
+   - search/filter/table/form primitives
+   - audit/event framework
+   - localization, RTL/BiDi, currency, date/time and formatting utilities
+   - validation/error handling
+   - offline/PWA/install/update infrastructure
+   - integration/API boundary
+   - AI capability layer and provider/model adapters
+
+2. **Shared Business Capabilities / Modules** — reusable capabilities that can be enabled per product:
+   - customers/patients
+   - contacts
+   - appointments/queue
+   - products/services/catalog
+   - inventory/stock
+   - purchasing/suppliers
+   - sales/orders
+   - billing/payments/receivables
+   - receipts/invoices
+   - employees/staff/roles
+   - branches/locations
+   - reports/analytics
+   - documents/attachments
+   - messaging/notifications
+   - loyalty/membership where relevant
+   - scheduling
+   - workflow/task management
+
+3. **Vertical Product Domains** — industry-specific business rules and screens:
+   - Dental Clinic: patients, odontogram/tooth context, clinical visits, treatments, dental services, clinical history, etc.
+   - General Medical / Medical Center / Hospital: patient clinical records, encounters, diagnoses, medications, laboratory/imaging/referrals and other appropriate clinical workflows.
+   - Supermarket / Grocery: POS, barcode/product catalog, stock, purchasing, suppliers, pricing, promotions, cashier shifts and retail reporting.
+   - Restaurant / Café: menu/catalog, tables, orders, kitchen workflow, modifiers, payments, delivery/takeaway and restaurant reporting.
+   - Other verticals: added as isolated domain modules rather than by contaminating the platform core with industry-specific assumptions.
+
+4. **Instance / Tenant Configuration** — a concrete organization using a product:
+   - organization/clinic/store/restaurant identity
+   - branding/logo/theme
+   - address/contact information
+   - currency/tax/numbering rules
+   - enabled modules and feature flags
+   - roles/permissions
+   - receipt/invoice/document templates
+   - operational defaults
+   - integration configuration
+   - AI policy and enabled AI capabilities
+
+### Product-definition contract
+Every AQSA7 product must have a machine-readable or equivalently authoritative **Product Manifest / Product Definition** that declares:
+- product ID and version
+- vertical/domain type
+- enabled shared modules
+- domain entities and relationships
+- navigation/sections
+- product defaults
+- required capabilities
+- optional capabilities/features
+- document/print templates
+- permissions/roles
+- integrations
+- AI capabilities and policy
+- migration/schema version
+
+A configured business instance must consume this product definition rather than hardcoding the product identity throughout the application. Product identity, clinic/store names, labels, logos and defaults must not be scattered through core code.
+
+### Generic domain/data architecture
+The platform must avoid naming the core data layer around a single vertical. For example, \x60clinicDB\x60, patient-only assumptions, dental-specific receipt schemas or ALSSAEDY-specific identifiers must not become permanent AQSA7 core contracts. Existing Dental-specific code is legacy/product-domain implementation and must be progressively moved behind the Dental product boundary during Phase 3.
+
+The target is:
+**Platform Core → Shared Capability Modules → Vertical Product → Configured Instance/Tenant**
+
+not:
+**Dental application → copy/paste → another application**.
+
+### Multi-tenant / multi-instance readiness
+The architecture must support multiple independent customer instances without sharing their business data accidentally. Even when the first release is local-only, every durable record and service boundary must have a clear ownership/tenant strategy so future cloud sync, multi-branch and hosted deployments do not require a destructive rewrite.
+
+Local-first does not mean tenant isolation is optional. Tenant/instance boundaries must be explicit in the domain model, backup artifacts, synchronization authorization, imports/exports and future server APIs.
+
+### Cross-industry reuse rule
+A capability belongs in the platform/shared layer only when its semantics are genuinely reusable. If a feature is inherently dental, hospital, retail, supermarket, restaurant or café-specific, it belongs in that vertical module. The AI/Technical Lead must reject abstractions that merely hide unrelated business rules behind generic names.
+
+### Build-once rule for future products
+Creating a new vertical product should primarily consist of:
+1. selecting/reusing shared capabilities;
+2. defining the vertical domain model and business rules;
+3. defining the product manifest/navigation/workflows;
+4. supplying vertical UI/templates/assets;
+5. configuring integrations and AI capabilities;
+6. testing the product against the shared platform contracts.
+
+It must **not** require cloning the entire AQSA7 codebase or creating a separate persistence, backup, authentication, export, AI or cross-platform implementation.
+
+## AI-Native / AI-Ready Architecture — Mandatory Future Capability
+
+AI is a planned platform capability, not a later bolt-on. AQSA7 must be designed so AI can be integrated into Dental, medical, retail, supermarket, restaurant, café and future products without rewriting their business cores.
+
+### AI capability layer
+Create a platform-level AI boundary with:
+- provider/model adapter abstraction
+- model capability discovery
+- prompt/instruction templates kept outside core business logic
+- structured input/output contracts
+- tool/function calling boundary
+- retrieval/context boundary
+- streaming where useful
+- model fallback/error handling
+- usage/cost controls where external models are used
+- local/offline AI adapter support where technically practical
+- observability and evaluation hooks
+- versioned AI capability contracts
+
+Business modules must call **AQSA7 AI capabilities** rather than directly embedding one vendor SDK throughout the application. This allows future use of different providers/models and local models without rewriting vertical features.
+
+### AI must be optional and safe
+- Core business operation must continue if AI is unavailable, disabled, offline or unconfigured.
+- AI must never become a hidden paid dependency.
+- External AI transmission of sensitive business/clinical data must require an explicit product/security policy and appropriate user authorization.
+- Patient/health data must not be sent to external models merely because an AI feature exists.
+- Secrets, provider keys and tokens must never be embedded in public client code or committed to GitHub.
+- AI actions that can modify business data must pass through normal authorization, validation and repository contracts.
+- High-impact clinical recommendations must be treated as assistive output, not autonomous diagnosis/treatment authority, and must preserve human review.
+
+### Planned AI capability examples
+The architecture should be able to host capabilities such as:
+- natural-language search across authorized records
+- report and summary generation
+- intelligent document extraction/OCR
+- appointment/queue assistance
+- customer/patient communication drafting
+- inventory and purchasing analysis
+- sales/financial trend analysis
+- demand forecasting
+- anomaly detection
+- menu/product/catalog assistance
+- clinical documentation assistance where appropriate
+- knowledge retrieval/RAG from approved local documents
+- workflow automation and task suggestions
+- voice input/output where supported
+- AI agents that can use constrained AQSA7 tools under explicit permissions
+
+These are capability targets, not permission for unrestricted autonomous actions. Each AI feature must define its data access, tools, permissions, failure mode, human-review requirement and offline behavior.
+
+### AI provider independence
+The platform must not be architected around one AI vendor. External model providers and local models are adapters behind the AQSA7 AI boundary. Product code should depend on stable AQSA7 capability contracts such as \x60summarize\x60, \x60extract\x60, \x60classify\x60, \x60search\x60, \x60generate\x60, \x60recommend\x60 or approved domain tools rather than provider-specific APIs.
+
+### AI research/evaluation requirement
+Before adopting a model/provider for a consequential feature, the AI/Technical Lead must research current official documentation, privacy/data-handling terms, capabilities, limits, pricing/free tiers, local alternatives and comparable implementations, then test the chosen approach against AQSA7 requirements. Provider choices must not silently violate the 100% free/local-first core constraint.
+
+## Interoperability & Standards Direction
+
+AQSA7 must use standards where they materially improve portability and future integrations, without forcing every industry into healthcare-specific standards.
+
+For healthcare products, the architecture should remain compatible with **HL7 FHIR** as the future interoperability boundary. FHIR is designed for structured healthcare information exchange and supports resources and RESTful exchange patterns across clinical and administrative contexts. [Evidence: HL7 FHIR official specification and overview.]
+
+This does **not** require implementing a FHIR server in the current Dental release. It requires avoiding data structures and service boundaries that make future mapping/interoperability unnecessarily difficult.
+
+For non-healthcare verticals, use the most appropriate open standards and integration contracts for the domain rather than forcing healthcare models onto retail or hospitality.
+
+## Architectural Readiness Gate Before New Vertical Products
+
+Before AQSA7 is declared capable of producing multiple product families, Phase 3 must verify at minimum:
+1. Dental-specific identity and business assumptions are isolated behind the Dental product boundary.
+2. A generic product/instance manifest exists.
+3. Shared modules can be enabled/disabled without duplicating core code.
+4. Generic data/repository contracts no longer require Dental-specific names or semantics at the platform boundary.
+5. Tenant/instance ownership is explicit.
+6. Shared backup/export/import contracts are product-neutral.
+7. AI capability boundary exists independently of any single product or provider.
+8. Integrations use adapter boundaries.
+9. A second non-dental vertical can be modeled as a product without cloning AQSA7.
+10. Web/PWA/Desktop/Android continue to consume the same shared core.
+11. Tests cover at least one cross-product platform contract in addition to Dental behavior.
+
+The second vertical used for this architectural proof should be selected by the AI/Technical Lead after research and comparison of implementation value; it does not need to be fully built in Phase 3 unless the approved plan is expanded.
+
 ## Target architecture
 
-AQSA7
-- CORE
-  - App Shell
-  - Router / Navigation
-  - Shared UI
-  - Theme
-  - Storage / Data layer
-  - Backup engine
-  - Backup provider adapters
-  - Export engine
-  - Notifications
-  - Shared utilities
-- PRODUCTS
+AQSA7 Platform
+- PLATFORM CORE
+  - App Shell / Router / Navigation
+  - Shared UI / Theme / Responsive system
+  - Product Manifest / Instance Configuration
+  - Identity / Permissions / Tenant boundaries
+  - Generic Repository / Data contracts
+  - Local-first Storage
+  - Backup Engine / Provider Adapters
+  - Export / Print / Share engine
+  - Notifications / Scheduling
+  - Search / Forms / Tables / Validation
+  - Audit / Events
+  - Localization / RTL / BiDi / Currency / Date-time
+  - Offline / PWA / Install / Update infrastructure
+  - Integration / API adapters
+  - AI Capability Layer / Model Provider adapters
+- SHARED BUSINESS CAPABILITIES
+  - People / Customers / Patients
+  - Appointments / Queue
+  - Catalog / Products / Services
+  - Inventory / Purchasing / Suppliers
+  - Sales / Orders / Billing / Payments
+  - Receipts / Invoices
+  - Staff / Roles / Branches
+  - Reports / Analytics
+  - Documents / Messaging / Notifications
+- PRODUCTS / VERTICAL DOMAINS
   - Dental Clinic
-    - reusable product
+    - reusable product definition
     - ALSSAEDY CLINIC = configured instance
-  - future products
+  - General Medical / Medical Center / Hospital
+  - Pharmacy / Healthcare operations
+  - Supermarket / Grocery / Mini-market
+  - Restaurant / Café
+  - Future verticals
+- CONFIGURED INSTANCES / TENANTS
+  - organization identity
+  - branding
+  - enabled modules
+  - operational settings
+  - integrations
+  - AI policy/capabilities
 
 ## Cross-Platform Product Architecture — Mandatory Constraint
 
@@ -347,15 +579,31 @@ Exit decision:
 - Phase 2 UX/UI + integration + receipt export verification gates are now complete.
 - Phase 2: COMPLETE.
 
-### Phase 3 — Productization
+### Phase 3 — Productization & Multi-Product Platform Foundation
 Status: IN PROGRESS
-Current next task: **Task 3.1 — Reusable Dental Clinic Product Boundary**
 
+Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
+
+Current next task: **Task 3.1 — Reusable Dental Clinic Product Boundary**
 - Separate reusable Dental Clinic product from clinic configuration.
 - Clinic profile/configuration model.
-- Product defaults.
+- Product defaults and Product Manifest foundation.
 - Tenant/clinic identity boundaries.
-- Prepare for future sellable instances.
+- Remove/contain Dental-specific assumptions at platform boundaries.
+- Prepare the shared capability/module boundaries.
+- Establish the AI capability boundary without making AI a core dependency.
+
+Planned Phase 3 architectural gates/tasks:
+- 3.1 Reusable Dental Clinic Product Boundary — current next task.
+- 3.2 Product Manifest & Instance Configuration Contract.
+- 3.3 Generic Shared Capability / Module Boundaries.
+- 3.4 Tenant / Instance Isolation Contract.
+- 3.5 AI Capability Layer & Provider Adapter Contract.
+- 3.6 Integration / Interoperability Adapter Contract.
+- 3.7 Second-Vertical Architecture Proof — model a non-dental product without cloning AQSA7; exact vertical selected by research.
+- 3.8 Cross-Product Architecture Verification Gate.
+
+These are planning-level tasks. Implementation order may be adaptively reordered when necessary, but material scope or architecture changes remain subject to User approval under the AI Research, Analysis & Adaptive Planning Authority above.
 
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
@@ -407,7 +655,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Phase 2 COMPLETE; Phase 3 Task 3.1 next)
+Last updated: 2026-10-08 (Multi-Product + AI architecture direction added; Phase 3 Task 3.1 next)
 
 ## Current authoritative decisions
 
@@ -420,4 +668,5 @@ Last updated: 2026-10-08 (Phase 2 COMPLETE; Phase 3 Task 3.1 next)
 - No external provider may become a hidden paid/core dependency.
 - Web/PWA/Desktop browser/Android share one application core.
 - Platform/provider adapters must remain thin and must not duplicate domain logic.
+- Phase 3 owns multi-product architecture, product manifests, shared module boundaries, tenant/instance isolation contracts and AI/integration capability boundaries.
 - Phase 4 owns backup/security implementation; Phase 5 owns cross-platform and disaster-recovery verification.
