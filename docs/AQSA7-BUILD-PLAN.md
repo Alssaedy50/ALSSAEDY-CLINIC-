@@ -1591,7 +1591,7 @@ Next authorized task:
 
 ### Phase 4 / Task 4.5 — Restore & Migration Engine Contract/Implementation
 
-Status: **PENDING VERIFICATION**
+Status: **COMPLETE**
 
 Purpose:
 - Establish one explicit, versioned restore-preparation boundary between encrypted Backup Artifact decryption and repository restore.
@@ -1659,10 +1659,12 @@ Explicitly out of scope:
 
 Verification evidence:
 - Source inspection completed against `js/storage.js`, `js/repository.js`, `js/product.js`, `js/backup.js`, `js/backup-provider.js` and the new Restore & Migration Engine.
-- Runtime verification is required before closing this task.
-- Verification checkpoint: `2795c14c8f3c379170bd5396384ed7e765ba2718`.
-- Required Runtime Smoke evidence: restore contract presence/versioning, current-schema migration planning, metadata/ownership preservation, encrypted restore preparation, unsupported/future schema rejection, foreign ownership rejection, existing backup crypto/engine/provider checks, mobile browser smoke and desktop browser integration smoke.
-- Until the final Runtime Smoke workflow is green on the implementation checkpoint, Task 4.5 remains **PENDING VERIFICATION**.
+- Runtime verification completed on final main checkpoint `251758193d7a76427806ba32dc0fc9c0a9d0e604`.
+- Authoritative Runtime Smoke run `37788080102`: **SUCCESS**; Chromium, JavaScript syntax validation, mobile browser smoke and desktop browser integration smoke all passed, including Restore & Migration Engine checks.
+- Android APK run `37788080031`: **SUCCESS**.
+- Receipt export verification run `37788079969`: **SUCCESS**.
+- GitHub Pages source verification run `37788079771`: **SUCCESS**.
+- Pages build/deployment run `37788078796`: **SUCCESS**.
 
 No Future Surprise gate:
 - A future schema migration can be added as a new explicit version entry without changing the persistence authority.
@@ -1677,13 +1679,11 @@ Task 4.5 gate decision:
 - Ownership isolation before restore: **MET**.
 - Fail-closed unknown/future schema behavior: **MET**.
 - Repository/IndexedDB remains sole persistence authority: **MET**.
-- Runtime verification: **PENDING**.
-- Task 4.5: **PENDING VERIFICATION**.
+- Runtime verification: **MET**.
+- Task 4.5: **COMPLETE**.
 
-Next action:
-- Run and verify the authoritative Runtime Smoke workflow on `2795c14c8f3c379170bd5396384ed7e765ba2718`.
-- If green, close Task 4.5 and authorize Task 4.6.
-- If red, fix only the Task 4.5 failure and repeat verification.
+Next authorized task:
+- **Task 4.6 — Local Backup / Recovery UX**, according to the authoritative Phase 4 sequence.
 
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
@@ -1693,8 +1693,8 @@ Task state:
 - Task 4.2 — Encryption & Integrity Layer — **COMPLETE**.
 - Task 4.3 — Generic Backup Engine — **COMPLETE**.
 - Task 4.4 — Generic Backup Provider Adapter Contract — **COMPLETE**.
-- Task 4.5 — Restore & Migration Engine Contract/Implementation — **PENDING VERIFICATION**.
-- Current next action: verify Task 4.5 Runtime Smoke on `2795c14c8f3c379170bd5396384ed7e765ba2718`.
+- Task 4.5 — Restore & Migration Engine Contract/Implementation — **COMPLETE**.
+- Next authorized task: **Task 4.6 — Local Backup / Recovery UX**.
 
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
@@ -1745,7 +1745,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.5 implementation complete; verification pending; Phase 4 in progress)
+Last updated: 2026-10-08 (Task 4.5 complete; Phase 4 in progress; next authorized task Task 4.6)
 
 ## Current authoritative decisions
 
