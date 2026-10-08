@@ -891,12 +891,18 @@ jobs:
           if (!['standalone','fullscreen','minimal-ui'].includes(pwa.display)) fail('PWA display mode is not app-like', pwa);
           if (pwa.icons < 1 || !pwa.serviceWorker) fail('PWA manifest/service-worker contract incomplete', pwa);
 
-          // 6) Android shell source must use the AQSA7 platform identity consistently.
-          const androidIdentity = await page.evaluate(() => ({
+          // 6) Android/PWA shell boundary: return to platform context and verify AQSA7 identity.
+          await page.evaluate(() => {
+            if (typeof navigatePlatform === 'function') navigatePlatform('home');
+          });
+          if (!(await page.locator('#platformHome').isVisible())) fail('Platform Home could not be restored after deep-link regression');
+          const platformIdentity = await page.evaluate(() => ({
             appTitle: document.title,
-            platformHeader: document.querySelector('#platformBrandTitle')?.textContent?.trim() || ''
+            platformHeader: document.querySelector('#platformBrandTitle')?.textContent?.trim() || '',
+            manifestLink: document.querySelector('link[rel="manifest"]')?.getAttribute('href') || ''
           }));
-          if (!/AQSA7/.test(androidIdentity.platformHeader)) fail('Platform shell identity is not AQSA7', androidIdentity);
+          if (!/AQSA7/.test(platformIdentity.platformHeader)) fail('Platform shell identity is not AQSA7', platformIdentity);
+          if (!platformIdentity.manifestLink.includes('manifest.webmanifest')) fail('Platform shell manifest link is missing', platformIdentity);
 
           if (errors.length) fail('Cross-platform browser/page errors', errors);
           await browser.close();
