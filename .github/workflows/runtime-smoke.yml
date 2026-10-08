@@ -1320,6 +1320,72 @@ jobs:
           });
           if (sizes.a5.attr!=='a5' || sizes.a4.attr!=='a4' || sizes.thermal.attr!=='thermal') fail('Physical-size switching failed', sizes);
           if (sizes.a5.width!=='148mm' || sizes.a4.width!=='210mm' || sizes.thermal.width!=='80mm') fail('Physical-size profile failed', sizes);
+
+          // Phase 8.8 — Print/PDF/physical blank-voucher contract.
+          const printQa = await page.evaluate(() => {
+            const root = document.documentElement;
+            const receipt = document.getElementById('receiptPrintArea');
+            const printSheet = [...document.styleSheets].flatMap(sheet => {
+              try { return [...sheet.cssRules]; } catch (_) { return []; }
+            }).find(rule => String(rule.cssText||'').includes('@page'));
+            const printCss = printSheet ? String(printSheet.cssText) : '';
+            const a5 = getSizeProfile && (() => {
+              setSize('a5');
+              const p=getSizeProfile();
+              return {width:p.width,height:p.height,print:p.printSize,pdf:p.pdfFormat,orientation:p.orientation};
+            })();
+            const a5Paper = (() => {
+              const s=getComputedStyle(receipt);
+              return {width:s.width,height:s.height,minWidth:s.minWidth,minHeight:s.minHeight};
+            })();
+
+            // Blank template must be a presentation/export state only:
+            // no receipt number, patient, amount or saved-record mutation.
+            const original={
+              rec:document.getElementById('digReceiptNo')?.value||'',
+              name:document.getElementById('digClientName')?.value||'',
+              phone:document.getElementById('digPatientPhone')?.value||'',
+              paid:document.getElementById('digPaid')?.value||'',
+              total:document.getElementById('digTotal')?.value||'',
+              mode:document.body.getAttribute('data-mode')||'digital',
+              size:getSelectedSize()
+            };
+            const beforeHistory=typeof clinicRepositoryReceipts==='function' ? null : null;
+            const snapshot=typeof snapshotReceiptForTemplate==='function' ? snapshotReceiptForTemplate() : null;
+            const prepared=typeof prepareBlankTemplate==='function' ? prepareBlankTemplate() : null;
+            const blank={
+              mode:document.body.getAttribute('data-mode'),
+              classPresent:document.body.classList.contains('blank-template-export'),
+              rec:document.getElementById('digReceiptNo')?.value||'',
+              name:document.getElementById('digClientName')?.value||'',
+              phone:document.getElementById('digPatientPhone')?.value||'',
+              paid:document.getElementById('digPaid')?.value||'',
+              total:document.getElementById('digTotal')?.value||'',
+              date:document.getElementById('digDate')?.value||'',
+              manualFields:document.querySelectorAll('.manual-only').length,
+              digitalFields:document.querySelectorAll('.digital-only').length
+            };
+            if(typeof finishBlankTemplate==='function') finishBlankTemplate(snapshot);
+            return {
+              a5,a5Paper,printCss,
+              blank,
+              restored:{
+                rec:document.getElementById('digReceiptNo')?.value||'',
+                name:document.getElementById('digClientName')?.value||'',
+                phone:document.getElementById('digPatientPhone')?.value||'',
+                paid:document.getElementById('digPaid')?.value||'',
+                total:document.getElementById('digTotal')?.value||'',
+                mode:document.body.getAttribute('data-mode'),
+                size:getSelectedSize()
+              },
+              original
+            };
+          });
+          if (printQa.a5.width!=='148mm' || printQa.a5.height!=='210mm' || printQa.a5.print!=='148mm 210mm' || printQa.a5.pdf!=='a5') fail('Phase 8.8 A5 physical profile failed', printQa.a5);
+          const a5Ratio=parseFloat(printQa.a5Paper.height)/parseFloat(printQa.a5Paper.width); if (!Number.isFinite(a5Ratio) || Math.abs(a5Ratio-(210/148))>0.03) fail('Phase 8.8 A5 rendered sheet geometry failed', printQa.a5Paper);
+          if (!printQa.printCss.includes('148mm') || !printQa.printCss.includes('210mm') || !/margin:\s*0(?:px)?/.test(printQa.printCss)) fail('Phase 8.8 print CSS contract failed', printQa.printCss);
+          if (printQa.blank.mode!=='manual' || !printQa.blank.classPresent || printQa.blank.rec || printQa.blank.name || printQa.blank.phone || printQa.blank.paid || printQa.blank.total || printQa.blank.date) fail('Phase 8.8 blank voucher leaked digital transaction data', printQa.blank);
+          if (printQa.restored.rec!==printQa.original.rec || printQa.restored.name!==printQa.original.name || printQa.restored.phone!==printQa.original.phone || printQa.restored.paid!==printQa.original.paid || printQa.restored.total!==printQa.original.total || printQa.restored.mode!==printQa.original.mode || printQa.restored.size!==printQa.original.size) fail('Phase 8.8 blank voucher did not restore digital state', printQa.restored);
           const bidi = await page.evaluate(() => ({dir:document.documentElement.dir,arabic:document.querySelector('.main-voucher-title')?.textContent||'',bdi:typeof bidiIsolate==='function' ? bidiIsolate('PH5-001') : ''}));
           if (bidi.dir!=='rtl' || !bidi.arabic.includes('سند') || !bidi.bdi.includes('PH5-001')) fail('Arabic RTL/BiDi regression failed', bidi);
 
