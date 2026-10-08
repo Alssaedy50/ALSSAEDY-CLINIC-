@@ -85,10 +85,12 @@
 
   async function decryptAndValidate(envelope,password){
     const decrypt=requireFunction('aqsa7DecryptBackupArtifact');
+    const prepare=requireFunction('aqsa7PrepareRestoreArtifact');
     const artifact=await decrypt(envelope,password);
-    assertArtifactShape(artifact);
-    assertCurrentOwnership(artifact);
-    return artifact;
+    const prepared=prepare(envelope,artifact);
+    assertArtifactShape(prepared.artifact);
+    assertCurrentOwnership(prepared.artifact);
+    return prepared.artifact;
   }
 
   async function restoreArtifact(artifact){
