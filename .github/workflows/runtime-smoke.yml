@@ -233,6 +233,57 @@ jobs:
           if (isolation.backupSchemaVersion !== 5) throw new Error('Backup schema was not upgraded for isolation contract');
           if (isolation.backupRecordIdentities.some(r => r.productId !== isolation.identity.productId || r.tenantId !== isolation.identity.tenantId || r.instanceId !== isolation.identity.instanceId)) throw new Error('Backup contains a record outside current instance scope');
 
+          const backupCrypto = await page.evaluate(async () => {
+            const artifact = {
+              artifactType: 'AQSA7_BACKUP_ARTIFACT',
+              artifactVersion: 1,
+              schema: 'AQSA7_PRODUCT_BACKUP',
+              schemaVersion: 5,
+              exportedAt: '2026-10-08T00:00:00.000Z',
+              ownership: {scope:'instance',productId:'aqsa7-test',tenantId:'tenant-test',instanceId:'instance-test',databaseName:'AQSA7_TEST_DB'},
+              productId:'aqsa7-test',tenantId:'tenant-test',instanceId:'instance-test',
+              receipts: [{id:'r1',productId:'aqsa7-test',tenantId:'tenant-test',instanceId:'instance-test'}],
+              patients: [],
+              settings: {clinic:{currency:'YER'},ui:{theme:'classic'}}
+            };
+            const password='AQSA7-test-password-2026';
+            const envelope=await window.aqsa7EncryptBackupArtifact(artifact,password);
+            const roundTrip=await window.aqsa7DecryptBackupArtifact(envelope,password);
+            let tamperRejected=false,wrongKeyRejected=false,metadataRejected=false,incompatibleRejected=false;
+            try {
+              const tampered=JSON.parse(JSON.stringify(envelope));
+              const bytes=Uint8Array.from(atob(tampered.ciphertext),c=>c.charCodeAt(0));
+              bytes[0]^=1;
+              tampered.ciphertext=btoa(String.fromCharCode(...bytes));
+              await window.aqsa7DecryptBackupArtifact(tampered,password);
+            } catch (_) { tamperRejected=true; }
+            try { await window.aqsa7DecryptBackupArtifact(envelope,'wrong-password-2026'); } catch (_) { wrongKeyRejected=true; }
+            try {
+              const bad=JSON.parse(JSON.stringify(envelope));
+              bad.crypto.algorithm='AES-CBC-256';
+              await window.aqsa7DecryptBackupArtifact(bad,password);
+            } catch (_) { metadataRejected=true; }
+            try {
+              const bad=JSON.parse(JSON.stringify(envelope));
+              bad.schemaVersion=999;
+              await window.aqsa7DecryptBackupArtifact(bad,password);
+            } catch (_) { incompatibleRejected=true; }
+            return {
+              manifest:window.aqsa7BackupCryptoManifest,
+              envelope,
+              roundTrip,
+              tamperRejected,
+              wrongKeyRejected,
+              metadataRejected,
+              incompatibleRejected
+            };
+          });
+          if (backupCrypto.manifest?.algorithm !== 'AES-GCM-256' || backupCrypto.manifest?.kdf !== 'PBKDF2-HMAC-SHA256' || backupCrypto.manifest?.iterations !== 600000) throw new Error('Backup crypto contract metadata mismatch');
+          if (backupCrypto.envelope?.artifactType !== 'AQSA7_BACKUP_ARTIFACT' || backupCrypto.envelope?.artifactVersion !== 1 || backupCrypto.envelope?.schemaVersion !== 5) throw new Error('Encrypted backup artifact envelope contract failed');
+          if (backupCrypto.envelope?.ciphertext === JSON.stringify(backupCrypto.roundTrip)) throw new Error('Backup plaintext appears to be stored as ciphertext');
+          if (backupCrypto.roundTrip?.artifactType !== 'AQSA7_BACKUP_ARTIFACT' || backupCrypto.roundTrip?.schemaVersion !== 5 || backupCrypto.roundTrip?.ownership?.instanceId !== 'instance-test') throw new Error('Encrypted backup round-trip lost artifact metadata or ownership');
+          if (!backupCrypto.tamperRejected || !backupCrypto.wrongKeyRejected || !backupCrypto.metadataRejected || !backupCrypto.incompatibleRejected) throw new Error('Backup encryption fail-closed checks failed: '+JSON.stringify(backupCrypto));
+
           const sharedCapabilities = await page.evaluate(() => ({
             ids: typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [],
             manifest: window.AQSA7_SHARED_CAPABILITY_MANIFEST || null,
