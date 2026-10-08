@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.10 Rendered UX Acceptance
 
-Status: IN PROGRESS — final screenshot review complete; final documentation-head CI and merge reconciliation pending
+Status: COMPLETE — screenshots reviewed, all required gates passed, PR #67 merged
 Date: 2026-10-09
 Branch: `phase-8-10-rendered-ux-acceptance`
 Base `main`: `d3b5b524f6b5ce7cf2bd1a47b3c78a3e381d3cd1`
@@ -61,7 +61,8 @@ Screenshots must be visually inspected after the workflow completes. DOM/viewpor
 - Functional Gate: PASS on source commit `a5a59f09aa7b42644f2e228b82f35b251e3331e4` — Runtime Smoke #383, Receipt Export #540, Pages Source Verification #237, Android Build #620.
 - Architecture Gate: PASS — changes limited to responsive CSS, existing Runtime Smoke assertions and documentation; no route, repository, data authority, business behavior or export boundary changed.
 - Product/UX Gate: PASS for the eight captured surfaces at the two tested viewport sizes, based on final screenshot review and dock geometry checks.
-- Final documentation-head CI and PR merge remain pending.
+- Final PR head `94b25b1c95e4917f29d6417d114fb5a22415cb31` passed all four required gates: Runtime Smoke #385, Receipt Export #542, Pages Source Verification #239 and Android Build #622.
+- PR #67 merged successfully to `main` at merge commit `f234f83613bffd560025986c7b1fbd87d5aaafb7`.
 - Physical paper stock, binding, ink and real printer scaling are outside this phase and remain manual print-shop proof.
 
 ## Exit criteria
@@ -73,6 +74,17 @@ Screenshots must be visually inspected after the workflow completes. DOM/viewpor
 5. PR is merged only after required gates pass; final `main` and Build Plan are re-verified.
 6. Phase 8.11 or another next phase is not authorized unless the authoritative Build Plan explicitly defines it; do not invent the next step.
 
-## Current decision
+## Final gate decision
 
-Rendered screenshot review is complete and the required four gates passed on source commit `a5a59f09aa7b42644f2e228b82f35b251e3331e4`. Phase 8.10 remains **IN PROGRESS** until the documentation-updated final PR head passes the same gates, the PR is merged, and the resulting `main` state is re-verified. No subsequent phase is authorized by this Phase 8.10 section; do not invent Phase 8.11.
+- Functional Gate: **PASS** — Runtime Smoke #385, Receipt Export #542, Pages Source Verification #239 and Android Build #622 passed on final PR head `94b25b1c95e4917f29d6417d114fb5a22415cb31`.
+- Architecture Gate: **PASS** — no route owner, product authority, repository/persistence authority, business behavior or export boundary changed. The only production-source change is responsive CSS for the mobile action dock.
+- Product/UX Gate: **PASS for the tested scope** — all 16 screenshots were visually reviewed at 390×844 and 1440×1000; no remaining blocking visual, navigation or horizontal-overflow defect was found. This does not claim full keyboard/screen-reader compliance.
+- Evidence artifact: [Phase 8.10 screenshot set and measurements](https://github.com/Alssaedy50/AQSA7/actions/runs/37858416383/artifacts/11584842975).
+- PR #67 merged successfully; implementation merge commit: `f234f83613bffd560025986c7b1fbd87d5aaafb7`.
+- Vercel reported its external free-tier deployment-rate limit; all required AQSA7 GitHub gates passed independently.
+
+## Final decision
+
+**Phase 8.10 — Rendered UX Acceptance: COMPLETE.**
+
+No Phase 8.11 is defined or authorized by the current authoritative Build Plan. Stop here and consult the project priority register before starting another phase. Physical printer stock, binding, ink and scaling remain a manual print-shop proof and are not covered by this rendered-screen acceptance.
