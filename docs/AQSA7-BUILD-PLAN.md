@@ -86,6 +86,23 @@ AQSA7
     - ALSSAEDY CLINIC = configured instance
   - future products
 
+## Cross-Platform Product Architecture — Mandatory Constraint
+
+AQSA7 is a **single cross-platform application**, not separate products that are independently rebuilt for Web, Desktop and Android.
+
+1. **One shared application core:** business logic, domain rules, data model, repository, navigation model, shared UI components and product behavior must remain platform-independent wherever technically possible.
+2. **Supported clients:** the same application must be usable as a responsive Web App/PWA in mobile and desktop browsers and through the Android application wrapper.
+3. **Build once, run across supported platforms:** adding or changing a core feature must not require implementing the same business logic separately for Web, Desktop and Android.
+4. **Platform adapters only where necessary:** Web/PWA/Android may have thin platform-specific adapters for capabilities such as printing, file sharing, notifications, back navigation or native file APIs. These adapters must not duplicate domain logic or become competing application implementations.
+5. **Responsive by design:** Phase 2 screens and shared components must be designed from the beginning for phone, tablet and desktop layouts. Desktop browser use is a first-class target, not a later adaptation.
+6. **Consistent product behavior:** the supported clients must use the same data contracts, validation rules, receipt behavior, patient/account behavior and application state model unless a documented platform limitation requires an adapter.
+7. **No platform-specific rebuild:** a new clinic/product feature is complete only when it is implemented in the shared AQSA7 architecture and verified on the supported client surfaces; it must not be treated as three independent feature builds.
+8. **Release implication:** Phase 5 must verify the shared product across browser/PWA, desktop browser and Android, while explicitly testing any platform adapters separately.
+
+The architectural objective is:
+
+**Build once → share the core → adapt only the platform boundary → run Web/PWA/Desktop/Android without rebuilding the product.**
+
 ## Current baseline
 
 Audited main branch at the start of the program:
@@ -137,6 +154,11 @@ Status: COMPLETE
 
 ### Phase 2 — UX/UI Reconstruction
 Status: IN PROGRESS
+
+Cross-platform requirement:
+- Every shared screen/component is designed and implemented as a responsive surface for mobile, tablet and desktop from the first implementation.
+- No separate Android UI or desktop rebuild is permitted for core product behavior.
+- Platform-specific behavior is limited to thin adapters where required by the host environment.
 
 ### Phase 2 / Task 2.1 — Design System Foundation: COMPLETE
 
@@ -343,6 +365,7 @@ Status: NOT STARTED
 
 ### Phase 5 — Full Regression
 Status: NOT STARTED
+- cross-platform verification of the same core behavior on mobile Web/PWA, desktop browser and Android wrapper
 - every button/action
 - every form/input
 - receipt creation/edit/save
