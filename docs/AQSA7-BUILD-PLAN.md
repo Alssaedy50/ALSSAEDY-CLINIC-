@@ -675,9 +675,10 @@ Verification completed so far:
 - GitHub source inspection: PASS on implementation checkpoint dc300945ef8bf590f2ad1a3cccc19151f7377e05.
 - Independent JavaScript static parsing of product.js, repository.js, storage.js: PASS.
 - Independent isolation harness: PASS for current identity, unscoped adoption, foreign record rejection, partial identity rejection and foreign backup-scope rejection.
-- Runtime smoke now contains explicit Task 3.4 isolation assertions.
-- Combined GitHub status on the current documentation head reports only the known non-gating Vercel build-rate-limit failure.
-- The available GitHub connector can retrieve pull-request workflow runs but does not expose the push-triggered workflow runs required to independently verify the latest main push. Therefore the cross-platform CI gate is PENDING, not assumed green.
+- Runtime Smoke PR verification run `37722497546` — SUCCESS; JavaScript syntax validation, mobile browser smoke and desktop browser integration smoke all passed on the exact Task 3.4 source state.
+- Android PR verification run `37722497534` — SUCCESS; debug APK, signed production APK, signature verification and metadata verification all passed on the exact Task 3.4 source state.
+- Receipt/export and Pages workflows are not pull-request triggered in the available CI path; the latest verified receipt/export and Pages gates predate the Task 3.4 source changes. Therefore those two post-change gates remain PENDING and Task 3.4 cannot yet be closed.
+- Vercel reports the known external free-tier deployment-rate-limit failure; it is non-gating and does not affect AQSA7 core verification.
 
 Gate decision:
 - Implementation: MET.
