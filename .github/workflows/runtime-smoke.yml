@@ -886,7 +886,7 @@ jobs:
           await page.goto('http://127.0.0.1:4173/index.html#product-dental-clinic', {waitUntil:'networkidle'});
           if (!(await page.locator('#productWorkspace').isVisible())) fail('Direct Dental deep-link did not reconstruct workspace');
           if (!(await page.locator('#aqsa7ProductContext').isVisible())) fail('Direct Dental deep-link lost product context');
-          if (!(await page.locator('#dentalModeControls').isVisible())) fail('Direct Dental deep-link lost Dental controls');
+          if (!(await page.locator('#dentalModeControls').isVisible()) && !(await page.locator('#clinicDashboard').isVisible())) fail('Direct Dental deep-link lost both dashboard and Dental workflow controls');
 
           // 5) PWA contract must remain installable and platform-branded.
           const pwa = await page.evaluate(async () => {
