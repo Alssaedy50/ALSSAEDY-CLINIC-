@@ -3028,7 +3028,7 @@ Priority register:
 - **8.0 Real Clinic UX Audit — COMPLETE**
 - **8.1 Information Architecture — COMPLETE**
 - **8.2 Clinic Dashboard — COMPLETE**
-- **8.3 Patient Workspace — IN PROGRESS**
+- **8.3 Patient Workspace — COMPLETE**
 - 8.4 Visit / Services / Billing — PLANNED
 - 8.5 Receipt System Reconstruction — PLANNED
 - 8.6 History & Financial Ledger — PLANNED
@@ -3101,7 +3101,7 @@ Implementation and gate:
 Objective: reconstruct the patient-facing workspace around a persistent clinic record while preserving the existing repository/data authority and without prematurely redesigning services, billing or receipts.
 
 
-Last updated: 2026-10-08 (Phase 8.2 dashboard implemented, fully regression-verified and merged; Phase 8.3 authorized)
+Last updated: 2026-10-08 (Phase 8.3 patient workspace implemented, fully regression-verified and merged; Phase 8.4 authorized)
 
 ## Current authoritative decisions
 
