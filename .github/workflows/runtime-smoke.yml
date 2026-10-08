@@ -135,7 +135,9 @@ jobs:
             })(),
             sensitiveDenied: (() => {
               try { window.aqsa7ValidateAIRequest({capabilityId:'summarize', input:'x', sensitive:true, policy:{enabled:true,allowSensitiveData:false}}); return null; } catch (e) { return String(e); }
-            })()
+            })(),
+            mockExecute: null,
+            mockStream: null
           }));
           if (!aiContract.manifest || aiContract.manifest.layer !== 'platform-ai' || aiContract.manifest.providerIndependent !== true || aiContract.manifest.coreDependency !== false) throw new Error('AI platform contract missing/provider-coupled');
           if (aiContract.manifest.secrets !== 'none' || aiContract.manifest.persistence !== 'none') throw new Error('AI contract introduced secrets or persistence ownership');
@@ -146,6 +148,21 @@ jobs:
           if (aiContract.disabledError !== 'Error: AQSA7_AI_DISABLED') throw new Error('AI disabled policy is not fail-closed');
           if (aiContract.externalDenied !== 'Error: AQSA7_AI_EXTERNAL_TRANSMISSION_DENIED') throw new Error('External AI transmission policy is not fail-closed');
           if (aiContract.sensitiveDenied !== 'Error: AQSA7_AI_SENSITIVE_DATA_DENIED') throw new Error('Sensitive-data AI policy is not fail-closed');
+          const mockAI = await page.evaluate(async () => {
+            const adapter = {
+              getDescriptor: () => ({id:'test-local',name:'Test Local Adapter',kind:'test',local:true,capabilities:['summarize']}),
+              supports: id => id === 'summarize',
+              async execute(req){ return {text:'mock-summary', capabilityId:req.capabilityId}; },
+              async *stream(req){ yield {type:'delta', text:'mock-'}; yield {type:'delta', text:'stream'}; }
+            };
+            const result = await window.aqsa7ExecuteAI({capabilityId:'summarize',input:'test',policy:{enabled:true}}, {adapter});
+            const events = [];
+            for await (const event of window.aqsa7StreamAI({capabilityId:'summarize',input:'test',policy:{enabled:true}}, {adapter})) events.push(event.event);
+            return {result, events};
+          });
+          if (aiContract.manifest.providerAdapterContract.optionalMethods.indexOf('stream') === -1) throw new Error('AI streaming contract missing');
+          if (mockAI.result?.status !== 'success' || mockAI.result?.providerId !== 'test-local' || mockAI.result?.result?.text !== 'mock-summary') throw new Error('AI provider execute contract failed: '+JSON.stringify(mockAI));
+          if (mockAI.events?.length !== 2 || mockAI.events?.[1]?.text !== 'stream') throw new Error('AI provider streaming contract failed: '+JSON.stringify(mockAI));
           if (!productContract.validation?.valid) throw new Error('Product definition validation failed after AI contract integration: '+JSON.stringify(productContract.validation));
           const isolation = await page.evaluate(async () => {
             const identity = typeof window.aqsa7GetInstanceIdentity === 'function' ? window.aqsa7GetInstanceIdentity() : null;
