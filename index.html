@@ -182,6 +182,18 @@
             </div>
         </div>
 
+        <section class="no-print clinic-visit-billing-panel" id="clinicVisitBillingPanel" aria-labelledby="clinicVisitBillingTitle" data-ui-id="UI-VISIT-001" data-owner="index.html + js/storage.js" data-action="manageVisitServicesAndBilling()">
+            <div class="clinic-visit-head">
+                <div><span class="directory-kicker">VISIT / SERVICES / BILLING</span><h3 id="clinicVisitBillingTitle">زيارة المريض والحساب</h3><p>أنشئ الخدمات كسطور مستقلة، حدّد السعر والكمية، وسيُحسب إجمالي الزيارة تلقائياً قبل إصدار السند.</p></div>
+                <span class="clinic-visit-status" id="clinicVisitStatus">زيارة جديدة</span>
+            </div>
+            <div class="clinic-visit-patient" id="clinicVisitPatientContext"><span>المريض</span><strong id="clinicVisitPatientName">مريض جديد</strong><small id="clinicVisitPatientPhone">اختر ملف المريض أو ابدأ زيارة جديدة.</small></div>
+            <div class="clinic-service-line-head"><span>الخدمة</span><span>الكمية</span><span>سعر الوحدة</span><span>المجموع</span><span></span></div>
+            <div id="clinicServiceLines" class="clinic-service-lines" aria-live="polite"></div>
+            <div class="clinic-visit-actions"><button type="button" class="clinic-visit-add" onclick="addClinicServiceLine()">＋ إضافة خدمة</button><button type="button" class="clinic-visit-reset" onclick="resetClinicVisit()">تفريغ الخدمات</button></div>
+            <div class="clinic-billing-summary"><div><span>إجمالي الخدمات</span><strong id="clinicServicesSubtotal">0</strong><small id="clinicServicesCurrency">ر.ي</small></div><div><span>المدفوع حالياً</span><strong id="clinicServicesPaid">0</strong><small id="clinicServicesPaidCurrency">ر.ي</small></div><div class="is-balance"><span>المتبقي</span><strong id="clinicServicesBalance">0</strong><small id="clinicServicesBalanceCurrency">ر.ي</small></div></div>
+        </section>
+
         <section class="no-print receipt-issuance-panel" id="receiptIssuancePanel" aria-labelledby="receiptIssuanceTitle">
             <div class="receipt-issuance-head"><div><span class="directory-kicker">RECEIPT ISSUANCE</span><h3 id="receiptIssuanceTitle">إصدار سند جديد</h3><p>أدخل بيانات السند في النموذج أدناه، وتابع الملخص المالي هنا قبل الحفظ أو الطباعة.</p></div><span class="receipt-mode-badge" id="receiptIssuanceMode">سند رقمي</span></div>
             <div class="receipt-issuance-context">
