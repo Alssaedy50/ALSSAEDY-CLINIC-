@@ -1687,7 +1687,7 @@ Next authorized task:
 
 ### Phase 4 / Task 4.6 — Local Backup / Recovery UX
 
-Status: **PENDING VERIFICATION**
+Status: **COMPLETE**
 
 Purpose:
 - Make the already-implemented encrypted local Backup/Restore capability understandable and safe for normal users.
@@ -1729,13 +1729,11 @@ Gate:
 - Local-first persistence boundary: **MET**.
 - Password/secret separation: **MET**.
 - Explicit destructive restore confirmation: **MET**.
-- Runtime verification: **PENDING**.
-- Task 4.6: **PENDING VERIFICATION**.
+- Runtime verification: **MET**.
+- Task 4.6: **COMPLETE**.
 
-Next action:
-- Run and verify the authoritative Runtime Smoke workflow on `c4e147df73a58817a4010055556ff520986a6b19`.
-- If green, close Task 4.6.
-- If red, fix only the Task 4.6 failure and repeat verification.
+Next authorized task:
+- **Task 4.7 — Scheduling / Reliability**, according to the authoritative Phase 4 sequence.
 
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
@@ -1746,7 +1744,8 @@ Task state:
 - Task 4.3 — Generic Backup Engine — **COMPLETE**.
 - Task 4.4 — Generic Backup Provider Adapter Contract — **COMPLETE**.
 - Task 4.5 — Restore & Migration Engine Contract/Implementation — **COMPLETE**.
-- Task 4.6 — Local Backup / Recovery UX — **PENDING VERIFICATION**.
+- Task 4.6 — Local Backup / Recovery UX — **COMPLETE**.
+- Next authorized task: **Task 4.7 — Scheduling / Reliability**.
 
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
@@ -1797,7 +1796,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.6 implementation complete; verification pending after smoke-test correction; Phase 4 in progress)
+Last updated: 2026-10-08 (Task 4.6 complete; Phase 4 in progress; next authorized task Task 4.7)
 
 ## Current authoritative decisions
 
