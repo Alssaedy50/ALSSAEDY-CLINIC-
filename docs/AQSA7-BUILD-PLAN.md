@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08 (Phase 2 Task 2.2 completed)
+Last updated: 2026-10-08 (Phase 2 Task 2.3 completed)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -206,6 +206,46 @@ Exit decision:
 
 Next Phase 2 task:
 - Task 2.3 — Patient Directory / Ledger Table reconstruction.
+- Executor: AI / Technical Lead.
+
+### Phase 2 / Task 2.3 — Patient Directory / Ledger Table: COMPLETE
+
+Reconstructed the Patients section as the shared Patient Directory / Ledger Table pattern required by the Phase 2 blueprint.
+
+Implementation:
+- Replaced the previous card-only patient list presentation with a reusable ledger-style directory.
+- Added a dedicated patient search field covering name, phone, problem and medical-history text.
+- Added status filtering: all patients, outstanding balance, settled accounts, and future follow-up date.
+- Added clear financial columns for total, paid and remaining balance, using tabular numeric presentation and the Phase 2 financial-state tokens.
+- Added explicit account status badges for outstanding vs settled accounts.
+- Preserved patient identity information, phone number, last visit, follow-up date and the existing Open Account action.
+- Added a mobile transformation: the desktop table becomes stacked patient ledger rows without creating a second data/rendering path.
+- Preserved the existing patient-detail/account workflow and repository-backed patient data ownership.
+- Kept the 44px interaction contract on the primary patient account action.
+- Kept the empty-result state inside the same ledger container so the directory structure remains stable even when no patients exist.
+- Added runtime smoke coverage for the directory search/filter/table/header contract.
+
+Files:
+- index.html
+- js/storage.js
+- css/templates.css
+- .github/workflows/runtime-smoke.yml
+
+Verification:
+- AQSA7 Runtime Smoke run 37710579800 — PASS on commit fe83a3e9b0d785616e13c6e6bd6acf094e575b42.
+- Pages deployment run 37710578960 — SUCCESS on the same checkpoint.
+- Android APK build from the immediately preceding application checkpoint run 37710482585 — SUCCESS. Android interactive execution remains governed by the Phase 5 scope.
+- Verify receipt image export run 37710579825 — IN PROGRESS at ledger update time. Its result must not be interpreted as Task 2.3 verification.
+- Earlier receipt image/PDF export failures remain the known selectable-text assertion blocker and are unrelated to the Patient Directory reconstruction.
+
+Exit decision:
+- Task 2.3 functional/design exit criteria: MET.
+- Browser runtime gate for the task: PASS.
+- Patient data remains repository-owned; no second persistence source was introduced.
+- Phase 2 remains IN PROGRESS.
+
+Next Phase 2 task:
+- Task 2.4 — Patient Account Detail reconstruction.
 - Executor: AI / Technical Lead.
 
 ### AQSA7 Design System Specification — Phase 2 Mandatory Foundation
