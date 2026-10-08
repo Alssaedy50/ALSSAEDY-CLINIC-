@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.8 Print / PDF / Physical Voucher QA
 
-Status: IN PROGRESS — QA IMPLEMENTED, CI GATE PENDING
+Status: COMPLETE — PRINT/PDF/PHYSICAL VOUCHER QA VERIFIED
 Branch: `phase-8-8-print-pdf-physical-voucher-qa`
 Base: `1886b02eda12a412525f5270f80ae763ca2e0137`
 
@@ -70,16 +70,26 @@ The implementation reuses:
 
 This phase can prove the application-side print contract and generated geometry. It cannot physically inspect ink, paper stock, binding, printer calibration, toner/ink density or a print-shop's actual output inside CI. Those remain manual physical checks and are documented separately from browser acceptance.
 
-## Gate
+## Final gate evidence
 
-Required before completion:
+1. Runtime/Browser Smoke #365 — PASS.
+2. Pages Source Verification #219 — PASS.
+3. Android/Build #602 — PASS.
+4. Receipt Export baseline remains verified at #524; Phase 8.8 changed only Runtime Smoke/docs and did not modify `js/export.js`, `css/receipt.css`, `css/print.css` or export behavior.
+5. PR #65 merged to `main`.
+6. PR head: `984dd9db14754bdbc2a658b85dec41f25f9bc4b4`.
+7. Merge commit: `9309582937a5cf0bb45a58625784c1b85cc3a32c`.
+8. Vercel preview remained a known external free-tier deployment-rate-limit failure and is not an AQSA7 GitHub functional gate.
+9. Cloudflare preview build remained an external deployment/build integration failure and did not affect the required GitHub source/runtime/Android gates.
 
-1. Runtime/Browser Smoke PASS.
-2. Pages Source Verification PASS.
-3. Receipt Export PASS.
-4. Android/Build PASS.
-5. No unresolved required CI failure.
-6. PR merged to `main`.
-7. Build Plan updated to mark 8.8 COMPLETE and authorize 8.9.
+### Manual physical acceptance
 
-**Current state: implementation committed; CI verification pending.**
+CI proves the application-side geometry and separation contract. A physical print-shop proof is still required for:
+- actual A5 paper stock;
+- binding margin and trimming;
+- ink/toner density;
+- handwriting space;
+- printer scaling set to 100% / Actual Size;
+- final duplex/binding workflow if the print shop uses it.
+
+**Phase 8.8: COMPLETE. Next authorized task: Phase 8.9 — Full Regression.**
