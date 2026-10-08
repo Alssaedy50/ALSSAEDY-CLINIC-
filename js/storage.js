@@ -314,15 +314,50 @@ function patientFinancialSummary(p){
 }
 
 async function renderPatients(){
-  const box=document.getElementById('patientsList');if(!box)return;
+  const box=document.getElementById('patientsList'); if(!box)return;
   const list=await getPatients();
-  if(!list.length){box.innerHTML='<div class="empty-state">لا توجد ملفات مرضى بعد.</div>';return;}
-  box.innerHTML=list.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).map(p=>{
-    const f=patientFinancialSummary(p),cur=f.receipts[0]?.currencyName||'ريال يمني';
-    return '<div class="patient-card"><div><strong>'+escapeHTML(p.name)+'</strong><small>'+escapeHTML((p.gender||'—')+' • '+(p.age||'—')+' سنة • '+(p.phone||'بدون هاتف'))+'</small><small>المشكلة: '+escapeHTML(p.problem||'غير مسجلة')+'</small></div><div class="patient-balance">'+f.balance.toLocaleString()+' '+escapeHTML(cur)+'</div><div class="patient-list-actions"><button type="button" onclick="selectPatient(\''+p.id+'\')">فتح الحساب</button></div></div>';
-  }).join('');
-}
+  const query=String(document.getElementById('patientDirectorySearch')?.value||'').trim().toLocaleLowerCase();
+  const filter=document.getElementById('patientDirectoryFilter')?.value||'all';
+  const now=new Date(); now.setHours(0,0,0,0);
+  const rows=list.map(p=>{
+    const f=patientFinancialSummary(p);
+    const next=p.nextVisit?new Date(p.nextVisit+'T00:00:00'):null;
+    return {...p,financial:f,nextDate:next};
+  }).filter(p=>{
+    const hay=[p.name,p.phone,p.problem,p.medicalHistory].map(v=>String(v||'').toLocaleLowerCase()).join(' ');
+    if(query&&!hay.includes(query))return false;
+    if(filter==='balance'&&!(p.financial.balance>0))return false;
+    if(filter==='settled'&&p.financial.balance>0)return false;
+    if(filter==='visit'&&!(p.nextDate&&p.nextDate>=now))return false;
+    return true;
+  }).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
 
+  const count=document.getElementById('patientsDirectoryCount');
+  if(count)count.textContent=rows.length+' مريض'+(rows.length===1?'':'');
+  if(!rows.length){
+    box.innerHTML='<div class="empty-state patient-ledger-empty">لا توجد نتائج مطابقة للبحث أو التصفية.</div>';
+    return;
+  }
+  const currency=p=>p.financial.receipts[0]?.currencyName||'ريال يمني';
+  const status=p=>p.financial.balance>0
+    ? '<span class="patient-status patient-status-balance">متبقي</span>'
+    : '<span class="patient-status patient-status-settled">مسدد</span>';
+  const visit=p=>p.nextVisit
+    ? '<span class="patient-next-visit">'+escapeHTML(p.nextVisit)+'</span>'
+    : '<span class="patient-muted">—</span>';
+  const desktopHead='<div class="patient-ledger-head"><span>المريض</span><span>الهاتف</span><span>آخر زيارة</span><span>الإجمالي</span><span>المدفوع</span><span>المتبقي</span><span>الحالة</span><span>إجراء</span></div>';
+  const cards=rows.map(p=>'<article class="patient-ledger-row">'+
+    '<div class="patient-identity"><strong>'+escapeHTML(p.name)+'</strong><small>'+escapeHTML((p.gender||'—')+' • '+(p.age||'—')+' سنة')+'</small><small>'+escapeHTML(p.problem||'لا توجد مشكلة مسجلة')+'</small></div>'+
+    '<div class="patient-phone" dir="ltr">'+escapeHTML(p.phone||'—')+'</div>'+
+    '<div class="patient-last-visit">'+escapeHTML(p.lastVisit||'—')+'</div>'+
+    '<div class="patient-money" data-label="الإجمالي">'+p.financial.total.toLocaleString()+' <small>'+escapeHTML(currency(p))+'</small></div>'+
+    '<div class="patient-money patient-paid" data-label="المدفوع">'+p.financial.paid.toLocaleString()+'</div>'+
+    '<div class="patient-money '+(p.financial.balance>0?'patient-due':'patient-zero')+'" data-label="المتبقي">'+p.financial.balance.toLocaleString()+'</div>'+
+    '<div class="patient-status-cell" data-label="الحالة">'+status(p)+'<small>موعد: '+visit(p)+'</small></div>'+
+    '<div class="patient-list-actions"><button type="button" class="patient-open-btn" onclick="selectPatient(\''+String(p.id).replace(/'/g,'')+'\')">فتح الحساب</button></div>'+
+    '</article>').join('');
+  box.innerHTML=desktopHead+cards;
+}
 async function selectPatient(id){
   const list=await getPatients(),p=list.find(x=>x.id===id);if(!p)return;
   currentPatientId=p.id;window.currentPatientId=p.id;
