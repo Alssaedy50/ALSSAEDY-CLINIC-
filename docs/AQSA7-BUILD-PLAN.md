@@ -1199,8 +1199,8 @@ Next authorized task:
 - Phase 4 — Reliability & Security.
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
 - Task 4.2 — Encryption & Integrity Layer — **COMPLETE**.
-- Task 4.3 — Generic Backup Engine — **PENDING VERIFICATION**.
-- Current next action: verify Task 4.3 Runtime Smoke on commit `d80c26c7fd8da416210dc2f1cfffb743805cd45d`.
+- Task 4.3 — Generic Backup Engine — **COMPLETE**.
+- Next authorized task: **Task 4.4 — Generic Backup Provider Adapter Contract**.
 
 ### Phase 4 / Task 4.2 — Encryption & Integrity Layer
 
@@ -1433,7 +1433,7 @@ Next authorized task:
 
 ### Phase 4 / Task 4.3 — Generic Backup Engine
 
-Status: **PENDING VERIFICATION**
+Status: **COMPLETE**
 
 Purpose:
 - Establish the single provider-neutral orchestration boundary for backup creation, encrypted artifact export, validation and restore.
@@ -1480,10 +1480,13 @@ Explicitly out of scope:
 
 Verification evidence:
 - Source-level inspection completed against `js/storage.js`, `js/repository.js`, `js/product.js`, `js/backup.js`, `index.html` and the Runtime Smoke workflow.
-- Runtime verification is required before closing this task.
-- Current verification checkpoint commit: `d80c26c7fd8da416210dc2f1cfffb743805cd45d`.
-- Required Runtime Smoke evidence: engine contract, artifact/schema/ownership validation, plaintext rejection, encrypted export orchestration, existing encryption/integrity checks, mobile browser smoke and desktop browser smoke.
-- Until the corrected Runtime Smoke workflow is green on the implementation checkpoint, Task 4.3 must remain **PENDING VERIFICATION**.
+- Runtime verification completed on implementation checkpoint `d80c26c7fd8da416210dc2f1cfffb743805cd45d` and final main/docs checkpoint `f42d8de53e188cb62a26526ef0956d33157781af`.
+- Authoritative Runtime Smoke run `37785552019` on the implementation checkpoint: **SUCCESS**.
+- Final main Runtime Smoke run `37785623966` on `f42d8de53e188cb62a26526ef0956d33157781af`: **SUCCESS**; browser-smoke job passed Chromium install, JavaScript syntax validation, mobile browser smoke and desktop browser integration smoke.
+- Final Android build run `37785624008`: **SUCCESS**.
+- Final receipt export verification run `37785623981`: **SUCCESS**.
+- Final GitHub Pages source verification run `37785623829`: **SUCCESS**.
+- Final Pages deployment run `37785622735`: **SUCCESS**.
 
 No Future Surprise gate:
 - Future provider storage can consume the encrypted artifact without changing the engine's domain ownership.
@@ -1498,13 +1501,11 @@ Task 4.3 gate decision:
 - Provider/cloud neutrality: **MET**.
 - Artifact/schema/ownership validation before restore: **MET**.
 - Encrypted export/import delegation: **MET**.
-- Runtime verification: **PENDING**.
-- Task 4.3: **PENDING VERIFICATION**.
+- Runtime verification: **MET**.
+- Task 4.3: **COMPLETE**.
 
-Next action:
-- Run and verify the authoritative Runtime Smoke workflow on commit `d80c26c7fd8da416210dc2f1cfffb743805cd45d`.
-- If green, close Task 4.3 and authorize Task 4.4 according to the ledger.
-- If red, fix only the Task 4.3 failure and repeat verification.
+Next authorized task:
+- **Task 4.4 — Generic Backup Provider Adapter Contract**.
 
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
@@ -1562,7 +1563,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.3 implementation complete; verification pending; Phase 4 in progress)
+Last updated: 2026-10-08 (Task 4.3 complete; Phase 4 in progress; next authorized task Task 4.4)
 
 ## Current authoritative decisions
 
