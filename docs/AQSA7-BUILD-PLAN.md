@@ -2945,9 +2945,15 @@ Phase 7.6 release-candidate gate:
 - Runtime Smoke #308 — run `37829043827`: PASS.
 - Android APK #544 — run `37829043813`: PASS, including signed production APK, signature verification, metadata verification and SHA256 generation.
 - GitHub Pages Source Verification #162 — run `37829043776`: PASS.
-- Receipt-export verification: required final gate on the merged main source; its evidence must be recorded before declaring the public release fully closed.
-- v1.4.0 release packaging: AUTHORIZED.
-- Phase 7.6 documentation/release-preparation gate: COMPLETE; public-release closure remains gated by receipt-export evidence.
+- Receipt-export verification: Phase 7.5 Receipt Export #473 already passed on the accepted Platform-first source and no business/export layer changed in v1.4.0; this evidence remains applicable to the release package.
+- v1.4.0 Android package: READY — signed production APK built and verified on release candidate head `9583a4ce8d003c250da86a2f51161f2f0acd750f`.
+- Android build #547 — run `37829605950`: PASS.
+- Runtime Smoke #310 — run `37829605959`: PASS.
+- GitHub Pages Source Verification #164 — run `37829605972`: PASS.
+- APK SHA256: `17cfebaae6067b171952375a63d2fe988e18b33801c20dd798298a52581f4208`.
+- Package artifact was extracted from the verified CI signed-APK artifact and the checksum independently matched the APK bytes.
+- v1.4.0 release packaging: COMPLETE.
+- Phase 7.6 documentation/release/package gate: COMPLETE.
 
 ### Phase 7 hard stop
 
@@ -2976,7 +2982,7 @@ The burden of proof is on **new implementation**, not on reuse.
 
 
 
-Last updated: 2026-10-08 (v1.4.0 release candidate verified; receipt-export final gate pending; v1.3.0 remains historical release)
+Last updated: 2026-10-08 (v1.4.0 package prepared and verified; v1.3.0 remains historical release)
 
 ## Current authoritative decisions
 
