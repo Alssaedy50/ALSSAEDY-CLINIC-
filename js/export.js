@@ -346,6 +346,9 @@ function getReceiptText() {
     const recNo = document.getElementById('digReceiptNo')?.value || '---';
     const method = document.getElementById('selectedPayMethod')?.value || 'غير محددة';
     const ref = document.getElementById('digRef')?.value || '';
+    const editing = typeof getEditingReceipt === 'function' ? getEditingReceipt() : null;
+    const lifecycle = typeof getReceiptLifecycleStatus === 'function' ? getReceiptLifecycleStatus(editing) : 'issued';
+    const serviceItems = typeof getClinicServiceItems === 'function' ? getClinicServiceItems() : [];
     const services = Array.from(document.querySelectorAll('.custom-check-item.active'))
         .map(item => item.innerText.replace('✓','').trim());
     const customService = document.getElementById('digCustomService')?.value?.trim();
@@ -354,6 +357,8 @@ function getReceiptText() {
     const refText = ref ? '\nالمرجع: ' + bidiIsolate(ref) : '';
     const patientPhoneText = patientPhone ? '\nرقم الهاتف: ' + bidiIsolate(patientPhone) : '';
     const currency = typeof getCurrencyInfo === 'function' ? getCurrencyInfo() : {nameAr:'ريال يمني',symbol:'ر.ي'};
+    const lineText = serviceItems.length ? '\nتفاصيل الخدمات: ' + serviceItems.map(item => (item.name || 'خدمة') + ' × ' + (Number(item.qty)||1) + ' = ' + (((Number(item.qty)||1)*(Number(item.unitPrice)||0)).toLocaleString()) + ' ' + currency.symbol).join('؛ ') : '';
+    const statusText = lifecycle === 'voided' ? '\n⚠️ حالة السند: ملغى — لا يمثل مطالبة مالية سارية' : '';
     const changeText = change > 0 ? '\nالزيادة/المبلغ المستحق للمريض: ' + bidiIsolate(change) + ' ' + currency.nameAr : '';
     const clinicPhones = [
         '+967 716 339 366',
@@ -364,7 +369,8 @@ function getReceiptText() {
         'رقم السند: ' + bidiIsolate(recNo) + '\n' +
         'التاريخ: ' + bidiIsolate(date) + '\n' +
         'المريض: ' + name + patientPhoneText + '\n' +
-        srvText + (srvText ? '\n' : '') +
+        statusText +
+        srvText + lineText + ((srvText || lineText) ? '\n' : '') +
         'طريقة الدفع: ' + method + refText + '\n' +
         '-----------------------------\n' +
         'المبلغ المدفوع: ' + bidiIsolate(paid) + ' ' + currency.nameAr + ' (' + currency.symbol + ')\n' +

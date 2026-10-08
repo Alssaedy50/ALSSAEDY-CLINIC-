@@ -94,34 +94,23 @@ if (blankCheck.date.year !== new Date().getFullYear() + 'م' ||
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
 
-const dateFormats = await page.evaluate(() => {
-  const input = document.getElementById('paperTemplateDate');
-  if (!input) throw new Error('Missing #paperTemplateDate');
-  const cases = [
-    ['07/10/2026', ['07','10','2026']],
-    ['7-10-2026', ['07','10','2026']],
-    ['2026/10/07', ['07','10','2026']],
-    ['٢٠٢٦/١٠/٠٧', ['07','10','2026']],
-    ['2026.10.07', ['07','10','2026']],
-    ['7 10 2026', ['07','10','2026']]
-  ];
-  return cases.map(([value, expected]) => {
-    setPaperTemplateDate(value);
-    return {
-      value,
-      day: document.getElementById('paperDateDay')?.textContent || '',
-      month: document.getElementById('paperDateMonth')?.textContent || '',
-      year: document.getElementById('paperYearDigits')?.textContent || '',
-      era: document.getElementById('paperYearEra')?.textContent || ''
-    };
-  });
+const blankTemplateContract = await page.evaluate(() => {
+  const dateEditor=document.getElementById('paperTemplateDate');
+  document.getElementById('digDate').value='07/10/2026';
+  setMode('manual');
+  const result={
+    dateEditorPresent:Boolean(dateEditor),
+    digitalDate:document.getElementById('digDate')?.value||'',
+    paperDay:document.getElementById('paperDateDay')?.textContent||'',
+    paperMonth:document.getElementById('paperDateMonth')?.textContent||'',
+    paperYear:document.getElementById('paperYearDigits')?.textContent||''
+  };
+  setMode('digital');
+  return result;
 });
-for (const item of dateFormats) {
-  if (item.day !== '07' || item.month !== '10' || item.year !== '2026' || item.era !== 'م') {
-    throw new Error('Paper date format parsing failed: ' + JSON.stringify(item));
-  }
+if (blankTemplateContract.dateEditorPresent || blankTemplateContract.digitalDate !== '07/10/2026' || blankTemplateContract.paperDay !== '' || blankTemplateContract.paperMonth !== '') {
+  throw new Error('Blank paper template boundary failed: '+JSON.stringify(blankTemplateContract));
 }
-await page.evaluate(() => clearPaperTemplateDate());
 
 await page.evaluate(() => { window.__templateSnapshot=prepareBlankTemplate(); });
 await page.emulateMedia({ media: 'print' });

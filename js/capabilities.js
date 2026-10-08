@@ -80,11 +80,12 @@
       id: 'receipts',
       kind: 'shared-business-capability',
       purpose: 'Represent receipt/invoice issuance records and lifecycle independent of industry.',
-      owns: ['document numbering contract', 'receipt/invoice record lifecycle', 'receipt status'],
+      owns: ['document numbering contract', 'receipt/invoice record lifecycle', 'receipt status', 'void/cancel semantics'],
       excludes: ['print rendering', 'clinical content', 'provider/cloud storage'],
       entities: ['receipt', 'invoice'],
       dataCollections: ['receipts'],
-      api: ['create', 'get', 'update', 'delete', 'list']
+      api: ['create', 'get', 'update', 'delete', 'list', 'transitionStatus'],
+      statusValues: ['issued', 'voided']
     },
     staff: {
       id: 'staff',
@@ -196,6 +197,27 @@
     }, {count:0,total:0,paid:0,balance:0});
   }
 
+  function normalizeReceiptStatus(value){
+    return value === 'voided' ? 'voided' : 'issued';
+  }
+
+  function transitionReceiptStatus(record, targetStatus, metadata = {}){
+    const current = normalizeReceiptStatus(record?.status);
+    const target = normalizeReceiptStatus(targetStatus);
+    if (current === target) return {...(record || {}), status: current};
+    if (current === 'voided') throw new Error('AQSA7_RECEIPT_ALREADY_VOIDED');
+    if (target !== 'voided') throw new Error('AQSA7_RECEIPT_INVALID_STATUS_TRANSITION');
+    const reason = String(metadata.reason || '').trim();
+    if (!reason) throw new Error('AQSA7_RECEIPT_VOID_REASON_REQUIRED');
+    return {...(record || {}), status:'voided', voidedAt:metadata.at || new Date().toISOString(), voidReason:reason};
+  }
+
+  const receiptLifecycleContract = freeze({
+    statusValues: freeze(['issued', 'voided']),
+    normalizeStatus: normalizeReceiptStatus,
+    transitionStatus: transitionReceiptStatus
+  });
+
   const billingContract = freeze({
     normalizeAmount,
     calculateBalance,
@@ -207,5 +229,6 @@
   window.aqsa7GetSharedCapabilityManifest = aqsa7GetSharedCapabilityManifest;
   window.aqsa7GetSharedCapability = aqsa7GetSharedCapability;
   window.aqsa7ListSharedCapabilityIds = aqsa7ListSharedCapabilityIds;
+  window.aqsa7ReceiptLifecycleContract = receiptLifecycleContract;
   window.aqsa7BillingContract = billingContract;
 })();

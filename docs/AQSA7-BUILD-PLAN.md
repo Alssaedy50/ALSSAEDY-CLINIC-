@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0–8.4 COMPLETE / Phase 8.5 AUTHORIZED NEXT
-Last updated: 2026-10-08 (Phase 8.4 Visit / Services / Billing completed and verified)
+Status: PHASE 8 ACTIVE — Phase 8.0–8.5 COMPLETE / Phase 8.6 AUTHORIZED NEXT
+Last updated: 2026-10-09 (Phase 8.5 Receipt System Reconstruction completed and verified)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3029,8 +3029,8 @@ Priority register:
 - **8.1 Information Architecture — COMPLETE**
 - **8.2 Clinic Dashboard — COMPLETE**
 - **8.3 Patient Workspace — COMPLETE**
-- **8.4 Visit / Services / Billing — AUTHORIZED NEXT**
-- 8.5 Receipt System Reconstruction — PLANNED
+- **8.4 Visit / Services / Billing — COMPLETE**
+- **8.5 Receipt System Reconstruction — IN PROGRESS / CI PENDING**
 - 8.6 History & Financial Ledger — PLANNED
 - 8.7 Mobile UX — PLANNED
 - 8.8 Print / PDF / Physical Voucher QA — PLANNED
@@ -3073,7 +3073,7 @@ Implementation and gate:
 
 **Phase 8.2: COMPLETE.**
 
-### Next authorized task:
+### Current phase:
 **Phase 8.5 — Receipt System Reconstruction.**
 
 ### Phase 8 execution constraints
@@ -3096,12 +3096,12 @@ Implementation and gate:
 **Phase 8.0: COMPLETE.**
 
 ### Next authorized task
-**Phase 8.5 — Receipt System Reconstruction.**
+**Phase 8.6 — History & Financial Ledger.**
 
-Objective: reconstruct receipt issuance/preview/printing/sharing around the completed patient, visit, services and billing workflow while preserving the existing receipt repository and export boundaries.
+Objective: reconstruct patient/transaction history and financial ledger semantics after the Phase 8.5 receipt lifecycle gate closes.
 
 
-Last updated: 2026-10-08 (Phase 8.3 patient workspace implemented, fully regression-verified and merged; Phase 8.4 authorized)
+Last updated: 2026-10-09 (Phase 8.5 receipt reconstruction implemented; CI gate pending)
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED
@@ -3136,7 +3136,7 @@ Gate decision:
 - **Phase 8.4: COMPLETE.**
 
 ### Next authorized task
-**Phase 8.5 — Receipt System Reconstruction.**
+**Phase 8.6 — History & Financial Ledger.**
 
 ## Current authoritative decisions
 

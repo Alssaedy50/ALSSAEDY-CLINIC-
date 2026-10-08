@@ -1,6 +1,22 @@
 /* Receipt, patient and export domain logic. Persistence is owned by repository.js. */
 function safeHistory(){ return clinicRepositoryReceipts(); }
 
+function getReceiptLifecycleStatus(item){ return window.aqsa7ReceiptLifecycleContract?.normalizeStatus(item?.status) || (item?.status === 'voided' ? 'voided' : 'issued'); }
+function isReceiptActive(item){ return getReceiptLifecycleStatus(item) !== 'voided'; }
+function activeReceiptHistory(){ return safeHistory().filter(isReceiptActive); }
+function getEditingReceipt(){ const id=window.aqsa7EditingReceiptId || ''; return id ? safeHistory().find(item => String(item.id) === String(id)) || null : null; }
+function syncReceiptEditorState(){
+  const current=getEditingReceipt(), status=getReceiptLifecycleStatus(current);
+  const save=document.querySelector('.issuance-save');
+  const cancel=document.querySelector('.issuance-cancel');
+  const badge=document.getElementById('receiptLifecycleStatus');
+  if(save){ save.textContent=current ? (status==='voided' ? '🔒 سند ملغى' : '💾 تحديث السند') : '💾 حفظ السند'; save.disabled=status==='voided'; }
+  if(cancel)cancel.hidden=!current || status==='voided';
+  if(badge){ badge.textContent=current ? (status==='voided' ? 'ملغى' : 'سند محفوظ — قابل للتحديث') : 'سند جديد'; badge.classList.toggle('is-voided',status==='voided'); badge.classList.toggle('is-issued',status!=='voided'); }
+  const notice=document.getElementById('receiptVoidNotice');
+  if(notice){ notice.hidden=status!=='voided'; }
+}
+
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
@@ -18,6 +34,8 @@ function updateReceiptIssuancePanel(){
   const info=typeof getCurrencyInfo==='function'?getCurrencyInfo():{symbol:'ر.ي'};
   const total=Math.max(0,Number.parseFloat(value('digTotal'))||0), paid=Math.max(0,Number.parseFloat(value('digPaid'))||0), balance=Math.max(0,total-paid);
   const services=getSelectedServices();
+  const current=getEditingReceipt();
+  const lifecycle=getReceiptLifecycleStatus(current);
   const set=(id,text)=>{const e=document.getElementById(id);if(e)e.textContent=text;};
   set('issuancePatientName',value('digClientName')||'مريض جديد');set('issuancePatientPhone',value('digPatientPhone')||'لم يتم اختيار ملف');
   set('issuanceServiceCount',String(services.length));set('issuanceServices',services.length?services.join('، '):'لم تُحدد خدمة بعد');
@@ -28,6 +46,10 @@ function updateReceiptIssuancePanel(){
   if(typeof syncClinicVisitPatientContext==='function')syncClinicVisitPatientContext();set('issuanceReference',value('digRef')?'المرجع: '+value('digRef'):'بدون مرجع');
   panel.classList.toggle('has-balance',balance>0);panel.classList.toggle('is-settled',balance<=0&&total>0);panel.classList.toggle('is-manual',document.body.getAttribute('data-mode')==='manual');
   const mode=document.getElementById('receiptIssuanceMode');if(mode)mode.textContent=document.body.getAttribute('data-mode')==='manual'?'نموذج طباعة':'سند رقمي';
+  if(document.getElementById('receiptLifecycleStatus'))document.getElementById('receiptLifecycleStatus').textContent=current?(lifecycle==='voided'?'ملغى':'سند محفوظ — قابل للتحديث'):'سند جديد';
+  if(document.getElementById('receiptLifecycleStatus'))document.getElementById('receiptLifecycleStatus').classList.toggle('is-voided',lifecycle==='voided');
+  if(document.getElementById('receiptLifecycleStatus'))document.getElementById('receiptLifecycleStatus').classList.toggle('is-issued',lifecycle!=='voided');
+  syncReceiptEditorState();
 }
 function calculateLedger(){
   const billing=window.aqsa7BillingContract;
@@ -80,7 +102,8 @@ function collectReceiptData() {
         payMethod:document.getElementById('selectedPayMethod').value||'نقداً',
         ref:document.getElementById('digRef').value.trim(),
         services:[...getSelectedServices(), ...(document.getElementById('digCustomService')?.value.trim() ? [document.getElementById('digCustomService').value.trim()] : [])].filter((v,i,a)=>a.indexOf(v)===i),serviceItems:getClinicServiceItems().map(item=>({...item})),visitId:window.aqsa7CurrentVisitId||'',mode:'digital',size:getSelectedSize(),
-        currency:currency.code,currencyName:currency.nameAr,currencySymbol:currency.symbol
+        currency:currency.code,currencyName:currency.nameAr,currencySymbol:currency.symbol,
+        status:'issued'
     };
 }
 function receiptFingerprint(item){
@@ -90,19 +113,45 @@ function receiptFingerprint(item){
 async function saveReceiptLocally(){
   if(document.body.getAttribute('data-mode')!=='digital'){alert('الحفظ متاح للسند الرقمي فقط.');return;}
   if(!document.getElementById('digReceiptNo').value)generateNextReceiptNo();
+  const history=safeHistory(), editing=getEditingReceipt();
+  if(editing && getReceiptLifecycleStatus(editing)==='voided'){toast?.('السند الملغى للعرض فقط ولا يمكن تحديثه.','error');return;}
   const data=collectReceiptData();
-  const history=safeHistory();
+  if(editing){
+    data.id=editing.id; data.createdAt=editing.createdAt||new Date().toISOString(); data.updatedAt=new Date().toISOString(); data.status='issued';
+  }else{
+    data.status='issued'; data.createdAt=new Date().toISOString(); data.updatedAt=data.createdAt;
+  }
   const fp=receiptFingerprint(data);
-  if(history.some(item=>receiptFingerprint(item)===fp)){toast?.('هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.','error');return;}
-  if(history.some(item=>String(item.recNo)===String(data.recNo))){toast?.('رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.','error');return;}
+  if(history.some(item=>String(item.id)!==String(data.id) && receiptFingerprint(item)===fp)){toast?.('هذا السند مطابق تماماً لسند محفوظ سابقاً. تم رفض الحفظ المكرر.','error');return;}
+  if(history.some(item=>String(item.id)!==String(data.id) && String(item.recNo)===String(data.recNo) && getReceiptLifecycleStatus(item)==='issued')){toast?.('رقم السند مستخدم بالفعل. تم رفض الحفظ لتجنب إنشاء سند مكرر.','error');return;}
   try{
     await clinicRepositoryPutReceipt(data);
     if(typeof upsertCurrentPatient==='function') await upsertCurrentPatient(data);
-    updateHistoryCount();
+    window.aqsa7EditingReceiptId='';
+    updateHistoryCount(); syncReceiptEditorState();
     localStorage.removeItem('alssaedy_draft');
-    toast?.('تم حفظ السند بنجاح في السجل الدائم.');
+    toast?.(editing?'تم تحديث السند بنجاح.':'تم حفظ السند بنجاح في السجل الدائم.');
     if(typeof autoSyncIfEnabled==='function')autoSyncIfEnabled();
   }catch(e){ toast?.('تعذر حفظ السند: '+(e?.message||'خطأ غير معروف'),'error'); }
+}
+
+async function cancelReceipt(id){
+  const item=safeHistory().find(r=>String(r.id)===String(id || window.aqsa7EditingReceiptId));
+  if(!item)return;
+  if(getReceiptLifecycleStatus(item)==='voided'){toast?.('هذا السند ملغى بالفعل.','info');return;}
+  const reason=prompt('سبب إلغاء السند (مطلوب):','');
+  if(reason===null)return;
+  const clean=String(reason).trim();
+  if(!clean){alert('يجب إدخال سبب الإلغاء للحفاظ على سجل واضح.');return;}
+  try{
+    const lifecycle=window.aqsa7ReceiptLifecycleContract;
+    const updated=lifecycle?.transitionStatus ? lifecycle.transitionStatus(item,'voided',{reason:clean}) : {...item,status:'voided',voidedAt:new Date().toISOString(),voidReason:clean};
+    await clinicRepositoryPutReceipt({...updated,updatedAt:new Date().toISOString()});
+    if(typeof updatePatientVisitAfterReceiptChange==='function')await updatePatientVisitAfterReceiptChange(updated);
+    window.aqsa7EditingReceiptId=updated.id;
+    updateHistoryCount(); renderHistory(); syncReceiptEditorState(); updateReceiptIssuancePanel();
+    toast?.('تم إلغاء السند مع الاحتفاظ به في السجل.','info');
+  }catch(e){toast?.('تعذر إلغاء السند: '+(e?.message||'خطأ غير معروف'),'error');}
 }
 
 function getAllReceiptHistory() {
@@ -192,7 +241,7 @@ function updateHistoryCount() {
 }
 
 function getHistoryStats(list) {
-    const items = Array.isArray(list) ? list : safeHistory();
+    const items = (Array.isArray(list) ? list : activeReceiptHistory()).filter(isReceiptActive);
     const billing = window.aqsa7BillingContract;
     if (billing) return billing.summarizeReceivables(items);
     const totals = items.reduce((acc, item) => {
@@ -231,14 +280,17 @@ function filterHistory(list, query) {
 
 function renderHistory() {
     const history = safeHistory();
+    const activeHistory = activeReceiptHistory();
     const container = document.getElementById('historyList');
     if (!container) return;
     const query = document.getElementById('historySearch')?.value || '';
     const filter = document.getElementById('historyFilter')?.value || 'all';
     let filtered = filterHistory(history, query);
 
-    if (filter === 'balance') filtered = filtered.filter(item => Number(item.balance) > 0);
-    if (filter === 'settled') filtered = filtered.filter(item => Number(item.balance) <= 0 && Number(item.total) > 0);
+    if (filter === 'balance') filtered = filtered.filter(item => isReceiptActive(item) && Number(item.balance) > 0);
+    if (filter === 'settled') filtered = filtered.filter(item => isReceiptActive(item) && Number(item.balance) <= 0 && Number(item.total) > 0);
+    if (filter === 'active') filtered = filtered.filter(isReceiptActive);
+    if (filter === 'voided') filtered = filtered.filter(item => !isReceiptActive(item));
 
     filtered = filtered.slice().sort((a, b) => {
         const dateA = String(a.date || '');
@@ -273,10 +325,11 @@ function renderHistory() {
         const cur = escapeHTML(item.currencySymbol || item.currencyName || 'ر.ي');
         const services = Array.isArray(item.services) && item.services.length ? escapeHTML(item.services.join('، ')) : '—';
         const id = escapeHTML(String(item.id || '').replace(/'/g, ''));
-        const settled = balanceValue <= 0 && Number(item.total || 0) > 0;
-        const status = settled
-            ? '<span class="history-status history-status-paid">مسدد</span>'
-            : '<span class="history-status history-status-due">متبقي</span>';
+        const lifecycle=getReceiptLifecycleStatus(item);
+        const settled = lifecycle==='issued' && balanceValue <= 0 && Number(item.total || 0) > 0;
+        const status = lifecycle==='voided'
+            ? '<span class="history-status history-status-voided">ملغى</span>'
+            : (settled ? '<span class="history-status history-status-paid">مسدد</span>' : '<span class="history-status history-status-due">متبقي</span>');
 
         return '<div class="history-ledger-row">' +
             '<div class="history-receipt-cell" data-label="السند"><strong>' + recNo + '</strong><small>' + date + '</small></div>' +
@@ -285,10 +338,10 @@ function renderHistory() {
             '<div class="history-money" data-label="الإجمالي"><span>' + total + '</span><small>' + cur + '</small></div>' +
             '<div class="history-money" data-label="المدفوع"><span>' + paid + '</span><small>' + cur + '</small></div>' +
             '<div class="history-money" data-label="المتبقي"><span>' + balance + '</span><small>' + cur + '</small></div>' +
-            '<div class="history-status-cell" data-label="الحالة">' + status + '</div>' +
+            '<div class="history-status-cell" data-label="الحالة">' + status + (lifecycle==='voided' && item.voidReason ? '<small class="history-void-reason">'+escapeHTML(item.voidReason)+'</small>' : '') + '</div>' +
             '<div class="history-list-actions" aria-label="إجراءات السند">' +
               '<button type="button" class="history-action history-open" title="فتح السند" aria-label="فتح السند ' + recNo + '" onclick="loadReceipt(\'' + id + '\')">📥 فتح</button>' +
-              '<button type="button" class="history-action history-delete" title="حذف السند" aria-label="حذف السند ' + recNo + '" onclick="deleteReceipt(\'' + id + '\')">🗑️ حذف</button>' +
+              (lifecycle==='voided' ? '' : '<button type="button" class="history-action history-cancel" title="إلغاء السند" aria-label="إلغاء السند ' + recNo + '" onclick="cancelReceipt(\'' + id + '\')">↩️ إلغاء</button>') +
             '</div>' +
         '</div>';
     }).join('');
@@ -299,6 +352,7 @@ function renderHistory() {
 function loadReceipt(id) {
     const item = safeHistory().find(r => String(r.id) === String(id));
     if (!item) return;
+    window.aqsa7EditingReceiptId=item.id;
     setMode('digital');
     document.getElementById('digReceiptNo').value = item.recNo || '';
     document.getElementById('digDate').value = item.date || getLocalDateISO();
@@ -320,12 +374,22 @@ function loadReceipt(id) {
     });
     if (item.size && typeof setSize === 'function') setSize(item.size);
     calculateLedger();
+    syncReceiptEditorState();
     closeHistoryModal();
 }
 
+async function updatePatientVisitAfterReceiptChange(receipt){
+  const patients=await getPatients();
+  const patient=patients.find(p=>receipt.patientId&&String(p.id)===String(receipt.patientId)) || patients.find(p=>receipt.patientPhone&&p.phone===receipt.patientPhone);
+  if(!patient || !Array.isArray(patient.visits))return;
+  const visit=patient.visits.find(v=>String(v.receiptId)===String(receipt.id));
+  if(visit){Object.assign(visit,{visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,status:getReceiptLifecycleStatus(receipt),services:receipt.services||[],serviceItems:receipt.serviceItems||[],tooth:receipt.tooth||'',voidReason:receipt.voidReason||'',voidedAt:receipt.voidedAt||''});}
+  patient.updatedAt=new Date().toISOString();
+  await clinicRepositoryPutPatient(patient);
+}
+
 async function deleteReceipt(id){
-  try{await clinicRepositoryDeleteReceipt(id);renderHistory();updateHistoryCount();}
-  catch(e){toast?.('تعذر حذف السند: '+(e?.message||'خطأ غير معروف'),'error');}
+  return cancelReceipt(id);
 }
 
 async function clearAllHistory(){
@@ -351,7 +415,9 @@ async function upsertCurrentPatient(receipt){
   if(!p)p={id:(window.crypto?.randomUUID?window.crypto.randomUUID():'P-'+Date.now()),name,phone,gender:'',age:'',medicalHistory:'',problem:'',createdAt:new Date().toISOString(),nextVisit:'',notes:'',visits:[]};
   p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
   if(!Array.isArray(p.visits))p.visits=[];
-  if(!p.visits.some(v=>v.receiptId===receipt.id))p.visits.push({receiptId:receipt.id,visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,services:receipt.services||[],serviceItems:receipt.serviceItems||[],tooth:receipt.tooth||''});
+  const existingVisit=p.visits.find(v=>String(v.receiptId)===String(receipt.id));
+  const visitData={receiptId:receipt.id,visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,status:getReceiptLifecycleStatus(receipt),services:receipt.services||[],serviceItems:receipt.serviceItems||[],tooth:receipt.tooth||'',voidReason:receipt.voidReason||'',voidedAt:receipt.voidedAt||''};
+  if(existingVisit) Object.assign(existingVisit,visitData); else p.visits.push(visitData);
   await clinicRepositoryPutPatient(p);
   currentPatientId=p.id; window.currentPatientId=p.id;
   return p;
@@ -408,7 +474,7 @@ function schedulePatientReminder(p){
 }
 
 function patientReceipts(p){
-  const receipts=safeHistory();
+  const receipts=activeReceiptHistory();
   return receipts.filter(r=>r.patientId===p.id||(p.phone&&r.patientPhone===p.phone));
 }
 function patientFinancialSummary(p){

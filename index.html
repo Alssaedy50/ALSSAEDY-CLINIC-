@@ -195,7 +195,7 @@
         </section>
 
         <section class="no-print receipt-issuance-panel" id="receiptIssuancePanel" aria-labelledby="receiptIssuanceTitle">
-            <div class="receipt-issuance-head"><div><span class="directory-kicker">RECEIPT ISSUANCE</span><h3 id="receiptIssuanceTitle">إصدار سند جديد</h3><p>أدخل بيانات السند في النموذج أدناه، وتابع الملخص المالي هنا قبل الحفظ أو الطباعة.</p></div><span class="receipt-mode-badge" id="receiptIssuanceMode">سند رقمي</span></div>
+            <div class="receipt-issuance-head"><div><span class="directory-kicker">RECEIPT ISSUANCE</span><h3 id="receiptIssuanceTitle">إصدار سند جديد</h3><p>أدخل بيانات السند في النموذج أدناه، وتابع الملخص المالي هنا قبل الحفظ أو الطباعة.</p></div><span class="receipt-mode-badge" id="receiptIssuanceMode">سند رقمي</span><span class="receipt-lifecycle-status is-issued" id="receiptLifecycleStatus">سند جديد</span></div>
             <div class="receipt-issuance-context">
                 <div class="issuance-context-card"><span>المريض</span><strong id="issuancePatientName">مريض جديد</strong><small id="issuancePatientPhone">لم يتم اختيار ملف</small></div>
                 <div class="issuance-context-card"><span>الخدمات المحددة</span><strong id="issuanceServiceCount">0</strong><small id="issuanceServices">لم تُحدد خدمة بعد</small></div>
@@ -212,10 +212,12 @@
                 <button type="button" class="issuance-action" onclick="openPreviewModal()">👁️ معاينة</button>
                 <button type="button" class="issuance-action issuance-print" onclick="triggerNativePrint()">🖨️ طباعة / PDF</button>
                 <button type="button" class="issuance-action issuance-share" onclick="openShareModal()">📲 إرسال</button>
+                <button type="button" class="issuance-action issuance-cancel" onclick="cancelReceipt()" hidden>↩️ إلغاء السند</button>
             </div>
         </section>
 
         <div class="receipt-paper" id="receiptPrintArea">
+            <div class="receipt-void-notice" id="receiptVoidNotice" hidden>سند ملغى — لا يمثل مطالبة مالية سارية</div>
             <div class="watermark-layer" id="watermarkLayer"></div>
 
             <header class="receipt-header">
@@ -625,8 +627,8 @@
     <div class="no-print modal-screen" id="templateModal">
         <div class="modal-box template-modal-box">
             <button class="modal-close" type="button" onclick="closeTemplateModal()">×</button>
-            <h3>🖨️ نماذج السندات الجاهزة للطباعة</h3>
-            <p>نماذج فارغة تماماً للكتابة اليدوية — لا يتم إدخال رقم السند أو التاريخ أو بيانات المريض أو المبالغ تلقائياً.</p>
+            <h3>🖨️ نموذج ورقي فارغ للمطبعة</h3>
+            <p>نسخة master عالية الدقة لدفتر السندات الورقي. تُطبع مسبقاً وتُملأ يدوياً بالقلم؛ لا ترتبط بالسند الرقمي ولا تُحفظ في سجل المرضى.</p>
             <div class="template-size-grid">
                 <button type="button" class="template-size-card active" id="templateSizeA5" onclick="selectTemplateSize('a5')">
                     <strong>A5</strong><span>دفتر العيادة</span>
@@ -637,17 +639,6 @@
                 <button type="button" class="template-size-card" id="templateSizeThermal" onclick="selectTemplateSize('thermal')">
                     <strong>80mm</strong><span>طابعة حرارية</span>
                 </button>
-            </div>
-            <div class="template-date-editor">
-                <label for="paperTemplateDate">📅 تاريخ السند الورقي</label>
-                <div class="template-date-editor-row">
-                    <input type="text" id="paperTemplateDate" class="live-input" dir="ltr" inputmode="text" autocomplete="off"
-                           placeholder="07/10/2026 أو 2026-10-07 أو أي صيغة شائعة"
-                           oninput="setPaperTemplateDate(this.value)">
-                    <button type="button" class="tool-btn" onclick="setPaperTemplateToday()">اليوم</button>
-                    <button type="button" class="tool-btn" onclick="clearPaperTemplateDate()">فارغ</button>
-                </div>
-                <small>يمكن كتابة التاريخ بصيغ مثل: 07/10/2026، 7-10-2026، 2026/10/07، أو بالأرقام العربية.</small>
             </div>
             <div class="template-actions">
                 <button type="button" class="opt-card template-action" onclick="downloadBlankTemplatePDF()">
@@ -771,8 +762,10 @@
                 </label>
                 <select id="historyFilter" class="setting-select" aria-label="تصفية السندات" onchange="renderHistory()">
                     <option value="all">كل السندات</option>
+                    <option value="active">السندات السارية</option>
                     <option value="balance">عليها متبقي</option>
                     <option value="settled">مسددة بالكامل</option>
+                    <option value="voided">السندات الملغاة</option>
                 </select>
             </div>
             <div class="history-ledger-table-wrap">
@@ -782,6 +775,7 @@
                 <div class="history-ledger-table" id="historyList"></div>
             </div>
             <div class="history-footer">
+                <span class="history-footer-note">السند الملغى يبقى محفوظاً للمرجعية ولا يدخل في الإجماليات المالية.</span>
                 <button type="button" class="tool-btn" onclick="exportTransactionsFile('csv')">📊 تصدير CSV</button>
                 <button type="button" class="tool-btn" onclick="clearAllHistory()">🗑️ مسح السجل بالكامل</button>
             </div>
