@@ -26,7 +26,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "source_commit=$GITHUB_SHA"
+          checked_out_main_sha="$(git rev-parse HEAD)"
+          remote_main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+
+          if [ -z "$remote_main_sha" ] || [ "$checked_out_main_sha" != "$remote_main_sha" ]; then
+            echo "::error::Checked-out main does not match the repository main ref."
+            echo "checked_out_main_sha=$checked_out_main_sha"
+            echo "remote_main_sha=$remote_main_sha"
+            exit 1
+          fi
+
+          echo "source_commit=$checked_out_main_sha"
           echo "pages_url=$PAGES_URL"
           echo "live_integrations_url=$LIVE_INTEGRATIONS_URL"
 
@@ -53,7 +63,7 @@ jobs:
 
           printf '%s\n' \
             "AQSA7 GitHub Pages source verification" \
-            "source_commit=$GITHUB_SHA" \
+            "source_commit=$checked_out_main_sha" \
             "pages_url=$PAGES_URL" \
             "live_integrations_url=$LIVE_INTEGRATIONS_URL" \
             "source_integrations_sha256=$source_hash" \
