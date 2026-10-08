@@ -1197,9 +1197,152 @@ Deferred Phase 4 work:
 
 Next authorized task:
 - Phase 4 — Reliability & Security.
-- Phase 4 remains **planned/not started**; its first authorized work is the dependency-map item `Backup Artifact & Schema Contract`, not broad Phase 4 implementation.
+- Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
+- Next authorized task: **Task 4.2 — Encryption & Integrity Layer**.
+
+### Phase 4 / Task 4.1 — Backup Artifact & Schema Contract
+
+Status: **COMPLETE**
+
+Purpose:
+- Establish the authoritative versioned Backup Artifact + Schema contract for subsequent Phase 4 work.
+- Keep IndexedDB/Repository as the sole live data authority.
+- Define a stable boundary for Backup Engine → Backup Artifact → Provider Adapter without implementing the engine, encryption or any provider.
+
+Current implementation baseline (verified against main):
+- js/storage.js currently builds AQSA7_PRODUCT_BACKUP artifacts with schemaVersion: 5, exportedAt, product/tenant/instance ownership, database name, receipts, patients and settings.
+- exportFullBackup() currently serializes that payload as plaintext JSON (application/json).
+- importFullBackup() currently accepts the current AQSA7 backup schema plus the legacy clinic backup schema, validates top-level backup scope, ownership-stamps/validates incoming tenant-scoped records, and persists through the repository/IndexedDB path.
+- js/product.js provides the authoritative product/tenant/instance identity and backup-scope validation boundary.
+- js/repository.js confirms IndexedDB is the durable authority; window.__clinicRepository is only an in-memory projection/cache and not a second persistence store.
+- Current versions are intentionally distinct: Backup Artifact schemaVersion 5, Product contract schemaVersion 2, IndexedDB database version 3. These are not interchangeable version numbers.
+
+Authoritative Backup Artifact Contract:
+- artifact type/identity: AQSA7_BACKUP_ARTIFACT
+- artifact contract version: versioned independently from application/product schema versions; the contract itself must be explicitly versioned before runtime implementation.
+- schemaVersion: integer identifying the Backup Artifact payload schema. Existing legacy/current artifacts use 5; future incompatible artifact changes require a new schema version.
+- ownership: required productId, tenantId, instanceId. Ownership is fail-closed: a complete matching identity is accepted; a foreign identity is rejected; partial identity is rejected; explicitly unscoped legacy data may only be adopted by the current instance through the existing controlled legacy path.
+- application/database metadata: product/version identity, instance identity, database name/scope metadata, and sufficient application metadata to select/validate the compatible restore target. Database metadata describes the source/target scope; it never creates a second database authority.
+- timestamps/integrity metadata: exportedAt is required. The target artifact contract reserves integrity metadata (algorithm/version and digest/authenticity information) for the later Encryption & Integrity Layer. The current plaintext artifact has no implemented cryptographic integrity field.
+- payload: a structured domain-data envelope containing the durable repository data required by the product. For the current Dental product this is receipts, patients, and settings; payload structure must remain subordinate to the authoritative repository/domain model and must not become a new persistence schema.
+- representation/format: the current representation is plaintext JSON. The target representation is an encrypted backup artifact; encryption is a later security-layer responsibility and is not performed by Task 4.1.
+- compatibility/versioning: a restore implementation must validate artifact type, contract/schema version, ownership, required metadata and payload shape before writing. Compatible versions may be accepted by explicit compatibility rules; unsupported future versions must fail closed; older supported versions require an explicit migration path before restore. No implicit destructive reinterpretation of unknown fields/version is allowed.
+- validation: malformed artifacts, missing required identity, partial ownership, foreign ownership, unsupported schema versions and invalid payload structures must be rejected before destructive restore actions. Validation must occur before repository writes, and restore must preserve the existing merge/replace semantics.
+- provider neutrality: the artifact is provider-independent. Provider adapters may store/transport the artifact but must not inspect, rewrite or own domain entities/business state.
+
+Canonical contract shape (logical, not runtime implementation):
+{
+  "artifactType": "AQSA7_BACKUP_ARTIFACT",
+  "artifactVersion": 1,
+  "schemaVersion": 5,
+  "exportedAt": "ISO-8601",
+  "ownership": {
+    "productId": "…",
+    "tenantId": "…",
+    "instanceId": "…",
+    "scope": "instance"
+  },
+  "application": {
+    "productVersion": "…",
+    "databaseName": "…",
+    "databaseScope": "instance"
+  },
+  "integrity": {
+    "algorithm": "reserved-for-Task-4.2",
+    "digest": "reserved-for-Task-4.2"
+  },
+  "payload": {
+    "receipts": [],
+    "patients": [],
+    "settings": {}
+  }
+}
+
+- This shape is the target contract boundary, not a new source-code type and not an instruction to add the reserved integrity fields to the current plaintext export in Task 4.1.
+- The current legacy artifact remains schema: AQSA7_PRODUCT_BACKUP, schemaVersion: 5, with top-level identity fields and top-level receipts/patients/settings; Task 4.1 does not rewrite that representation.
+- legacySchema: ALSSAEDY_CLINIC_BACKUP remains a compatibility input only and is not the canonical future artifact identity.
+
+Current vs target representation:
+- Current legacy/plaintext backup: JSON downloaded locally, application/json, schemaVersion 5, no cryptographic encryption and no implemented cryptographic integrity metadata.
+- Target encrypted artifact: same authoritative repository-derived backup semantics behind the versioned artifact boundary, with encryption and cryptographic integrity supplied by Task 4.2; provider storage is downstream and optional.
+- Task 4.1 deliberately does not encrypt, upload, download, schedule, migrate or replace the current backup runtime.
+
+Restore implications:
+1. Read only from the authoritative Repository/IndexedDB state.
+2. Validate artifact identity/version/ownership/metadata/payload before destructive operations.
+3. Reject unsupported/foreign/partially scoped artifacts before repository writes.
+4. Route accepted payload data through the existing repository ownership boundary.
+5. Preserve explicit merge vs replace behavior.
+6. Never make the backup artifact or provider storage a live database.
+
+Boundary established for later implementation:
+Product / Tenant / Instance → Repository / IndexedDB → Backup Engine → Backup Artifact → Provider Adapter → provider-specific storage
+- Task 4.1 establishes the artifact/schema contract only.
+- Task 4.2 owns encryption/integrity runtime.
+- Later Backup Engine work consumes/produces this contract.
+- Provider implementation remains downstream and is not authorized by this task.
+
+Explicitly out of scope:
+- Encryption runtime or key management.
+- Backup Engine runtime.
+- Restore/Migration Engine runtime.
+- Google Drive, OAuth or any provider implementation.
+- Cloud upload/download.
+- Scheduling/background jobs.
+- Sync engine or rewrite of js/sync.js / api/clinic-sync.js.
+- Repository redesign, new database, new repository, new state machine or new persistence path.
+- User-facing backup feature changes.
+
+Task 4.1 exit criteria:
+1. Current backup implementation in js/storage.js, js/product.js and js/repository.js is inspected and reconciled.
+2. IndexedDB/Repository remains the only live durable authority.
+3. A versioned Backup Artifact identity/type and schema boundary is explicitly defined.
+4. Product/tenant/instance ownership and validation expectations are explicit.
+5. Application/database metadata required for restore is explicit.
+6. Export timestamp and future integrity metadata boundary are explicit.
+7. Current plaintext representation and target encrypted representation are explicitly distinguished.
+8. Payload and compatibility/versioning rules are explicit.
+9. Restore validation implications are explicit.
+10. Provider-neutral Backup Engine → Backup Artifact → Provider Adapter boundary is explicit.
+11. No new persistence path, provider, encryption runtime, migration runtime or source abstraction is introduced.
+12. Task evidence and exact next authorized task are recorded in this ledger.
+
+Verification evidence:
+- js/storage.js inspected at the live main state: buildFullBackup() confirms schema: AQSA7_PRODUCT_BACKUP, schemaVersion: 5, exportedAt, ownership/database metadata, receipts, patients and settings; exportFullBackup() confirms plaintext JSON serialization.
+- js/storage.js restore path confirms schema allow-list, aqsa7ValidateBackupScope(), per-record ownership enforcement and repository persistence before/around merge/replace writes.
+- js/product.js inspected: authoritative Product/Instance identity, aqsa7OwnRecord(), aqsa7ValidateBackupScope(), Product schemaVersion 2, instance storage/database metadata.
+- js/repository.js inspected: IndexedDB database version 3, durable stores receipts, patients, settings; in-memory repository is explicitly a projection of IndexedDB.
+- Ownership boundary verified: complete matching product/tenant/instance identity is accepted; foreign identity is rejected; partial ownership is rejected; unscoped legacy records can only be explicitly adopted into the current instance.
+- Version boundary verified: Backup 5, Product 2, IndexedDB 3 are separate version domains; no generic Backup Migration Engine is claimed or introduced.
+- No new source file, persistence store, repository, provider, cloud path, encryption runtime, scheduler or migration runtime was added.
+- Documentation-only contract work required no runtime test changes; verification was performed against the actual current implementation and restore implications before closure.
+
+Files changed:
+- docs/AQSA7-BUILD-PLAN.md
+
+Source modification:
+- None. Task 4.1 is documentation/contract only.
+
+Task 4.1 gate decision:
+- Contract completeness: MET.
+- Current-artifact reconciliation: MET.
+- Ownership boundary: MET.
+- Version/compatibility boundary: MET.
+- Restore implications: MET.
+- No-new-persistence/provider/runtime constraint: MET.
+- Task 4.1: COMPLETE.
+
+Next authorized task:
+- Task 4.2 — Encryption & Integrity Layer.
+
 
 ### Phase 4 — Reliability & Security
+Status: **IN PROGRESS**
+
+Task state:
+- Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
+- Next authorized task: **Task 4.2 — Encryption & Integrity Layer**.
+
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
 - backup/restore versioning and migration
@@ -1249,7 +1392,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 3.7 formally defined and ready for execution; Phase 4 not started)
+Last updated: 2026-10-08 (Task 4.1 complete; Phase 4 in progress; next authorized task Task 4.2)
 
 ## Current authoritative decisions
 
