@@ -24,7 +24,8 @@ function updateReceiptIssuancePanel(){
   set('issuanceReceiptNo',value('digReceiptNo')||'—');set('issuanceDate',value('digDate')||'—');
   set('issuanceTotal',total.toLocaleString());set('issuancePaid',paid.toLocaleString());set('issuanceBalance',balance.toLocaleString());
   ['issuanceTotalCurrency','issuancePaidCurrency','issuanceBalanceCurrency'].forEach(id=>set(id,info.symbol));
-  set('issuancePayMethod',document.getElementById('selectedPayMethod')?.value||'نقداً');set('issuanceReference',value('digRef')?'المرجع: '+value('digRef'):'بدون مرجع');
+  set('issuancePayMethod',document.getElementById('selectedPayMethod')?.value||'نقداً');
+  if(typeof syncClinicVisitPatientContext==='function')syncClinicVisitPatientContext();set('issuanceReference',value('digRef')?'المرجع: '+value('digRef'):'بدون مرجع');
   panel.classList.toggle('has-balance',balance>0);panel.classList.toggle('is-settled',balance<=0&&total>0);panel.classList.toggle('is-manual',document.body.getAttribute('data-mode')==='manual');
   const mode=document.getElementById('receiptIssuanceMode');if(mode)mode.textContent=document.body.getAttribute('data-mode')==='manual'?'نموذج طباعة':'سند رقمي';
 }
@@ -37,7 +38,27 @@ function calculateLedger(){
   if(balance)balance.value=(total||paid)?(billing ? billing.calculateBalance(total,paid) : Math.max(0,total-paid)):'';
   if(paid>0&&taf&&typeof tafqeetRial==='function')taf.value=tafqeetRial(paid);
   updateReceiptIssuancePanel();
+  if(typeof updateClinicVisitBilling==='function')updateClinicVisitBilling();
 }
+
+function getClinicServiceItems(){return Array.isArray(window.aqsa7VisitServiceItems)?window.aqsa7VisitServiceItems:[];}
+function clinicServiceItemId(){return window.crypto?.randomUUID?window.crypto.randomUUID():'svc-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);}
+function renderClinicServiceLines(){
+  const root=document.getElementById('clinicServiceLines');if(!root)return;const items=getClinicServiceItems();
+  root.innerHTML=items.length?items.map((item,index)=>{const qty=Math.max(1,Number(item.qty)||1),price=Math.max(0,Number(item.unitPrice)||0),line=qty*price;
+    return '<div class="clinic-service-line"><input class="clinic-service-name" aria-label="اسم الخدمة" value="'+escapeHTML(item.name||'')+'" oninput="updateClinicServiceLine('+index+',\'name\',this.value)" placeholder="مثال: كشف ومعاينة"><input class="clinic-service-qty" aria-label="الكمية" type="number" min="1" step="1" value="'+qty+'" oninput="updateClinicServiceLine('+index+',\'qty\',this.value)"><input class="clinic-service-price" aria-label="سعر الوحدة" type="number" min="0" step="1" value="'+price+'" oninput="updateClinicServiceLine('+index+',\'unitPrice\',this.value)"><strong class="clinic-service-line-total">'+line.toLocaleString()+'</strong><button type="button" class="clinic-service-remove" aria-label="حذف الخدمة" onclick="removeClinicServiceLine('+index+')">×</button></div>';}).join(''):'<div class="clinic-service-empty">لا توجد خدمات في الزيارة. أضف أول خدمة للبدء.</div>';
+  updateClinicVisitBilling();
+}
+function addClinicServiceLine(name='',unitPrice=0,qty=1){if(!Array.isArray(window.aqsa7VisitServiceItems))window.aqsa7VisitServiceItems=[];window.aqsa7VisitServiceItems.push({id:clinicServiceItemId(),name:String(name||''),qty:Math.max(1,Number(qty)||1),unitPrice:Math.max(0,Number(unitPrice)||0),tooth:'',notes:''});renderClinicServiceLines();document.querySelector('#clinicServiceLines .clinic-service-name:last-of-type')?.focus();}
+function updateClinicServiceLine(index,key,value){const items=getClinicServiceItems(),item=items[index];if(!item)return;if(key==='qty')item.qty=Math.max(1,Number(value)||1);else if(key==='unitPrice')item.unitPrice=Math.max(0,Number(value)||0);else item[key]=String(value||'');renderClinicServiceLines();}
+function removeClinicServiceLine(index){const items=getClinicServiceItems();if(index<0||index>=items.length)return;items.splice(index,1);renderClinicServiceLines();}
+function resetClinicVisit(){window.aqsa7VisitServiceItems=[];renderClinicServiceLines();const total=document.getElementById('digTotal');if(total)total.value='';if(typeof calculateLedger==='function')calculateLedger();}
+function updateClinicVisitBilling(){
+  const items=getClinicServiceItems(),total=items.reduce((sum,item)=>sum+(Math.max(1,Number(item.qty)||1)*Math.max(0,Number(item.unitPrice)||0)),0),paid=Math.max(0,Number.parseFloat(document.getElementById('digPaid')?.value)||0),balance=Math.max(0,total-paid),currency=typeof getCurrencyInfo==='function'?getCurrencyInfo():{symbol:'ر.ي'};
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};set('clinicServicesSubtotal',total.toLocaleString());set('clinicServicesPaid',paid.toLocaleString());set('clinicServicesBalance',balance.toLocaleString());['clinicServicesCurrency','clinicServicesPaidCurrency','clinicServicesBalanceCurrency'].forEach(id=>set(id,currency.symbol));
+  const totalInput=document.getElementById('digTotal');if(totalInput&&items.length)totalInput.value=String(total);const status=document.getElementById('clinicVisitStatus');if(status)status.textContent=items.length?(balance>0?'متبقي على الزيارة':'الحساب مسدد'):'زيارة جديدة';if(typeof updateReceiptIssuancePanel==='function')updateReceiptIssuancePanel();
+}
+function syncClinicVisitPatientContext(){const name=document.getElementById('digClientName')?.value?.trim()||'مريض جديد',phone=document.getElementById('digPatientPhone')?.value?.trim()||'اختر ملف المريض أو ابدأ زيارة جديدة.';const n=document.getElementById('clinicVisitPatientName'),p=document.getElementById('clinicVisitPatientPhone');if(n)n.textContent=name;if(p)p.textContent=phone;}
 
 function collectReceiptData() {
     const billing = window.aqsa7BillingContract;
@@ -58,12 +79,12 @@ function collectReceiptData() {
         tafqeet:document.getElementById('digTafqeet').value.trim(),
         payMethod:document.getElementById('selectedPayMethod').value||'نقداً',
         ref:document.getElementById('digRef').value.trim(),
-        services:[...getSelectedServices(), ...(document.getElementById('digCustomService')?.value.trim() ? [document.getElementById('digCustomService').value.trim()] : [])].filter((v,i,a)=>a.indexOf(v)===i),mode:'digital',size:getSelectedSize(),
+        services:[...getSelectedServices(), ...(document.getElementById('digCustomService')?.value.trim() ? [document.getElementById('digCustomService').value.trim()] : [])].filter((v,i,a)=>a.indexOf(v)===i),serviceItems:getClinicServiceItems().map(item=>({...item})),visitId:window.aqsa7CurrentVisitId||'',mode:'digital',size:getSelectedSize(),
         currency:currency.code,currencyName:currency.nameAr,currencySymbol:currency.symbol
     };
 }
 function receiptFingerprint(item){
-    return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.tooth,item.customService,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),item.currency]);
+    return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.tooth,item.customService,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),JSON.stringify(item.serviceItems||[]),item.visitId||'',item.currency]);
 }
 
 async function saveReceiptLocally(){
@@ -289,6 +310,7 @@ function loadReceipt(id) {
     if(document.getElementById('digCustomService'))document.getElementById('digCustomService').value=item.customService||'';
     document.getElementById('digTafqeet').value = item.tafqeet || '';
     document.getElementById('digRef').value = item.ref || '';
+    window.aqsa7CurrentVisitId=item.visitId||'';window.aqsa7VisitServiceItems=Array.isArray(item.serviceItems)?item.serviceItems.map(x=>({...x})):[];renderClinicServiceLines();
     if (typeof setCurrency === 'function') setCurrency(item.currency || 'YER');
     window.currentPatientId = item.patientId || '';
     setPayMethod(item.payMethod || 'نقداً');
@@ -329,7 +351,7 @@ async function upsertCurrentPatient(receipt){
   if(!p)p={id:(window.crypto?.randomUUID?window.crypto.randomUUID():'P-'+Date.now()),name,phone,gender:'',age:'',medicalHistory:'',problem:'',createdAt:new Date().toISOString(),nextVisit:'',notes:'',visits:[]};
   p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
   if(!Array.isArray(p.visits))p.visits=[];
-  if(!p.visits.some(v=>v.receiptId===receipt.id))p.visits.push({receiptId:receipt.id,date:receipt.date,total:receipt.total,paid:receipt.paid,currency:receipt.currency,services:receipt.services||[],tooth:receipt.tooth||''});
+  if(!p.visits.some(v=>v.receiptId===receipt.id))p.visits.push({receiptId:receipt.id,visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,services:receipt.services||[],serviceItems:receipt.serviceItems||[],tooth:receipt.tooth||''});
   await clinicRepositoryPutPatient(p);
   currentPatientId=p.id; window.currentPatientId=p.id;
   return p;
@@ -484,7 +506,7 @@ function togglePatientEdit(){const form=document.querySelector('.patient-form'),
 function returnToPatientDirectory(){showPatientListView();renderPatients();appRoute={screen:'patients',patientId:''};activateAppTabVisual('patients');if(history.state?.alssaedyPanel==='patient-detail')history.back();else if(location.hash==='#patient-detail')history.replaceState({alssaedyPanel:'patients'},'', '#patients');}
 
 function startPatientVisit(){
-  closePatientsModal();if(typeof setClinicWorkspaceView==='function')setClinicWorkspaceView('receipt');setMode('digital');document.getElementById('digClientName').value=document.getElementById('patientFormName').value||'';document.getElementById('digPatientPhone').value=document.getElementById('patientFormPhone').value||'';clearPatientVisitFields();
+  closePatientsModal();if(typeof setClinicWorkspaceView==='function')setClinicWorkspaceView('receipt');setMode('digital');document.getElementById('digClientName').value=document.getElementById('patientFormName').value||'';document.getElementById('digPatientPhone').value=document.getElementById('patientFormPhone').value||'';window.aqsa7CurrentVisitId=window.crypto?.randomUUID?window.crypto.randomUUID():'V-'+Date.now();window.aqsa7VisitServiceItems=[];clearPatientVisitFields();renderClinicServiceLines();syncClinicVisitPatientContext();
 }
 
 function clearPatientVisitFields(){
@@ -509,7 +531,7 @@ function createReceiptFromPatientAccount(){
   document.getElementById('digTooth').value=tooth;
   if(document.getElementById('digCustomService'))document.getElementById('digCustomService').value=service;
   document.getElementById('digTafqeet').value=notes;
-  document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));window.aqsa7CurrentVisitId='';window.aqsa7VisitServiceItems=[];renderClinicServiceLines();
   const match=Array.from(document.querySelectorAll('.custom-check-item')).find(el=>el.innerText.replace('✓','').trim()===service);
   if(match)match.classList.add('active');
   calculateLedger();
