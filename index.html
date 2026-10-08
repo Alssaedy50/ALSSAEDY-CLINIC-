@@ -438,6 +438,19 @@
                         <div id="backupLastLocal">لم يتم إنشاء نسخة محلية بعد</div>
                         <p id="backupRecoveryHint" class="setting-help">أنشئ Backup كاملًا مشفرًا ثم احتفظ بالملف وكلمة المرور في مكان آمن.</p>
                     </div>
+                    <div id="backupScheduleCard" class="sync-status sync-idle mt-2" aria-live="polite">
+                        <strong>⏰ تذكير النسخ الاحتياطي المحلي</strong>
+                        <span id="backupScheduleStatus">محدّث</span>
+                        <p id="backupScheduleDetail" class="setting-help">تذكير محلي فقط؛ لا يتم إنشاء ملف أو رفع بيانات في الخلفية دون إجراء المستخدم.</p>
+                        <p id="backupScheduleNext" class="setting-help">أنشئ أول Backup لتفعيل الموعد التالي.</p>
+                        <label class="sync-auto-row"><input type="checkbox" id="backupScheduleToggle" checked onchange="aqsa7BackupScheduling.setEnabled(this.checked)"> تفعيل التذكير</label>
+                        <label class="setting-label" for="backupScheduleInterval">الفاصل</label>
+                        <select id="backupScheduleInterval" class="setting-select" onchange="aqsa7BackupScheduling.setIntervalDays(this.value)">
+                            <option value="1">كل يوم</option>
+                            <option value="7" selected>كل 7 أيام</option>
+                            <option value="30">كل 30 يوماً</option>
+                        </select>
+                    </div>
                     <div class="grid-btns two mt-2">
                         <button type="button" class="tool-btn" onclick="document.getElementById('dataImporter').click()">📂 استيراد ملف</button>
                         <button type="button" class="tool-btn" onclick="exportTransactionsFile('json')">⬆️ تصدير نسخة JSON</button>
@@ -657,6 +670,7 @@
 <script src="js/backup-provider.js?v=1.0.0"></script>
 <script src="js/restore-migration.js?v=1.0.0"></script>
 <script src="js/backup-ux.js?v=1.0.0"></script>
+<script src="js/backup-scheduling.js?v=1.0.0"></script>
     <script src="js/export.js?v=1.2.1"></script>
     <script src="js/templates.js?v=1.2.1"></script>
     <script src="js/app.js?v=1.2.1"></script>
