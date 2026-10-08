@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.4 Visit / Services / Billing
 
-Status: IN PROGRESS — implementation on branch `phase-8-4-visit-services-billing`
+Status: COMPLETE — CI AND REGRESSION VERIFIED
 Date: 2026-10-08
 
 ## Objective
@@ -87,3 +87,16 @@ It is intentionally outside the printable receipt surface. The existing receipt 
 - Receipt Export passes.
 - Android APK passes.
 - No duplicate persistence path is introduced.
+
+
+## Completion evidence
+
+- PR #61 merged to main.
+- Merge commit: `71f2e174d9c629233ae0e69dd1418d23f0f15bb6`.
+- Phase head: `df046557943b43443ada4f207d929124645e3ffe`.
+- Browser Smoke / Runtime Smoke: PASS.
+- Pages Source Verification: PASS.
+- Receipt Export: PASS.
+- Android/build gate: PASS.
+- Known Vercel free-tier deployment-rate-limit failure did not affect GitHub source/CI gates.
+- Phase 8.5 is the next authorized phase.
