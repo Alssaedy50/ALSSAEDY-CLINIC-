@@ -3035,8 +3035,7 @@ Priority register:
 - **8.7 Mobile UX — COMPLETE**
 - **8.8 Print / PDF / Physical Voucher QA — COMPLETE**
 - **8.9 Full Regression — IN PROGRESS**
-- 8.10 Rendered UX Acceptance — PLANNED
-- 8.10 Rendered UX Acceptance — PLANNED
+- **8.10 Rendered UX Acceptance — PLANNED**
 
 
 ### Phase 8.1 gate
