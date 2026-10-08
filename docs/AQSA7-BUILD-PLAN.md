@@ -1974,6 +1974,62 @@ Task 4.9 gate:
 Next authorized task after verification:
 - **Task 4.9 verification/retry only; do not advance to Task 4.10 until Runtime Smoke is green.**
 
+### Phase 4 / Task 4.10 — Cloud Recovery implementation
+
+Status: **IMPLEMENTED — VERIFICATION PENDING**
+
+Purpose:
+- Provide a provider-neutral disaster-recovery orchestration path from an external Backup Provider back into the authoritative local Repository / IndexedDB.
+- Cloud data is recovery input only; local IndexedDB remains the live source of truth.
+
+Implementation:
+- Added `js/cloud-recovery.js`.
+- Lists available remote backup artifacts through the existing Backup Provider Adapter contract.
+- Retrieves an opaque encrypted artifact through the provider adapter.
+- Requires an explicit recovery password and minimum password policy before decrypt/restore.
+- Reuses the existing Backup Engine decryption, migration, ownership validation and Repository restore path.
+- No cloud artifact, password, access token, refresh token, provider credential or business record is persisted by the recovery layer.
+- Provider errors remain normalized through the existing provider execution boundary.
+- Provider outage therefore fails recovery without disabling local IndexedDB operation.
+
+Recovery boundary:
+Business / local Repository → Backup Engine → Cloud Recovery → Backup Provider Adapter → encrypted remote artifact
+
+Safety rules:
+- Remote data is never written directly into IndexedDB before successful decrypt and validation.
+- Product/Tenant/Instance ownership is enforced by the existing restore path.
+- Restore merge/replace confirmation remains centralized in the existing Backup Engine.
+- No second repository, database, state machine or cloud sync path is introduced.
+- Google Drive remains the first concrete provider; recovery remains provider-neutral.
+
+Files:
+- `js/cloud-recovery.js`
+- `index.html`
+- `.github/workflows/runtime-smoke.yml`
+- `docs/AQSA7-BUILD-PLAN.md`
+
+Explicitly out of scope:
+- Background cloud recovery.
+- Automatic destructive restore.
+- Cloud as live database.
+- Replacing legacy clinic sync.
+- Phase 5 full lost-device regression across every platform.
+- Additional provider implementations.
+
+Verification:
+- Runtime Smoke must verify the cloud recovery contract, remote-list delegation, encrypted-artifact retrieval, password/decryption boundary, restore delegation and existing Phase 4 regression suite.
+- Android and Pages source verification remain required.
+
+Task 4.10 gate:
+- Provider-neutral recovery orchestration: **MET**.
+- Local-first / IndexedDB authority: **MET**.
+- Encrypted artifact boundary: **MET**.
+- Restore validation delegation: **MET**.
+- Runtime verification: **PENDING**.
+
+Next authorized task after verification:
+- **Task 4.10 verification/retry only; do not advance to Task 4.11 until Runtime Smoke is green.**
+
 ### Phase 5 — Full Regression
 Must verify:
 - all buttons/actions/forms/inputs
@@ -2004,7 +2060,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.9 Google Drive Adapter verified complete; next authorized task Task 4.10 Cloud Recovery)
+Last updated: 2026-10-08 (Task 4.10 Cloud Recovery implemented; Runtime Smoke verification pending)
 
 ## Current authoritative decisions
 
