@@ -1382,7 +1382,7 @@ jobs:
             };
           });
           if (printQa.a5.width!=='148mm' || printQa.a5.height!=='210mm' || printQa.a5.print!=='148mm 210mm' || printQa.a5.pdf!=='a5') fail('Phase 8.8 A5 physical profile failed', printQa.a5);
-          const a5Ratio=Number(printQa.a5Paper.height)/Number(printQa.a5Paper.width); if (!Number.isFinite(a5Ratio) || Math.abs(a5Ratio-(210/148))>0.03) fail('Phase 8.8 A5 rendered sheet geometry failed', printQa.a5Paper);
+          const a5Ratio=parseFloat(printQa.a5Paper.height)/parseFloat(printQa.a5Paper.width); if (!Number.isFinite(a5Ratio) || Math.abs(a5Ratio-(210/148))>0.03) fail('Phase 8.8 A5 rendered sheet geometry failed', printQa.a5Paper);
           if (!printQa.printCss.includes('148mm') || !printQa.printCss.includes('210mm') || !printQa.printCss.includes('margin:0')) fail('Phase 8.8 print CSS contract failed', printQa.printCss);
           if (printQa.blank.mode!=='manual' || !printQa.blank.classPresent || printQa.blank.rec || printQa.blank.name || printQa.blank.phone || printQa.blank.paid || printQa.blank.total || printQa.blank.date) fail('Phase 8.8 blank voucher leaked digital transaction data', printQa.blank);
           if (printQa.restored.rec!==printQa.original.rec || printQa.restored.name!==printQa.original.name || printQa.restored.phone!==printQa.original.phone || printQa.restored.paid!==printQa.original.paid || printQa.restored.total!==printQa.original.total || printQa.restored.mode!==printQa.original.mode || printQa.restored.size!==printQa.original.size) fail('Phase 8.8 blank voucher did not restore digital state', printQa.restored);
