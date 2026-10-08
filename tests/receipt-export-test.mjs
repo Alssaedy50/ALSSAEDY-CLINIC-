@@ -213,10 +213,17 @@ for (const size of ['a5','a4']) {
   const pages=/Pages:\s+(\d+)/.exec(info)?.[1];
   if(pages!=='1') throw new Error('Vector print PDF must contain exactly one page for '+size);
   const text=execFileSync('pdftotext',[pdfPath,'-'],{encoding:'utf8'});
-  if(!text.includes('مريض الاختبار') || !text.includes('TEST-001') || !text.includes('07/10/2026')) {
+  // pdftotext may insert whitespace and bidi control marks between glyph runs,
+  // especially for Arabic and mixed Arabic/Latin text. Normalize the extracted
+  // text before asserting selectable content; do not weaken the actual content contract.
+  const normalizedText=text
+    .replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g,'')
+    .replace(/\s+/g,'');
+  const expectedPatient='مريضالاختبار';
+  if(!normalizedText.includes(expectedPatient) || !normalizedText.includes('TEST-001') || !normalizedText.includes('07/10/2026')) {
     throw new Error('PDF is missing selectable receipt text for '+size+': '+text.slice(0,500));
   }
-  if(text.includes('2026-10-07')) throw new Error('PDF exposed the native ISO input value for '+size);
+  if(normalizedText.includes('2026-10-07')) throw new Error('PDF exposed the native ISO input value for '+size);
   outputs[size].pdf={pages:Number(pages),selectableText:true};
 }
 await page.emulateMedia({media:'screen'});
