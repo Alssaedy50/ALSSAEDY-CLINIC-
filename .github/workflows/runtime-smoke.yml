@@ -119,6 +119,16 @@ jobs:
           if (!(await page.locator('#patientsModal').evaluate(e => e.classList.contains('open')))) throw new Error('Patients panel did not open');
           if (!page.url().endsWith('#patients')) throw new Error('Patients route state missing');
 
+          const patientDirectory = await page.evaluate(() => ({
+            search: !!document.querySelector('#patientDirectorySearch'),
+            filter: !!document.querySelector('#patientDirectoryFilter'),
+            table: !!document.querySelector('#patientsList.patient-ledger-table'),
+            header: !!document.querySelector('.patient-ledger-head')
+          }));
+          if (!patientDirectory.search || !patientDirectory.filter || !patientDirectory.table || !patientDirectory.header) {
+            throw new Error('Patient directory ledger contract failed');
+          }
+
           await page.goBack();
           if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Patients panel did not close on Back');
 
