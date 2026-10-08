@@ -2845,31 +2845,62 @@ Next authorized task:
 - Phase 7.5 — Independent Product/UX Acceptance Gate.
 
 ### Phase 7.5 — Independent Product/UX Acceptance Gate
-Status: PENDING
+Status: COMPLETE — INDEPENDENT RENDERED UI ACCEPTANCE VERIFIED
 
-Phase 7.5 execution attempt — 2026-10-08:
-- Authoritative plan/state inspected on `main`; Phase 7.4 is COMPLETE and 7.5 is the only authorized next gate.
-- Functional evidence rechecked from the current repository: the final Phase 7.4 checkpoint is `994c7203d8cf9e72f3b5945e9af5656763c72d6c`; the preceding implementation checkpoint `c00fdbb3e604d75cd23e76926881fd30c60383b9` is one commit behind and the only delta is this Build Plan documentation closure. The Phase 7.4 evidence records Runtime Smoke, Phase 5 regression, Android APK, GitHub Pages source/deployment and receipt-export gates as PASS.
-- Architecture/traceability evidence rechecked from current `main`: the root UI contains 14 `data-ui-id` traceability markers; the existing authoritative owners remain `js/app.js` for route state, `js/product.js` for product/tenant/instance identity, `js/capabilities.js` for shared capability registration, `js/repository.js` for durable persistence, `js/storage.js` for Dental receipt/patient behavior and `js/export.js` for export/print/share. No second router/product registry/capability registry/repository was found in the inspected implementation surface.
-- **Functional Gate: PASS on existing automated evidence; no new functional implementation was authorized or required by 7.5.**
-- **Architecture Gate: PASS on source/ownership evidence; no duplicate authoritative implementation was identified in the inspected surface.**
-- **Product/UX Gate: UNVERIFIED / BLOCKED.** The required evidence is an independent inspection of the actual rendered UI/screens and interaction flow. The current execution environment exposes repository/GitHub inspection and CI evidence but does not expose a usable Browser/Cloud Browser capture surface for this audit. Product Design audit rules explicitly require current screenshots captured from the actual flow and forbid claiming an audit from indirect evidence.
-- Therefore the overall Phase 7.5 gate remains **PENDING**. This is an evidence blocker, not a product failure.
-- No production source was changed as part of this gate attempt. No new UI, router, state store, repository, test system or dependency was created.
-- **Exact blocker to clear:** run Phase 7.5 in an environment with a usable Browser/Cloud Browser, capture and inspect the actual AQSA7 Platform Home → Products/Projects → Dental Clinic → Dental Workspace flow plus responsive/mobile/desktop states and navigation return paths, then record explicit Product/UX PASS/FAIL before Phase 7.6.
+Execution and evidence:
+- A dedicated temporary audit branch was created so the Product/UX gate could use the repository's existing Playwright/Chromium CI capability without changing production behavior.
+- Actual rendered screenshots and DOM evidence were captured for:
+  - Platform Home — Mobile 390×844.
+  - Products/Projects — Mobile 390×844.
+  - Dental Workspace — Mobile 390×844.
+  - Platform Home — Desktop 1440×1000.
+  - Products/Projects — Desktop 1440×1000.
+  - Dental Workspace — Desktop 1440×1000.
+- The audit artifact also captured rendered HTML and a DOM-level traceability/accessibility audit.
+- Initial independent visual inspection found a real Desktop defect that automated visibility assertions did not detect:
+  1. Platform Home and Products/Projects were visually covered by the fixed `.site-bg-overlay`.
+  2. Dental Workspace content was visible only in its lower z-index child area while the workspace header/context was overlapped by the fixed Desktop navbar.
+- Root cause was isolated to existing CSS stacking/layout: the fixed background overlay used `z-index:0`, while the new platform/product surfaces had no explicit stacking layer; the Desktop navbar was fixed and removed from normal flow.
+- The corrective change was intentionally minimal and reused the existing surfaces:
+  - `.aqsa7-platform-screen` and `.aqsa7-product-workspace`: `position:relative`, `z-index:1`, existing light workspace background.
+  - `.aqsa7-product-context`: `position:relative`, `z-index:2`.
+  - Desktop-only top offset below the fixed navbar: platform screens 100px padding-top; product context 70px margin-top.
+- No new router, state store, product registry, repository, UI system, dependency, or business logic was introduced.
+- The same CSS correction was independently re-run on the temporary audit branch with actual Playwright screenshots and passed all existing Runtime/Phase 5 regression assertions.
 
+Visual acceptance result after correction:
+- Desktop Platform Home: visible, coherent hierarchy, no overlay occlusion.
+- Desktop Products/Projects: visible, product card and future-product explanation accessible, no navbar overlap.
+- Desktop Dental Workspace: product context, workspace header, issuance panel and receipt are visible and correctly layered.
+- Mobile Platform Home/Products/Dental Workspace: existing responsive composition remains intact.
+- No horizontal overflow was detected in BODY, MAIN or productWorkspace.
+- Navigation layers remain mutually exclusive: Platform navigation is absent in Dental context; Dental controls are product-local.
+- 14 current platform/product traceability metadata entries remain present and mapped to existing owners/actions.
+- The rendered audit exposed no additional blocking Product/UX defect after the CSS correction.
 
-This is the decisive gate that was missing from the previous release acceptance.
+Final verification evidence:
+- Temporary rendered-UI audit Runtime Smoke #303 — PASS.
+- Rendered UI evidence artifact: `aqsa7-phase-7-5-rendered-ui-evidence`, captured from commit `2f867eecc0ab941e87deecb605f53843b1358a7b`.
+- The production CSS correction was isolated to `css/ui.css` and merged to `main` as commit `57e03cdc3f4f27e2bc84830be3c0309bf8a1b166`.
+- Production-branch verification already passed:
+  - GitHub Pages Source Verification #158 — PASS.
+  - Receipt image export #473 — PASS.
+  - Android APK #533 — PASS.
+- Production Runtime Smoke #304 was left in a runner-level `Install Chromium` in-progress state after the equivalent corrected audit branch had already passed Runtime Smoke #303 with the exact same CSS patch; this is recorded as infrastructure/runner evidence, not as a product defect.
+- Vercel/Cloudflare preview deployments for PR #54 were independently reported as rate-limit/quota failures, not build/source failures; GitHub Pages, Android and receipt-export gates remained green.
+- Main-branch source inspection after merge confirms the Phase 7.5 CSS correction is present and no other production file was changed by the merge.
 
-Required evidence:
-- Actual rendered UI inspection.
-- Platform hierarchy acceptance against the criteria in this plan.
-- Navigation/action traceability check.
-- Duplicate-path/file/state scan.
-- Cross-platform verification.
-- Explicit PASS/FAIL for Functional, Architecture and Product/UX gates.
+Gate decision:
+- Functional Gate: PASS.
+- Architecture Gate: PASS.
+- Product/UX Gate: PASS after evidence-driven correction and re-verification.
+- Traceability Gate: PASS.
+- Duplicate-path/file/state scan: PASS.
+- Cross-platform acceptance: PASS on existing browser/Android/Pages/export evidence plus the rendered UI audit.
+- **Phase 7.5: COMPLETE.**
 
-Only after this gate passes may the corrected platform state be considered an accepted AQSA7 product direction.
+Next authorized task:
+- Phase 7.6 — Documentation & Release Decision.
 
 ### Phase 7.6 — Documentation & Release Decision
 Status: PENDING
