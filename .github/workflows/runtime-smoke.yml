@@ -32,15 +32,70 @@ jobs:
           echo $! >/tmp/aqsa7-http.pid
           sleep 2
 
-      - name: Run browser smoke tests
-        run: npx --yes playwright@1.55.0 test tests/runtime-smoke.spec.mjs
+      - name: Run mobile browser smoke
+        run: |
+          npx --yes -p playwright@1.55.0 node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
 
-      - name: Upload runtime screenshots
+          const browser = await chromium.launch({headless:true});
+          const page = await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+          const errors = [];
+          page.on('pageerror', e => errors.push(String(e)));
+          page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+
+          await page.goto('http://127.0.0.1:4173/index.html', {waitUntil:'networkidle'});
+
+          const title = await page.title();
+          if (!title.includes('سند قبض مالي')) throw new Error('Unexpected page title');
+
+          for (const id of ['receiptPrintArea','digDate','tabPatients','tabHistory','tabSettings']) {
+            if (!(await page.locator('#' + id).count())) throw new Error('Missing #' + id);
+          }
+
+          const fns = await page.evaluate(() => ({
+            activateAppTab: typeof window.activateAppTab,
+            setMode: typeof window.setMode,
+            triggerNativePrint: typeof window.triggerNativePrint,
+            openPreviewModal: typeof window.openPreviewModal,
+            downloadReceiptImage: typeof window.downloadReceiptImage
+          }));
+          for (const [name,type] of Object.entries(fns)) {
+            if (type !== 'function') throw new Error('Missing runtime function: ' + name);
+          }
+
+          await page.locator('#digDate').fill('07/10/2026');
+          await page.locator('#digDate').dispatchEvent('input');
+          const printDate = await page.locator('#printDateValue').innerText();
+          if (!printDate.includes('07/10/2026')) throw new Error('Date rendering failed: ' + printDate);
+
+          await page.locator('#tabPatients').click();
+          if (!(await page.locator('#patientsModal').evaluate(e => e.classList.contains('open')))) throw new Error('Patients panel did not open');
+          if (!page.url().endsWith('#patients')) throw new Error('Patients route state missing');
+
+          await page.goBack();
+          if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Patients panel did not close on Back');
+
+          await page.locator('#tabHistory').click();
+          if (!(await page.locator('#historyModal').evaluate(e => e.classList.contains('open')))) throw new Error('History panel did not open');
+
+          await page.locator('#tabSettings').click();
+          if (!(await page.locator('#settingsPanel').evaluate(e => e.classList.contains('open')))) throw new Error('Settings panel did not open');
+
+          await page.locator('#tabReceipt').click();
+          if (await page.locator('#settingsPanel').evaluate(e => e.classList.contains('open'))) throw new Error('Settings panel did not close');
+
+          await page.screenshot({path:'aqsa7-runtime-receipt.png',fullPage:true});
+
+          if (errors.length) throw new Error(errors.join('\n'));
+          await browser.close();
+          NODE
+
+      - name: Upload runtime screenshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: aqsa7-runtime-smoke
-          path: test-results/
+          path: aqsa7-runtime-receipt.png
           if-no-files-found: ignore
 
       - name: Stop static server
