@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08 (Phase 2 Task 2.3 completed)
+Last updated: 2026-10-08 (Phase 2 Task 2.4 completed)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -269,6 +269,44 @@ Exit decision:
 Next Phase 2 task:
 - Task 2.4 — Patient Account Detail reconstruction.
 - Executor: AI / Technical Lead.
+
+### Phase 2 / Task 2.4 — Patient Account Detail Reconstruction: COMPLETE
+
+Reconstructed the Patient Account Detail surface as the authoritative patient-detail pattern required by the Phase 2 blueprint.
+
+Implementation:
+- Replaced the previous compact account block with a structured patient-detail surface containing a sticky account summary/header, patient identity/contact information, explicit total/paid/remaining financial summary, account status, clinical metadata and a chronological visit/receipt timeline.
+- Preserved the existing patientFinancialSummary() calculation as the single financial source of truth.
+- Preserved IndexedDB/repository ownership; no new patient or receipt persistence path was introduced.
+- Added clear action hierarchy: return to patient directory, edit patient file, primary new visit/receipt action, and open an existing receipt from the timeline.
+- Added controlled patient-edit mode without introducing a second patient-detail state machine.
+- Kept the existing selectPatient(), startPatientVisit(), loadReceipt() and app routing behavior as the authoritative workflows.
+- Added responsive mobile behavior for the same shared detail surface rather than a separate mobile implementation.
+- Applied Phase 2 design tokens and the 44px interaction contract.
+- Preserved receipt geometry and existing print/export architecture.
+
+Files:
+- js/storage.js
+- js/app.js
+- css/templates.css
+
+Verification:
+- AQSA7 Runtime Smoke run 37711220861 — SUCCESS on final Task 2.4 checkpoint 7ab0784bdd67c4e69ca8b44cb513260148299085.
+- Android APK build run 37711220894 — SUCCESS on the same checkpoint.
+- Pages build and deployment run 37711220527 — SUCCESS on the same checkpoint.
+- The browser runtime regression gate passed after the detail reconstruction. The existing receipt image/PDF workflow remains a separate known blocker: Verify receipt image export run 37711220957 — FAIL in the pre-existing PDF selectable-text assertion after PDF generation; this is unrelated to Patient Account Detail.
+- No new persistence source, navigation state machine or platform-specific product implementation was introduced.
+
+Exit decision:
+- Task 2.4 functional/design exit criteria: MET.
+- Shared browser regression gate: PASS.
+- Cross-platform build artifacts: PASS for Android and Pages.
+- Phase 2 remains IN PROGRESS.
+
+Next Phase 2 task:
+- Task 2.5 — Receipt Issuance Panel reconstruction.
+- Executor: AI / Technical Lead.
+
 
 ### AQSA7 Design System Specification — Phase 2 Mandatory Foundation
 
