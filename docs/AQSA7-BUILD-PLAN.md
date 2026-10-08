@@ -2382,14 +2382,178 @@ Purpose:
 Move the user-facing product from a clinic-first application into the approved AQSA7 platform hierarchy **without rebuilding verified functionality and without accumulating duplicate files, modules, commands or state paths**.
 
 ### Phase 7.0 — Repository & Product Baseline Inventory
-Status: NEXT
+Status: COMPLETE — BASELINE RECORDED
 
-Exit criteria:
-- Complete read-only inventory of the actual current source and user-visible surfaces.
-- Identify existing owners for platform shell, product manifest/configuration, navigation, routing/state, capabilities, repository/data, export/print, Android bridge and tests.
-- Record reuse decisions before any new implementation.
-- Produce a baseline mapping of every current top-level UI action to its source owner and behavior.
-- No production code changes.
+Verified baseline commit/tree: `f8bfda622582bc1065f80ccf698bb6da3824bd5b`
+
+Verification method: authoritative GitHub recursive tree plus direct source inspection of the entry UI, runtime modules, product/capability/repository contracts, PWA/Android shell and existing verification workflows. GitHub's tree endpoint supports recursive repository-tree inspection; the returned tree was not truncated. 
+
+#### 7.0-A — Repository inventory
+
+Current tree contains **63 files / 88 tree entries**.
+
+Authoritative active product areas:
+
+- Root application: `index.html`, `manifest.webmanifest`, `sw.js`, `android-app-bridge.js`
+- Shared/platform contracts: `js/product.js`, `js/capabilities.js`, `js/integrations.js`, `js/ai.js`
+- Durable data authority: `js/repository.js`, `js/storage.js`
+- Backup/recovery: `js/backup.js`, `js/backup-provider.js`, `js/backup-provider-runtime.js`, `js/backup-ux.js`, `js/backup-scheduling.js`, `js/cloud-recovery.js`, `js/restore-migration.js`, `js/google-drive-auth.js`, `js/google-drive-provider.js`
+- Product behavior/UI: `js/app.js`, `js/ui.js`, `js/export.js`, `js/templates.js`, `js/tafqeet.js`
+- Optional/transitional sync: `js/sync.js`, `api/clinic-sync.js`
+- Presentation: `css/ui.css`, `css/receipt.css`, `css/print.css`, `css/templates.css`, `css/polish.css`
+- Android wrapper: `android-app/`
+- Verification: `tests/` plus four workflow definitions under `.github/workflows/`
+- Vendor: local `html2canvas`
+- Authoritative project documentation: `docs/AQSA7-BUILD-PLAN.md`, `docs/AQSA7-SETTINGS-OWNERSHIP.md`, `docs/DESIGN-CONTRACT.md`
+
+#### 7.0-B — Legacy / duplication findings
+
+1. **No exact duplicate-content groups were found** among the current 63 tracked files by blob SHA.
+2. **A committed historical backup tree does exist:** `.backup-2026-10-06T17-20-18-651Z/` containing old `README.md`, `api/assets.js`, and `src/{index.html,script.js,style.css}`.
+   - It is not part of the active runtime.
+   - It is nevertheless repository accumulation and a future source of confusion.
+   - Do **not** create another backup/archive tree.
+   - Removal/consolidation is a cleanup action to be handled deliberately after this baseline, not silently mixed into the platform migration.
+3. There is no active `src/` or `scripts/` tree outside that historical backup.
+4. The current tree contains no second Product Definition, Capability Registry or Repository implementation.
+
+#### 7.0-C — Current user-visible surface inventory
+
+The actual root UI remains clinic-first.
+
+Top-level navigation:
+- `tabReceipt` → Receipt
+- `tabPatients` → Patients
+- `tabHistory` → History
+- `tabSettings` → Settings
+
+Secondary mode:
+- Digital Receipt
+- Print Templates
+
+The current `index.html` contains **81 button elements**, **39 input/select/textarea controls**, and these modal/panel surfaces:
+- `receiptIssuancePanel`
+- `settingsPanel`
+- `templateModal`
+- `patientsModal`
+- `patientAccountPanel`
+- `shareModal`
+- `historyModal`
+- `previewModal`
+
+The 81 buttons are not 81 independent implementations. They include repeated access points to existing actions (for example Save, Preview, Print/PDF and Share appear in multiple surfaces). The authoritative action owner must therefore be the existing function, not each button.
+
+Primary current action owners include:
+
+| Surface | Existing owner | Decision |
+|---|---|---|
+| Root navigation | `js/app.js` → `activateAppTab()` / route state | REUSE |
+| Receipt CRUD | `js/storage.js` + `js/repository.js` | REUSE |
+| Receipt presentation | `index.html` + `css/receipt.css` | ADAPT during platform migration |
+| Patients | `js/storage.js` + existing patient UI in `index.html` | REUSE/ADAPT |
+| History | `js/storage.js` + existing history UI | REUSE/ADAPT |
+| Settings | `js/app.js` + `js/ui.js` + existing settings UI | REUSE/ADAPT |
+| Export/print/share | `js/export.js` + Android bridge | REUSE |
+| Templates | `js/templates.js` + existing modal | REUSE/ADAPT |
+| Durable settings | `js/repository.js` | REUSE |
+| Product definition | `js/product.js` | SINGLE SOURCE — REUSE |
+| Shared capabilities | `js/capabilities.js` | SINGLE SOURCE — REUSE |
+| Integrations | `js/integrations.js` | SINGLE SOURCE — REUSE |
+| Backup/recovery | existing backup modules | REUSE |
+| Android client boundary | `MainActivity.java` + bridge | REUSE/ADAPT only at platform boundary |
+
+#### 7.0-D — Current navigation/state reality
+
+The current router is not a platform router. `js/app.js` owns:
+- `appRoute.screen`
+- receipt / patients / patient-detail / history / settings panel states
+- `pushPanelState()`
+- `closePanelState()`
+- browser `popstate` handling
+
+The current Product Definition in `js/product.js` also contains a Dental navigation list:
+`receipt → patients → history → settings`.
+
+Therefore **we must not create a second router or second navigation registry** in Phase 7.1. The existing navigation contract must either be extended/composed or deliberately replaced after impact analysis.
+
+#### 7.0-E — Existing platform foundations confirmed
+
+The following already exist and are authoritative:
+
+- Product Definition + configured Instance/Tenant contract → `js/product.js`
+- Shared Business Capability Registry → `js/capabilities.js`
+- Data Repository → `js/repository.js`
+- Settings ownership contract → `docs/AQSA7-SETTINGS-OWNERSHIP.md`
+- Integration boundary → `js/integrations.js`
+- AI capability boundary → `js/ai.js`
+- Backup/recovery/provider boundaries → existing backup/recovery modules
+- Cross-platform Web/PWA + Android WebView model → existing root app + Android wrapper
+
+**Decision: do not create replacement versions of any of these.**
+
+#### 7.0-F — Cross-platform baseline
+
+Android currently loads the bundled root `index.html` from `MainActivity.java`. This confirms that Android does not have an independent business UI implementation; the existing Web core is the correct reuse boundary.
+
+The Android application label/icon and several bridge messages remain clinic-specific. These are platform-boundary/product-identity concerns to address only when Phase 7 reaches the Android/product-shell impact scope.
+
+#### 7.0-G — Documentation inconsistencies discovered
+
+The baseline also found existing documentation drift that must not be copied into new work:
+
+1. `AGENTS.md` still describes the repository as a clinic-only application and references `vendor/jspdf`, while the current active tree does not contain `vendor/jspdf` and `js/export.js` no longer uses that implementation.
+2. `manifest.webmanifest` references `logo.png`, while the current authoritative tree contains `assets/Saedy_Dental_Logo.svg` and no root `logo.png`.
+3. `sw.js` retains historical clinic/version cache naming. This is not evidence for creating a second service-worker architecture; it is a migration/cleanup concern.
+4. The release README remains clinic-first. This is consistent with the released product but not with the newly approved AQSA7 platform product direction.
+
+These are **known baseline findings**, not permission to perform unrelated cleanup now.
+
+#### 7.0-H — Reuse Registry initial authoritative entries
+
+| ID | Element | Existing owner | Decision |
+|---|---|---|---|
+| REUSE-001 | Product contract | `js/product.js` | REUSE |
+| REUSE-002 | Shared capability registry | `js/capabilities.js` | REUSE |
+| REUSE-003 | Durable repository | `js/repository.js` | REUSE |
+| REUSE-004 | Receipt/patient domain behavior | `js/storage.js` | REUSE |
+| REUSE-005 | Existing route state | `js/app.js` | ADAPT, no second router |
+| REUSE-006 | Existing root UI | `index.html` | ADAPT, do not clone |
+| REUSE-007 | Existing UI styling | `css/*` | ADAPT/CONSOLIDATE |
+| REUSE-008 | Export/print/share | `js/export.js` + bridge | REUSE |
+| REUSE-009 | Backup/recovery | existing backup modules | REUSE |
+| REUSE-010 | Android WebView boundary | `MainActivity.java` | REUSE/ADAPT |
+| REUSE-011 | PWA shell | `manifest.webmanifest` + `sw.js` | ADAPT after impact review |
+| REUSE-012 | Historical backup tree | `.backup-2026-10-06T17-20-18-651Z/` | DO NOT REUSE; cleanup candidate |
+
+#### 7.0-I — Phase 7.0 conclusion
+
+**Baseline gate: PASS.**
+
+The repository has enough existing implementation to begin composition work without inventing parallel foundations.
+
+The central Phase 7 finding is now explicit:
+
+> **The missing piece is primarily the user-facing platform composition/shell, not the underlying business/data/platform contracts.**
+
+The next task therefore must operate on the existing root composition and existing contracts, not build another application beside them.
+
+**No production implementation was changed during Phase 7.0.**
+
+### Phase 7.1 — Platform Composition Contract
+Status: NEXT — only authorized next step
+
+First objective: map the approved AQSA7 platform hierarchy onto the existing owners identified above and define the minimum composition change required.
+
+Hard constraints:
+- no second router;
+- no second product registry;
+- no second capability registry;
+- no second repository/data store;
+- no duplicate backup/export/print system;
+- no cloned Dental application;
+- no speculative new framework;
+- no new documentation catalog when this Build Plan can hold the contract;
+- no implementation until the composition contract and impact map are verified.
 
 ### Phase 7.1 — Platform Composition Contract
 Status: PENDING
