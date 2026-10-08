@@ -518,10 +518,13 @@ jobs:
               if (String(url).includes('/files?') && (init.method||'GET') === 'GET') return new Response(JSON.stringify({files:[{id:'drive-file-1',name:'AQSA7-backup-drive-file-1.aqsa7.json',appProperties:{aqsa7ProductId:'aqsa7',aqsa7TenantId:'tenant-1',aqsa7InstanceId:'instance-1',aqsa7BackupId:'logical-1'}}]}),{status:200,headers:{'Content-Type':'application/json'}});
               if (String(url).includes('uploadType=multipart')) return new Response(JSON.stringify({id:'drive-file-1',name:'AQSA7-backup-drive-file-1.aqsa7.json',appProperties:{aqsa7BackupId:'logical-1'}}),{status:200,headers:{'Content-Type':'application/json'}});
               if (String(url).includes('alt=media')) return new Response(JSON.stringify({artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}),{status:200,headers:{'Content-Type':'application/json'}});
-              if ((init.method||'GET') === 'DELETE') return new Response('',{status:204});
+              if ((init.method||'GET') === 'DELETE') return new Response(null,{status:204});
               throw new Error('Unexpected Google Drive smoke request: '+url);
             };
             try {
+              authBoundary.clear();
+              const missingAuth = (()=>{ try { providerFactory({}); return false; } catch (_) { return true; } })();
+              authBoundary.configure({getAccessToken:async()=> 'smoke-token'});
               const adapter = providerFactory({auth:{getAccessToken:async()=> 'smoke-token'}});
               runtime.clear();
               runtime.register(adapter);
@@ -532,7 +535,6 @@ jobs:
               const put=await window.aqsa7ExecuteBackupProvider(adapter,'put',identity,{artifact});
               const get=await window.aqsa7ExecuteBackupProvider(adapter,'get',identity,{backupId:'drive-file-1'});
               const del=await window.aqsa7ExecuteBackupProvider(adapter,'delete',identity,{backupId:'drive-file-1'});
-              const missingAuth = (()=>{ try { providerFactory({}); return false; } catch (_) { return true; } })();
               return {health:health.status,list:list.status,put:put.status,putId:put.backupId,get:get.status,getArtifact:get.artifact?.artifactType,del:del.status,missingAuth,calls:calls.length};
             } finally {
               window.fetch=originalFetch;
