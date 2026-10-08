@@ -521,9 +521,14 @@ function openPatientsModal(skipHistory=false){document.getElementById('patientsM
 function closePatientsModal(skipHistory=false){
   document.getElementById('patientsModal')?.classList.remove('open');showPatientListView();
   if(!skipHistory && (appRoute.screen==='patients'||appRoute.screen==='patient-detail')){
-    history.replaceState(null,'',location.pathname+location.search);
+    if(window.aqsa7PlatformRoute==='dental'){
+      history.replaceState({aqsa7Route:'dental'},'',location.pathname+location.search+'#product-dental-clinic');
+      if(typeof setPlatformVisual==='function') setPlatformVisual('dental');
+    }else{
+      history.replaceState(null,'',location.pathname+location.search);
+    }
   }
-  appRoute={screen:'receipt',patientId:''};
+  appRoute={screen:'product',patientId:'',productId:window.AQSA7_PRODUCT_MANIFEST?.productId||'dental-clinic',instanceId:window.AQSA7_CLINIC_CONFIG?.instanceId||'alssaedy-clinic-sana-a'};
 }
 
 /* Local backup cryptography: password-derived AES-GCM; keys never persist in AQSA7. */
