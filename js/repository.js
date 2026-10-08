@@ -4,6 +4,22 @@ const CLINIC_DB_NAME = typeof window.aqsa7GetInstanceStorageConfig === 'function
   : 'ALSSAEDY_CLINIC_DB';
 const CLINIC_DB_VERSION = 3;
 const CLINIC_DB_STORES = ['receipts','patients','settings'];
+const TENANT_SCOPED_STORES = new Set(['receipts','patients']);
+
+function assertOwnedRecord(item, options){
+  if (!TENANT_SCOPED_STORES.has(options?.store || '')) return item;
+  if (typeof window.aqsa7OwnRecord !== 'function') return item;
+  return window.aqsa7OwnRecord(item, {allowUnscoped: options?.allowUnscoped !== false});
+}
+
+function isOwnedRecord(item){
+  try {
+    assertOwnedRecord(item, {store:'receipts', allowUnscoped:false});
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 function clinicDBOpen(){
   if(window.__clinicDBPromise) return window.__clinicDBPromise;
@@ -30,6 +46,7 @@ async function clinicDBAll(store){
   });
 }
 async function clinicDBPut(store,item){
+  item = assertOwnedRecord(item, {store, allowUnscoped:true});
   const db=await clinicDBOpen();
   return new Promise((resolve,reject)=>{
     const tx=db.transaction(store,'readwrite');
@@ -72,18 +89,45 @@ async function clinicRepositoryHydrate(){
   const patients=await clinicDBAll('patients');
   const legacyReceipts=readLegacyArray('alssaedy_receipts_history');
   const legacyPatients=readLegacyArray('alssaedy_patients');
-  const receiptIds=new Set(receipts.map(item=>String(item.id)));
+  const rejected=[];
+  const normalizeExisting=(items,store)=>{
+    const accepted=[];
+    for(const item of items){
+      try{
+        const owned=assertOwnedRecord(item,{store,allowUnscoped:true});
+        accepted.push(owned);
+      }catch(error){
+        rejected.push({store,id:item?.id||'',reason:error.message});
+      }
+    }
+    return accepted;
+  };
+  const ownedReceipts=normalizeExisting(receipts,'receipts');
+  const ownedPatients=normalizeExisting(patients,'patients');
+  const receiptIds=new Set(ownedReceipts.map(item=>String(item.id)));
   for(const item of legacyReceipts){
-    if(item?.id && !receiptIds.has(String(item.id))){ await clinicDBPut('receipts',item); receiptIds.add(String(item.id)); }
+    if(item?.id && !receiptIds.has(String(item.id))){
+      try{ await clinicDBPut('receipts',item); receiptIds.add(String(item.id)); }
+      catch(error){ rejected.push({store:'receipts',id:item.id,reason:error.message}); }
+    }
   }
-  const patientIds=new Set(patients.map(item=>String(item.id)));
+  const patientIds=new Set(ownedPatients.map(item=>String(item.id)));
   for(const item of legacyPatients){
-    if(item?.id && !patientIds.has(String(item.id))){ await clinicDBPut('patients',item); patientIds.add(String(item.id)); }
+    if(item?.id && !patientIds.has(String(item.id))){
+      try{ await clinicDBPut('patients',item); patientIds.add(String(item.id)); }
+      catch(error){ rejected.push({store:'patients',id:item.id,reason:error.message}); }
+    }
   }
-  repo.receipts=(await clinicDBAll('receipts')).map(stamp);
-  repo.patients=(await clinicDBAll('patients')).map(stamp);
+  repo.receipts=(await clinicDBAll('receipts')).map(item=>assertOwnedRecord(item,{store:'receipts',allowUnscoped:true})).filter(item=>isOwnedRecord(item));
+  repo.patients=(await clinicDBAll('patients')).map(item=>assertOwnedRecord(item,{store:'patients',allowUnscoped:true})).filter(item=>isOwnedRecord(item));
   for (const item of repo.receipts) await clinicDBPut('receipts', item);
   for (const item of repo.patients) await clinicDBPut('patients', item);
+  repo.isolation = {
+    productId: typeof window.aqsa7GetInstanceIdentity==='function' ? window.aqsa7GetInstanceIdentity().productId : '',
+    tenantId: typeof window.aqsa7GetInstanceIdentity==='function' ? window.aqsa7GetInstanceIdentity().tenantId : '',
+    instanceId: typeof window.aqsa7GetInstanceIdentity==='function' ? window.aqsa7GetInstanceIdentity().instanceId : '',
+    rejectedRecords: rejected
+  };
   const durableSettings=await clinicDBAll('settings');
   const settingsById=Object.fromEntries(durableSettings.filter(x=>x?.id).map(x=>[x.id,x.value]));
   const legacySettings = {
@@ -121,7 +165,7 @@ function clinicRepositoryPatients(){
   return window.__clinicRepository.patients.slice();
 }
 async function clinicRepositoryPutReceipt(item){
-  item = typeof window.aqsa7StampRecord === 'function' ? window.aqsa7StampRecord(item) : item;
+  item = assertOwnedRecord(item, {store:'receipts', allowUnscoped:true});
   await clinicDBPut('receipts',item);
   const repo=window.__clinicRepository;
   const index=repo.receipts.findIndex(x=>x.id===item.id);
@@ -137,7 +181,7 @@ async function clinicRepositoryClearReceipts(){
   window.__clinicRepository.receipts=[];
 }
 async function clinicRepositoryPutPatient(item){
-  item = typeof window.aqsa7StampRecord === 'function' ? window.aqsa7StampRecord(item) : item;
+  item = assertOwnedRecord(item, {store:'patients', allowUnscoped:true});
   await clinicDBPut('patients',item);
   const repo=window.__clinicRepository;
   const index=repo.patients.findIndex(x=>x.id===item.id);
