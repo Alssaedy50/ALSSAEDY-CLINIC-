@@ -1839,11 +1839,13 @@ Task 4.7 gate decision:
 - No background/cloud dependency: **MET**.
 - Reminder state contains no secrets/business records: **MET**.
 - Fail-soft reliability behavior: **MET**.
-- Runtime verification: **PENDING FINAL CI**.
-- Task 4.7: **PENDING FINAL CI**.
+- Static JavaScript syntax verification for the new scheduler: **PASS** (`node --check`).
+- Runtime Smoke workflow was updated and committed, but the available GitHub workflow connector exposes commit-associated **pull-request runs only**; it returned no run for the final main commit. Therefore the required push-triggered Runtime Smoke evidence cannot be independently observed through the available execution interface.
+- Runtime verification: **PENDING — GitHub Actions push-run evidence not observable yet**.
+- Task 4.7: **PENDING VERIFICATION**.
 
 Next authorized task after verification:
-- **Task 4.8 — Backup Provider Adapter implementation**.
+- **Task 4.7 verification/retry only; do not advance to Task 4.8 until Runtime Smoke is green.**
 
 ### Phase 5 — Full Regression
 Must verify:
