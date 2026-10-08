@@ -3027,8 +3027,8 @@ Priority register:
 ### Phase 8 task sequence
 - **8.0 Real Clinic UX Audit — COMPLETE**
 - **8.1 Information Architecture — COMPLETE**
-- **8.2 Clinic Dashboard — AUTHORIZED NEXT**
-- 8.3 Patient Workspace — PLANNED
+- **8.2 Clinic Dashboard — COMPLETE**
+- **8.3 Patient Workspace — AUTHORIZED NEXT**
 - 8.4 Visit / Services / Billing — PLANNED
 - 8.5 Receipt System Reconstruction — PLANNED
 - 8.6 History & Financial Ledger — PLANNED
@@ -3096,9 +3096,9 @@ Implementation and gate:
 **Phase 8.0: COMPLETE.**
 
 ### Next authorized task
-**Phase 8.1 — Information Architecture.**
+**Phase 8.3 — Patient Workspace.**
 
-Objective: reconstruct the user-facing navigation/workspace hierarchy around daily clinic work while preserving `js/app.js` as the sole route/context owner and without implementing the Phase 8.5 receipt redesign early.
+Objective: reconstruct the patient-facing workspace around a persistent clinic record while preserving the existing repository/data authority and without prematurely redesigning services, billing or receipts.
 
 
 Last updated: 2026-10-08 (Phase 8.2 dashboard implemented, fully regression-verified and merged; Phase 8.3 authorized)
