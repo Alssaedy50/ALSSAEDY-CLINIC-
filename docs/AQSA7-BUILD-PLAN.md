@@ -1,7 +1,36 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0 COMPLETE / Phase 8.1 AUTHORIZED
-Last updated: 2026-10-08 (Phase 8.0 real-clinic UX audit completed; receipt model clarified; Phase 8.1 authorized)
+Status: PHASE 8 ACTIVE — Phase 8.0–8.3 COMPLETE / Phase 8.4 IN PROGRESS
+
+### Phase 8.4 — Visit / Services / Billing
+Status: IN PROGRESS — implementation complete on branch pending CI gate
+
+Authoritative phase document:
+- `docs/AQSA7-PHASE-8-4-VISIT-SERVICES-BILLING.md`
+
+Implementation boundary:
+- Added a clinic-local Visit / Services / Billing panel to the existing receipt workspace.
+- Added reusable service line items with name, quantity and unit price.
+- Existing shared `aqsa7BillingContract` remains the monetary calculation authority.
+- Service-line subtotal drives the existing receipt total when line items exist.
+- Saved receipts now carry `visitId` and `serviceItems[]` without introducing a new IndexedDB store.
+- Existing patient visit history is extended from the same saved receipt record.
+- Receipt export/print and Android boundaries were not replaced.
+- The visit/billing panel is non-printing; the existing receipt remains the document representation.
+
+Verification additions:
+- Runtime Smoke now asserts the Phase 8.4 surface, helper ownership, line-item arithmetic and durable persistence.
+- Pages Source Verification, Receipt Export and Android APK remain required phase gates.
+
+Out of scope:
+- Phase 8.5 receipt lifecycle/UX reconstruction.
+- Phase 8.6 financial ledger.
+- Appointment engine, service catalogue, payment providers and new persistence stores.
+- Physical/PDF print QA and rendered cross-device acceptance.
+
+**Phase 8.4: PENDING CI GATE.**
+
+Last updated: 2026-10-08 (Phase 8.4 Visit / Services / Billing in progress)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3073,8 +3102,8 @@ Implementation and gate:
 
 **Phase 8.2: COMPLETE.**
 
-### Next authorized task:
-**Phase 8.3 — Patient Workspace.**
+### Current authorized task:
+**Phase 8.4 — Visit / Services / Billing.**
 
 ### Phase 8 execution constraints
 - Do not repeat Phase 7 platform-shell work merely because the visual target changes.
@@ -3098,7 +3127,7 @@ Implementation and gate:
 ### Next authorized task
 **Phase 8.3 — Patient Workspace.**
 
-Objective: reconstruct the patient-facing workspace around a persistent clinic record while preserving the existing repository/data authority and without prematurely redesigning services, billing or receipts.
+Objective: implement the visit/service/billing workflow around the completed patient workspace while preserving existing repository, billing capability and receipt boundaries.
 
 
 Last updated: 2026-10-08 (Phase 8.3 patient workspace implemented, fully regression-verified and merged; Phase 8.4 authorized)
