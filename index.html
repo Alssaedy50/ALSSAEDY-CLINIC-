@@ -30,14 +30,14 @@
                 <span class="brand-badge count-badge" id="historyCount" title="عدد السندات المحفوظة">0</span>
             </div>
             <nav class="platform-tabs no-print" aria-label="تنقل المنصة">
-                <button type="button" class="platform-tab active" id="tabPlatformHome" onclick="navigatePlatform('home')">🏠 <b>الرئيسية</b></button>
-                <button type="button" class="platform-tab" id="tabPlatformProducts" onclick="navigatePlatform('products')">🧩 <b>المنتجات والمشاريع</b></button>
+                <button type="button" class="platform-tab active" id="tabPlatformHome" data-ui-id="UI-PLAT-001-HOME" data-owner="index.html + js/app.js" data-action="navigatePlatform(home)" onclick="navigatePlatform('home')">🏠 <b>الرئيسية</b></button>
+                <button type="button" class="platform-tab" id="tabPlatformProducts" data-ui-id="UI-PLAT-003" data-owner="index.html + js/app.js + js/product.js" data-action="navigatePlatform(products)" onclick="navigatePlatform('products')">🧩 <b>المنتجات والمشاريع</b></button>
             </nav>
             <nav class="app-tabs no-print" id="dentalProductTabs" aria-label="تنقل منتج العيادة" hidden>
-                <button type="button" class="app-tab active" id="tabReceipt" aria-current="page" onclick="activateAppTab('receipt')"><span class="app-tab-icon" aria-hidden="true">🧾</span><b>السند</b></button>
-                <button type="button" class="app-tab" id="tabPatients" onclick="activateAppTab('patients')"><span class="app-tab-icon" aria-hidden="true">👥</span><b>المرضى</b></button>
-                <button type="button" class="app-tab" id="tabHistory" onclick="activateAppTab('history')"><span class="app-tab-icon" aria-hidden="true">📂</span><b>السجل</b></button>
-                <button type="button" class="app-tab" id="tabSettings" onclick="activateAppTab('settings')"><span class="app-tab-icon" aria-hidden="true">⚙️</span><b>الإعدادات</b></button>
+                <button type="button" class="app-tab active" id="tabReceipt" data-ui-id="UI-DENT-001" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(receipt)" aria-current="page" onclick="activateAppTab('receipt')"><span class="app-tab-icon" aria-hidden="true">🧾</span><b>السند</b></button>
+                <button type="button" class="app-tab" id="tabPatients" data-ui-id="UI-DENT-002" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(patients)" onclick="activateAppTab('patients')"><span class="app-tab-icon" aria-hidden="true">👥</span><b>المرضى</b></button>
+                <button type="button" class="app-tab" id="tabHistory" data-ui-id="UI-DENT-003" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(history)" onclick="activateAppTab('history')"><span class="app-tab-icon" aria-hidden="true">📂</span><b>السجل</b></button>
+                <button type="button" class="app-tab" id="tabSettings" data-ui-id="UI-DENT-004" data-owner="index.html + js/app.js + js/ui.js" data-action="activateAppTab(settings)" onclick="activateAppTab('settings')"><span class="app-tab-icon" aria-hidden="true">⚙️</span><b>الإعدادات</b></button>
             </nav>
             <div class="nav-controls" aria-label="وضع السند">
                 <div class="mode-pill">
@@ -55,19 +55,79 @@
     </div>
 
     <section class="no-print aqsa7-platform-screen" id="platformHome" aria-labelledby="platformHomeTitle">
-        <div class="platform-hero"><span class="platform-kicker">AQSA7 PLATFORM</span><h1 id="platformHomeTitle">مساحة عمل AQSA7</h1><p>منصة موحّدة لإدارة المنتجات والمشاريع، مع إبقاء كل منتج داخل سياقه المستقل.</p><div class="platform-hero-actions"><button type="button" class="platform-primary-btn" onclick="navigatePlatform('products')">🧩 استعراض المنتجات والمشاريع</button><button type="button" class="platform-secondary-btn" onclick="openConfiguredDentalProduct()">🦷 فتح عيادة السعيدي</button></div></div>
-        <div class="platform-stat-grid"><div class="platform-stat"><span>المنصة</span><strong>AQSA7</strong><small>Platform Shell</small></div><div class="platform-stat"><span>المنتجات</span><strong id="platformProductCount">1</strong><small>Configured Products</small></div><div class="platform-stat"><span>المنتج النشط</span><strong>Dental Clinic</strong><small>First configured product</small></div></div>
+        <div class="platform-dashboard-head">
+            <div>
+                <span class="platform-kicker">AQSA7 WORKSPACE</span>
+                <h1 id="platformHomeTitle">مساحة العمل</h1>
+                <p>مركز واحد للوصول إلى منتجاتك ومشاريعك، مع بقاء كل منتج داخل سياقه وبياناته الخاصين.</p>
+            </div>
+            <div class="platform-status-pill"><span class="status-dot"></span><span>المنصة جاهزة</span></div>
+        </div>
+        <div class="platform-hero platform-hero-compact">
+            <div class="platform-hero-copy">
+                <span class="platform-kicker">CURRENT PRODUCT</span>
+                <h2>ALSSAEDY CLINIC</h2>
+                <p>Dental Clinic · عيادة أسنان · مساحة العمل النشطة الأولى في AQSA7.</p>
+                <div class="platform-hero-actions">
+                    <button type="button" class="platform-primary-btn" data-ui-id="UI-PLAT-002-OPEN" data-owner="index.html + js/app.js + js/product.js" data-action="openConfiguredDentalProduct()" onclick="openConfiguredDentalProduct()">🦷 فتح مساحة العيادة</button>
+                    <button type="button" class="platform-secondary-btn" data-ui-id="UI-PLAT-003" data-owner="index.html + js/app.js + js/product.js" data-action="navigatePlatform(products)" onclick="navigatePlatform('products')">🧩 عرض المنتجات</button>
+                </div>
+            </div>
+            <div class="platform-hero-aside" aria-label="حالة المنتج">
+                <span>PRODUCT</span><strong>Dental Clinic</strong><small>Configured instance</small>
+                <div class="platform-mini-meta"><b>ALSSAEDY CLINIC</b><b>YER · RTL</b></div>
+            </div>
+        </div>
+        <div class="platform-stat-grid">
+            <article class="platform-stat"><span>المنتجات المكوّنة</span><strong id="platformProductCount">1</strong><small>Configured Products</small></article>
+            <article class="platform-stat"><span>المنتج المتاح</span><strong>Dental Clinic</strong><small>Product Definition</small></article>
+            <article class="platform-stat"><span>حالة المنصة</span><strong>Ready</strong><small>Shared core · Web/PWA/Android</small></article>
+        </div>
+        <div class="platform-principles">
+            <article><span>01</span><div><strong>Platform</strong><p>AQSA7 هو الغلاف العام والتنقل الرئيسي.</p></div></article>
+            <article><span>02</span><div><strong>Product</strong><p>Dental Clinic منتج قابل لإعادة الاستخدام، وليس اسم المنصة.</p></div></article>
+            <article><span>03</span><div><strong>Instance</strong><p>ALSSAEDY CLINIC هو إعداد/مثيل المنتج الحالي.</p></div></article>
+        </div>
     </section>
 
     <section class="no-print aqsa7-platform-screen" id="platformProducts" aria-labelledby="platformProductsTitle" hidden>
-        <div class="platform-section-head"><div><span class="platform-kicker">PRODUCTS / PROJECTS</span><h2 id="platformProductsTitle">المنتجات والمشاريع</h2><p>كل منتج هو مساحة مستقلة داخل منصة AQSA7، ويمكن إضافة منتجات أخرى دون نسخ التطبيق.</p></div><button type="button" class="platform-secondary-btn" onclick="navigatePlatform('home')">← الرئيسية</button></div>
-        <div class="product-card-grid"><article class="aqsa7-product-card" id="dentalProductCard"><div class="product-card-icon">🦷</div><div class="product-card-copy"><span class="product-card-type">HEALTHCARE PRODUCT</span><h3>Dental Clinic</h3><p>إدارة عيادة الأسنان والسندات والمرضى والسجل والإعدادات.</p><div class="product-card-meta"><span>ALSSAEDY CLINIC</span><span>YER · RTL</span></div></div><button type="button" class="platform-primary-btn" onclick="openConfiguredDentalProduct()">فتح المنتج</button></article></div>
-        <div class="platform-future-note"><span>＋</span><div><strong>مساحة لمنتجات مستقبلية</strong><p>يمكن لاحقاً إضافة Medical، Pharmacy، Retail أو مشاريع أخرى عبر عقد المنتجات الحالي، دون استنساخ منطق العيادة.</p></div></div>
+        <div class="platform-section-head">
+            <div><span class="platform-kicker">PRODUCTS / PROJECTS</span><h2 id="platformProductsTitle">المنتجات والمشاريع</h2><p>هذه هي طبقة اختيار المنتج. بعدها فقط تظهر أدوات المنتج المحلي.</p></div>
+            <button type="button" class="platform-secondary-btn" data-ui-id="UI-PLAT-003-HOME" data-owner="index.html + js/app.js" data-action="navigatePlatform(home)" onclick="navigatePlatform('home')">← الرئيسية</button>
+        </div>
+        <div class="product-card-grid">
+            <article class="aqsa7-product-card aqsa7-product-card-primary" id="dentalProductCard">
+                <div class="product-card-icon">🦷</div>
+                <div class="product-card-copy">
+                    <div class="product-card-heading"><span class="product-card-type">HEALTHCARE PRODUCT</span><span class="product-state">● مكوّن</span></div>
+                    <h3>Dental Clinic</h3>
+                    <p>إدارة العيادة والسندات والمرضى والسجل والإعدادات من خلال نفس نواة AQSA7.</p>
+                    <div class="product-card-meta"><span>ALSSAEDY CLINIC</span><span>YER · RTL</span><span>IndexedDB · Local-first</span></div>
+                </div>
+                <div class="product-card-action">
+                    <small>INSTANCE</small><strong>ALSSAEDY CLINIC</strong>
+                    <button type="button" class="platform-primary-btn" data-ui-id="UI-PLAT-004" data-owner="index.html + js/app.js + js/product.js" data-action="openConfiguredDentalProduct()" onclick="openConfiguredDentalProduct()">فتح مساحة العمل</button>
+                </div>
+            </article>
+        </div>
+        <div class="platform-future-note"><span>＋</span><div><strong>جاهز لمنتجات أخرى</strong><p>Medical، Pharmacy، Retail، Restaurant وغيرها يمكن أن تُضاف كمنتجات مستقلة عبر عقود AQSA7 الحالية، دون استنساخ التطبيق.</p></div></div>
     </section>
 
-    <div id="productWorkspace" class="aqsa7-product-workspace" hidden>der>
+    <div id="productWorkspace" class="aqsa7-product-workspace" hidden>
 
-    <main class="page-canvas-wrapper">
+    <section class="no-print product-workspace-head" id="productWorkspaceHead" aria-labelledby="productWorkspaceTitle">
+            <div class="product-workspace-title">
+                <span class="directory-kicker">DENTAL CLINIC WORKSPACE</span>
+                <h1 id="productWorkspaceTitle">ALSSAEDY CLINIC</h1>
+                <p>مساحة العمل التشغيلية للعيادة داخل منتج <bdi dir="ltr">Dental Clinic</bdi>.</p>
+            </div>
+            <div class="product-workspace-actions">
+                <button type="button" class="workspace-action" data-ui-id="UI-PLAT-005-PRODUCTS" data-owner="index.html + js/app.js" data-action="navigatePlatform(products)" onclick="navigatePlatform('products')">← المنتجات</button>
+                <button type="button" class="workspace-action workspace-action-primary" data-ui-id="UI-DENT-WORKSPACE-RECEIPT" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(receipt)" onclick="activateAppTab('receipt')">🧾 سند جديد</button>
+            </div>
+        </section>
+
+        <main class="page-canvas-wrapper">
 
         <!-- شريط التعبئة السريعة الظاهر فورياً عند اختيار سند رقمي -->
         <div class="no-print quick-action-bar" id="quickActionBar">
@@ -317,6 +377,8 @@
         </button>
     </footer>
 
+    </div>
+
     <aside class="no-print settings-panel" id="settingsPanel">
         <div class="settings-backdrop" onclick="toggleDrawer(false)"></div>
         <div class="settings-drawer">
@@ -330,9 +392,9 @@
             
             <div class="settings-overview">
                 <div>
-                    <span class="directory-kicker">AQSA7 SETTINGS</span>
-                    <h3>إعدادات العيادة والتطبيق</h3>
-                    <p>تحكم مركزي في الطباعة والمظهر والهوية والبيانات، مع حفظ الإعدادات تلقائياً.</p>
+                    <span class="directory-kicker">PRODUCT SETTINGS</span>
+                    <h3>إعدادات المنتج</h3>
+                    <p>إعدادات ALSSAEDY CLINIC التشغيلية. هوية المنتج والنواة المشتركة تبقى ضمن عقود AQSA7 المركزية.</p>
                 </div>
                 <div class="settings-overview-chips" aria-label="أقسام الإعدادات">
                     <span>الطباعة</span><span>المظهر</span><span>الهوية</span><span>النص</span><span>العملة</span><span>البيانات</span>
