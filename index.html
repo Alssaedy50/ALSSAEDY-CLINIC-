@@ -651,11 +651,19 @@
         </div>
     </div>
 
-    <div class="no-print modal-screen" id="patientsModal">
-  <div class="modal-box patients-modal-box">
-    <button class="modal-close" type="button" onclick="closePatientsModal()">×</button>
-    <h3>👤 ملفات المرضى والحسابات</h3>
-    <p>ملف طبي وحساب مالي مستقل لكل مريض، مرتبط بالسندات والزيارات والمتبقي.</p>
+        <section class="no-print clinic-patient-workspace" id="patientsModal" aria-labelledby="patientWorkspaceTitle" hidden>
+          <div class="patient-workspace-shell">
+            <div class="clinic-patient-workspace-head">
+              <div>
+                <span class="directory-kicker">PATIENT WORKSPACE</span>
+                <h2 id="patientWorkspaceTitle">مساحة المرضى</h2>
+                <p>ملفات المرضى كمساحة عمل مستقلة، مع الوصول إلى الزيارات والسندات من ملف المريض.</p>
+              </div>
+              <div class="clinic-patient-workspace-actions">
+                <button type="button" class="tool-btn" onclick="startNewPatient()">＋ مريض جديد</button>
+                <button type="button" class="tool-btn patient-workspace-close" onclick="closePatientsModal()">← الرئيسية</button>
+              </div>
+            </div>
     <input type="hidden" id="patientFormId">
     <div class="patient-form">
       <input id="patientFormName" class="live-input" placeholder="اسم المريض *">
@@ -692,8 +700,8 @@
       </div>
       <div id="patientsList" class="patient-ledger-table"></div>
     </section>
-  </div>
-</div>
+          </div>
+        </section>
     <div class="no-print modal-screen" id="shareModal">
         <div class="modal-box">
             <button class="modal-close" type="button" onclick="closeShareModal()">×</button>
