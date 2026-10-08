@@ -537,8 +537,8 @@ Completed Phase 2 tasks:
 - 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
 Current next task:
-- **Phase 3 / Task 3.4 — Tenant / Instance Isolation Contract**
-- Status: **IMPLEMENTED; FINAL CROSS-PLATFORM CI VERIFICATION PENDING**
+- **Phase 3 / Task 3.5 — AI Capability Layer & Provider Adapter Contract**
+- Status: **NOT STARTED**
 - Executor: **AI / Technical Lead**
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
@@ -644,7 +644,7 @@ Completed:
 - 3.1 Reusable Dental Clinic Product Boundary — COMPLETE.
 - 3.2 Product Manifest & Instance Configuration Contract — COMPLETE.
 - 3.3 Generic Shared Capability / Module Boundaries — COMPLETE.
-- 3.4 Tenant / Instance Isolation Contract — IMPLEMENTED; FINAL CROSS-PLATFORM CI VERIFICATION PENDING.
+- 3.4 Tenant / Instance Isolation Contract — COMPLETE.
 
 ### Phase 3 / Task 3.4 — Tenant / Instance Isolation Contract
 
@@ -692,19 +692,23 @@ Verification completed so far:
 - Independent isolation harness: PASS for current identity, unscoped adoption, foreign record rejection, partial identity rejection and foreign backup-scope rejection.
 - Runtime Smoke PR verification run `37722497546` — SUCCESS; JavaScript syntax validation, mobile browser smoke and desktop browser integration smoke all passed on the exact Task 3.4 source state.
 - Android PR verification run `37722497534` — SUCCESS; debug APK, signed production APK, signature verification and metadata verification all passed on the exact Task 3.4 source state.
-- Receipt/export and Pages workflows are not pull-request triggered in the available CI path; the latest verified receipt/export and Pages gates predate the Task 3.4 source changes. Therefore those two post-change gates remain PENDING and Task 3.4 cannot yet be closed.
-- Vercel reports the known external free-tier deployment-rate-limit failure; it is non-gating and does not affect AQSA7 core verification.
+- Final push-based verification on commit `1c680a5bd4822f06ce858e296768fa6acac5da07` completed successfully:
+  - Receipt/export `37723564300` — SUCCESS.
+  - Runtime Smoke `37723564323` — SUCCESS.
+  - Android `37723564301` — SUCCESS.
+  - GitHub Pages `37723563802` — SUCCESS.
+- The same final commit also produced a successful Cloudflare Workers build check; no deployment blocker remains for this verification gate.
 
 Gate decision:
 - Implementation: MET.
 - Isolation contract: MET.
 - Architecture/no-duplication constraint: MET.
 - Static/isolation verification: MET.
-- Cross-platform CI verification: PENDING.
-- Task 3.4 remains PENDING FINAL VERIFICATION.
-- Task 3.5 MUST NOT START until the cross-platform verification gate is green.
+- Cross-platform CI verification: MET.
+- Task 3.4: COMPLETE.
+- Task 3.5 is now authorized to start.
 
-Next authorized task after closure:
+Next authorized task:
 - Task 3.5 — AI Capability Layer & Provider Adapter Contract.
 
 ### Phase 4 — Reliability & Security
@@ -757,7 +761,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Master success criteria consolidated; Phase 3 Task 3.4 final verification pending)
+Last updated: 2026-10-08 (Task 3.4 final cross-platform verification completed; Task 3.5 authorized)
 
 ## Current authoritative decisions
 
