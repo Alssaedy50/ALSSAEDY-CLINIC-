@@ -65,6 +65,7 @@ window.__clinicRepository = window.__clinicRepository || {
 
 async function clinicRepositoryHydrate(){
   const repo=window.__clinicRepository;
+  const stamp = item => (typeof window.aqsa7StampRecord === 'function' ? window.aqsa7StampRecord(item) : item);
   const receipts=await clinicDBAll('receipts');
   const patients=await clinicDBAll('patients');
   const legacyReceipts=readLegacyArray('alssaedy_receipts_history');
@@ -77,8 +78,10 @@ async function clinicRepositoryHydrate(){
   for(const item of legacyPatients){
     if(item?.id && !patientIds.has(String(item.id))){ await clinicDBPut('patients',item); patientIds.add(String(item.id)); }
   }
-  repo.receipts=await clinicDBAll('receipts');
-  repo.patients=await clinicDBAll('patients');
+  repo.receipts=(await clinicDBAll('receipts')).map(stamp);
+  repo.patients=(await clinicDBAll('patients')).map(stamp);
+  for (const item of repo.receipts) await clinicDBPut('receipts', item);
+  for (const item of repo.patients) await clinicDBPut('patients', item);
   const durableSettings=await clinicDBAll('settings');
   const settingsById=Object.fromEntries(durableSettings.filter(x=>x?.id).map(x=>[x.id,x.value]));
   const legacySettings = {
@@ -116,6 +119,7 @@ function clinicRepositoryPatients(){
   return window.__clinicRepository.patients.slice();
 }
 async function clinicRepositoryPutReceipt(item){
+  item = typeof window.aqsa7StampRecord === 'function' ? window.aqsa7StampRecord(item) : item;
   await clinicDBPut('receipts',item);
   const repo=window.__clinicRepository;
   const index=repo.receipts.findIndex(x=>x.id===item.id);
@@ -131,6 +135,7 @@ async function clinicRepositoryClearReceipts(){
   window.__clinicRepository.receipts=[];
 }
 async function clinicRepositoryPutPatient(item){
+  item = typeof window.aqsa7StampRecord === 'function' ? window.aqsa7StampRecord(item) : item;
   await clinicDBPut('patients',item);
   const repo=window.__clinicRepository;
   const index=repo.patients.findIndex(x=>x.id===item.id);
