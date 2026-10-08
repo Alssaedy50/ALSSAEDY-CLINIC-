@@ -3026,8 +3026,8 @@ Priority register:
 
 ### Phase 8 task sequence
 - **8.0 Real Clinic UX Audit — COMPLETE**
-- **8.1 Information Architecture — AUTHORIZED NEXT**
-- 8.2 Clinic Dashboard — PLANNED
+- **8.1 Information Architecture — COMPLETE**
+- **8.2 Clinic Dashboard — AUTHORIZED NEXT**
 - 8.3 Patient Workspace — PLANNED
 - 8.4 Visit / Services / Billing — PLANNED
 - 8.5 Receipt System Reconstruction — PLANNED
@@ -3036,6 +3036,24 @@ Priority register:
 - 8.8 Print / PDF / Physical Voucher QA — PLANNED
 - 8.9 Full Regression — PLANNED
 - 8.10 Rendered UX Acceptance — PLANNED
+
+
+### Phase 8.1 gate
+- Platform navigation separated from Dental product navigation: PASS.
+- Dental local navigation moved into the product context boundary: PASS.
+- Receipt mode controls moved into the receipt workflow boundary: PASS.
+- No duplicate Dental navigation remains in the global header: PASS.
+- Existing `js/app.js` route/context ownership preserved: PASS.
+- Existing product/repository/business/export boundaries preserved: PASS.
+- Mobile/print layout rules updated for the new ownership: PASS.
+- Runtime regression assertions added for the IA boundary: PASS in source; CI verification is required before phase closure.
+
+**Phase 8.1 implementation: COMPLETE — pending CI gate.**
+
+### Next authorized task
+**Phase 8.2 — Clinic Dashboard.**
+
+Objective: create the daily operational clinic home using existing repository/data capabilities, while preserving the Phase 8.1 navigation boundary and deferring receipt reconstruction to Phase 8.5.
 
 ### Phase 8 execution constraints
 - Do not repeat Phase 7 platform-shell work merely because the visual target changes.
@@ -3062,7 +3080,7 @@ Priority register:
 Objective: reconstruct the user-facing navigation/workspace hierarchy around daily clinic work while preserving `js/app.js` as the sole route/context owner and without implementing the Phase 8.5 receipt redesign early.
 
 
-Last updated: 2026-10-08 (Phase 8.0 audit complete; v1.4.0 remains the verified release-candidate baseline; Phase 8.1 is the next authorized task)
+Last updated: 2026-10-08 (Phase 8.1 Information Architecture implemented; CI gate pending; Phase 8.2 is the next authorized task)
 
 ## Current authoritative decisions
 
