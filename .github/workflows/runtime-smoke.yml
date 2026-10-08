@@ -143,6 +143,7 @@ jobs:
           if (!(await page.locator('#patientsModal').evaluate(e => e.classList.contains('open')))) throw new Error('Patients panel did not open');
           if (!page.url().endsWith('#patients')) throw new Error('Patients route state missing');
 
+          await page.locator('#patientDirectorySearch, #patientDirectoryFilter, #patientsList').first().waitFor({state:'attached', timeout:3000});
           const patientDirectory = await page.evaluate(() => ({
             search: !!document.querySelector('#patientDirectorySearch'),
             filter: !!document.querySelector('#patientDirectoryFilter'),
