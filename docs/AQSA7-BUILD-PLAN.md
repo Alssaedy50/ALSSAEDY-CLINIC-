@@ -57,6 +57,109 @@ The AI / Technical Lead must not treat its internal knowledge or the current pla
 
 **Operating principle:** Research broadly → verify evidence → compare viable approaches → choose the best fit → implement → test → document the authoritative result → request approval only when the change is materially important.
 
+## Long-Term Architectural Foresight & “No Future Surprise” Rule — Mandatory
+
+AQSA7 must be designed from the **maximum approved long-term target backward**, not only from the immediate task requirement. The purpose is to prevent avoidable architectural rewrites when AQSA7 later expands from the first Dental product into a multi-product, multi-tenant, cross-platform and AI-enabled platform.
+
+### 1. Think from the destination backward
+Before any materially architectural task, the AI / Technical Lead must evaluate:
+- the immediate task and its exit criteria;
+- the next affected phases/tasks;
+- the approved target architecture;
+- the expected future product families, tenants, instances, branches, devices, integrations and AI capabilities;
+- likely security, privacy, migration, synchronization, recovery, scaling and interoperability requirements;
+- the cost of changing the decision later.
+
+The decision must optimize for the **whole AQSA7 lifecycle**, not only the shortest path to the current task.
+
+### 2. Design for the future, but do not build everything early
+Future-proofing does **not** mean implementing every future feature immediately.
+
+For each future concern, classify the required action as exactly one of:
+1. **Implement now** — the missing foundation would otherwise create a costly rewrite or violates a current requirement.
+2. **Establish the contract/boundary now, implement later** — define stable interfaces, ownership, identifiers, schemas, adapters or extension points now while deferring the heavy feature implementation.
+3. **Document and defer** — no current architectural foundation is needed yet; record the future requirement and revisit it at the appropriate gate.
+4. **Reject** — the idea conflicts with AQSA7 principles or adds unjustified complexity/lock-in.
+
+The AI must explicitly distinguish these cases instead of either ignoring future needs or prematurely implementing speculative features.
+
+### 3. No Future Surprise Gate
+Before closing any task that affects architecture, persistence, identity, security, platform boundaries, integrations, AI, data contracts or user-facing product structure, verify:
+- What future requirement could this implementation make difficult?
+- Does any current identifier/data model assume Dental-only semantics?
+- Could a future second product/tenant/instance/branch use this contract without cloning it?
+- Could Web/PWA/Desktop/Android continue using the same core?
+- Could cloud/offline/sync/recovery be added without replacing the local authority?
+- Could another provider/model/integration be added without changing business modules?
+- Could schema evolution/migration occur without destructive data loss?
+- Could permissions/audit/security boundaries be strengthened without rewriting the domain?
+- Is any temporary implementation accidentally becoming a permanent contract?
+- Is there evidence from current standards, official documentation or maintained comparable systems that changes the decision?
+
+If the answer reveals a required architectural foundation, establish it before closing the task unless doing so would be a material plan change requiring User approval.
+
+### 4. Architectural boundaries must be established before dependent features
+When a future feature is known to be important, the platform should establish the stable boundary before building multiple dependent implementations. Examples include:
+- Product → Tenant → Instance ownership before multi-tenant sync/hosting.
+- Generic Repository/Data contracts before additional vertical products.
+- Backup Engine → Provider Adapter before multiple cloud providers.
+- AQSA7 AI Capability → Provider Adapter before vendor-specific AI features.
+- Integration contract → provider-specific adapter before external integrations.
+- Shared authorization/audit boundaries before high-impact automation.
+- Versioned schemas/migrations before long-lived production data evolves.
+
+The principle is **boundary first, implementation when justified**.
+
+### 5. Future-risk register
+The Build Plan must maintain architectural awareness of at least these future-risk domains even when their implementation is deferred:
+- multi-product and vertical isolation;
+- tenant, instance, branch and device ownership;
+- authentication, authorization and role/permission evolution;
+- audit trail and accountability;
+- schema versioning, migrations and backward compatibility;
+- offline/online synchronization and conflict resolution;
+- backup, restore and disaster recovery;
+- encryption, key management, privacy and data lifecycle/retention;
+- AI provider/model independence, tool authorization, evaluation and sensitive-data policy;
+- integration/API/webhook boundaries and provider changes;
+- healthcare interoperability/standards and non-healthcare domain standards;
+- localization, RTL/BiDi, currency, timezone and regional rules;
+- accessibility and responsive/cross-platform behavior;
+- performance, large datasets, indexing and eventual scale;
+- observability, diagnostics and safe error reporting;
+- testing strategy, contract tests and cross-product regression coverage;
+- release/update/rollback and client-version compatibility;
+- extensibility/plugin/module boundaries;
+- future commercial/product packaging without coupling the technical core to a single customer.
+
+These are **architecture watchpoints**, not permission to add speculative complexity. Each becomes implementation work only when its readiness criteria or an approved product requirement requires it.
+
+### 6. Reversibility and migration-cost principle
+When two approaches satisfy current requirements, prefer the approach that:
+- preserves a stable public/internal contract;
+- minimizes irreversible coupling;
+- keeps data migration possible;
+- avoids vendor/provider lock-in;
+- keeps domain logic independent of infrastructure;
+- can be tested and replaced behind an adapter;
+- has lower long-term operational and recovery risk.
+
+A decision with high future migration cost requires stronger evidence and must be recorded as an architectural decision in GitHub.
+
+### 7. Temporary code must have an exit condition
+Any temporary compatibility path, legacy adoption mechanism, migration shim, experimental adapter or transitional abstraction must document:
+- why it exists;
+- what authoritative path replaces it;
+- what conditions permit its removal;
+- what test prevents accidental regression.
+
+No temporary mechanism may silently become permanent architecture.
+
+### 8. User approval boundary remains protected
+Long-term foresight gives the AI authority to anticipate, research and prepare the architecture. It does **not** authorize silent material changes to approved scope, product requirements, security model or major architecture. Such changes remain subject to the existing material-change approval rule.
+
+**Operating principle:** Think to the furthest approved destination → identify future failure modes → establish necessary boundaries early → defer unnecessary implementation → verify → document the decision → continue.
+
 ## Task Completion, GitHub Record & Handoff Rule
 
 At the end of every task, subtask, phase, or verified work unit:
@@ -645,6 +748,7 @@ Completed:
 - 3.2 Product Manifest & Instance Configuration Contract — COMPLETE.
 - 3.3 Generic Shared Capability / Module Boundaries — COMPLETE.
 - 3.4 Tenant / Instance Isolation Contract — COMPLETE.
+- 3.5 AI Capability Layer & Provider Adapter Contract — COMPLETE.
 
 ### Phase 3 / Task 3.4 — Tenant / Instance Isolation Contract
 
@@ -707,10 +811,10 @@ Gate decision:
 - Cross-platform CI verification: MET.
 - Task 3.4: COMPLETE.
 - Task 3.5: COMPLETE.
-- Task 3.6 is now the next authorized task; it has not been started.
+- Task 3.6 is the next authorized task; it has not been started.
 
 Next authorized task:
-- Task 3.5 — AI Capability Layer & Provider Adapter Contract — COMPLETE.
+- Task 3.6 — Integration / Interoperability Adapter Contract — NOT STARTED.
 
 ### Phase 3 / Task 3.5 — AI Capability Layer & Provider Adapter Contract
 
@@ -841,7 +945,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 3.5 fully verified and closed; Task 3.6 authorized but not started)
+Last updated: 2026-10-08 (Long-Term Architectural Foresight rules integrated; Task 3.5 fully verified and closed; Task 3.6 authorized but not started)
 
 ## Current authoritative decisions
 
