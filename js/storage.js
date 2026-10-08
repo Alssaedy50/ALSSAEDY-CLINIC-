@@ -12,6 +12,31 @@ function getSelectedServices() {
         .map(item => item.querySelector('.check-mark') ? item.innerText.replace('✓', '').trim() : item.innerText.trim());
 }
 
+function updateReceiptIssuancePanel(){
+  const panel=document.getElementById('receiptIssuancePanel');if(!panel)return;
+  const value=id=>document.getElementById(id)?.value||'';
+  const info=typeof getCurrencyInfo==='function'?getCurrencyInfo():{symbol:'ر.ي'};
+  const total=Math.max(0,Number.parseFloat(value('digTotal'))||0), paid=Math.max(0,Number.parseFloat(value('digPaid'))||0), balance=Math.max(0,total-paid);
+  const services=getSelectedServices();
+  const set=(id,text)=>{const e=document.getElementById(id);if(e)e.textContent=text;};
+  set('issuancePatientName',value('digClientName')||'مريض جديد');set('issuancePatientPhone',value('digPatientPhone')||'لم يتم اختيار ملف');
+  set('issuanceServiceCount',String(services.length));set('issuanceServices',services.length?services.join('، '):'لم تُحدد خدمة بعد');
+  set('issuanceReceiptNo',value('digReceiptNo')||'—');set('issuanceDate',value('digDate')||'—');
+  set('issuanceTotal',total.toLocaleString());set('issuancePaid',paid.toLocaleString());set('issuanceBalance',balance.toLocaleString());
+  ['issuanceTotalCurrency','issuancePaidCurrency','issuanceBalanceCurrency'].forEach(id=>set(id,info.symbol));
+  set('issuancePayMethod',document.getElementById('selectedPayMethod')?.value||'نقداً');set('issuanceReference',value('digRef')?'المرجع: '+value('digRef'):'بدون مرجع');
+  panel.classList.toggle('has-balance',balance>0);panel.classList.toggle('is-settled',balance<=0&&total>0);panel.classList.toggle('is-manual',document.body.getAttribute('data-mode')==='manual');
+  const mode=document.getElementById('receiptIssuanceMode');if(mode)mode.textContent=document.body.getAttribute('data-mode')==='manual'?'نموذج طباعة':'سند رقمي';
+}
+function calculateLedger(){
+  const paid=Math.max(0,Number.parseFloat(document.getElementById('digPaid')?.value)||0), total=Math.max(0,Number.parseFloat(document.getElementById('digTotal')?.value)||0);
+  const paidTable=document.getElementById('digPaidTable'),balance=document.getElementById('digBalance'),taf=document.getElementById('digTafqeet');
+  if(paidTable)paidTable.value=paid?paid:'';
+  if(balance)balance.value=(total||paid)?Math.max(0,total-paid):'';
+  if(paid>0&&taf&&typeof tafqeetRial==='function')taf.value=tafqeetRial(paid);
+  updateReceiptIssuancePanel();
+}
+
 function collectReceiptData() {
     const paid=Math.max(0,Number.parseFloat(document.getElementById('digPaid').value)||0);
     const total=Math.max(0,Number.parseFloat(document.getElementById('digTotal').value)||0);
