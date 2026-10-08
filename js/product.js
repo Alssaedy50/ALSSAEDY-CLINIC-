@@ -137,22 +137,66 @@
     if(!instance.enabledModules.every(id => manifest.modules.includes(id))) errors.push('instance enabled module outside product manifest');
     if(!manifest.documentTemplates.receipt.sizes.includes(instance.documentTemplates.receipt.defaultSize)) errors.push('receipt default outside product template contract');
     if(!manifest.storage.primary || manifest.storage.scope !== 'instance') errors.push('storage contract');
+    if(!instance.storage.databaseName || !instance.storage.databaseName.trim()) errors.push('instance database name');
+    if(!/^[A-Za-z0-9_-]+$/.test(instance.storage.databaseName)) errors.push('instance database name contains unsafe characters');
     return freeze({valid: errors.length === 0, errors: freeze(errors)});
+  }
+
+  const instanceIdentity = freeze({
+    productId: manifest.productId,
+    tenantId: instance.tenantId,
+    instanceId: instance.instanceId
+  });
+
+  function identityMatches(value, expected){
+    return String(value || '') === String(expected || '');
+  }
+
+  /*
+   * Tenant/instance ownership is fail-closed at the product boundary.
+   * Missing ownership metadata is treated as legacy/unscoped data and may be
+   * explicitly adopted by the current instance; any conflicting identity is
+   * rejected and can never be silently rewritten into this instance.
+   */
+  function aqsa7OwnRecord(record, options){
+    const source = record && typeof record === 'object' ? record : {};
+    const allowUnscoped = options?.allowUnscoped !== false;
+    const keys = ['productId','tenantId','instanceId'];
+    const present = keys.filter(key => source[key] !== undefined && source[key] !== null && String(source[key]) !== '');
+    if (present.length > 0 && present.length !== keys.length) {
+      throw new Error('AQSA7_RECORD_OWNERSHIP_INCOMPLETE');
+    }
+    if (present.length === keys.length) {
+      if (!identityMatches(source.productId, instanceIdentity.productId) ||
+          !identityMatches(source.tenantId, instanceIdentity.tenantId) ||
+          !identityMatches(source.instanceId, instanceIdentity.instanceId)) {
+        throw new Error('AQSA7_RECORD_OWNERSHIP_MISMATCH');
+      }
+      return {...source};
+    }
+    if (!allowUnscoped) throw new Error('AQSA7_RECORD_OWNERSHIP_REQUIRED');
+    return {...source, ...instanceIdentity};
+  }
+
+  function aqsa7ValidateBackupScope(payload){
+    if (!payload || typeof payload !== 'object') throw new Error('AQSA7_BACKUP_INVALID');
+    const keys = ['productId','tenantId','instanceId'];
+    const present = keys.filter(key => payload[key] !== undefined && payload[key] !== null && String(payload[key]) !== '');
+    if (present.length > 0 && present.length !== keys.length) throw new Error('AQSA7_BACKUP_OWNERSHIP_INCOMPLETE');
+    if (present.length === 0) return {scoped:false, ...instanceIdentity};
+    if (!keys.every(key => identityMatches(payload[key], instanceIdentity[key]))) {
+      throw new Error('AQSA7_BACKUP_OWNERSHIP_MISMATCH');
+    }
+    return {scoped:true, ...instanceIdentity};
   }
 
   function aqsa7GetProductManifest(){ return manifest; }
   function aqsa7GetProductCapabilities(){ return manifest.sharedCapabilities.map(id => window.aqsa7GetSharedCapability(id)).filter(Boolean); }
   function aqsa7GetClinicConfig(){ return instance; }
   function aqsa7GetInstanceStorageConfig(){ return instance.storage; }
+  function aqsa7GetInstanceIdentity(){ return instanceIdentity; }
   function aqsa7ValidateProductDefinition(){ return validate(); }
-  function aqsa7StampRecord(record){
-    return {
-      ...record,
-      productId: record?.productId || manifest.productId,
-      tenantId: record?.tenantId || instance.tenantId,
-      instanceId: record?.instanceId || instance.instanceId
-    };
-  }
+  function aqsa7StampRecord(record){ return aqsa7OwnRecord(record, {allowUnscoped:true}); }
   function aqsa7ApplyClinicIdentity(){
     const i=instance.identity, locale=instance.locale;
     document.documentElement.lang=locale.language;
@@ -170,8 +214,11 @@
   window.aqsa7GetProductCapabilities=aqsa7GetProductCapabilities;
   window.aqsa7GetClinicConfig=aqsa7GetClinicConfig;
   window.aqsa7GetInstanceStorageConfig=aqsa7GetInstanceStorageConfig;
+  window.aqsa7GetInstanceIdentity=aqsa7GetInstanceIdentity;
   window.aqsa7ValidateProductDefinition=aqsa7ValidateProductDefinition;
   window.aqsa7StampRecord=aqsa7StampRecord;
+  window.aqsa7OwnRecord=aqsa7OwnRecord;
+  window.aqsa7ValidateBackupScope=aqsa7ValidateBackupScope;
   if(validate().valid===false) console.error('AQSA7 product definition validation failed', validate().errors);
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',aqsa7ApplyClinicIdentity,{once:true}); else aqsa7ApplyClinicIdentity();
 })();
