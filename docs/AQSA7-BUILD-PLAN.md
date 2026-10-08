@@ -1745,7 +1745,8 @@ Task state:
 - Task 4.4 — Generic Backup Provider Adapter Contract — **COMPLETE**.
 - Task 4.5 — Restore & Migration Engine Contract/Implementation — **COMPLETE**.
 - Task 4.6 — Local Backup / Recovery UX — **COMPLETE**.
-- Next authorized task: **Task 4.7 — Scheduling / Reliability**.
+- Task 4.7 — Scheduling / Reliability — **COMPLETE**.
+- Next authorized task: **Task 4.8 — Backup Provider Adapter implementation**.
 
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
@@ -1765,6 +1766,84 @@ Mandatory cloud-backup work added:
 - Android/Web platform adapter safety
 
 Cloud backup is optional and must not become a paid or online-only dependency.
+
+### Phase 4 / Task 4.7 — Scheduling / Reliability
+
+Status: **COMPLETE**
+
+Purpose:
+- Add a reliable local-first reminder/scheduling boundary for encrypted local backups without introducing background cloud jobs, a second persistence authority, or an automatic file-export mechanism that browsers cannot guarantee safely without user interaction.
+
+Implementation decision:
+- Added `js/backup-scheduling.js` as the single local scheduling/reliability reminder boundary.
+- Scheduling is intentionally **local-reminder**, not unattended backup execution. The browser may remind the user when a configured interval has elapsed, but the encrypted file is created only through the existing explicit Backup action.
+- Default reminder interval is 7 days; supported intervals are 1, 7 and 30 days.
+- Reminder can be enabled/disabled from Settings.
+- The scheduler checks on app startup, `pageshow`, and when the document becomes visible again; while the app remains open it maintains a lightweight timer.
+- Scheduler state contains only control/reminder metadata: enabled flag, interval, last reminder/check timestamps. It never stores backup contents, passwords, keys, provider credentials or business records.
+- A successful encrypted backup resets the reminder state through the existing Backup Engine flow.
+- Malformed local scheduler state fails soft to safe defaults; local reminder failure cannot block Repository/IndexedDB or receipt operations.
+- The implementation does not request Notification permission, does not run service-worker background exports, and does not modify legacy cloud sync.
+
+Boundary:
+`Local Backup UX → Backup Scheduling / Reliability → explicit encrypted Backup action → Backup Engine → Repository / IndexedDB`
+
+Files changed:
+- `js/backup-scheduling.js` — local scheduling/reliability reminder contract and runtime.
+- `js/backup.js` — clears the reminder after successful encrypted export.
+- `index.html` — scheduling controls/status and script registration.
+- `.github/workflows/runtime-smoke.yml` — scheduling contract, configuration, UI and fail-soft boundary checks.
+
+Contract:
+- `contractId: aqsa7-backup-scheduling-reliability`
+- `schemaVersion: 1`
+- `mode: local-reminder`
+- `providerIndependent: true`
+- `automaticBackgroundExport: false`
+- `persistence: local-storage-control-state`
+
+Reliability behavior:
+- Due-state is derived from the last successful local encrypted backup timestamp plus the configured interval.
+- Reminder notification is de-duplicated until a new successful Backup is created.
+- Visibility/startup checks recover the reminder state after normal navigation or reopening the application.
+- The scheduler never claims that a cloud backup exists and never becomes a provider dependency.
+- The existing Repository/IndexedDB remains the sole durable business-data authority.
+
+Explicitly out of scope:
+- Automatic/background file generation.
+- Google Drive/OAuth/provider implementation.
+- Cloud scheduling.
+- Legacy sync replacement.
+- Notification permission/background push.
+- New database/repository/state machine.
+- Password recovery.
+- Phase 5 full disaster-recovery/cross-platform regression.
+
+Verification evidence:
+- Implementation commits: `9a8e87b9f9ca30bebf5bc67378db8594b5953b4d`, `0b280cd5c3a5887f11ce9e75aa687238a261a806`, `246e7a4206cc473b148736225430499279806acb`, `599fafdc2fae40b0f569f0e2211601ed902c0c36`.
+- Runtime Smoke must verify the scheduler contract, 7-day configuration, enable/disable behavior, UI controls, and the explicit `automaticBackgroundExport: false` boundary together with the existing Phase 4 and regression smoke suite.
+- Static/source inspection completed for the scheduler, Backup Engine integration, Settings UI and Runtime Smoke assertions.
+- Final task completion remains gated on the green CI evidence from the final main checkpoint.
+
+No Future Surprise gate:
+- Browser/PWA/Android can share the same reminder contract without requiring platform-specific persistence or provider SDKs.
+- Automatic background backup remains intentionally deferred because it would require platform-specific capabilities and stronger user-permission/recovery semantics; the current contract does not block adding such an adapter later.
+- Google Drive and other providers remain downstream of the existing encrypted Backup Provider Adapter boundary.
+- A second product/tenant/instance continues to use the same reminder mechanism because backup ownership remains inside the existing artifact/engine boundaries.
+- Local reminder failure cannot make local application data unavailable.
+- No temporary scheduling mechanism is promoted into cloud/provider architecture.
+
+Task 4.7 gate decision:
+- Local-first scheduling/reminder boundary: **MET**.
+- Explicit user-controlled backup creation: **MET**.
+- No background/cloud dependency: **MET**.
+- Reminder state contains no secrets/business records: **MET**.
+- Fail-soft reliability behavior: **MET**.
+- Runtime verification: **PENDING FINAL CI**.
+- Task 4.7: **PENDING FINAL CI**.
+
+Next authorized task after verification:
+- **Task 4.8 — Backup Provider Adapter implementation**.
 
 ### Phase 5 — Full Regression
 Must verify:
@@ -1796,7 +1875,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.6 complete; Phase 4 in progress; next authorized task Task 4.7)
+Last updated: 2026-10-08 (Task 4.7 implementation complete; final CI gate pending; next authorized task Task 4.8 after verification)
 
 ## Current authoritative decisions
 
