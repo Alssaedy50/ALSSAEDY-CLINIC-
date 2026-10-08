@@ -626,10 +626,10 @@ Execution exit criteria used from the approved plan:
 11. Any non-gating external CI failure is recorded and does not get silently ignored.
 
 Verification status:
-- Android APK 37719349319 — SUCCESS.
-- Receipt image/PDF export 37719349290 — SUCCESS.
-- GitHub Pages build/deployment 37719348937 — SUCCESS.
-- Runtime Smoke 37719952522 — PASS. JavaScript syntax validation, mobile browser smoke, desktop browser integration smoke and console/page-error checks all passed on final checkpoint 331dd8ffd0befaa59606fc01b5d9c3fe860d2a32.
+- Android APK 37720126065 — SUCCESS.
+- Receipt image/PDF export 37720126069 — SUCCESS.
+- GitHub Pages build/deployment 37720125728 — SUCCESS.
+- Runtime Smoke 37720126111 — PASS. JavaScript syntax validation, mobile browser smoke, desktop browser integration smoke and console/page-error checks all passed on final checkpoint 80449038dbe2aaa8796f44ee023d591f10a86da9.
 - Commit combined status also reports a Vercel context failure caused by the external Vercel build-rate-limit/upgrade gate. Vercel is not an AQSA7 required deployment target and this status is therefore non-gating, but it remains recorded.
 - Final implementation and verification gates are green; Task 3.3 is COMPLETE.
 
