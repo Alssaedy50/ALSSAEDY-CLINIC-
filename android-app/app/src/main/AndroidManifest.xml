@@ -9,9 +9,9 @@
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:label="عيادة السعيدي"
-        android:icon="@drawable/clinic_logo"
-        android:roundIcon="@drawable/clinic_logo"
+        android:label="AQSA7"
+        android:icon="@drawable/aqsa7_launcher"
+        android:roundIcon="@drawable/aqsa7_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
