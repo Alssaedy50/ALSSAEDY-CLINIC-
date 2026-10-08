@@ -188,6 +188,10 @@ async function clinicRepositoryPutPatient(item){
   if(index>=0) repo.patients[index]=item; else repo.patients.push(item);
   return item;
 }
+async function clinicRepositoryDeletePatient(id){
+  await clinicDBDelete('patients',id);
+  window.__clinicRepository.patients=window.__clinicRepository.patients.filter(x=>String(x.id)!==String(id));
+}
 
 async function hydrateDurableReceipts(){ return clinicRepositoryHydrate(); }
 
