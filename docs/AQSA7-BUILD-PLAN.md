@@ -1589,6 +1589,102 @@ Task 4.4 gate decision:
 Next authorized task:
 - **Task 4.5 — Restore & Migration Engine Contract/Implementation**, according to the authoritative Phase 4 sequence.
 
+### Phase 4 / Task 4.5 — Restore & Migration Engine Contract/Implementation
+
+Status: **PENDING VERIFICATION**
+
+Purpose:
+- Establish one explicit, versioned restore-preparation boundary between encrypted Backup Artifact decryption and repository restore.
+- Validate compatibility, Product/Tenant/Instance ownership and payload shape before any repository write.
+- Make schema migration explicit and fail-closed instead of silently coercing unknown backup versions.
+
+Implementation decision:
+- Added `js/restore-migration.js` as the single Restore & Migration Engine boundary.
+- The engine owns restore compatibility planning and deterministic schema migration only; it does not own persistence, IndexedDB, provider storage, authentication, scheduling or cloud recovery.
+- Current authoritative backup schema is version 5. Version 5 has an explicit identity/no-op migration entry because no historical schema transform is currently authorized by the ledger.
+- Unknown, older unsupported or future schema versions fail closed; no heuristic field guessing or silent downgrade/upgrade is performed.
+- Artifact type/version, payload schema, exportedAt, Product/Tenant/Instance ownership and current target identity are validated before preparation completes.
+- `js/backup.js` now routes decrypted restore artifacts through the Restore & Migration Engine before repository restore.
+- Existing repository restore remains the persistence authority and existing merge/replace behavior is preserved.
+
+Restore boundary:
+`Encrypted Artifact → Web Crypto Decrypt/Auth → Restore & Migration Engine → Repository/IndexedDB`
+
+Contract:
+- contractId: `aqsa7-restore-migration-engine`
+- contract schemaVersion: `1`
+- artifactType: `AQSA7_BACKUP_ARTIFACT`
+- artifactVersion: `1`
+- currentSchemaVersion: `5`
+- supportedSchemaVersions: `[5]`
+- migrationPolicy: `explicit-versioned-only`
+- providerIndependent: true
+- persistenceOwner: `repository-indexeddb`
+
+Restore sequence:
+1. Require encrypted artifact envelope.
+2. Decrypt/authenticate using the Task 4.2 cryptographic boundary.
+3. Validate artifact identity and schema.
+4. Validate target Product/Tenant/Instance ownership.
+5. Select an explicit migration entry for the source schema.
+6. Execute the migration deterministically.
+7. Re-validate the resulting artifact and ownership.
+8. Only then allow the existing Backup Engine repository restore path to write data.
+
+Fail-closed rules:
+- Unsupported artifact type/version → reject.
+- Unsupported schema version → reject.
+- Future schema version → reject.
+- Invalid timestamp/payload → reject.
+- Missing/incomplete/mismatched ownership → reject.
+- Backup belonging to another tenant/instance → reject.
+- No automatic schema guessing or destructive coercion.
+- No repository write occurs during migration planning or validation.
+
+Files changed:
+- `js/restore-migration.js` — Restore & Migration Engine contract, validation, migration registry and preparation API.
+- `js/backup.js` — routes decrypted artifacts through restore/migration preparation.
+- `index.html` — loads the Restore & Migration Engine.
+- `.github/workflows/runtime-smoke.yml` — verifies current-schema planning, metadata preservation and fail-closed unsupported/future schema and foreign-ownership checks.
+
+Explicitly out of scope:
+- Historical schema transformations not documented in the ledger.
+- Database version migration/rebuild.
+- Google Drive/OAuth/provider implementation.
+- Scheduling/background jobs.
+- Cloud recovery.
+- Replacing legacy `js/sync.js` / `api/clinic-sync.js`.
+- New persistence authority/repository/state machine.
+- Phase 5 disaster-recovery/cross-platform full regression.
+
+Verification evidence:
+- Source inspection completed against `js/storage.js`, `js/repository.js`, `js/product.js`, `js/backup.js`, `js/backup-provider.js` and the new Restore & Migration Engine.
+- Runtime verification is required before closing this task.
+- Verification checkpoint: `2795c14c8f3c379170bd5396384ed7e765ba2718`.
+- Required Runtime Smoke evidence: restore contract presence/versioning, current-schema migration planning, metadata/ownership preservation, encrypted restore preparation, unsupported/future schema rejection, foreign ownership rejection, existing backup crypto/engine/provider checks, mobile browser smoke and desktop browser integration smoke.
+- Until the final Runtime Smoke workflow is green on the implementation checkpoint, Task 4.5 remains **PENDING VERIFICATION**.
+
+No Future Surprise gate:
+- A future schema migration can be added as a new explicit version entry without changing the persistence authority.
+- Provider implementations remain downstream from the restore boundary.
+- Product/Tenant/Instance ownership continues to be data-driven and fail-closed.
+- Unknown future artifacts will not be silently accepted after an application upgrade.
+- Web/PWA/Desktop/Android share the same restore contract because no platform-specific migration mechanism was introduced.
+
+Task 4.5 gate decision:
+- Versioned restore/migration boundary: **MET**.
+- Explicit compatibility policy: **MET**.
+- Ownership isolation before restore: **MET**.
+- Fail-closed unknown/future schema behavior: **MET**.
+- Repository/IndexedDB remains sole persistence authority: **MET**.
+- Runtime verification: **PENDING**.
+- Task 4.5: **PENDING VERIFICATION**.
+
+Next action:
+- Run and verify the authoritative Runtime Smoke workflow on `2795c14c8f3c379170bd5396384ed7e765ba2718`.
+- If green, close Task 4.5 and authorize Task 4.6.
+- If red, fix only the Task 4.5 failure and repeat verification.
+
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
 
@@ -1596,7 +1692,9 @@ Task state:
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
 - Task 4.2 — Encryption & Integrity Layer — **COMPLETE**.
 - Task 4.3 — Generic Backup Engine — **COMPLETE**.
-- Next authorized task: **Task 4.4 — Generic Backup Provider Adapter Contract**.
+- Task 4.4 — Generic Backup Provider Adapter Contract — **COMPLETE**.
+- Task 4.5 — Restore & Migration Engine Contract/Implementation — **PENDING VERIFICATION**.
+- Current next action: verify Task 4.5 Runtime Smoke on `2795c14c8f3c379170bd5396384ed7e765ba2718`.
 
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
@@ -1647,7 +1745,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.4 complete; Phase 4 in progress; next authorized task Task 4.5)
+Last updated: 2026-10-08 (Task 4.5 implementation complete; verification pending; Phase 4 in progress)
 
 ## Current authoritative decisions
 
