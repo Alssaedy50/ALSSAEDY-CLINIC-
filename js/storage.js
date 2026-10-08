@@ -444,11 +444,6 @@ async function deleteReceipt(id){
   return cancelReceipt(id);
 }
 
-async function clearAllHistory(){
-  if(!confirm('هل أنت متأكد من حذف كامل سجل السندات؟'))return;
-  try{await clinicRepositoryClearReceipts();renderHistory();updateHistoryCount();}
-  catch(e){toast?.('تعذر مسح السجل: '+(e?.message||'خطأ غير معروف'),'error');}
-}
 let currentPatientId='';
 
 function patientId(){
