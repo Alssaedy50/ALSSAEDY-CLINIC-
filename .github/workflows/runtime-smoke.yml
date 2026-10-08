@@ -73,6 +73,17 @@ jobs:
           const title = await page.title();
           if (!title.includes('سند قبض مالي')) throw new Error('Unexpected page title');
 
+          // AQSA7 Phase 7.2: platform is the entry shell; enter the configured
+          // Dental product before asserting product-local controls.
+          if (!(await page.locator('#platformHome').isVisible())) throw new Error('AQSA7 platform home is not the default entry surface');
+          await page.locator('#tabPlatformProducts').click();
+          if (!(await page.locator('#platformProducts').isVisible())) throw new Error('AQSA7 Products/Projects surface did not open');
+          if (!(await page.locator('#dentalProductCard').isVisible())) throw new Error('Configured Dental product card is missing');
+          await page.locator('#dentalProductCard .platform-primary-btn').click();
+          if (!(await page.locator('#productWorkspace').isVisible())) throw new Error('Dental product workspace did not open');
+          if (!(await page.locator('#aqsa7ProductContext').isVisible())) throw new Error('Dental product context bar is missing');
+          if (await page.locator('#platformHome').isVisible()) throw new Error('Platform home remained visible inside product context');
+
           const designTokens = await page.evaluate(() => {
             const root = getComputedStyle(document.documentElement);
             const token = name => root.getPropertyValue(name).trim();
