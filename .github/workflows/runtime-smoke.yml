@@ -864,6 +864,8 @@ jobs:
           if ((await page.locator('#patientsList .patient-ledger-row').count()) !== 1) fail('Patient search failed');
 
           // 4) History/search/filter after persisted receipt.
+          await page.locator('#tabHistory').click();
+          await page.waitForTimeout(100);
           await page.evaluate(() => renderHistory());
           await page.waitForTimeout(100);
           await page.locator('#historySearch').fill('PH5-001');
