@@ -52,6 +52,46 @@ At the end of every task, subtask, phase, or verified work unit:
 5. Never claim completion without satisfying the defined exit criteria. If verification is unavailable, record the task as PENDING/BLOCKED/UNVERIFIED with the exact reason.
 6. GitHub remains the authoritative project state; the conversation handoff must not contradict it.
 
+## Master Success Criteria — Mandatory for Every Task, Phase & Release
+
+These criteria are authoritative and apply in addition to each task's specific exit criteria.
+
+### Task Gate
+A task may be marked COMPLETE only when:
+1. Its stated purpose, scope and constraints are satisfied.
+2. All task-specific exit criteria are explicitly verified.
+3. Required static/source checks and relevant runtime tests pass.
+4. Required Web/PWA/Desktop/Android/export/print checks for the affected behavior pass.
+5. No known regression or unresolved gating failure remains.
+6. Architecture rules are preserved: one source of truth, no duplicate persistence/repository/state machine, no hidden paid/cloud dependency.
+7. Security, privacy, ownership and tenant boundaries affected by the task are verified.
+8. Documentation records implementation, verification evidence, failures/resolution, decisions and commit SHA.
+9. Obsolete contradictory status text is consolidated or removed.
+10. If any required verification is unavailable, the task remains PENDING/BLOCKED/UNVERIFIED with the exact reason.
+
+### Phase Gate
+A phase may be marked COMPLETE only when:
+1. Every phase task is COMPLETE.
+2. Every task exit criterion has verified evidence in GitHub.
+3. Phase-wide architecture and integration criteria are satisfied.
+4. Cross-platform behavior remains coherent across Web/PWA/Desktop/Android where applicable.
+5. No unresolved phase-gating CI/test/security/regression blocker remains.
+6. Required external research/standards decisions are recorded when consequential.
+7. An independent phase-gate audit confirms the phase is ready to advance.
+
+### Project Release Gate
+AQSA7 may be declared release-ready only when:
+1. All approved phases and tasks are COMPLETE.
+2. Final regression and cross-platform verification pass.
+3. Backup/restore, security, privacy and tenant/instance isolation requirements pass.
+4. Offline/local-first operation works without paid or mandatory cloud services.
+5. A5/A4/80mm receipt/print/export contracts remain valid.
+6. Android and Web/PWA/Desktop use the same shared product core without duplicated business logic.
+7. Release artifacts, version, checksums, documentation and known limitations are recorded.
+8. Final independent acceptance audit passes.
+
+**Gate rule:** A green implementation commit, a successful build, or a conversational claim of success is not by itself sufficient to close a task or phase. The complete applicable exit criteria and verification evidence are required.
+
 ## Strict 100% Free & Local-First Architectural Constraint
 
 This is a mandatory architectural constraint for AQSA7 and every product inside it.
@@ -482,7 +522,8 @@ Completed Phase 2 tasks:
 - 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
 Current next task:
-- **Phase 3 / Task 3.3 — Generic Shared Capability / Module Boundaries**
+- **Phase 3 / Task 3.4 — Tenant / Instance Isolation Contract**
+- Status: **IMPLEMENTED; FINAL CROSS-PLATFORM CI VERIFICATION PENDING**
 - Executor: **AI / Technical Lead**
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
@@ -700,7 +741,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Phase 3 Task 3.3 COMPLETE; Task 3.4 next)
+Last updated: 2026-10-08 (Master success criteria consolidated; Phase 3 Task 3.4 final verification pending)
 
 ## Current authoritative decisions
 
