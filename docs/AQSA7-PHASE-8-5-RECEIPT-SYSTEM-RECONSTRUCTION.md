@@ -58,7 +58,7 @@ Allowed transition:
 
 A void requires a reason and retains the original receipt number and record. A voided receipt cannot be silently reactivated or edited.
 
-This preserves an auditable historical record instead of deleting a financial document. The design follows the project's existing receipt-capability ownership and common financial-control practice of retaining cancelled/reversed records with reason and timestamp. citeturn1search1turn1search9
+This preserves an auditable historical record instead of deleting a financial document. The design follows the project's existing receipt-capability ownership and common financial-control practice of retaining cancelled/reversed records with reason and timestamp.
 
 ## Editing contract
 
