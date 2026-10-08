@@ -582,7 +582,7 @@ Exit decision:
 ### Phase 3 — Productization & Multi-Product Platform Foundation
 Status: IN PROGRESS
 
-### Phase 3 / Task 3.3 — Generic Shared Capability / Module Boundaries: IN VERIFICATION
+### Phase 3 / Task 3.3 — Generic Shared Capability / Module Boundaries: COMPLETE
 
 Purpose:
 - Establish explicit reusable shared-business capability contracts between Platform Core and Vertical Products.
@@ -629,16 +629,16 @@ Verification status:
 - Android APK 37719349319 — SUCCESS.
 - Receipt image/PDF export 37719349290 — SUCCESS.
 - GitHub Pages build/deployment 37719348937 — SUCCESS.
-- Runtime Smoke 37719349359 — PENDING/STALE VERIFICATION: GitHub runner remains stuck in "Install Chromium" before JavaScript syntax validation and browser tests; no failure result is available yet. This is an infrastructure verification blocker, not a product test pass.
+- Runtime Smoke 37719952522 — PASS. JavaScript syntax validation, mobile browser smoke, desktop browser integration smoke and console/page-error checks all passed on final checkpoint 331dd8ffd0befaa59606fc01b5d9c3fe860d2a32.
 - Commit combined status also reports a Vercel context failure caused by the external Vercel build-rate-limit/upgrade gate. Vercel is not an AQSA7 required deployment target and this status is therefore non-gating, but it remains recorded.
-- Because the runtime smoke gate has not completed, Task 3.3 is NOT marked COMPLETE.
+- Final implementation and verification gates are green; Task 3.3 is COMPLETE.
 
 Current phase-gate decision:
 - Implementation: MET.
 - Architecture boundary: MET.
 - Shared capability actively consumed: MET.
-- Static/runtime verification: PENDING.
-- Task 3.3: IN VERIFICATION; do not advance to Task 3.4 until Runtime Smoke completes successfully and the final checkpoint is revalidated.
+- Static/runtime verification: MET.
+- Task 3.3: COMPLETE. Task 3.4 is the next authorized task.
 Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
 
 ### Phase 3 / Task 3.2 — Product Manifest & Instance Configuration Contract: COMPLETE
@@ -690,7 +690,7 @@ Status: IN PROGRESS
 
 Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
 
-Current next task: **Task 3.3 — Generic Shared Capability / Module Boundaries**
+Current next task: **Task 3.4 — Tenant / Instance Isolation Contract**
 - Identify reusable business capabilities independently of Dental-specific screens.
 - Define authoritative module contracts and ownership.
 - Move shared semantics behind generic capability boundaries without cloning or over-generalizing dental rules.
@@ -699,7 +699,8 @@ Current next task: **Task 3.3 — Generic Shared Capability / Module Boundaries*
 Planned Phase 3 architectural gates/tasks:
 - 3.1 Reusable Dental Clinic Product Boundary — COMPLETE.
 - 3.2 Product Manifest & Instance Configuration Contract — COMPLETE.
-- 3.3 Generic Shared Capability / Module Boundaries — NEXT.
+- 3.3 Generic Shared Capability / Module Boundaries — COMPLETE.
+- 3.4 Tenant / Instance Isolation Contract — NEXT.
 - 3.4 Tenant / Instance Isolation Contract.
 - 3.5 AI Capability Layer & Provider Adapter Contract.
 - 3.6 Integration / Interoperability Adapter Contract.
@@ -758,7 +759,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Phase 3 Task 3.3 IN VERIFICATION; Task 3.4 blocked pending runtime gate)
+Last updated: 2026-10-08 (Phase 3 Task 3.3 COMPLETE; Task 3.4 next)
 
 ## Current authoritative decisions
 
