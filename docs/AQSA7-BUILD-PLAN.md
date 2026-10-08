@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08
+Last updated: 2026-10-08 (Phase 6 Release v1.3.0 completed; final main acceptance verification pending)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -2152,14 +2152,44 @@ Verification limitation:
 
 Phase 5 is closed at the verification gate. No Phase 6 implementation was started without explicit authorization.
 
-### Phase 6 — Release
-- version bump
-- CI build
-- signed APK verification
-- release notes
-- SHA256
-- GitHub release
-- final acceptance
+
+### Phase 6 — Release — COMPLETE
+
+Release version:
+- Android versionName: **1.3.0**
+- Android versionCode: **18**
+- Release tag: **v1.3.0**
+
+Implementation:
+- Android release configuration bumped to 1.3.0 / versionCode 18.
+- Android release workflow aligned to v1.3.0 artifact names and metadata.
+- Signed production APK build and signature verification passed.
+- SHA256 checksum generation and artifact publication passed.
+- Release notes added at `docs/releases/v1.3.0.md`.
+- GitHub Release **v1.3.0** exists with the signed APK and SHA256 checksum assets.
+
+Release assets:
+- `app-release.apk`
+- `ALSSAEDY-CLINIC-v1.3.0-release-SIGNED.apk.sha256`
+
+Release URL: https://github.com/Alssaedy50/AQSA7/releases/tag/v1.3.0
+
+Phase 5 final verification carried into release:
+- Runtime Smoke 37799057676 (#251): PASS
+- Android APK 37799057752 (#475): PASS
+- Pages Source 37799057873 (#105): PASS
+- Receipt export 37799057669 (#424): PASS
+
+Release-branch Phase 6 verification:
+- Runtime Smoke 37800154492 (#255): PASS on release head
+- Android APK 37800154622 (#484): PASS on release head, including signing, metadata and SHA256 generation
+- Pages Source 37800154722 (#109): PASS on release head
+
+Release-gate limitation:
+- Live Google account OAuth upload/download/restore remains outside CI because no authorized production OAuth client/account credentials are available.
+- Live-device Android interaction remains outside the automated release gate without a connected/emulated device runtime.
+
+Final main-branch acceptance verification is required after this documentation close commit. No new product feature work is authorized by Phase 6.
 
 Last updated: 2026-10-08 (Phase 5 Full Regression verified complete; next authorized phase Phase 6 Release)
 
