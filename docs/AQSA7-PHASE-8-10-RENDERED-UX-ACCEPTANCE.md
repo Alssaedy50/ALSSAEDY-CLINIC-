@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.10 Rendered UX Acceptance
 
-Status: IN PROGRESS — initial screenshot review found a mobile action-dock clipping defect; CSS correction and final evidence rerun pending
+Status: IN PROGRESS — final screenshot review complete; final documentation-head CI and merge reconciliation pending
 Date: 2026-10-09
 Branch: `phase-8-10-rendered-ux-acceptance`
 Base `main`: `d3b5b524f6b5ce7cf2bd1a47b3c78a3e381d3cd1`
@@ -48,11 +48,20 @@ Expected evidence:
 
 Screenshots must be visually inspected after the workflow completes. DOM/viewport assertions are useful measurements but are not a substitute for visual review.
 
+## Visual findings and disposition
+
+- **Mobile action dock:** initial mobile screenshots showed the five-action dock clipped at the viewport edge and covering content. Corrected in `css/ui.css` to five equal columns inside 8px side insets, with bottom content space. The final mobile screenshots show all five buttons visible; report geometry is left=8, right=382 at 390px, and the dock visibility assertion passes.
+- **Platform hierarchy:** Platform Home and Products/Projects remain separate from Dental product context; the Dental action dock is absent from both platform-only screens.
+- **Patient workspace:** visible at both sizes; mobile uses a full-width workspace, desktop presents its established wide workspace/modal treatment.
+- **History and Settings:** both render at mobile and desktop; their long content is scrollable within the surface. The screenshot-only review does not establish keyboard/screen-reader compliance.
+- No remaining blocking visual, navigation or horizontal-overflow defect was found in the reviewed screenshots. This is bounded to the tested static/rendered states; it is not a claim of full accessibility compliance.
+
 ## Gate decisions
 
-- Functional Gate: pending final current-run CI.
-- Architecture Gate: no route, repository, data authority, business behavior or export boundary changes; one presentation-only mobile CSS correction plus tests/docs. Final gate pending CI.
-- Product/UX Gate: initial screenshot inspection identified and corrected the dock clipping; final post-fix screenshot review pending.
+- Functional Gate: PASS on source commit `a5a59f09aa7b42644f2e228b82f35b251e3331e4` — Runtime Smoke #383, Receipt Export #540, Pages Source Verification #237, Android Build #620.
+- Architecture Gate: PASS — changes limited to responsive CSS, existing Runtime Smoke assertions and documentation; no route, repository, data authority, business behavior or export boundary changed.
+- Product/UX Gate: PASS for the eight captured surfaces at the two tested viewport sizes, based on final screenshot review and dock geometry checks.
+- Final documentation-head CI and PR merge remain pending.
 - Physical paper stock, binding, ink and real printer scaling are outside this phase and remain manual print-shop proof.
 
 ## Exit criteria
@@ -66,4 +75,4 @@ Screenshots must be visually inspected after the workflow completes. DOM/viewpor
 
 ## Current decision
 
-Phase 8.10 is **IN PROGRESS**. No rendered acceptance or completion is claimed before screenshots have been generated, reviewed and required gates verified.
+Rendered screenshot review is complete and the required four gates passed on source commit `a5a59f09aa7b42644f2e228b82f35b251e3331e4`. Phase 8.10 remains **IN PROGRESS** until the documentation-updated final PR head passes the same gates, the PR is merged, and the resulting `main` state is re-verified. No subsequent phase is authorized by this Phase 8.10 section; do not invent Phase 8.11.
