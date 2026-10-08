@@ -21,14 +21,24 @@
 
     <div class="site-bg-overlay"></div>
 
-    <header class="no-print site-navbar">
+    <header class="no-print site-navbar" aria-label="AQSA7 application shell">
         <div class="nav-container">
-            <div class="nav-brand">
-                <span class="brand-title">عيادة د/ صلاح الدين السعيدي</span>
-                <span class="brand-badge">نظام السندات</span>
+            <div class="nav-brand" aria-label="هوية المنتج">
+                <div class="brand-mark" aria-hidden="true">A7</div>
+                <div class="brand-copy">
+                    <span class="brand-platform">AQSA7</span>
+                    <span class="brand-title">عيادة د/ صلاح الدين السعيدي</span>
+                </div>
+                <span class="brand-badge">Dental Clinic</span>
                 <span class="brand-badge count-badge" id="historyCount" title="عدد السندات المحفوظة">0</span>
             </div>
-            <div class="app-tabs no-print" role="tablist"><button type="button" class="app-tab active" id="tabReceipt" onclick="activateAppTab('receipt')">🧾 <b>السند</b></button><button type="button" class="app-tab" id="tabPatients" onclick="activateAppTab('patients')">👥 <b>المرضى</b></button><button type="button" class="app-tab" id="tabHistory" onclick="activateAppTab('history')">📂 <b>السجل</b></button><button type="button" class="app-tab" id="tabSettings" onclick="activateAppTab('settings')">⚙️ <b>الإعدادات</b></button></div><div class="nav-controls">
+            <nav class="app-tabs no-print" aria-label="أقسام النظام">
+                <button type="button" class="app-tab active" id="tabReceipt" aria-current="page" onclick="activateAppTab('receipt')"><span class="app-tab-icon" aria-hidden="true">🧾</span><b>السند</b></button>
+                <button type="button" class="app-tab" id="tabPatients" onclick="activateAppTab('patients')"><span class="app-tab-icon" aria-hidden="true">👥</span><b>المرضى</b></button>
+                <button type="button" class="app-tab" id="tabHistory" onclick="activateAppTab('history')"><span class="app-tab-icon" aria-hidden="true">📂</span><b>السجل</b></button>
+                <button type="button" class="app-tab" id="tabSettings" onclick="activateAppTab('settings')"><span class="app-tab-icon" aria-hidden="true">⚙️</span><b>الإعدادات</b></button>
+            </nav>
+            <div class="nav-controls" aria-label="وضع السند">
                 <div class="mode-pill">
                     <button type="button" class="btn-pill active" id="btnModeDigital" onclick="setMode('digital')">💻 سند رقمي</button>
                     <button type="button" class="btn-pill" id="btnModeTemplates" onclick="openTemplateModal()">🖨️ نماذج الطباعة</button>
