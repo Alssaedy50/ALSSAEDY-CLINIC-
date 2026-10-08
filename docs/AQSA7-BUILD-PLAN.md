@@ -1917,6 +1917,63 @@ Task 4.8 gate:
 Next authorized task:
 - **Task 4.9 — Google Drive Adapter implementation.**
 
+### Phase 4 / Task 4.9 — Google Drive Adapter implementation
+
+Status: **IMPLEMENTED — VERIFICATION PENDING**
+
+Purpose:
+- Implement the first concrete Backup Provider Adapter using Google Drive API v3 while preserving the provider-neutral contract from Task 4.4 and runtime boundary from Task 4.8.
+- Transport only opaque encrypted AQSA7 Backup Artifacts; the adapter never decrypts or rewrites business payloads.
+
+Implementation:
+- Added `js/google-drive-provider.js`.
+- Added `js/google-drive-auth.js` as the secure authentication boundary.
+- Google Drive storage uses the per-user `appDataFolder` space so AQSA7 backup objects remain application-specific rather than appearing as ordinary user files.
+- OAuth scope is the least-privilege Drive app-data scope: `https://www.googleapis.com/auth/drive.appdata`.
+- Provider operations implemented: `health`, `list`, `put`, `get`, `delete`.
+- Ownership is carried in private Drive `appProperties` for productId, tenantId and instanceId; listing is restricted to matching ownership.
+- Provider handles use Google Drive file IDs.
+- Upload uses multipart Drive API transport and sends the encrypted artifact as opaque JSON.
+- Provider errors are normalized through the existing Task 4.4 execution boundary.
+- Authentication is resolver-based and memory-only: no access token, refresh token, client secret or OAuth credential is stored by AQSA7 source/runtime.
+- No provider SDK was added; the adapter uses the Google Drive REST API directly.
+- No legacy `js/sync.js` / `api/clinic-sync.js` replacement was made.
+
+Security / architecture decision:
+- Google documentation recommends Google Identity Services and the Authorization Code flow with PKCE for modern browser applications; the AQSA7 adapter therefore depends on a secure external OAuth resolver rather than embedding an insecure implicit-flow implementation. urlGoogle Identity Services OAuth guidancehttps://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow
+- Google Drive's `appDataFolder` is intended for per-user application data, and the `drive.appdata` scope limits access to the application's own data. urlGoogle Drive app-data storage documentationhttps://developers.google.com/workspace/drive/api/guides/about-files
+- Google Drive private `appProperties` can be used for application metadata and searched server-side. urlGoogle Drive custom properties documentationhttps://developers.google.com/workspace/drive/api/guides/properties
+
+Files:
+- `js/google-drive-auth.js`
+- `js/google-drive-provider.js`
+- `index.html`
+- `.github/workflows/runtime-smoke.yml`
+
+Explicitly out of scope:
+- Hard-coded Google client IDs or client secrets.
+- Persistent token storage in the browser.
+- Embedding refresh tokens in source/localStorage/IndexedDB.
+- Direct implementation of the deprecated implicit OAuth flow.
+- Google account credentials in Git.
+- Replacing the legacy clinic sync.
+- Mandatory cloud operation.
+- Phase 5 full disaster-recovery regression.
+
+Verification:
+- Runtime Smoke must verify the Google Drive provider contract, secure auth boundary, provider registration, ownership metadata, encrypted artifact transport, health/list/put/get/delete lifecycle and existing Phase 4 regression suite.
+- Actual Google account upload/download verification requires a configured OAuth application/client and authorized account; no credentials are committed to the repository.
+
+Task 4.9 gate:
+- Google Drive adapter implementation: **MET**.
+- Secure auth boundary: **MET**.
+- Encrypted opaque artifact transport: **MET**.
+- Ownership isolation: **MET**.
+- Runtime verification: **PENDING**.
+
+Next authorized task after verification:
+- **Task 4.9 verification/retry only; do not advance to Task 4.10 until Runtime Smoke is green.**
+
 ### Phase 5 — Full Regression
 Must verify:
 - all buttons/actions/forms/inputs
@@ -1947,7 +2004,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.8 verified complete; next authorized task Task 4.9 Google Drive Adapter)
+Last updated: 2026-10-08 (Task 4.9 Google Drive Adapter implemented; Runtime Smoke verification pending)
 
 ## Current authoritative decisions
 
