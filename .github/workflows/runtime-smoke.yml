@@ -1154,12 +1154,6 @@ jobs:
           path: aqsa7-runtime-receipt.png
           if-no-files-found: ignore
 
-      - name: Stop static server
-        if: always()
-        run: |
-          if [ -f /tmp/aqsa7-http.pid ]; then kill $(cat /tmp/aqsa7-http.pid) || true; fi
-
-
       - name: Phase 7.5 rendered UI evidence capture
         run: |
           node --input-type=module <<'NODE'
@@ -1228,3 +1222,10 @@ jobs:
             phase-7-5-*.html
             phase-7-5-audit.json
           if-no-files-found: error
+
+      - name: Stop static server
+        if: always()
+        run: |
+          if [ -f /tmp/aqsa7-http.pid ]; then kill $(cat /tmp/aqsa7-http.pid) || true; fi
+
+
