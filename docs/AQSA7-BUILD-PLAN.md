@@ -231,7 +231,7 @@ Completed Phase 2 tasks:
 - 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
 Current next task:
-- **Task 2.8 — UX/UI Integration & Cross-Surface Consistency Pass**
+- **Task 2.9 — Receipt Export / Print Verification Blocker Resolution**
 - Executor: **AI / Technical Lead**
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
@@ -263,7 +263,7 @@ Exit decision:
 - Task 2.7: COMPLETE.
 - Known receipt-export verification issue remains a separate release blocker.
 
-### Phase 2 / Task 2.8 — UX/UI Integration & Cross-Surface Consistency Pass: IN PROGRESS
+### Phase 2 / Task 2.8 — UX/UI Integration & Cross-Surface Consistency Pass: COMPLETE
 
 Purpose:
 - Verify and consolidate the completed Phase 2 surfaces as one coherent product rather than independent screen redesigns.
@@ -281,12 +281,34 @@ Exit criteria:
 7. No protected A5/A4/80mm receipt geometry regression.
 8. CI browser smoke, Android build and Pages build all pass for the final integration checkpoint.
 
-Planned verification:
-- static/source audit of duplicated selectors, handlers and state ownership
-- browser smoke at mobile viewport plus desktop-width smoke
-- Android build
-- Pages build/deployment
-- receipt export test treated as a separate existing blocker unless root cause is directly changed by this integration work
+Verification:
+- Static/source audit: no duplicate JavaScript function definitions were found across the authoritative Phase 2 JS files; the same IndexedDB/repository ownership remains intact.
+- Mobile browser smoke 37715933948 — PASS on final integration checkpoint 8b22302d7e2e893ac747ce0a74792aca2f037722.
+- Desktop browser integration smoke: added to the shared runtime workflow; two CI test-harness-only modal-transition assumptions were corrected without changing product behavior. Final mobile+desktop browser gate is PASS on the same checkpoint.
+- Android APK 37715934064 — SUCCESS on the same checkpoint.
+- GitHub Pages build/deployment 37715933128 — SUCCESS on the same checkpoint.
+- Receipt export verification 37715933944 — failed only because pdftotext inserted whitespace/bidi marks into mixed Arabic/Latin text and the test asserted exact raw substrings. The failure was isolated to test normalization, not receipt geometry or PDF generation.
+
+Exit decision:
+- One shared Phase 2 token/state/rendering architecture preserved.
+- Mobile and desktop browser integration gates: PASS.
+- Android build: PASS.
+- Pages deployment: PASS.
+- Task 2.8: COMPLETE.
+- Phase 2 remains IN PROGRESS until the receipt export/print verification blocker is cleared.
+
+### Phase 2 / Task 2.9 — Receipt Export / Print Verification Blocker Resolution: IN PROGRESS
+
+Purpose:
+- Clear the known receipt export verification blocker without changing the authoritative native print/PDF architecture or protected A5/A4/80mm geometry.
+- Correct the verification contract so valid selectable Arabic/Latin PDF text is accepted despite normal pdftotext whitespace and bidi-control artifacts.
+- Re-run the full receipt export test and confirm PNG dimensions/content plus vector PDF page count/selectable text for A5 and A4.
+- Treat any genuine rendering/geometry failure as an implementation defect rather than weakening the contract.
+
+Implementation:
+- Updated `tests/receipt-export-test.mjs` to normalize Unicode bidi controls and extraction whitespace before checking required receipt text.
+- The content contract remains strict: normalized patient identity, receipt number and formatted date must be present; raw ISO date must remain absent.
+- No receipt CSS, print geometry or application data/state path was changed.
 
 ### Phase 3 — Productization
 - Separate reusable Dental Clinic product from clinic configuration.
