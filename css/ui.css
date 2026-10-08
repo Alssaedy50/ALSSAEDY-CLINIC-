@@ -464,3 +464,179 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 .ledger-box, .ledger-field, .currency-label, .patient-phone-input {
   font-variant-numeric: tabular-nums;
 }
+
+
+/* ===== AQSA7 Phase 2 / Task 2.2 — Top App Shell & Navigation Dock ===== */
+.site-navbar{
+    background:rgba(15,23,42,.97);
+    border-bottom:1px solid rgba(226,232,240,.16);
+    box-shadow:0 6px 24px rgba(2,6,23,.28);
+}
+.nav-container{
+    max-width:1180px;
+    min-height:64px;
+    padding:8px 14px;
+    gap:12px;
+}
+.nav-brand{
+    flex:0 1 auto;
+    min-width:0;
+    gap:8px;
+}
+.brand-mark{
+    width:34px;
+    height:34px;
+    flex:0 0 34px;
+    display:grid;
+    place-items:center;
+    border-radius:10px;
+    background:var(--color-primary);
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.04em;
+    box-shadow:0 4px 12px rgba(30,58,138,.35);
+}
+.brand-copy{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:1px;
+}
+.brand-platform{
+    color:#93c5fd;
+    font-size:8px;
+    line-height:1;
+    font-weight:900;
+    letter-spacing:.12em;
+    direction:ltr;
+    text-align:right;
+}
+.brand-title{
+    max-width:190px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#f8fafc;
+    font-size:10.5px;
+}
+.brand-badge{
+    white-space:nowrap;
+    background:rgba(5,150,105,.16);
+    border:1px solid rgba(52,211,153,.25);
+    color:#a7f3d0;
+    padding:4px 7px;
+}
+.count-badge{
+    min-width:24px;
+    background:rgba(255,255,255,.10);
+    border-color:rgba(255,255,255,.12);
+    color:#e2e8f0;
+}
+.app-tabs{
+    flex:0 1 auto;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:3px;
+    padding:4px;
+    border:1px solid rgba(148,163,184,.24);
+    background:rgba(255,255,255,.07);
+    border-radius:14px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.app-tab{
+    position:relative;
+    min-height:44px;
+    min-width:78px;
+    padding:7px 10px;
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:#94a3b8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    font-family:var(--font-ui);
+    cursor:pointer;
+    transition:background-color .18s ease,color .18s ease,transform .18s ease;
+}
+.app-tab:hover{background:rgba(255,255,255,.08);color:#e2e8f0}
+.app-tab:active{transform:translateY(1px)}
+.app-tab.active{
+    background:var(--color-primary);
+    color:#fff;
+    box-shadow:0 4px 12px rgba(30,58,138,.30);
+}
+.app-tab.active::after{
+    content:"";
+    position:absolute;
+    inset-inline:14px;
+    bottom:3px;
+    height:2px;
+    border-radius:999px;
+    background:#bfdbfe;
+}
+.app-tab-icon{font-size:15px;line-height:1}
+.app-tab b{font-size:10px;font-weight:800}
+.nav-controls{
+    flex:0 0 auto;
+    margin-inline-start:auto;
+}
+.mode-pill{
+    min-height:44px;
+    align-items:center;
+    border:1px solid rgba(148,163,184,.20);
+    background:rgba(255,255,255,.07);
+}
+.btn-pill{
+    min-height:44px;
+    padding:6px 10px;
+}
+.page-canvas-wrapper{padding-top:76px}
+
+/* Mobile dock: the navigation remains the same semantic control, but becomes a full-width,
+   touch-first section dock beneath the product identity. */
+@media screen and (max-width:900px){
+    .nav-container{
+        min-height:0;
+        padding:8px 10px;
+        gap:7px;
+    }
+    .nav-brand{
+        width:100%;
+        justify-content:center;
+    }
+    .brand-title{max-width:210px}
+    .nav-controls{
+        width:100%;
+        justify-content:center;
+        margin-inline-start:0;
+    }
+    .app-tabs{
+        order:3;
+        width:100%;
+        overflow-x:auto;
+        scrollbar-width:none;
+        justify-content:stretch;
+    }
+    .app-tabs::-webkit-scrollbar{display:none}
+    .app-tab{
+        flex:1 1 0;
+        min-width:0;
+        min-height:44px;
+    }
+    .app-tab.active::after{inset-inline:22%;bottom:3px}
+    .page-canvas-wrapper{padding-top:12px}
+}
+@media screen and (max-width:520px){
+    .brand-badge:not(.count-badge){display:none}
+    .brand-title{max-width:170px;font-size:10px}
+    .app-tab{padding-inline:5px}
+    .app-tab b{font-size:9.5px}
+    .app-tab-icon{font-size:14px}
+    .btn-pill{font-size:10px;padding-inline:8px}
+}
+@media print{
+    .site-navbar{display:none!important}
+}
