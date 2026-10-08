@@ -364,7 +364,14 @@ function activateAppTab(tab){
   if(tab==='settings'){toggleDrawer(true);return;}
 }
 function activateAppTabVisual(tab){
-  ['receipt','patients','history','settings'].forEach(t=>document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active',t===tab));
+  ['receipt','patients','history','settings'].forEach(t=>{
+    const button=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(!button)return;
+    const active=t===tab;
+    button.classList.toggle('active',active);
+    if(active) button.setAttribute('aria-current','page');
+    else button.removeAttribute('aria-current');
+  });
 }
 function pushPanelState(name){if(history.state?.alssaedyPanel===name)return;history.pushState({alssaedyPanel:name},'', '#'+name);}
 function closePanelState(name){if(history.state?.alssaedyPanel===name){history.back();return true;}return false;}
