@@ -531,4 +531,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     setMode('digital');
     updateHistoryCount();
     updateActionAvailability();
+
+    // AQSA7 platform shell is the default entry context. Deep links remain supported.
+    const initialHash=location.hash;
+    if(initialHash==='#products') setAQSA7Route('products',false);
+    else if(initialHash==='#product-dental-clinic') setAQSA7Route('dental',false);
+    else setAQSA7Route('home',false);
 });
