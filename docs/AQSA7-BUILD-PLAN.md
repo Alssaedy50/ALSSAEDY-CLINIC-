@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08 (corrective platform-transition plan authorized; Phase 0–6 remain historical; Phase 7.0 is the only next execution step)
+Last updated: 2026-10-08 (Phase 7.1 composition contract verified; Phase 7.2 is the only authorized implementation step)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -2556,13 +2556,136 @@ Hard constraints:
 - no implementation until the composition contract and impact map are verified.
 
 ### Phase 7.1 — Platform Composition Contract
-Status: PENDING
+Status: COMPLETE — COMPOSITION CONTRACT VERIFIED
 
-Exit criteria:
-- Define the exact AQSA7 shell/workspace/product/instance hierarchy using existing product and capability contracts.
-- Identify what can be composed from existing code and what is genuinely missing.
-- No duplicate product registry, capability registry, repository or state machine.
-- No new abstraction unless Phase 7.0 proves a real gap.
+Objective:
+Map the approved AQSA7 platform hierarchy onto the actual existing implementation, identify the minimum genuine composition gap, and define the implementation boundary for Phase 7.2. This task changes the authoritative plan only; it does not change production code.
+
+#### 7.1-A — Authoritative composition hierarchy
+
+The approved user-visible composition is now fixed as:
+
+**AQSA7 Platform Shell**
+→ **Workspace / Dashboard**
+→ **Products / Projects**
+→ **Dental Clinic Product**
+→ **ALSSAEDY CLINIC Instance**
+
+Meaning:
+- **Platform Shell** is the application-level identity and global navigation context.
+- **Workspace / Dashboard** is the user's platform home and context surface.
+- **Products / Projects** are first-class platform entities in the user experience.
+- **Dental Clinic** is the existing reusable product definition identified by productId: dental-clinic.
+- **ALSSAEDY CLINIC** is the existing configured instance/tenant identified by instanceId: alssaedy-clinic-sana-a and tenantId: alssaedy-clinic.
+- Existing Dental features such as Receipt, Patients, History and Settings remain **product-local navigation**, not the platform's primary navigation.
+
+This hierarchy is a composition contract, not permission to create a second product-definition system.
+
+#### 7.1-B — Existing authoritative owners
+
+| Concern | Existing authoritative owner | Phase 7.1 decision |
+|---|---|---|
+| Product definition | js/product.js | REUSE unchanged as the product/instance contract |
+| Product identity / tenant / instance | js/product.js | REUSE unchanged |
+| Shared capability registry | js/capabilities.js | REUSE unchanged |
+| Durable data | js/repository.js + IndexedDB | REUSE unchanged |
+| Dental business behavior | js/storage.js + existing handlers | REUSE unchanged |
+| Current route/state owner | js/app.js | EXTEND existing route/state owner; no second router |
+| Root composition | index.html | ADAPT in place; no cloned application |
+| Existing styling | css/* | ADAPT/CONSOLIDATE in place |
+| Export/print/share | js/export.js + bridge | REUSE unchanged unless dependency impact proves otherwise |
+| PWA shell | manifest.webmanifest + sw.js | ADAPT only for product/platform identity/cache impact |
+| Android WebView boundary | android-app/MainActivity.java + bridge | REUSE shared web core; adapt only platform identity/metadata when required |
+| Platform documentation/contract | this Build Plan | SINGLE authoritative planning source |
+
+#### 7.1-C — Genuine composition gap
+
+Phase 7.0 proves that the core contracts already exist. The missing layer is the **user-facing composition between the root application shell and the Dental product UI**.
+
+The minimum required additions are therefore:
+
+1. A platform-level shell surface whose primary identity is AQSA7.
+2. A workspace/dashboard surface that can enter the configured product context.
+3. A Products/Projects surface that presents Dental Clinic as a product rather than as the application itself.
+4. A product-context transition from the platform shell into the existing Dental navigation.
+5. A reversible return path from Dental product context to the AQSA7 platform shell.
+6. A single route/state model extended from the existing appRoute owner so browser history/back behavior remains centralized.
+7. A traceable mapping for every newly introduced platform action and every retained Dental action.
+
+Nothing in 7.1 justifies a new repository, new persistence layer, new capability registry, new product manifest, new backup system, new print system, second router, or cloned Dental application.
+
+#### 7.1-D — State/composition contract
+
+The existing js/app.js route owner remains authoritative.
+
+The intended logical route model is:
+
+platform/home
+platform/products
+platform/products/dental-clinic
+platform/products/dental-clinic/receipt
+platform/products/dental-clinic/patients
+platform/products/dental-clinic/history
+platform/products/dental-clinic/settings
+
+Implementation detail:
+- These are **logical states**, not a requirement to introduce a routing framework or URL router.
+- The existing appRoute, pushPanelState(), closePanelState() and popstate machinery remain the state/history boundary.
+- Dental navigation remains derived from the existing product contract in js/product.js.
+- Platform navigation must be represented by the same authoritative state owner rather than a parallel state machine.
+- The product/instance context must be explicit before product-local actions are exposed.
+- Existing receipt/patient/history/settings handlers remain the owners of their business actions.
+
+#### 7.1-E — UI-to-code traceability contract
+
+The following IDs establish the minimum traceability vocabulary for Phase 7.2. They are planning IDs, not new runtime identifiers.
+
+| UI ID | User-visible surface | Owner | Action/state boundary | Data/business owner | Decision |
+|---|---|---|---|---|---|
+| UI-PLAT-001 | AQSA7 global shell/header | index.html + js/app.js | platform context | product/instance contract | ADAPT |
+| UI-PLAT-002 | Workspace/Dashboard | index.html + js/app.js | platform/home | none beyond existing contracts | CREATE IN EXISTING COMPOSITION |
+| UI-PLAT-003 | Products/Projects | index.html + js/app.js | platform/products | js/product.js | CREATE IN EXISTING COMPOSITION |
+| UI-PLAT-004 | Dental Clinic product card/entry | index.html + js/product.js | product selection/context | product manifest + instance contract | COMPOSE |
+| UI-PLAT-005 | Product-context header/breadcrumb/return | index.html + js/app.js | product context | current route state | ADAPT |
+| UI-DENT-001 | Receipt | existing index.html + js/app.js | product-local receipt state | js/storage.js / repository | REUSE/ADAPT |
+| UI-DENT-002 | Patients | existing patient UI + handlers | product-local patients state | js/storage.js / repository | REUSE/ADAPT |
+| UI-DENT-003 | History | existing history UI + handlers | product-local history state | js/storage.js / repository | REUSE/ADAPT |
+| UI-DENT-004 | Settings | existing settings UI + handlers | product-local settings state | repository/settings owners | REUSE/ADAPT |
+
+Traceability rule for Phase 7.2:
+**UI ID → DOM owner → event/action → existing function → state owner → data owner → affected verification → evidence.**
+
+No platform button is accepted if its action cannot be traced through this chain.
+
+#### 7.1-F — Change-impact map for Phase 7.2
+
+**Primary changed owner: index.html + js/app.js**
+
+Required impact scan before implementation:
+- js/product.js — product navigation/identity consumption.
+- js/capabilities.js — verify no new capability is being created accidentally.
+- js/repository.js / js/storage.js — verify no data path changes.
+- js/export.js / templates / print CSS — verify Dental document actions remain reachable.
+- backup/recovery/sync modules — verify no business-path coupling to the root navigation.
+- manifest.webmanifest / sw.js — inspect only if shell identity/cache behavior is affected.
+- android-app/MainActivity.java / bridge — verify the same web core remains loaded.
+- existing runtime, Pages, Android and receipt-export workflows — rerun the affected regression scope after implementation.
+
+**No shared business/data owner is authorized to change merely to implement the shell.**
+
+#### 7.1-G — Acceptance criteria for the composition contract
+
+Phase 7.1 is accepted because:
+1. The platform hierarchy is explicit and user-visible.
+2. Existing product/instance contracts are identified as the authoritative source.
+3. The exact missing composition layer is identified.
+4. The existing route/state owner is retained; no second router is authorized.
+5. Product-local Dental navigation is separated conceptually from platform navigation.
+6. New platform surfaces have traceability IDs and owners.
+7. Phase 7.2 impact scope is explicitly bounded.
+8. No production code was changed in this task.
+
+**Phase 7.1 Gate: PASS — CONTRACT VERIFIED.**
 
 ### Phase 7.2 — Platform Shell Migration
 Status: PENDING
