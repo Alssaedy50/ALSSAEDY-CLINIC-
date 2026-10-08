@@ -40,6 +40,7 @@ function calculateLedger(){
 }
 
 function collectReceiptData() {
+    const billing = window.aqsa7BillingContract;
     const paid=Math.max(0,Number.parseFloat(document.getElementById('digPaid').value)||0);
     const total=Math.max(0,Number.parseFloat(document.getElementById('digTotal').value)||0);
     const currency=typeof getCurrencyInfo==='function'?getCurrencyInfo():{code:'YER',nameAr:'ريال يمني',symbol:'ر.ي'};
@@ -334,6 +335,24 @@ async function upsertCurrentPatient(receipt){
   return p;
 }
 
+async function deleteCurrentPatient(){
+  const id=patientId();
+  if(!id)return;
+  const list=await getPatients();
+  const patient=list.find(p=>String(p.id)===String(id));
+  if(!patient)return;
+  if(!confirm('هل أنت متأكد من حذف ملف المريض؟ ستبقى السندات التاريخية محفوظة.'))return;
+  try{
+    await clinicRepositoryDeletePatient(id);
+    currentPatientId=''; window.currentPatientId='';
+    document.getElementById('patientFormId').value='';
+    showPatientListView();
+    renderPatients();
+    returnToPatientDirectory();
+    toast?.('تم حذف ملف المريض. السندات التاريخية لم تُحذف.');
+  }catch(e){toast?.('تعذر حذف ملف المريض: '+(e?.message||'خطأ غير معروف'),'error');}
+}
+
 async function savePatientManual(){
   const name=patientFormValue('patientFormName');
   const gender=patientFormValue('patientFormGender');
@@ -459,7 +478,7 @@ function renderPatientAccount(p){
     return '<article class="patient-timeline-item"><div class="patient-timeline-marker" aria-hidden="true"></div><div class="patient-timeline-card"><div class="patient-timeline-head"><div><strong>'+escapeHTML(services)+'</strong><small dir="ltr">'+escapeHTML(r.date||'—')+' • '+escapeHTML(r.recNo||'—')+'</small></div><span class="'+financialClass+'">'+(balance>0?'متبقي '+escapeHTML(r.balance||'0'):'مسدد')+'</span></div><div class="patient-timeline-finance"><span>الإجمالي <b>'+escapeHTML(r.total||'0')+' '+escapeHTML(r.currencySymbol||r.currencyName||'ر.ي')+'</b></span><span>المدفوع <b>'+escapeHTML(r.paid||'0')+'</b></span><span>طريقة الدفع <b>'+escapeHTML(r.payMethod||'—')+'</b></span></div>'+((r.tooth||r.tafqeet)?'<div class="patient-timeline-notes">'+(r.tooth?'<span>السن/الموضع: '+escapeHTML(r.tooth)+'</span>':'')+(r.tafqeet?'<span>ملاحظة: '+escapeHTML(r.tafqeet)+'</span>':'')+'</div>':'')+'<div class="patient-timeline-actions"><button type="button" class="tool-btn patient-timeline-open" onclick="loadReceipt(\''+String(r.id).replace(/'/g,'')+'\')">فتح السند</button></div></div></article>';
   }).join(''):'<div class="patient-detail-empty"><strong>لا توجد زيارات محفوظة بعد.</strong><span>أنشئ أول زيارة من زر «زيارة / سند جديد».</span></div>';
   panel.hidden=false;
-  panel.innerHTML='<div class="patient-detail-sticky"><div class="patient-detail-topline"><button type="button" class="tool-btn patient-detail-back" onclick="returnToPatientDirectory()">← قائمة المرضى</button><span class="directory-kicker">PATIENT ACCOUNT</span></div><div class="patient-detail-identity"><div class="patient-detail-avatar" aria-hidden="true">'+escapeHTML(String(p.name||'م').trim().charAt(0)||'م')+'</div><div class="patient-detail-name"><strong>'+escapeHTML(p.name||'مريض بدون اسم')+'</strong><span>'+escapeHTML((p.gender||'—')+' • '+(p.age||'—')+' سنة')+' • <span dir="ltr">'+escapeHTML(p.phone||'لا يوجد هاتف')+'</span></span></div><div class="patient-detail-actions"><button type="button" class="tool-btn patient-detail-edit" onclick="togglePatientEdit()">✏️ تعديل الملف</button><button type="button" class="tool-btn patient-detail-primary" onclick="startPatientVisit()">＋ زيارة / سند جديد</button></div></div><div class="patient-detail-finance"><div><span>إجمالي الحساب</span><strong>'+f.total.toLocaleString()+'</strong><small>'+escapeHTML(f.receipts[0]?.currencyName||'ريال يمني')+'</small></div><div><span>المدفوع</span><strong class="is-paid">'+f.paid.toLocaleString()+'</strong><small>مدفوع</small></div><div><span>المتبقي</span><strong class="'+(f.balance>0?'is-due':'is-settled')+'">'+f.balance.toLocaleString()+'</strong><small>'+status+'</small></div></div><div class="patient-detail-meta"><div class="patient-detail-meta-item"><span>المشكلة / التشخيص</span><strong>'+escapeHTML(p.problem||'غير مسجل')+'</strong></div><div class="patient-detail-meta-item"><span>التاريخ المرضي</span><strong>'+escapeHTML(p.medicalHistory||'غير مسجل')+'</strong></div>'+nextVisit+'</div></div><div class="patient-detail-content"><div class="patient-detail-section-title"><div><span class="directory-kicker">VISIT TIMELINE</span><h4>سجل الزيارات والسندات</h4></div><span>'+receipts.length+' زيارة</span></div><div class="patient-timeline">'+timeline+'</div></div>';
+  panel.innerHTML='<div class="patient-detail-sticky"><div class="patient-detail-topline"><button type="button" class="tool-btn patient-detail-back" onclick="returnToPatientDirectory()">← قائمة المرضى</button><span class="directory-kicker">PATIENT ACCOUNT</span></div><div class="patient-detail-identity"><div class="patient-detail-avatar" aria-hidden="true">'+escapeHTML(String(p.name||'م').trim().charAt(0)||'م')+'</div><div class="patient-detail-name"><strong>'+escapeHTML(p.name||'مريض بدون اسم')+'</strong><span>'+escapeHTML((p.gender||'—')+' • '+(p.age||'—')+' سنة')+' • <span dir="ltr">'+escapeHTML(p.phone||'لا يوجد هاتف')+'</span></span></div><div class="patient-detail-actions"><button type="button" class="tool-btn patient-detail-edit" onclick="togglePatientEdit()">✏️ تعديل الملف</button><button type="button" class="tool-btn patient-detail-danger" onclick="deleteCurrentPatient()">🗑️ حذف الملف</button><button type="button" class="tool-btn patient-detail-primary" onclick="startPatientVisit()">＋ زيارة / سند جديد</button></div></div><div class="patient-detail-finance"><div><span>إجمالي الحساب</span><strong>'+f.total.toLocaleString()+'</strong><small>'+escapeHTML(f.receipts[0]?.currencyName||'ريال يمني')+'</small></div><div><span>المدفوع</span><strong class="is-paid">'+f.paid.toLocaleString()+'</strong><small>مدفوع</small></div><div><span>المتبقي</span><strong class="'+(f.balance>0?'is-due':'is-settled')+'">'+f.balance.toLocaleString()+'</strong><small>'+status+'</small></div></div><div class="patient-detail-meta"><div class="patient-detail-meta-item"><span>المشكلة / التشخيص</span><strong>'+escapeHTML(p.problem||'غير مسجل')+'</strong></div><div class="patient-detail-meta-item"><span>التاريخ المرضي</span><strong>'+escapeHTML(p.medicalHistory||'غير مسجل')+'</strong></div>'+nextVisit+'</div></div><div class="patient-detail-content"><div class="patient-detail-section-title"><div><span class="directory-kicker">VISIT TIMELINE</span><h4>سجل الزيارات والسندات</h4></div><span>'+receipts.length+' زيارة</span></div><div class="patient-timeline">'+timeline+'</div></div>';
 }
 function togglePatientEdit(){const form=document.querySelector('.patient-form'),button=document.querySelector('.patient-detail-edit');if(!form)return;const open=form.classList.toggle('patient-detail-edit-open');if(button)button.textContent=open?'✕ إغلاق التعديل':'✏️ تعديل الملف';if(open)form.scrollIntoView({behavior:'smooth',block:'start'});}
 function returnToPatientDirectory(){showPatientListView();renderPatients();appRoute={screen:'patients',patientId:''};activateAppTabVisual('patients');if(history.state?.alssaedyPanel==='patient-detail')history.back();else if(location.hash==='#patient-detail')history.replaceState({alssaedyPanel:'patients'},'', '#patients');}
