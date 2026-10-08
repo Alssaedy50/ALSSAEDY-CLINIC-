@@ -3030,8 +3030,8 @@ Priority register:
 - **8.2 Clinic Dashboard — COMPLETE**
 - **8.3 Patient Workspace — COMPLETE**
 - **8.4 Visit / Services / Billing — COMPLETE**
-- **8.5 Receipt System Reconstruction — IN PROGRESS / CI PENDING**
-- 8.6 History & Financial Ledger — PLANNED
+- **8.5 Receipt System Reconstruction — COMPLETE**
+- **8.6 History & Financial Ledger — AUTHORIZED NEXT**
 - 8.7 Mobile UX — PLANNED
 - 8.8 Print / PDF / Physical Voucher QA — PLANNED
 - 8.9 Full Regression — PLANNED
@@ -3073,8 +3073,8 @@ Implementation and gate:
 
 **Phase 8.2: COMPLETE.**
 
-### Current phase:
-**Phase 8.5 — Receipt System Reconstruction.**
+### Phase 8.5 — Receipt System Reconstruction
+Status: COMPLETE — CI AND REGRESSION VERIFIED
 
 ### Phase 8 execution constraints
 - Do not repeat Phase 7 platform-shell work merely because the visual target changes.
@@ -3101,7 +3101,7 @@ Implementation and gate:
 Objective: reconstruct patient/transaction history and financial ledger semantics after the Phase 8.5 receipt lifecycle gate closes.
 
 
-Last updated: 2026-10-09 (Phase 8.5 receipt reconstruction implemented; CI gate pending)
+Last updated: 2026-10-09 (Phase 8.5 receipt reconstruction merged and all required CI gates passed)
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED
@@ -3134,6 +3134,39 @@ Gate decision:
 - Architecture Gate: PASS.
 - Product/UX scope gate for this phase: PASS at contract/runtime level; rendered cross-device acceptance remains Phase 8.10.
 - **Phase 8.4: COMPLETE.**
+
+### Phase 8.5 — Receipt System Reconstruction
+Status: COMPLETE — CI AND REGRESSION VERIFIED
+
+Authoritative phase document:
+- `docs/AQSA7-PHASE-8-5-RECEIPT-SYSTEM-RECONSTRUCTION.md`
+
+Implementation:
+- Added the shared receipt lifecycle contract with `issued` and `voided` states.
+- Replaced direct receipt deletion from the history UI with controlled cancellation requiring a reason and retaining the original record/number.
+- Added same-record editing: opening an issued receipt and saving preserves the existing receipt ID and receipt number.
+- Updated patient visit history when a receipt is edited or voided.
+- Excluded voided receipts from active dashboard/patient financial summaries while retaining them in history and exports.
+- Clarified saved/voided receipt state in the issuance workflow.
+- Preserved the existing preview, print/PDF, image export, sharing and Android boundaries.
+- Clarified the blank paper voucher as a print-shop master and removed the transaction-date editor from the blank-template modal.
+- Added Runtime Smoke and Receipt Export regression coverage for lifecycle, editing, cancellation and blank-template separation.
+
+Verification evidence:
+- PR #62 merged to `main`.
+- Verified PR head: `7a7295f96a5d654480a01e656db7fa20f2d861ab`.
+- Merge commit: `915a03ab2f8a619aea8fbc2487580a56c5f7b491`.
+- Runtime/Browser Smoke: PASS.
+- Pages Source Verification: PASS.
+- Receipt Export: PASS.
+- Android/Build: PASS.
+- Cloudflare Workers build check reported the known external deployment-rate-limit failure; it did not block the required AQSA7 GitHub gates.
+
+Gate decision:
+- Functional Gate: PASS.
+- Architecture Gate: PASS.
+- Product/UX scope gate: PASS at functional/runtime contract level; rendered cross-device acceptance remains Phase 8.10.
+- **Phase 8.5: COMPLETE.**
 
 ### Next authorized task
 **Phase 8.6 — History & Financial Ledger.**
