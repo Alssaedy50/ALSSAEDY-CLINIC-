@@ -196,5 +196,4 @@
   window.aqsa7VerifyIntegrationWebhook=normalizeWebhook;
   window.aqsa7MapIntegrationData=map;
   window.aqsa7GetDefaultIntegrationAdapter=()=>localFallback;
-  // Final Task 3.6 verification marker: platform contract only; no provider implementation.
 })();
