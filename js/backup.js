@@ -75,7 +75,8 @@
       JSON.stringify(encrypted,null,2),
       'application/json'
     );
-    alert('تم إنشاء النسخة الاحتياطية المشفرة. احتفظ بكلمة المرور؛ لا يتم تخزينها داخل AQSA7.');
+    if(typeof window.aqsa7LocalBackupUX?.markBackupCreated==='function') window.aqsa7LocalBackupUX.markBackupCreated();
+    alert('تم إنشاء النسخة الاحتياطية المشفرة. احتفظ بالملف وكلمة المرور؛ لا يتم تخزين كلمة المرور داخل AQSA7.');
     return encrypted;
   }
 
@@ -117,8 +118,8 @@
       throw new Error('Repository restore dependencies are unavailable.');
     }
 
-    const merge=confirm('هل تريد دمج البيانات مع البيانات الحالية؟ اضغط «إلغاء» للاستبدال الكامل.');
-    if(!merge && !confirm('سيتم استبدال السجل الحالي. هل أنت متأكد؟')) return {status:'cancelled'};
+    const merge=confirm('استعادة النسخة: اضغط «موافق» لدمج البيانات مع السجل الحالي، أو «إلغاء» لاختيار الاستبدال الكامل في التأكيد التالي.');
+    if(!merge && !confirm('⚠️ استبدال كامل: سيتم حذف سندات ومرضى IndexedDB الحاليين قبل الاستعادة. هل أنت متأكد؟')) return {status:'cancelled'};
 
     if(!merge){
       await clear('receipts');
@@ -184,6 +185,7 @@
       const artifact=await decryptAndValidate(parsed,password);
       const result=await restoreArtifact(artifact);
       if(result.status==='cancelled') return result;
+      if(typeof window.aqsa7LocalBackupUX?.render==='function') window.aqsa7LocalBackupUX.render();
       alert('تمت استعادة النسخة المشفرة بنجاح مع التحقق من السلامة والملكية ومنع التكرارات.');
       return result;
     }catch(e){
