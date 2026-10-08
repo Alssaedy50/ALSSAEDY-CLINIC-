@@ -375,6 +375,51 @@ function getAQSA7InstanceIdentitySafe(){
   try{return typeof aqsa7GetInstanceIdentity==='function'?aqsa7GetInstanceIdentity():{productId:AQSA7_DENTAL_PRODUCT_ID,tenantId:'alssaedy-clinic',instanceId:'alssaedy-clinic-sana-a'};}
   catch(_){return {productId:AQSA7_DENTAL_PRODUCT_ID,tenantId:'alssaedy-clinic',instanceId:'alssaedy-clinic-sana-a'};}
 }
+function setClinicWorkspaceView(view){
+  const dashboard=document.getElementById('clinicDashboard');
+  const head=document.getElementById('productWorkspaceHead');
+  const tools=document.getElementById('dentalModeControls');
+  const receiptSurface=document.querySelector('#productWorkspace .page-canvas-wrapper');
+  const isDashboard=view==='dashboard';
+  if(dashboard) dashboard.hidden=!isDashboard;
+  if(tools) tools.hidden=isDashboard;
+  if(receiptSurface) receiptSurface.hidden=isDashboard;
+  if(isDashboard && typeof renderClinicDashboard==='function') renderClinicDashboard();
+}
+
+function renderClinicDashboard(){
+  const today=getLocalDateISO();
+  const receipts=typeof safeHistory==='function'?safeHistory():[];
+  const patients=typeof clinicRepositoryPatients==='function'?clinicRepositoryPatients():[];
+  const todayReceipts=receipts.filter(item=>String(item.date||'')===today);
+  const paid=todayReceipts.reduce((sum,item)=>sum+(Number(item.paid)||0),0);
+  const balance=todayReceipts.reduce((sum,item)=>sum+(Number(item.balance)||0),0);
+  const fmt=n=>Number(n||0).toLocaleString('ar-EG');
+  const currency=typeof getCurrencyInfo==='function'?getCurrencyInfo():{symbol:'ر.ي'};
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  set('clinicDashboardDate','اليوم '+(typeof formatReceiptDate==='function'?formatReceiptDate(today):today)+' · ملخص التشغيل اليومي');
+  set('dashboardPatientsCount',fmt(patients.length));
+  set('dashboardReceiptsToday',fmt(todayReceipts.length));
+  set('dashboardPaidToday',fmt(paid));
+  set('dashboardBalanceToday',fmt(balance));
+  set('dashboardPaidCurrency',currency.symbol);
+  set('dashboardBalanceCurrency',currency.symbol);
+  const activity=document.getElementById('clinicDashboardActivity');
+  const sortedToday=todayReceipts.slice().sort((a,b)=>String(b.recNo||'').localeCompare(String(a.recNo||''),undefined,{numeric:true})).slice(0,6);
+  if(activity){
+    activity.innerHTML=sortedToday.length?sortedToday.map(item=>{
+      const due=Number(item.balance||0)>0;
+      const services=Array.isArray(item.services)&&item.services.length?item.services.join('، '):(item.customService||'زيارة');
+      return '<article class="clinic-dashboard-list-row"><div class="dashboard-list-icon">🧾</div><div class="dashboard-list-main"><strong>'+escapeHTML(item.name||'مريض بدون اسم')+'</strong><span>'+escapeHTML(services)+' · '+escapeHTML(item.recNo||'—')+'</span></div><div class="dashboard-list-money"><strong>'+fmt(item.paid)+' '+escapeHTML(item.currencySymbol||currency.symbol)+'</strong><small class="'+(due?'is-due':'is-paid')+'">'+(due?'متبقي '+fmt(item.balance):'مسدد')+'</small></div></article>';
+    }).join(''):'<div class="clinic-dashboard-empty"><strong>لا توجد معاملات اليوم.</strong><span>ابدأ بإصدار سند جديد من الزر أعلاه.</span></div>';
+  }
+  const visits=document.getElementById('clinicDashboardVisits');
+  const upcoming=patients.filter(p=>p.nextVisit&&String(p.nextVisit)>=today).sort((a,b)=>String(a.nextVisit).localeCompare(String(b.nextVisit))).slice(0,6);
+  if(visits){
+    visits.innerHTML=upcoming.length?upcoming.map(p=>'<article class="clinic-dashboard-list-row"><div class="dashboard-list-icon">📅</div><div class="dashboard-list-main"><strong>'+escapeHTML(p.name||'مريض بدون اسم')+'</strong><span>'+escapeHTML(p.phone||'لا يوجد هاتف')+'</span></div><div class="dashboard-list-money"><strong dir="ltr">'+escapeHTML(p.nextVisit)+'</strong><small>موعد متابعة</small></div></article>').join(''):'<div class="clinic-dashboard-empty"><strong>لا توجد متابعات مجدولة.</strong><span>مواعيد المتابعة المحفوظة في ملفات المرضى ستظهر هنا.</span></div>';
+  }
+}
+
 function setPlatformVisual(route){
   const home=document.getElementById('platformHome');
   const products=document.getElementById('platformProducts');
@@ -394,6 +439,7 @@ function setPlatformVisual(route){
   // The existing appRoute remains the single state owner.
   if(platformTabs) platformTabs.hidden=isProduct;
   if(dentalModeControls) dentalModeControls.hidden=!isProduct;
+  if(isProduct) setClinicWorkspaceView(activeAppTab);
 
   document.getElementById('tabPlatformHome')?.classList.toggle('active',route==='home');
   document.getElementById('tabPlatformProducts')?.classList.toggle('active',route==='products');
@@ -431,9 +477,9 @@ function navigatePlatform(route){
 function openConfiguredDentalProduct(){
   const identity=getAQSA7InstanceIdentitySafe();
   if(identity.productId!==AQSA7_DENTAL_PRODUCT_ID){toast?.('المنتج المكوّن غير متاح حالياً.','error');return;}
+  activeAppTab='dashboard';
+  activateAppTabVisual('dashboard');
   setAQSA7Route('dental',true);
-  activeAppTab='receipt';
-  activateAppTabVisual('receipt');
   if(!document.getElementById('digDate')?.value) setTodayDate();
   if(!document.getElementById('digReceiptNo')?.value) generateNextReceiptNo();
   if(!document.getElementById('selectedPayMethod')?.value) setPayMethod('نقداً');
@@ -441,16 +487,21 @@ function openConfiguredDentalProduct(){
 }
 function activateAppTab(tab){
   if(aqsa7PlatformRoute!=='dental') openConfiguredDentalProduct();
+  if(tab==='dashboard'){
+    activeAppTab='dashboard';
+    appRoute={screen:'dashboard',patientId:'',productId:AQSA7_DENTAL_PRODUCT_ID,instanceId:getAQSA7InstanceIdentitySafe().instanceId};
+    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('dashboard');setClinicWorkspaceView('dashboard');window.scrollTo({top:0,behavior:'smooth'});return;
+  }
   if(tab==='receipt'){
     activeAppTab='receipt'; appRoute={screen:'product',patientId:'',productId:AQSA7_DENTAL_PRODUCT_ID,instanceId:getAQSA7InstanceIdentitySafe().instanceId};
-    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
+    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');setClinicWorkspaceView('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
   }
   if(tab==='patients'){openPatientsModal();return;}
   if(tab==='history'){openHistoryModal();return;}
   if(tab==='settings'){toggleDrawer(true);return;}
 }
 function activateAppTabVisual(tab){
-  ['receipt','patients','history','settings'].forEach(t=>{
+  ['dashboard','receipt','patients','history','settings'].forEach(t=>{
     const button=document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
     if(!button)return;
     const active=t===tab;
@@ -480,7 +531,7 @@ window.addEventListener('popstate',(e)=>{
   if(panel==='settings'){setAQSA7Route('dental',false);document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');return;}
   const hash=location.hash;
   if(hash==='#products'){closeAllAppPanels();setAQSA7Route('products',false);return;}
-  if(hash==='#product-dental-clinic'){closeAllAppPanels();setAQSA7Route('dental',false);return;}
+  if(hash==='#product-dental-clinic' || hash==='#clinic-dashboard'){closeAllAppPanels();activeAppTab='dashboard';setAQSA7Route('dental',false);activateAppTabVisual('dashboard');setClinicWorkspaceView('dashboard');return;}
   closeAllAppPanels();setAQSA7Route('home',false);
 });
 function openShareModal(){document.getElementById('shareModal').classList.add('open');}
@@ -547,6 +598,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     // AQSA7 platform shell is the default entry context. Deep links remain supported.
     const initialHash=location.hash;
     if(initialHash==='#products') setAQSA7Route('products',false);
-    else if(initialHash==='#product-dental-clinic') setAQSA7Route('dental',false);
+    else if(initialHash==='#product-dental-clinic' || initialHash==='#clinic-dashboard'){activeAppTab='dashboard';setAQSA7Route('dental',false);activateAppTabVisual('dashboard');setClinicWorkspaceView('dashboard');}
     else setAQSA7Route('home',false);
 });

@@ -97,6 +97,8 @@ jobs:
               workspaceTitle: document.querySelector('#productWorkspaceTitle')?.textContent?.trim() || '',
               platformTabsHidden: document.querySelector('.platform-tabs')?.hidden === true,
               modeControlsVisible: visible('#dentalModeControls'),
+              dashboardVisible: visible('#clinicDashboard'),
+              dashboardStatsPresent: Boolean(document.querySelector('#dashboardPatientsCount') && document.querySelector('#dashboardReceiptsToday') && document.querySelector('#dashboardPaidToday') && document.querySelector('#dashboardBalanceToday')),
               clinicLocalNavVisible: visible('#dentalProductTabs'),
               clinicLocalNavInsideContext: !!document.querySelector('#aqsa7ProductContext #dentalProductTabs'),
               globalDentalNavCount: document.querySelectorAll('body > header #dentalProductTabs').length,
@@ -107,8 +109,9 @@ jobs:
             };
           });
           if (!platformUx.workspaceHead || !/ALSSAEDY CLINIC/.test(platformUx.workspaceTitle)) throw new Error('Dental workspace header is missing or incoherent');
-          if (!platformUx.platformTabsHidden || !platformUx.modeControlsVisible || !platformUx.clinicLocalNavVisible) throw new Error('Platform/product navigation layers are not mutually exclusive');
+          if (!platformUx.platformTabsHidden || (!platformUx.modeControlsVisible && !platformUx.dashboardVisible) || !platformUx.clinicLocalNavVisible) throw new Error('Platform/product navigation layers are not mutually exclusive');
           if (!platformUx.clinicLocalNavInsideContext || platformUx.globalDentalNavCount !== 0 || !platformUx.workflowToolInsideWorkspace) throw new Error('Clinic-local navigation or receipt workflow controls are outside their product/workflow boundary');
+          if (!platformUx.dashboardVisible || !platformUx.dashboardStatsPresent) throw new Error('Clinic dashboard surface or operational summary stats are missing');
           if (!/Dental Clinic/.test(platformUx.productContext) || !/ALSSAEDY CLINIC/.test(platformUx.productContext)) throw new Error('Product context does not identify product and instance');
           if (platformUx.traceableMissingOwner.length) throw new Error('Visible platform/product action is missing traceability metadata: '+JSON.stringify(platformUx.traceableMissingOwner));
           if (platformUx.traceableCount < 8) throw new Error('Insufficient platform/product UI traceability coverage: '+platformUx.traceableCount);
@@ -665,12 +668,19 @@ jobs:
           }));
           if (shell.brand !== 'AQSA7') throw new Error('AQSA7 product identity missing');
           if (!shell.clinic) throw new Error('Clinic identity missing from app shell');
-          if (shell.navCount !== 4) throw new Error('Unexpected navigation item count: '+shell.navCount);
+          if (shell.navCount !== 5) throw new Error('Unexpected navigation item count: '+shell.navCount);
           if (shell.activeCount !== 1 || shell.currentCount !== 1) throw new Error('Navigation active-state contract failed');
 
           for (const id of ['receiptPrintArea','digDate','tabPatients','tabHistory','tabSettings']) {
             if (!(await page.locator('#' + id).count())) throw new Error('Missing #' + id);
           }
+
+          await page.locator('#tabReceipt').click();
+          const receiptSurfaceVisible = await page.evaluate(() => {
+            const el=document.querySelector('#digDate');
+            return !!el && !el.hidden && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden';
+          });
+          if (!receiptSurfaceVisible) throw new Error('Receipt workflow did not become visible after selecting السندات');
 
           const fns = await page.evaluate(() => ({
             activateAppTab: typeof window.activateAppTab,
@@ -790,6 +800,7 @@ jobs:
           await page.locator('#tabPlatformProducts').click();
           await page.locator('#dentalProductCard .platform-primary-btn').click();
           await page.locator('#productWorkspace').waitFor({state:'visible'});
+          await page.locator('#tabReceipt').click();
 
           const layout = await page.evaluate(() => {
             const width = el => el ? Math.round(el.getBoundingClientRect().width) : 0;
@@ -875,7 +886,7 @@ jobs:
           await page.goto('http://127.0.0.1:4173/index.html#product-dental-clinic', {waitUntil:'networkidle'});
           if (!(await page.locator('#productWorkspace').isVisible())) fail('Direct Dental deep-link did not reconstruct workspace');
           if (!(await page.locator('#aqsa7ProductContext').isVisible())) fail('Direct Dental deep-link lost product context');
-          if (!(await page.locator('#dentalModeControls').isVisible())) fail('Direct Dental deep-link lost Dental controls');
+          if (!(await page.locator('#dentalModeControls').isVisible()) && !(await page.locator('#clinicDashboard').isVisible())) fail('Direct Dental deep-link lost both dashboard and Dental workflow controls');
 
           // 5) PWA contract must remain installable and platform-branded.
           const pwa = await page.evaluate(async () => {
@@ -940,7 +951,7 @@ jobs:
             functions: ['saveReceiptLocally','savePatientManual','renderPatients','renderHistory','triggerNativePrint','downloadReceiptImage','openPreviewModal','openShareModal','exportTransactionsFile'].filter(n => typeof window[n] === 'function')
           }));
           if (shell.dir !== 'rtl' || shell.lang !== 'ar') fail('RTL/Arabic shell contract failed', shell);
-          if (shell.tabs.length !== 4) fail('Primary navigation coverage failed', shell);
+          if (shell.tabs.length !== 5) fail('Primary navigation coverage failed', shell);
           if (shell.functions.length !== 9) fail('Core action function coverage failed', shell);
 
           // 2) Receipt create/edit/save and durable repository verification.

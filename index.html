@@ -43,7 +43,8 @@
             <button type="button" class="context-home-btn" data-ui-id="UI-PLAT-005-HOME" data-owner="index.html + js/app.js" data-action="navigatePlatform(home)" onclick="navigatePlatform('home')">🏠 منصة AQSA7</button>
         </div>
         <nav class="clinic-local-nav app-tabs" id="dentalProductTabs" aria-label="تنقل العيادة" hidden>
-            <button type="button" class="app-tab active" id="tabReceipt" data-ui-id="UI-DENT-001" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(receipt)" aria-current="page" onclick="activateAppTab('receipt')"><span class="app-tab-icon" aria-hidden="true">🧾</span><b>السندات</b></button>
+            <button type="button" class="app-tab active" id="tabDashboard" data-ui-id="UI-DENT-000" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(dashboard)" aria-current="page" onclick="activateAppTab('dashboard')"><span class="app-tab-icon" aria-hidden="true">🏠</span><b>الرئيسية</b></button>
+            <button type="button" class="app-tab" id="tabReceipt" data-ui-id="UI-DENT-001" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(receipt)" onclick="activateAppTab('receipt')"><span class="app-tab-icon" aria-hidden="true">🧾</span><b>السندات</b></button>
             <button type="button" class="app-tab" id="tabPatients" data-ui-id="UI-DENT-002" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(patients)" onclick="activateAppTab('patients')"><span class="app-tab-icon" aria-hidden="true">👥</span><b>المرضى</b></button>
             <button type="button" class="app-tab" id="tabHistory" data-ui-id="UI-DENT-003" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(history)" onclick="activateAppTab('history')"><span class="app-tab-icon" aria-hidden="true">📂</span><b>السجل</b></button>
             <button type="button" class="app-tab" id="tabSettings" data-ui-id="UI-DENT-004" data-owner="index.html + js/app.js + js/ui.js" data-action="activateAppTab(settings)" onclick="activateAppTab('settings')"><span class="app-tab-icon" aria-hidden="true">⚙️</span><b>الإعدادات</b></button>
@@ -120,6 +121,44 @@
             <div class="product-workspace-actions">
                 <button type="button" class="workspace-action" data-ui-id="UI-PLAT-005-PRODUCTS" data-owner="index.html + js/app.js" data-action="navigatePlatform(products)" onclick="navigatePlatform('products')">← المنتجات</button>
                 <button type="button" class="workspace-action workspace-action-primary" data-ui-id="UI-DENT-WORKSPACE-RECEIPT" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(receipt)" onclick="activateAppTab('receipt')">🧾 سند جديد</button>
+            </div>
+        </section>
+
+        <section class="no-print clinic-dashboard" id="clinicDashboard" aria-labelledby="clinicDashboardTitle" hidden>
+            <div class="clinic-dashboard-head">
+                <div>
+                    <span class="directory-kicker">DAILY CLINIC HOME</span>
+                    <h2 id="clinicDashboardTitle">لوحة العيادة</h2>
+                    <p id="clinicDashboardDate">ملخص التشغيل اليومي.</p>
+                </div>
+                <div class="clinic-dashboard-status"><span aria-hidden="true">●</span><span>بيانات محلية محفوظة</span></div>
+            </div>
+            <div class="clinic-dashboard-actions" aria-label="إجراءات سريعة">
+                <button type="button" class="dashboard-action dashboard-action-primary" data-ui-id="UI-DASH-001" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(receipt)" onclick="activateAppTab('receipt')">＋ سند جديد</button>
+                <button type="button" class="dashboard-action" data-ui-id="UI-DASH-002" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(patients)" onclick="activateAppTab('patients')">👥 المرضى</button>
+                <button type="button" class="dashboard-action" data-ui-id="UI-DASH-003" data-owner="index.html + js/app.js + js/storage.js" data-action="activateAppTab(history)" onclick="activateAppTab('history')">📂 السجل</button>
+            </div>
+            <div class="clinic-dashboard-stats" id="clinicDashboardStats" aria-live="polite">
+                <article class="clinic-dashboard-stat"><span>المرضى المسجلون</span><strong id="dashboardPatientsCount">0</strong><small>ملفات المرضى</small></article>
+                <article class="clinic-dashboard-stat"><span>سندات اليوم</span><strong id="dashboardReceiptsToday">0</strong><small>سندات رقمية محفوظة</small></article>
+                <article class="clinic-dashboard-stat"><span>المدفوع اليوم</span><strong id="dashboardPaidToday">0</strong><small id="dashboardPaidCurrency">ر.ي</small></article>
+                <article class="clinic-dashboard-stat"><span>المتبقي اليوم</span><strong id="dashboardBalanceToday">0</strong><small id="dashboardBalanceCurrency">ر.ي</small></article>
+            </div>
+            <div class="clinic-dashboard-grid">
+                <section class="clinic-dashboard-card" aria-labelledby="dashboardActivityTitle">
+                    <div class="clinic-dashboard-card-head">
+                        <div><span class="directory-kicker">TODAY</span><h3 id="dashboardActivityTitle">نشاط اليوم</h3></div>
+                        <button type="button" class="dashboard-link" onclick="activateAppTab('history')">عرض السجل</button>
+                    </div>
+                    <div id="clinicDashboardActivity" class="clinic-dashboard-list"></div>
+                </section>
+                <section class="clinic-dashboard-card" aria-labelledby="dashboardVisitsTitle">
+                    <div class="clinic-dashboard-card-head">
+                        <div><span class="directory-kicker">FOLLOW-UP</span><h3 id="dashboardVisitsTitle">المتابعات القادمة</h3></div>
+                        <button type="button" class="dashboard-link" onclick="activateAppTab('patients')">المرضى</button>
+                    </div>
+                    <div id="clinicDashboardVisits" class="clinic-dashboard-list"></div>
+                </section>
             </div>
         </section>
 

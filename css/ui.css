@@ -862,3 +862,40 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 @media print{
     .clinic-workflow-tools,.clinic-local-nav{display:none!important}
 }
+
+/* ===== AQSA7 Phase 8.2 — Daily Clinic Dashboard ===== */
+.clinic-dashboard{max-width:1180px;margin:0 auto;padding:26px 18px 80px}
+.clinic-dashboard-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px}
+.clinic-dashboard-head h2{margin:6px 0 4px;font-size:28px;color:#0f172a}
+.clinic-dashboard-head p{margin:0;color:#64748b;font-size:11px}
+.clinic-dashboard-status{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #dbeafe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:9px;font-weight:900;white-space:nowrap}
+.clinic-dashboard-status span:first-child{font-size:8px}
+.clinic-dashboard-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.dashboard-action{min-height:44px;padding:9px 15px;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#334155;font:inherit;font-size:10px;font-weight:900;cursor:pointer}
+.dashboard-action-primary{background:#1d4ed8;border-color:#1d4ed8;color:#fff;box-shadow:0 8px 18px rgba(29,78,216,.16)}
+.clinic-dashboard-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.clinic-dashboard-stat{padding:15px;border:1px solid #dbe4ef;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(15,23,42,.05)}
+.clinic-dashboard-stat span,.clinic-dashboard-stat small{display:block;color:#64748b;font-size:9px}
+.clinic-dashboard-stat strong{display:block;margin:6px 0 2px;color:#0f172a;font-size:22px;line-height:1.1}
+.clinic-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px}
+.clinic-dashboard-card{min-width:0;padding:16px;border:1px solid #dbe4ef;border-radius:16px;background:#fff;box-shadow:0 6px 20px rgba(15,23,42,.05)}
+.clinic-dashboard-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.clinic-dashboard-card-head h3{margin:4px 0 0;font-size:16px;color:#0f172a}
+.dashboard-link{border:0;background:transparent;color:#1d4ed8;font:inherit;font-size:9px;font-weight:900;cursor:pointer;padding:5px}
+.clinic-dashboard-list{display:flex;flex-direction:column;gap:7px}
+.clinic-dashboard-list-row{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #eef2f7;border-radius:11px;background:#f8fafc}
+.dashboard-list-icon{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border-radius:9px;background:#eaf2ff;font-size:15px}
+.dashboard-list-main{min-width:0;flex:1}
+.dashboard-list-main strong,.dashboard-list-main span,.dashboard-list-money strong,.dashboard-list-money small{display:block}
+.dashboard-list-main strong{font-size:10px;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-list-main span{margin-top:2px;color:#64748b;font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dashboard-list-money{text-align:end;white-space:nowrap}
+.dashboard-list-money strong{font-size:9.5px;color:#0f172a}
+.dashboard-list-money small{margin-top:2px;font-size:8px;color:#64748b}
+.dashboard-list-money .is-due{color:#b45309}.dashboard-list-money .is-paid{color:#15803d}
+.clinic-dashboard-empty{padding:22px 12px;text-align:center;border:1px dashed #cbd5e1;border-radius:12px;color:#64748b}
+.clinic-dashboard-empty strong{display:block;color:#334155;font-size:10px}.clinic-dashboard-empty span{display:block;margin-top:4px;font-size:9px}
+.aqsa7-product-workspace.clinic-dashboard-active #productWorkspaceHead,.aqsa7-product-workspace.clinic-dashboard-active #dentalModeControls,.aqsa7-product-workspace.clinic-dashboard-active .page-canvas-wrapper{display:none!important}
+@media(max-width:760px){.clinic-dashboard{padding:18px 12px 60px}.clinic-dashboard-head{align-items:flex-start;flex-direction:column}.clinic-dashboard-head h2{font-size:24px}.clinic-dashboard-actions{display:grid;grid-template-columns:1fr 1fr}.dashboard-action-primary{grid-column:1/-1}.clinic-dashboard-stats{grid-template-columns:1fr 1fr}.clinic-dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:430px){.clinic-dashboard-stats{grid-template-columns:1fr}.clinic-dashboard-actions{grid-template-columns:1fr}.dashboard-action-primary{grid-column:auto}}
+@media print{.clinic-dashboard{display:none!important}}
