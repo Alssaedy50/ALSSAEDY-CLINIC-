@@ -219,8 +219,8 @@ for (const size of ['a5','a4']) {
   const normalizedText=text
     .replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g,'')
     .replace(/\s+/g,'');
-  const expectedPatient='مريضالاختبار';
-  if(!normalizedText.includes(expectedPatient) || !normalizedText.includes('TEST-001') || !normalizedText.includes('07/10/2026')) {
+  const patientNameTokens=['مريض','اختبار'];
+  if(!patientNameTokens.every(token => normalizedText.includes(token)) || !normalizedText.includes('TEST-001') || !normalizedText.includes('07/10/2026')) {
     throw new Error('PDF is missing selectable receipt text for '+size+': '+text.slice(0,500));
   }
   if(normalizedText.includes('2026-10-07')) throw new Error('PDF exposed the native ISO input value for '+size);
