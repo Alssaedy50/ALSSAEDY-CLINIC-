@@ -83,6 +83,17 @@ jobs:
           if (!designTokens.fontUi.includes('system-ui')) throw new Error('UI font token is not system-ui based');
           if (designTokens.tabHeight < 44) throw new Error('Receipt tab touch target is below 44px: '+designTokens.tabHeight);
 
+          const productBoundary = await page.evaluate(() => ({
+            manifest: window.AQSA7_PRODUCT_MANIFEST,
+            clinic: window.AQSA7_CLINIC_CONFIG,
+            stamped: typeof window.aqsa7StampRecord === 'function' ? window.aqsa7StampRecord({id:'smoke-record'}) : null
+          }));
+          if (!productBoundary.manifest || productBoundary.manifest.productId !== 'dental-clinic') throw new Error('Product manifest boundary missing');
+          if (!productBoundary.manifest.capabilities.includes('patients') || !productBoundary.manifest.capabilities.includes('receipts')) throw new Error('Dental product capability manifest incomplete');
+          if (!productBoundary.manifest.optionalCapabilities.includes('ai')) throw new Error('AI capability boundary missing');
+          if (!productBoundary.clinic || productBoundary.clinic.productId !== 'dental-clinic' || !productBoundary.clinic.tenantId || !productBoundary.clinic.instanceId) throw new Error('Clinic instance configuration boundary missing');
+          if (productBoundary.stamped.productId !== 'dental-clinic' || productBoundary.stamped.tenantId !== productBoundary.clinic.tenantId || productBoundary.stamped.instanceId !== productBoundary.clinic.instanceId) throw new Error('Repository record identity stamping failed');
+
           const shell = await page.evaluate(() => ({
             brand: document.querySelector('.brand-platform')?.textContent?.trim(),
             clinic: document.querySelector('.brand-title')?.textContent?.trim(),
