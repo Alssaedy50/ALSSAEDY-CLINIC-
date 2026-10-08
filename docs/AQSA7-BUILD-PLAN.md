@@ -1924,7 +1924,7 @@ Next authorized task:
 
 ### Phase 4 / Task 4.9 — Google Drive Adapter implementation
 
-Status: **IMPLEMENTED — PR RUNTIME VERIFICATION REQUESTED**
+Status: **COMPLETE**
 
 Purpose:
 - Implement the first concrete Backup Provider Adapter using Google Drive API v3 while preserving the provider-neutral contract from Task 4.4 and runtime boundary from Task 4.8.
@@ -1982,7 +1982,7 @@ Task 4.9 gate is closed. Live production Google OAuth upload/download/restore re
 
 ### Phase 4 / Task 4.10 — Cloud Recovery implementation
 
-Status: **IMPLEMENTED — PR RUNTIME VERIFICATION REQUESTED**
+Status: **COMPLETE**
 
 Purpose:
 - Provide a provider-neutral disaster-recovery orchestration path from an external Backup Provider back into the authoritative local Repository / IndexedDB.
