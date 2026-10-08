@@ -76,6 +76,7 @@
       'application/json'
     );
     if(typeof window.aqsa7LocalBackupUX?.markBackupCreated==='function') window.aqsa7LocalBackupUX.markBackupCreated();
+    if(typeof window.aqsa7BackupScheduling?.markBackupCreated==='function') window.aqsa7BackupScheduling.markBackupCreated();
     alert('تم إنشاء النسخة الاحتياطية المشفرة. احتفظ بالملف وكلمة المرور؛ لا يتم تخزين كلمة المرور داخل AQSA7.');
     return encrypted;
   }
