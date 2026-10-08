@@ -450,7 +450,7 @@ function pushPanelState(name){
   if(history.state?.alssaedyPanel===name)return;
   history.pushState({alssaedyPanel:name,aqsa7Route:'dental'},'', '#'+name);
 }
-function closePanelState(name){if(history.state?.alssaedyPanel===name){history.back();return true;}return false;}
+function closePanelState(name){if(history.state?.alssaedyPanel===name){history.back();if(aqsa7PlatformRoute==='dental')setPlatformVisual('dental');return true;}return false;}
 function closeAllAppPanels(){
   document.getElementById('patientsModal')?.classList.remove('open');
   document.getElementById('historyModal')?.classList.remove('open');
