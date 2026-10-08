@@ -23,6 +23,16 @@ Transform the current ALSSAEDY CLINIC receipt application into a clean, reliable
 9. Never release an unverified build.
 10. Update this ledger after every completed phase/task.
 
+## Task Completion, GitHub Record & Handoff Rule
+
+At the end of every task, subtask, phase, or verified work unit:
+1. Update GitHub to the complete current state, including implementation result, verification, commits, blockers and decisions.
+2. Consolidate or remove obsolete intermediate notes so project documentation contains the current authoritative state without contradictions or unnecessary history.
+3. Produce a concise final task report in the conversation: what was completed, current state, exact next step, and who executes it (AI or User).
+4. If User input is genuinely required, ask directly and state exactly what is needed and why; do so only after exhausting all reasonable tools, technical paths and verification methods available to AI.
+5. Never claim completion without satisfying the defined exit criteria. If verification is unavailable, record the task as PENDING/BLOCKED/UNVERIFIED with the exact reason.
+6. GitHub remains the authoritative project state; the conversation handoff must not contradict it.
+
 
 ## Strict 100% Free & Local-First Architectural Constraint
 
