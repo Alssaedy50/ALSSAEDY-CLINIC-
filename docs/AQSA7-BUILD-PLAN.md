@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08 (Phase 7.1 composition contract verified; Phase 7.2 is the only authorized implementation step)
+Last updated: 2026-10-08 (Phase 7.2 platform shell migration verified; Phase 7.3 is the only authorized implementation step)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -2688,16 +2688,44 @@ Phase 7.1 is accepted because:
 **Phase 7.1 Gate: PASS — CONTRACT VERIFIED.**
 
 ### Phase 7.2 — Platform Shell Migration
-Status: PENDING
+Status: COMPLETE — FUNCTIONAL PLATFORM SHELL VERIFIED
 
-Exit criteria:
-- Replace the clinic-first root composition with the approved AQSA7 platform shell.
-- Keep Dental Clinic as the first configured product/instance.
-- Preserve existing Dental workflows and verified data paths.
-- Web/PWA and Android consume the same web core.
+Implementation boundary completed:
+- Root entry is now **AQSA7 Platform**, not the Dental receipt surface.
+- Added platform-level Home / Workspace surface and Products / Projects surface.
+- Dental Clinic is presented as the first configured product and enters the existing Dental workspace.
+- Added explicit product-context breadcrumb/return controls.
+- Existing Dental Receipt / Patients / History / Settings remain product-local navigation.
+- Existing appRoute/history owner in js/app.js remains authoritative; no second router was introduced.
+- Existing product definition, capability registry, repository, business handlers, export/print and backup boundaries remain reused.
+- Android now identifies as AQSA7 at the platform boundary and uses the same bundled web core; the missing launcher resource reference was corrected as part of this boundary migration.
+- Existing regression entrypoints were adapted to enter the correct product context rather than falsely treating a hidden product-local surface as the platform root.
+
+Traceability implementation:
+- UI-PLAT-001: AQSA7 global shell/header → index.html + js/app.js.
+- UI-PLAT-002: Workspace/Dashboard → platformHome + js/app.js route owner.
+- UI-PLAT-003: Products/Projects → platformProducts + js/app.js.
+- UI-PLAT-004: Dental product entry → dentalProductCard + existing js/product.js identity.
+- UI-PLAT-005: Product-context/return → aqsa7ProductContext + js/app.js.
+- UI-DENT-001..004 remain existing Dental owners; no business/data owner was duplicated.
+
+Regression evidence for the completed migration:
+- GitHub Pages Source Verification #139: PASS.
+- GitHub Pages deployment #525: PASS.
+- Receipt image export #456: PASS.
+- AQSA7 Runtime Smoke #285: PASS.
+- Android APK #514: PASS.
+- The runtime smoke was updated to verify platform entry, Products/Projects entry, Dental product context, mobile/desktop product-local surfaces, existing route behavior and existing core contracts.
+- Receipt export was verified from the Dental product context and remained PASS.
+- Android build passed after aligning the platform launcher resource with the new AQSA7 identity.
+
+Important boundary:
+Phase 7.2 is accepted as the **platform-shell migration gate**. It does not claim that the entire final Product/Workspace UX is complete. The remaining visual/product reconstruction and independent UX acceptance belong to Phases 7.3–7.5.
+
+**Phase 7.2 Gate: PASS — FUNCTIONAL PLATFORM SHELL VERIFIED.**
 
 ### Phase 7.3 — Product/Workspace UX Reconstruction
-Status: PENDING
+Status: NEXT — only authorized next step
 
 Exit criteria:
 - Dashboard/workspace, Products/Projects, product entry and settings surfaces are coherent.
