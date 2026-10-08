@@ -6,6 +6,7 @@
    * Product definition is the platform contract. It describes reusable business
    * behavior; organization-specific identity/defaults live in the instance config.
    */
+  const sharedCapabilityIds = typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [];
   const manifest = {
     schemaVersion: 2,
     productId: 'dental-clinic',
@@ -14,10 +15,8 @@
     productVersion: '1.0',
     category: 'healthcare',
     vertical: 'dental',
-    modules: freeze([
-      'people', 'patients', 'patient-accounts', 'appointments',
-      'catalog-services', 'billing-payments', 'receipts', 'history', 'settings'
-    ]),
+    sharedCapabilities: freeze(['people', 'appointments', 'catalog', 'billing', 'receipts']),
+    modules: freeze(['people', 'appointments', 'catalog', 'billing', 'receipts']),
     capabilities: freeze([
       'receipts', 'patients', 'patient-accounts', 'history', 'settings',
       'local-backup', 'print-pdf', 'image-export', 'sharing'
@@ -100,6 +99,7 @@
     }),
     defaults: freeze({...manifest.defaults}),
     enabledModules: freeze([...manifest.modules]),
+    enabledCapabilities: freeze([...manifest.sharedCapabilities]),
     featureFlags: freeze({
       ai: false,
       cloudBackup: false,
@@ -128,6 +128,8 @@
     const errors = [];
     if(!manifest.productId || !manifest.productVersion) errors.push('manifest identity');
     if(!manifest.modules.length) errors.push('manifest modules');
+    if(!manifest.modules.every(id => sharedCapabilityIds.includes(id))) errors.push('manifest module is not a registered shared capability');
+    if(!manifest.sharedCapabilities.every(id => sharedCapabilityIds.includes(id))) errors.push('manifest shared capability is not registered');
     if(!manifest.capabilities.length) errors.push('manifest capabilities');
     if(instance.productId !== manifest.productId) errors.push('instance/product mismatch');
     if(!instance.productVersion || instance.productVersion !== manifest.productVersion) errors.push('instance/product version mismatch');
@@ -139,6 +141,7 @@
   }
 
   function aqsa7GetProductManifest(){ return manifest; }
+  function aqsa7GetProductCapabilities(){ return manifest.sharedCapabilities.map(id => window.aqsa7GetSharedCapability(id)).filter(Boolean); }
   function aqsa7GetClinicConfig(){ return instance; }
   function aqsa7GetInstanceStorageConfig(){ return instance.storage; }
   function aqsa7ValidateProductDefinition(){ return validate(); }
@@ -164,6 +167,7 @@
   window.AQSA7_PRODUCT_MANIFEST=freeze(manifest);
   window.AQSA7_CLINIC_CONFIG=freeze(instance);
   window.aqsa7GetProductManifest=aqsa7GetProductManifest;
+  window.aqsa7GetProductCapabilities=aqsa7GetProductCapabilities;
   window.aqsa7GetClinicConfig=aqsa7GetClinicConfig;
   window.aqsa7GetInstanceStorageConfig=aqsa7GetInstanceStorageConfig;
   window.aqsa7ValidateProductDefinition=aqsa7ValidateProductDefinition;
