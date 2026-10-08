@@ -219,7 +219,7 @@ Status: COMPLETE
 Status: COMPLETE
 
 ### Phase 2 — UX/UI Reconstruction
-Status: IN PROGRESS
+Status: COMPLETE
 
 Completed Phase 2 tasks:
 - 2.1 Design System Foundation — COMPLETE
@@ -295,7 +295,7 @@ Exit decision:
 - Android build: PASS.
 - Pages deployment: PASS.
 - Task 2.8: COMPLETE.
-- Phase 2 remains IN PROGRESS until the receipt export/print verification blocker is cleared.
+- Phase 2 remained IN PROGRESS at the time of this checkpoint; the blocker was subsequently cleared by Task 2.9.
 
 ### Phase 2 / Task 2.9 — Receipt Export / Print Verification Blocker Resolution: COMPLETE
 
@@ -388,7 +388,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Phase 2 Task 2.7 completed; Task 2.8 started)
+Last updated: 2026-10-08 (Phase 2 COMPLETE; Phase 3 Task 3.1 next)
 
 ## Current authoritative decisions
 
