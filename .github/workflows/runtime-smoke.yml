@@ -523,7 +523,9 @@ jobs:
             };
             try {
               authBoundary.clear();
-              const missingAuth = (()=>{ try { providerFactory({}); return false; } catch (_) { return true; } })();
+              const noAuthAdapter = providerFactory({});
+              const noAuthResult = await window.aqsa7ExecuteBackupProvider(noAuthAdapter,'health',{productId:'aqsa7',tenantId:'tenant-1',instanceId:'instance-1'});
+              const missingAuth = noAuthResult.status === 'error' && noAuthResult.error?.code === 'AUTH_REQUIRED';
               authBoundary.configure({getAccessToken:async()=> 'smoke-token'});
               const adapter = providerFactory({auth:{getAccessToken:async()=> 'smoke-token'}});
               runtime.clear();
