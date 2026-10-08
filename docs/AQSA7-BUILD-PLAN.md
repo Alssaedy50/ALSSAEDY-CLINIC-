@@ -1910,10 +1910,12 @@ Task 4.8 gate:
 - Contract validation before registration: **MET**.
 - Duplicate provider protection: **MET**.
 - Secret/persistence isolation: **MET**.
-- Runtime verification: **PENDING**.
+- Runtime verification: **PASS** — Runtime Smoke run 37791893257 (run #205).
+- Android APK: **PASS** — run 37791893221 (run #429).
+- GitHub Pages Source Verification: **PASS** — run 37791893164 (run #59).
 
-Next authorized task after verification:
-- **Task 4.8 verification/retry only; do not advance to Task 4.9 until Runtime Smoke is green.**
+Next authorized task:
+- **Task 4.9 — Google Drive Adapter implementation.**
 
 ### Phase 5 — Full Regression
 Must verify:
@@ -1945,7 +1947,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.7 verified complete; Task 4.8 implemented and awaiting Runtime Smoke verification; next authorized task Task 4.8 verification)
+Last updated: 2026-10-08 (Task 4.8 verified complete; next authorized task Task 4.9 Google Drive Adapter)
 
 ## Current authoritative decisions
 
