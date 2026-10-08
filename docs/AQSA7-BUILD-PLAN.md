@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0–8.9 COMPLETE / Phase 8.10 IN PROGRESS
-Last updated: 2026-10-09 (Phase 8.10 rendered UX acceptance started from verified main commit d3b5b524f6b5ce7cf2bd1a47b3c78a3e381d3cd1)
+Status: PHASE 8 CLOSED — Phase 8.0–8.10 COMPLETE; no Phase 8.11 authorized
+Last updated: 2026-10-09 (Phase 8.10 completed, all required gates passed, PR #67 merged)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3035,7 +3035,7 @@ Priority register:
 - **8.7 Mobile UX — COMPLETE**
 - **8.8 Print / PDF / Physical Voucher QA — COMPLETE**
 - **8.9 Full Regression — COMPLETE**
-- **8.10 Rendered UX Acceptance — IN PROGRESS**
+- **8.10 Rendered UX Acceptance — COMPLETE**
 
 
 ### Phase 8.1 gate
@@ -3179,31 +3179,35 @@ Gate decision:
 ### Current phase
 **Phase 8.10 — Rendered UX Acceptance.**
 
-Status: IN PROGRESS — rendered evidence capture and review pending CI.
+Status: COMPLETE — rendered evidence reviewed; all required gates passed; PR #67 merged.
 
-Branch: `phase-8-10-rendered-ux-acceptance`
-Verified base `main`: `d3b5b524f6b5ce7cf2bd1a47b3c78a3e381d3cd1`
+Implementation:
+- Branch: `phase-8-10-rendered-ux-acceptance`.
+- Final PR head: `94b25b1c95e4917f29d6417d114fb5a22415cb31`.
+- Merge commit: `f234f83613bffd560025986c7b1fbd87d5aaafb7`.
+- Closure documentation commit before this ledger update: `ddfdc5f91950fef07cfae45057f3d11f4e2a2255`.
 
-Objective: inspect and verify actual rendered AQSA7 platform and Dental clinic workflows at mobile (390×844) and desktop (1440×1000) breakpoints. Validate visible composition and interaction outcomes, not just DOM presence or successful builds.
+Rendered evidence:
+- [Runtime Smoke #385 and Phase 8.10 screenshot artifact](https://github.com/Alssaedy50/AQSA7/actions/runs/37858416383/artifacts/11584842975).
+- 16 PNG screenshots: Platform Home, Products/Projects, Dashboard, Patient Workspace, Visit/Services/Billing, Receipt Issuance, History/Financial Ledger and Settings at 390×844 and 1440×1000.
+- `rendered-ux-report.json` records zero document horizontal overflow on all 16 captures.
+- Screenshot review found the mobile action dock clipped at the viewport edge. The responsive dock correction in `css/ui.css` places all five actions within the mobile viewport and reserves bottom content space. The final artifact visually confirms the fix.
+- The Dental action dock remains hidden on Platform Home and Products/Projects, preserving context separation.
 
-Execution:
-- Extend the existing Runtime Smoke Playwright workflow only; no new test framework.
-- Capture Platform Home, Products/Projects, Dashboard, Patient Workspace, Visit/Services/Billing, Receipt Issuance, History/Financial Ledger and Settings at both representative viewports.
-- Initial screenshot review found the mobile action dock clipped at the viewport edge and overlaying content. A narrow CSS correction now constrains it to five columns inside the viewport and reserves bottom content space; Runtime Smoke asserts all five controls are visible and within bounds.
-- Final current-run artifact [#383](https://github.com/Alssaedy50/AQSA7/actions/runs/37858095988/artifacts/11584214623) visually reviewed: 16 screenshots / 8 surfaces / 2 viewports. All four required gates passed on source commit `a5a59f09aa7b42644f2e228b82f35b251e3331e4`; documentation-head gates and merge remain pending.
-- Upload the current-run screenshots plus a JSON measurement report as the `aqsa7-phase-8-10-rendered-ux` artifact.
-- Review actual screenshots and report before making any visual defect claims.
-- Fix only evidenced UX defects within scope; preserve route/product/capability/repository/storage/export ownership.
-- Re-run all four required gates after any shared source/CSS change. Keep physical print-shop proof separate.
+Final required gates on final PR head `94b25b1c95e4917f29d6417d114fb5a22415cb31`:
+- Runtime Smoke #385: PASS.
+- Receipt Export #542: PASS.
+- Pages Source Verification #239: PASS.
+- Android Build #622: PASS.
 
-Exit criteria:
-1. Sixteen valid current-run screenshots cover the eight named surfaces at mobile and desktop sizes.
-2. Screenshots are inspected, not merely generated; visual findings and any blockers are tied to named evidence.
-3. No blocking visual, navigation, overflow or interaction defects remain in tested surfaces, or unresolved findings are explicitly recorded.
-4. Functional, Architecture and Product/UX gate decisions are recorded separately.
-5. Build Plan and Phase 8.10 document record exact screenshots/artifact, final commit, gate results and next authorized action.
+Gate decisions:
+- Functional Gate: PASS.
+- Architecture Gate: PASS — no route owner, product authority, repository/persistence authority, business behavior or export boundary changed; the only production-source change is responsive CSS.
+- Product/UX Gate: PASS for the tested screens and viewports. This does not claim complete keyboard/screen-reader accessibility compliance.
+- Vercel's external free-tier deployment-rate limit remained non-blocking; all required AQSA7 GitHub gates passed.
+- Physical paper stock, binding, ink and actual printer scaling remain a manual print-shop proof.
 
-Last updated: 2026-10-09 (Phase 8.10 started after verifying Phase 8.9 completion and current main).
+**Phase 8.10: COMPLETE. Phase 8 is closed at 8.10. No Phase 8.11 is defined or authorized.** Do not invent a next phase; consult the project priority register for the next approved task.
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED
