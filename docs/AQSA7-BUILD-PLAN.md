@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: ACTIVE
-Last updated: 2026-10-08 (Phase 7.2 platform shell migration verified; Phase 7.3 is the only authorized implementation step)
+Status: RELEASE CANDIDATE — v1.4.0
+Last updated: 2026-10-08 (Phase 7.6 documentation reconciled; v1.4.0 release packaging authorized)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -20,16 +20,23 @@ Future verticals must be addable through the existing product/capability boundar
 
 ### Current Reality Baseline — 2026-10-08
 
-Phase 0–6 implementation, reliability and release work are historically verified, but the released UX does **not** satisfy the intended platform-level product requirement.
+Phase 0–6 implementation, reliability and the historical v1.3.0 release are preserved as verified historical evidence. Phase 7.0–7.5 completed the controlled migration to the approved Platform-first user experience.
 
-Authoritative source inspection shows:
+Authoritative current state:
 
-- `index.html` is still clinic-first: the root navigation is Receipt / Patients / History / Settings and the clinic receipt surface dominates the initial experience.
-- The existing platform/product architecture already exists in `js/product.js`, `js/capabilities.js`, `js/repository.js`, `js/integrations.js` and related contracts; these are assets to reuse, not invitations to create parallel implementations.
-- Android still loads the bundled clinic-first `index.html` through the existing WebView wrapper.
-- The v1.3.0 release and its automated regression evidence remain valid for the functionality they actually verify. They do **not** prove platform-level UX acceptance.
+- AQSA7 is now presented as the primary application shell.
+- The user-visible hierarchy is **AQSA7 Platform → Products / Projects → Dental Clinic → ALSSAEDY CLINIC workspace**.
+- `js/app.js` remains the single route/context state owner.
+- `js/product.js` remains the single Product/Tenant/Instance authority.
+- `js/capabilities.js` remains the shared capability registry.
+- `js/repository.js` + IndexedDB remain the single durable application data authority.
+- `js/storage.js` remains the Dental receipt/patient/history/settings business-behavior owner.
+- `js/export.js` + the existing Android bridge remain the export/print/share boundary.
+- Existing backup/recovery/provider/security modules remain authoritative and are not duplicated.
+- Web/PWA and Android use the same shared application core; Android remains a thin wrapper.
+- Phase 7.5 rendered UI acceptance passed after the isolated `css/ui.css` stacking/layout correction.
 
-Therefore the corrective work is **not a rebuild of the existing application**. It is a controlled migration of the user-facing shell and product composition around the already-existing verified core.
+The current source is therefore the accepted Platform-first composition and is the source package to be released as **v1.4.0**. The historical v1.3.0 artifact remains unchanged and must not be represented as the current source state.
 
 ### Primary corrective objective
 
@@ -2375,7 +2382,7 @@ Phase 6 release gate is CLOSED as a historical release gate for v1.3.0 functiona
 
 ## Phase 7 — AQSA7 Platform UX Transition & Traceability
 
-Status: AUTHORIZED — PLANNING / BASELINE ONLY
+Status: COMPLETE — PLATFORM-FIRST SOURCE ACCEPTED / v1.4.0 RELEASE PREPARATION
 
 Purpose:
 
@@ -2903,51 +2910,45 @@ Next authorized task:
 - Phase 7.6 — Documentation & Release Decision.
 
 ### Phase 7.6 — Documentation & Release Decision
-Status: COMPLETE — DOCUMENTATION CONSOLIDATED / RELEASE DECISION RECORDED
+Status: COMPLETE — DOCUMENTATION RECONCILED / v1.4.0 RELEASE AUTHORIZED
 
 Final architecture and ownership:
-- AQSA7 is accepted in its current Platform-first composition: AQSA7 Platform → Products/Projects → Dental Clinic → ALSSAEDY CLINIC workspace.
-- js/app.js remains the single route/context state owner; no second router was introduced.
-- js/product.js remains the single Product/Tenant/Instance authority; no second product registry/configuration source was introduced.
-- js/capabilities.js remains the shared capability registry.
-- js/repository.js + IndexedDB remain the single durable application data authority.
-- js/storage.js remains the Dental receipt/patient/history/settings business-behavior owner.
-- js/export.js + the existing Android bridge remain the export/print/share boundary.
-- Existing backup/recovery/provider/security modules remain authoritative; Phase 7 did not create parallel persistence, backup, repository, state, or provider paths.
-- index.html + css/* provide the platform/product composition and presentation layer; the Phase 7.5 correction is isolated to css/ui.css.
-- Android remains a thin wrapper around the shared application core.
+- AQSA7 is accepted in the Platform-first composition: AQSA7 Platform → Products/Projects → Dental Clinic → ALSSAEDY CLINIC workspace.
+- `js/app.js` remains the single route/context state owner; no second router was introduced.
+- `js/product.js` remains the single Product/Tenant/Instance authority; no second product registry/configuration source was introduced.
+- `js/capabilities.js` remains the shared capability registry.
+- `js/repository.js` + IndexedDB remain the single durable application data authority.
+- `js/storage.js` remains the Dental business-behavior owner.
+- `js/export.js` + the existing Android bridge remain the export/print/share boundary.
+- Existing backup/recovery/provider/security modules remain authoritative.
+- No duplicate repository, persistence, state, provider, business-logic or export path was introduced.
 
-Reuse Registry / traceability:
-- The authoritative Reuse Registry remains in section 7.0-H of this Build Plan.
-- The current runtime contains the established 14 platform/product traceability entries and their existing owners/actions.
-- Phase 7.5 independently verified rendered UI, DOM traceability, navigation separation and absence of duplicate authoritative paths.
-- No new documentation catalog, component registry, test ledger or parallel architecture document was created.
+Documentation reconciliation:
+- The authoritative current-state header/footer now reflect completion of Phase 7.5 and release preparation.
+- Historical Phase 7.0/7.2 planning/inventory text remains only as historical evidence and is not an active authorization.
+- `README.md` and `AGENTS.md` are aligned to the current AQSA7 multi-product platform architecture.
+- Historical v1.3.0 release documentation remains unchanged.
 
-Obsolete / contradictory instructions resolved:
-- The stale Phase 7 hard-stop text that said the immediate next step was Phase 7.0 has been superseded by the actual completed Phase 7 sequence through 7.5 and is removed from the authoritative current-state section.
-- Historical Phase 7.0/7.1 planning text is retained as historical execution evidence, not as a current authorization.
-- Historical Phase 6/v1.3.0 release documentation remains unchanged as historical release evidence and is not rewritten to misrepresent the later Platform transition.
-
-Release decision — evidence-based:
-- v1.3.0 remains the historical released artifact. Its signed APK and release assets were produced before the Phase 7 Platform transition.
-- The current main state includes the accepted Phase 7 Platform composition and the Phase 7.5 UX correction, so it must not be represented as identical to the v1.3.0 release artifact.
-- No new GitHub Release/tag/version bump is created by Phase 7.6. Creating a new public release requires explicit version/release authorization after the Platform transition is packaged and re-verified as a release candidate.
-- Current decision: Platform state ACCEPTED in source; RELEASED ARTIFACT unchanged; new release NOT CUT by this phase.
-- This is a release decision, not an implementation blocker: the repository is internally coherent and the next release can be prepared explicitly without retroactively altering v1.3.0 history.
+Release decision:
+- **v1.4.0 is explicitly authorized as the next public release.**
+- Android `versionName` is **1.4.0** and `versionCode` is **19**.
+- Release packaging must use the current Platform-first source state; v1.3.0 remains the historical release.
+- Release verification must include signed APK, signature verification, metadata verification, SHA256, Runtime Smoke, Android, Pages and receipt-export gates.
+- A new public GitHub Release/tag `v1.4.0` may be created only from the verified release candidate.
 
 Phase 7.6 final gate:
-- Build Plan architecture/ownership: PASS.
-- Reuse Registry/traceability: PASS.
-- Contradictory current-state instructions: CONSOLIDATED.
-- Documentation inflation: PASS — no unnecessary new artifact created.
-- Evidence-based release decision: PASS.
+- Documentation reconciliation: PASS.
+- Architecture/ownership: PASS.
+- Reuse/traceability: PASS.
+- Product/UX acceptance: PASS from Phase 7.5 evidence.
+- Release authorization for v1.4.0: PASS.
 - Phase 7.6: COMPLETE.
 
 ### Phase 7 hard stop
 
-Phase 7.0 through Phase 7.6 are complete. No further Phase 7 implementation task is authorized by this plan.
+Phase 7.0 through Phase 7.6 are complete. The only authorized release action from this phase is the **v1.4.0 release candidate packaging and final release gate** described above.
 
-Any future development must begin from a newly approved task/phase with explicit scope, verification criteria and release/version decision.
+After the v1.4.0 release gate closes, further development requires a newly approved task/phase with explicit scope, verification criteria and release/version decision.
 
 ### Phase 7 anti-repetition rule
 
@@ -2970,7 +2971,7 @@ The burden of proof is on **new implementation**, not on reuse.
 
 
 
-Last updated: 2026-10-08 (Phase 7.6 complete; Platform-first source state accepted; v1.3.0 remains historical release; no new release cut)
+Last updated: 2026-10-08 (Phase 7.6 reconciled; v1.4.0 release preparation authorized; v1.3.0 remains historical release)
 
 ## Current authoritative decisions
 
