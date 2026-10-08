@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08 (runtime gate re-verified)
+Last updated: 2026-10-08 (Phase 1 runtime exit gate completed)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -114,7 +114,7 @@ Tasks:
 - 0.15 final audit report and remediation order
 
 ### Phase 1 — Architecture Cleanup
-Status: IN PROGRESS — EXIT GATE OPEN
+Status: COMPLETE
 - establish clear module boundaries
 - remove proven dead/legacy paths
 - unify state ownership
@@ -300,107 +300,62 @@ Completed:
 - Phase 0 / Tasks 0.1 → 0.15 — Deep Audit
 - Phase 1 / Tasks 1.1 → 1.5 — architecture/data-layer/export/logo/date foundations
 - Phase 1 / Task 1.6 — Settings Ownership Cleanup
+- Phase 1 / Task 1.7 — CSS Responsibility Cleanup
+- Phase 1 / Task 1.8 — CSS/UX Regression Verification
+- Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline
 
-Current:
-- Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
-- Phase 1 exit gate is open; Phase 2 is blocked until runtime verification passes.
+### Phase 1 Exit Gate — 2026-10-08: COMPLETE
 
+#### Task 1.9 — Runtime Visual Smoke Baseline: COMPLETE
 
-### Phase 1 Exit Verification — 2026-10-08
+Browser runtime smoke executed successfully in GitHub Actions after correcting the Playwright runner dependency and aligning the smoke flow with the application's modal navigation contract.
 
-#### Task 1.8 — CSS/UX Regression Verification: COMPLETE
-
-Task 1.8 is recorded as complete at the **static regression level**. The verified contract includes:
-- A4 print geometry.
-- A5 print geometry.
-- 80mm thermal auto-height/auto-break behavior.
-- Zero page-margin print layout.
-- Single authoritative/materialized print-date node.
-- RTL/BiDi isolation for numerals, currencies and other sensitive numeric text.
-- No stale `downloadReceiptPDF()` action remains; PDF/print authority is `triggerNativePrint()`.
-- Sync presentation ownership is centralized without duplicate CSS ownership.
-
-Important: Task 1.8 does not by itself constitute browser or Android runtime certification. Runtime execution belongs to Task 1.9.
-
-#### Task 1.9 — Runtime Visual Smoke Baseline: BLOCKED / IN PROGRESS
-
-A real GitHub Actions execution is now visible for the latest checkpoint commit `7d7abaa2fb2a9643f0528044805ce3cf3dd0f28a`:
+Final browser verification:
 - Workflow: `AQSA7 Runtime Smoke`
-- Run: `37706809166`
-- Result: **FAILURE**
-- Browser job: `browser-smoke`
-- Failure point: `Run mobile browser smoke`
-- Root cause from job log: Node could not resolve the `playwright` package in the `npx --yes -p playwright@1.55.0 node ...` invocation (`ERR_MODULE_NOT_FOUND`).
+- Run: `37708647675`
+- Commit: `25e6fdb59c7808950793854dc0e670929c0be845`
+- Job: `browser-smoke`
+- Result: **PASS**
+- Mobile viewport: 390×844
+- Verified page load/title, critical DOM nodes, required runtime functions, date rendering, Patients route + Back behavior, History open/close, Settings open/close, Receipt return, console/page errors.
+- Runtime screenshot artifact: `aqsa7-runtime-smoke`
+- Artifact SHA-256: `0954361bbd411cff6179db01ef2c4ea3d6eb20bb6f7f213ba3c445d9fc2a20dd`
 
-This is an infrastructure/test-runner defect in the smoke workflow, not evidence that the application itself passed or failed the intended browser assertions. The smoke assertions did not execute.
+Test-runner defect resolved:
+- The original Playwright invocation failed because the package was not resolvable from the temporary `npx -p` execution environment.
+- The workflow now installs Playwright 1.55.0 locally and runs the smoke script against that installation.
 
-Therefore:
-- Task 1.9 remains **OPEN**.
-- Phase 1 remains **IN PROGRESS**.
-- Phase 2 must **not** be started until the browser smoke actually executes and passes, followed by the Android/WebView baseline or an explicitly documented acceptance boundary.
+Smoke-contract correction:
+- History and Settings are modal/overlay surfaces that intentionally intercept pointer events.
+- The smoke test now verifies their open/close behavior explicitly rather than attempting to click the underlying navigation dock through an open overlay.
+- The application navigation implementation was not changed for this test assumption; the speculative navigation modification was reverted before the final PASS.
 
-The smoke runner dependency defect was fixed on main in commit `5bf37d15b25f5939a764562ba1b1c893a0f15d4a`: Playwright `1.55.0` is now installed as a local workflow dependency with `npm install --no-save`, Chromium is installed through the resolved local Playwright CLI, and the smoke script imports that local package directly. This removes the failing `npx --yes -p ... node` module-resolution pattern.
+#### Android/WebView baseline acceptance boundary
 
-Post-fix verification status: the repository connector currently exposes no push-triggered workflow run for commit `5bf37d15b25f5939a764562ba1b1c893a0f15d4a` yet, so no browser PASS is claimed. The next required action is to inspect the newly triggered `AQSA7 Runtime Smoke` run and, once it executes, fix any real application assertion failures before proceeding to Android/WebView baseline.
+Android CI/build verification is available and the production APK build/signature verification succeeded on the final checkpoint commit. Actual Android emulator/WebView interactive execution is not exposed by the available repository tooling.
 
-#### Phase 1 exit gate
+Therefore the Android runtime portion is **formally accepted into Phase 5 — Full Regression**, with explicit scope:
+- Android/WebView interactive navigation and Back behavior.
+- Native print/share/file behavior.
+- WebView asset/cache lifecycle.
+- Logo persistence and reload.
+- A4/A5/80mm rendering.
+- Offline behavior.
+- Android bridge behavior.
 
-Phase 1 is **not 100% complete yet**. It will be marked 100% only after Task 1.9 produces a genuine browser runtime PASS and the Android/WebView runtime baseline is completed or formally accepted into a later explicitly scoped regression gate without compromising the release gate.
+This acceptance does **not** claim that Android runtime testing has already passed.
 
-### Phase 1.9 — Runtime Visual Smoke Baseline: IN PROGRESS
+#### Phase 1 exit decision
 
-Runtime test infrastructure added to main:
-- `.github/workflows/runtime-smoke.yml`
-- Commit: `6a7a871a434498551c38fbe686709692791da5ae`
-- Uses Chromium through Playwright and a local static server.
-- Covers mobile 390×844 baseline.
-- Verifies page load/title, critical DOM nodes, required runtime functions, formatted date rendering, Patients route + Back behavior, History opening, Settings opening/closing, console errors and page errors.
-- Captures a runtime screenshot as a CI artifact.
-
-Execution status:
-- The workflow file is present on main.
-- No GitHub Actions run is exposed for this commit through the available repository workflow connector, so a real browser execution cannot yet be truthfully marked PASS.
-- Existing Vercel status for the commit is unrelated to this smoke test and is currently failing due a Vercel build-rate-limit/upgrade target.
-- Android/WebView visual execution is also not available through the current connector.
-
-Gate:
-- **Do not close Task 1.9 or Phase 1 yet.**
-- Do not start Phase 2 until the runtime smoke baseline has an actual PASS result and the remaining Android/WebView checks are either executed or explicitly scoped into Phase 5.
-
-Next:
-- Phase 1 / Task 1.9 — obtain and verify an actual browser runtime PASS, then perform the Android/WebView smoke baseline before closing Phase 1.
-
-### Phase 1.8 — CSS/UX Regression Verification: COMPLETE
-
-Verification executed against current `main` after the CSS responsibility cleanup.
-
-Static regression checks:
-- All five active CSS files fetched successfully and have balanced braces.
-- Stylesheet load order verified: `ui.css → receipt.css → print.css → templates.css → polish.css`.
-- HTML IDs: 88; duplicate IDs: 0.
-- All inline onclick function references now resolve to defined project functions; browser-native `getElementById` is the only DOM method encountered and is not a project handler.
-- All core frontend JavaScript sources pass syntax compilation through the JavaScript parser.
-- Date-rendering IDs are single-instance: `digDate`, `printDateValue`, paper day/month/year and year-era nodes, and `paperTemplateDate`.
-- No stale `downloadReceiptPDF()` handler remains.
-- Sync presentation ownership was corrected: sync UI styles are now kept in `css/polish.css`, not duplicated in `css/ui.css`.
-- Print/PDF authority remains `triggerNativePrint()`; PNG remains the raster export path.
-
-Regression found and fixed during verification:
-1. The preview/settings PDF buttons still referenced the removed `downloadReceiptPDF()` function even though the native-print migration had already removed that function. This was a real user-visible dead action.
-2. Both PDF buttons were routed to the authoritative `triggerNativePrint()` path.
-3. Sync presentation selectors were duplicated between UI and polish layers; the duplicate ownership was removed and `sync-status` was consolidated with the sync feature presentation layer.
-
-Fix commits:
-- `93f11282c3257312424c756910bd6d169394a2bc` — route PDF actions through native print.
-- `633cc021a933395320fab1f477748b3c7a18c94f` — remove sync presentation duplication from UI layer.
-- `a18ae203f1e6190349c91dd537c67ebb17490e3b` — centralize sync presentation styles.
-- `a44927271303db5ce9e877d5780ff1801df158af8` — remove final stale PDF handler.
-
-Scope limitation:
-- This task was verified statically from the current GitHub source. A real browser/WebView visual smoke run (mobile layout, night mode, modal scrolling, patient navigation, print dialog and PNG/PDF rendering) requires an executable browser/Android runtime, which is not exposed by the current repository connector. It is therefore tracked explicitly as Phase 1 / Task 1.9 rather than being falsely marked as runtime-tested.
+Phase 1 is now **COMPLETE**:
+- Browser runtime gate: **PASS**.
+- Android/WebView runtime: **deferred to Phase 5 under the explicit regression scope above**.
+- Phase 2 remains **NOT STARTED** and is now unblocked.
 
 Next:
-- Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
+- **Phase 2 — UX/UI Reconstruction**.
+- Executor: **AI / Technical Lead** when the user instructs to continue.
+
 ### Phase 1.7 — CSS Responsibility Cleanup: COMPLETE
 
 Implemented:
