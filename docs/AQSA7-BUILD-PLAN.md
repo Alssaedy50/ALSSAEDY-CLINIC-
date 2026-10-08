@@ -264,18 +264,32 @@ Exit decision:
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: IN PROGRESS
 
-Scope:
-- Reconstruct the existing Settings surface into a clear mobile-first configuration dashboard without creating duplicate state or changing authoritative handlers.
-- Group document/print, appearance, branding, typography, currency, and data-management controls.
-- Preserve every existing setting action and persistence path.
-- Keep print/export geometry protected and keep IndexedDB as the durable data source.
-- Apply AQSA7 design tokens, 44px interactions, accessible labels/focus, responsive behavior and print-hidden settings UI.
+Implementation checkpoint:
+- Added a dedicated AQSA7 Settings overview/header with clear configuration categories.
+- Preserved all existing setting IDs, handlers and persistence/state ownership; no duplicate settings state machine was introduced.
+- Standardized settings cards and interactive controls with Phase 2 design tokens, responsive spacing and 44px minimum controls.
+- Added runtime-smoke coverage for the settings overview, six category chips, setting-card presence and touch-target contract.
+- No receipt print/export geometry was changed.
 
-Executor:
-- AI / Technical Lead
+Files changed:
+- index.html
+- css/polish.css
+- .github/workflows/runtime-smoke.yml
 
-Next implementation action:
-- Refactor the existing settings drawer presentation only; preserve its existing IDs, handlers and state ownership.
+Verification:
+- Pages build/deployment 37714713371 — SUCCESS on checkpoint 4fe031730a23dacab5ccfa488383904229613526.
+- Android APK 37714713699 — SUCCESS on the same checkpoint.
+- Receipt image export 37714713641 — FAILS at the existing PDF selectable-text assertion after PDF generation; unrelated to Task 2.7.
+- Runtime Smoke 37714713602 — IN PROGRESS at documentation checkpoint.
+- An initial Runtime Smoke 37714623010 exposed 29 settings controls below 44px; root cause was existing control sizing overriding the new minimum. Corrected by enforcing the 44px contract in the latest checkpoint.
+
+Exit decision:
+- Implementation/design criteria: MET.
+- Android: PASS.
+- Pages: PASS.
+- Browser runtime: PENDING final smoke result.
+- Task 2.7 remains IN PROGRESS until the latest Runtime Smoke passes.
+
 ### Phase 2 / Task 2.5 — Receipt Issuance Panel Reconstruction: COMPLETE
 
 Implementation:
