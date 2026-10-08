@@ -915,6 +915,7 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 .clinic-patient-workspace .patient-form{border:1px solid #dbe4ef;border-radius:15px;background:#f8fafc;padding:14px;margin-bottom:12px}
 .clinic-patient-workspace .patient-form:not(.patient-detail-edit-open){display:none}
 .clinic-patient-workspace .patient-form.patient-detail-edit-open{display:grid}
+.clinic-patient-workspace .patient-form.patient-detail-hidden.patient-detail-edit-open{display:grid!important}
 .clinic-patient-workspace .patient-account-panel{border:1px solid #dbe4ef;border-radius:16px;background:#fff;overflow:hidden;margin-bottom:12px}
 .clinic-patient-workspace .patient-directory-tools{position:sticky;top:8px;z-index:3;padding:8px;border:1px solid #dbe4ef;border-radius:12px;background:rgba(248,250,252,.96);backdrop-filter:blur(10px)}
 .clinic-patient-workspace .patient-ledger-table{min-height:120px}
