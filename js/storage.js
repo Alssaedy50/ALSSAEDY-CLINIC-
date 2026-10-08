@@ -506,6 +506,147 @@ function closePatientsModal(skipHistory=false){
   }
   appRoute={screen:'receipt',patientId:''};
 }
+
+/* Local backup cryptography: password-derived AES-GCM; keys never persist in AQSA7. */
+const AQSA7_BACKUP_CRYPTO = Object.freeze({
+  version: 1,
+  artifactType: 'AQSA7_BACKUP_ARTIFACT',
+  artifactVersion: 1,
+  schemaVersion: 5,
+  algorithm: 'AES-GCM-256',
+  kdf: 'PBKDF2-HMAC-SHA256',
+  iterations: 600000,
+  saltBytes: 16,
+  ivBytes: 12,
+  tagLength: 128
+});
+function aqsa7BackupCryptoAvailable(){
+  return Boolean(window.crypto?.subtle && window.crypto?.getRandomValues);
+}
+function aqsa7BackupBase64(bytes){
+  let binary=''; const view=bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  for(let i=0;i<view.length;i+=0x8000) binary+=String.fromCharCode(...view.subarray(i,i+0x8000));
+  return btoa(binary);
+}
+function aqsa7BackupFromBase64(value){
+  const binary=atob(String(value||'')), out=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) out[i]=binary.charCodeAt(i);
+  return out;
+}
+function aqsa7BackupCryptoHeader(){
+  return [
+    AQSA7_BACKUP_CRYPTO.artifactType,
+    AQSA7_BACKUP_CRYPTO.artifactVersion,
+    AQSA7_BACKUP_CRYPTO.schemaVersion,
+    AQSA7_BACKUP_CRYPTO.algorithm,
+    AQSA7_BACKUP_CRYPTO.kdf,
+    AQSA7_BACKUP_CRYPTO.iterations
+  ].join('|');
+}
+async function aqsa7BackupDeriveKey(password,salt){
+  if(!aqsa7BackupCryptoAvailable()) throw new Error('Web Crypto API غير متاح. لا يمكن إنشاء نسخة احتياطية مشفرة بأمان.');
+  const material=await window.crypto.subtle.importKey(
+    'raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']
+  );
+  return window.crypto.subtle.deriveKey(
+    {name:'PBKDF2',salt,iterations:AQSA7_BACKUP_CRYPTO.iterations,hash:'SHA-256'},
+    material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']
+  );
+}
+async function aqsa7EncryptBackupArtifact(artifact,password){
+  if(!password || String(password).length<8) throw new Error('كلمة مرور النسخة الاحتياطية يجب أن تحتوي على 8 أحرف على الأقل.');
+  if(!aqsa7BackupCryptoAvailable()) throw new Error('Web Crypto API غير متاح. لا يمكن إنشاء نسخة احتياطية مشفرة بأمان.');
+  const artifactVersion=Number(artifact?.artifactVersion||AQSA7_BACKUP_CRYPTO.artifactVersion);
+  const schemaVersion=Number(artifact?.schemaVersion||AQSA7_BACKUP_CRYPTO.schemaVersion);
+  const salt=window.crypto.getRandomValues(new Uint8Array(AQSA7_BACKUP_CRYPTO.saltBytes));
+  const iv=window.crypto.getRandomValues(new Uint8Array(AQSA7_BACKUP_CRYPTO.ivBytes));
+  const key=await aqsa7BackupDeriveKey(password,salt);
+  const aad=new TextEncoder().encode([
+    AQSA7_BACKUP_CRYPTO.artifactType,artifactVersion,schemaVersion,
+    AQSA7_BACKUP_CRYPTO.algorithm,AQSA7_BACKUP_CRYPTO.kdf,AQSA7_BACKUP_CRYPTO.iterations
+  ].join('|'));
+  const plaintext=new TextEncoder().encode(JSON.stringify(artifact));
+  const ciphertext=await window.crypto.subtle.encrypt(
+    {name:'AES-GCM',iv,additionalData:aad,tagLength:AQSA7_BACKUP_CRYPTO.tagLength},
+    key,plaintext
+  );
+  return {
+    artifactType:AQSA7_BACKUP_CRYPTO.artifactType,
+    artifactVersion,
+    schemaVersion,
+    crypto:{
+      version:AQSA7_BACKUP_CRYPTO.version,
+      algorithm:AQSA7_BACKUP_CRYPTO.algorithm,
+      kdf:AQSA7_BACKUP_CRYPTO.kdf,
+      iterations:AQSA7_BACKUP_CRYPTO.iterations,
+      salt:aqsa7BackupBase64(salt),
+      iv:aqsa7BackupBase64(iv),
+      tagLength:AQSA7_BACKUP_CRYPTO.tagLength,
+      encoding:'base64'
+    },
+    ciphertext:aqsa7BackupBase64(new Uint8Array(ciphertext))
+  };
+}
+async function aqsa7DecryptBackupArtifact(envelope,password){
+  if(!envelope || envelope.artifactType!==AQSA7_BACKUP_CRYPTO.artifactType || Number(envelope.artifactVersion)!==AQSA7_BACKUP_CRYPTO.artifactVersion){
+    throw new Error('صيغة النسخة المشفرة غير متوافقة.');
+  }
+  const cryptoMeta=envelope.crypto;
+  if(!cryptoMeta || Number(cryptoMeta.version)!==AQSA7_BACKUP_CRYPTO.version ||
+     cryptoMeta.algorithm!==AQSA7_BACKUP_CRYPTO.algorithm ||
+     cryptoMeta.kdf!==AQSA7_BACKUP_CRYPTO.kdf ||
+     Number(cryptoMeta.iterations)!==AQSA7_BACKUP_CRYPTO.iterations ||
+     Number(cryptoMeta.tagLength)!==AQSA7_BACKUP_CRYPTO.tagLength ||
+     cryptoMeta.encoding!=='base64'){
+    throw new Error('بيانات التشفير غير متوافقة أو تم العبث بها.');
+  }
+  if(Number(envelope.schemaVersion)!==AQSA7_BACKUP_CRYPTO.schemaVersion){
+    throw new Error('إصدار مخطط النسخة غير مدعوم.');
+  }
+  if(!password || String(password).length<8) throw new Error('كلمة مرور النسخة الاحتياطية غير صالحة.');
+  const salt=aqsa7BackupFromBase64(cryptoMeta.salt),iv=aqsa7BackupFromBase64(cryptoMeta.iv);
+  const ciphertext=aqsa7BackupFromBase64(envelope.ciphertext);
+  if(salt.length!==AQSA7_BACKUP_CRYPTO.saltBytes || iv.length!==AQSA7_BACKUP_CRYPTO.ivBytes || !ciphertext.length) throw new Error('بيانات النسخة المشفرة تالفة.');
+  const key=await aqsa7BackupDeriveKey(password,salt);
+  const aad=new TextEncoder().encode([
+    envelope.artifactType,Number(envelope.artifactVersion),Number(envelope.schemaVersion),
+    cryptoMeta.algorithm,cryptoMeta.kdf,Number(cryptoMeta.iterations)
+  ].join('|'));
+  let plaintext;
+  try{
+    plaintext=await window.crypto.subtle.decrypt(
+      {name:'AES-GCM',iv,additionalData:aad,tagLength:Number(cryptoMeta.tagLength)},
+      key,ciphertext
+    );
+  }catch(_){
+    throw new Error('تعذر فك النسخة الاحتياطية: كلمة المرور خاطئة أو النسخة تالفة/تم العبث بها.');
+  }
+  let artifact;
+  try{ artifact=JSON.parse(new TextDecoder().decode(plaintext)); }
+  catch(_){ throw new Error('محتوى النسخة بعد فك التشفير غير صالح.'); }
+  if(artifact?.artifactType && artifact.artifactType!==AQSA7_BACKUP_CRYPTO.artifactType) throw new Error('هوية النسخة غير متوافقة.');
+  if(Number(artifact?.artifactVersion||0)!==Number(envelope.artifactVersion) || Number(artifact?.schemaVersion||0)!==Number(envelope.schemaVersion)){
+    throw new Error('إصدار النسخة الداخلية غير متوافق.');
+  }
+  return artifact;
+}
+function aqsa7RequestBackupPassword(confirmPassword=false){
+  const password=window.prompt(confirmPassword?'أنشئ كلمة مرور للنسخة الاحتياطية المشفرة (8 أحرف على الأقل):':'أدخل كلمة مرور النسخة الاحتياطية:');
+  if(password===null) throw new Error('تم إلغاء عملية النسخ الاحتياطي.');
+  if(String(password).length<8) throw new Error('كلمة مرور النسخة الاحتياطية يجب أن تحتوي على 8 أحرف على الأقل.');
+  if(confirmPassword){
+    const confirmation=window.prompt('أعد إدخال كلمة مرور النسخة الاحتياطية للتأكيد:');
+    if(confirmation===null) throw new Error('تم إلغاء عملية النسخ الاحتياطي.');
+    if(password!==confirmation) throw new Error('كلمتا المرور غير متطابقتين.');
+  }
+  return password;
+}
+Object.assign(window,{
+  aqsa7EncryptBackupArtifact,
+  aqsa7DecryptBackupArtifact,
+  aqsa7BackupCryptoManifest:AQSA7_BACKUP_CRYPTO
+});
+
 async function buildFullBackup(){
   const receipts=clinicRepositoryReceipts(),patients=clinicRepositoryPatients();
   const clinicSettings=clinicRepositoryGetSettingsSync();
@@ -542,51 +683,55 @@ async function buildFullBackup(){
 }
 async function exportFullBackup(){
   try{
-    const payload=await buildFullBackup(),product=typeof aqsa7GetProductManifest==='function'?aqsa7GetProductManifest():{productName:'AQSA7_Product'},name=(product.productName||'AQSA7_Product').replace(/[^A-Za-z0-9_-]+/g,'_')+'_FULL_BACKUP_'+getLocalDateISO().replace(/-/g,'')+'.json';
-    downloadTextFile(name,JSON.stringify(payload,null,2),'application/json');
-    alert('تم إنشاء النسخة الاحتياطية الكاملة: المرضى + السندات + الإعدادات.');
+    const payload=await buildFullBackup();
+    payload.artifactType='AQSA7_BACKUP_ARTIFACT';
+    payload.artifactVersion=1;
+    const password=aqsa7RequestBackupPassword(true);
+    const encrypted=await aqsa7EncryptBackupArtifact(payload,password);
+    const product=typeof aqsa7GetProductManifest==='function'?aqsa7GetProductManifest():{productName:'AQSA7_Product'};
+    const name=(product.productName||'AQSA7_Product').replace(/[^A-Za-z0-9_-]+/g,'_')+'_ENCRYPTED_BACKUP_'+getLocalDateISO().replace(/-/g,'')+'.aqsa7.json';
+    downloadTextFile(name,JSON.stringify(encrypted,null,2),'application/json');
+    alert('تم إنشاء النسخة الاحتياطية المشفرة. احتفظ بكلمة المرور؛ لا يتم تخزينها داخل AQSA7.');
   }catch(e){alert('تعذر إنشاء النسخة الاحتياطية: '+e.message);}
 }
 async function importFullBackup(event){
   const file=event.target.files?.[0];if(!file)return;
   try{
-    const payload=JSON.parse(await file.text());
-    if(!['AQSA7_PRODUCT_BACKUP','ALSSAEDY_CLINIC_BACKUP'].includes(payload.schema))throw new Error('صيغة النسخة غير معتمدة.');
-    const scope=typeof aqsa7ValidateBackupScope==='function'
-      ? aqsa7ValidateBackupScope(payload)
-      : {scoped:true};
-    const own = record => {
-      if(typeof aqsa7OwnRecord==='function') return aqsa7OwnRecord(record,{allowUnscoped:true});
-      return typeof aqsa7StampRecord==='function' ? aqsa7StampRecord(record) : record;
-    };
-    const incomingPatients=(payload.patients||[]).map(own);
-    const incomingReceipts=(payload.receipts||[]).map(own);
-    if(scope.scoped===false && payload.schema==='ALSSAEDY_CLINIC_BACKUP'){
-      /* Legacy backups had no ownership metadata; they are explicitly adopted into the current instance. */
+    const parsed=JSON.parse(await file.text());
+    if(parsed?.artifactType==='AQSA7_BACKUP_ARTIFACT' && parsed?.crypto){
+      const password=aqsa7RequestBackupPassword(false);
+      const payload=await aqsa7DecryptBackupArtifact(parsed,password);
+      if(payload.schema!=='AQSA7_PRODUCT_BACKUP' || Number(payload.schemaVersion)!==5) throw new Error('إصدار النسخة التطبيقية غير مدعوم.');
+      const scope=typeof aqsa7ValidateBackupScope==='function' ? aqsa7ValidateBackupScope(payload) : {scoped:true};
+      if(scope.scoped===false) throw new Error('النسخة المشفرة غير مرتبطة بنطاق Instance صالح.');
+      const own=record=>typeof aqsa7OwnRecord==='function'?aqsa7OwnRecord(record,{allowUnscoped:true}):record;
+      const incomingPatients=(payload.patients||[]).map(own);
+      const incomingReceipts=(payload.receipts||[]).map(own);
+      const merge=confirm('هل تريد دمج البيانات مع البيانات الحالية؟ اضغط «إلغاء» للاستبدال الكامل.');
+      if(!merge && !confirm('سيتم استبدال السجل الحالي. هل أنت متأكد؟'))return;
+      if(!merge){await clinicDBClear('receipts');await clinicDBClear('patients');}
+      for(const p of incomingPatients)await clinicRepositoryPutPatient(p);
+      const existingReceipts=clinicRepositoryReceipts();
+      for(const item of incomingReceipts){
+        const exists=existingReceipts.some(x=>receiptFingerprint(x)===receiptFingerprint(item));
+        if(!exists){await clinicRepositoryPutReceipt(item);existingReceipts.push(item);}
+      }
+      const incomingClinic=payload.settings?.clinic || payload.settings || {};
+      await clinicRepositoryPutSettings({
+        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'customLogo') ? {customLogo:incomingClinic.customLogo||''} : {}),
+        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'currency') ? {currency:incomingClinic.currency||'YER'} : {}),
+        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'size') ? {receiptSize:incomingClinic.size||'a5'} : {}),
+        ...(Object.prototype.hasOwnProperty.call(incomingClinic,'texts') ? {receiptTexts:incomingClinic.texts||''} : {})
+      });
+      if(payload.settings?.ui?.theme) localStorage.setItem('alssaedy_theme',payload.settings.ui.theme);
+      if(payload.settings?.ui?.watermark) localStorage.setItem('alssaedy_watermark',payload.settings.ui.watermark);
+      if(typeof applyLogo==='function')applyLogo((clinicRepositoryGetSettingSync('customLogo'))||OFFICIAL_LOGO_URL);
+      await clinicRepositoryHydrate();
+      updateHistoryCount();renderHistory();
+      alert('تمت استعادة النسخة المشفرة بنجاح مع التحقق من السلامة والملكية ومنع التكرارات.');
+      return;
     }
-    const merge=confirm('هل تريد دمج البيانات مع البيانات الحالية؟ اضغط «إلغاء» للاستبدال الكامل.');
-    if(!merge&& !confirm('سيتم استبدال السجل الحالي. هل أنت متأكد؟'))return;
-    if(!merge){await clinicDBClear('receipts');await clinicDBClear('patients');}
-    for(const p of incomingPatients)await clinicRepositoryPutPatient(p);
-    const existingReceipts=clinicRepositoryReceipts();
-    for(const item of incomingReceipts){
-      const exists=existingReceipts.some(x=>receiptFingerprint(x)===receiptFingerprint(item));
-      if(!exists){await clinicRepositoryPutReceipt(item);existingReceipts.push(item);}
-    }
-    const incomingClinic=payload.settings?.clinic || payload.settings || {};
-    await clinicRepositoryPutSettings({
-      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'customLogo') ? {customLogo:incomingClinic.customLogo||''} : {}),
-      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'currency') ? {currency:incomingClinic.currency||'YER'} : {}),
-      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'size') ? {receiptSize:incomingClinic.size||'a5'} : {}),
-      ...(Object.prototype.hasOwnProperty.call(incomingClinic,'texts') ? {receiptTexts:incomingClinic.texts||''} : {})
-    });
-    if(payload.settings?.ui?.theme) localStorage.setItem('alssaedy_theme',payload.settings.ui.theme);
-    if(payload.settings?.ui?.watermark) localStorage.setItem('alssaedy_watermark',payload.settings.ui.watermark);
-    
-    if(typeof applyLogo==='function')applyLogo((clinicRepositoryGetSettingSync('customLogo'))||OFFICIAL_LOGO_URL);
-    await clinicRepositoryHydrate();
-    updateHistoryCount();renderHistory();
-    alert('تمت استعادة البيانات بنجاح مع منع التكرارات.');
+    throw new Error('النسخة غير مشفرة أو غير متوافقة. استخدم نسخة AQSA7 المشفرة الجديدة.');
   }catch(e){alert('تعذر استيراد النسخة: '+e.message);}
   event.target.value='';
 }
