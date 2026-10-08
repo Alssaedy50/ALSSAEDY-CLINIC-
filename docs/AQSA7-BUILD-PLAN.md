@@ -972,8 +972,8 @@ Gate decision:
 - Provider independence/no vendor lock-in: MET.
 - Ownership/local-first/cross-platform boundaries: MET.
 - Static/browser/Android verification: MET.
-- Final Pages deployment evidence for the post-Task-3.6 main source commit `1de34a9c3bd8ef578a7fef50ee0fba2523529bb7`: **PENDING**.
-- Task 3.6 remains **PENDING VERIFICATION** until the Pages deployment gate is evidenced.
+- GitHub Pages is configured for the repository (`has_pages: true`, homepage `https://alssaedy50.github.io/AQSA7/`), but independent evidence tying the live Pages deployment to the final Task 3.6 main source state is not exposed by the available GitHub connector surfaces: **PENDING**.
+- Task 3.6 remains **PENDING VERIFICATION** until deployment-to-commit evidence is independently evidenced.
 - Task 3.7 is not authorized.
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
