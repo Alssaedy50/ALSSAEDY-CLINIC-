@@ -1012,6 +1012,58 @@ jobs:
           const persistedVisit = await page.evaluate(async () => (await clinicRepositoryReceipts()).find(r => r.recNo === 'PH8-4-001'));
           if (!persistedVisit || persistedVisit.visitId !== 'PH8-4-VISIT-001' || !Array.isArray(persistedVisit.serviceItems) || persistedVisit.serviceItems.length !== 2 || Number(persistedVisit.total) !== 2000) fail('Phase 8.4 visit/service persistence failed', persistedVisit);
 
+          // Phase 8.5 — Receipt System Reconstruction: lifecycle, edit semantics and paper-template separation.
+          const receiptLifecycle = await page.evaluate(() => ({
+            contract: window.aqsa7ReceiptLifecycleContract ? {
+              statuses: window.aqsa7ReceiptLifecycleContract.statusValues,
+              issued: window.aqsa7ReceiptLifecycleContract.normalizeStatus('issued'),
+              voided: window.aqsa7ReceiptLifecycleContract.normalizeStatus('voided')
+            } : null,
+            panel: Boolean(document.querySelector('#receiptIssuancePanel')),
+            lifecycleStatus: Boolean(document.querySelector('#receiptLifecycleStatus')),
+            cancelAction: Boolean(document.querySelector('.issuance-cancel')),
+            voidNotice: Boolean(document.querySelector('#receiptVoidNotice')),
+            paperDateEditorRemoved: !document.querySelector('#paperTemplateDate')
+          }));
+          if (!receiptLifecycle.contract || JSON.stringify(receiptLifecycle.contract.statuses) !== JSON.stringify(['issued','voided']) || receiptLifecycle.contract.issued !== 'issued' || receiptLifecycle.contract.voided !== 'voided' || !receiptLifecycle.panel || !receiptLifecycle.lifecycleStatus || !receiptLifecycle.cancelAction || !receiptLifecycle.voidNotice || !receiptLifecycle.paperDateEditorRemoved) fail('Phase 8.5 receipt lifecycle/template boundary failed', receiptLifecycle);
+
+          await page.evaluate(() => {
+            clearReceiptInputs();
+            document.getElementById('digReceiptNo').value = 'PH8-5-001';
+            document.getElementById('digDate').value = '2026-10-08';
+            document.getElementById('digClientName').value = 'Phase8.5 Receipt Patient';
+            document.getElementById('digPatientPhone').value = '777000085';
+            document.getElementById('digPaid').value = '700';
+            window.aqsa7CurrentVisitId = 'PH8-5-VISIT-001';
+            window.aqsa7VisitServiceItems = [];
+            addClinicServiceLine('فحص متابعة', 1000, 1);
+            calculateLedger();
+            window.aqsa7EditingReceiptId = '';
+          });
+          await page.evaluate(async () => { await saveReceiptLocally(); });
+          const created85 = await page.evaluate(() => (safeHistory()).find(r => r.recNo === 'PH8-5-001'));
+          if (!created85 || created85.status !== 'issued' || !created85.id) fail('Phase 8.5 initial receipt issuance failed', created85);
+
+          await page.evaluate(() => {
+            const item=(safeHistory()).find(r => r.recNo === 'PH8-5-001');
+            loadReceipt(item.id);
+            document.getElementById('digPaid').value = '800';
+            calculateLedger();
+          });
+          await page.evaluate(async () => { await saveReceiptLocally(); });
+          const edited85 = await page.evaluate(() => (safeHistory()).find(r => r.recNo === 'PH8-5-001'));
+          if (!edited85 || edited85.id !== created85.id || Number(edited85.paid) !== 800 || edited85.status !== 'issued') fail('Phase 8.5 receipt update semantics failed', {created85,edited85});
+
+          await page.evaluate(async () => {
+            const item=(safeHistory()).find(r => r.recNo === 'PH8-5-001');
+            const originalPrompt=window.prompt;
+            window.prompt=()=> 'اختبار إلغاء السند';
+            try { await cancelReceipt(item.id); } finally { window.prompt=originalPrompt; }
+          });
+          const voided85 = await page.evaluate(() => (safeHistory()).find(r => r.recNo === 'PH8-5-001'));
+          const active85 = await page.evaluate(() => activeReceiptHistory().find(r => r.recNo === 'PH8-5-001'));
+          if (!voided85 || voided85.id !== created85.id || voided85.status !== 'voided' || voided85.voidReason !== 'اختبار إلغاء السند' || active85) fail('Phase 8.5 void/cancel semantics failed', {voided85,active85});
+
           // 2) Receipt create/edit/save and durable repository verification.
           await page.evaluate(() => {
             document.getElementById('digReceiptNo').value = 'PH5-001';
