@@ -507,22 +507,38 @@ function closePatientsModal(skipHistory=false){
   appRoute={screen:'receipt',patientId:''};
 }
 async function buildFullBackup(){
-  const receipts=await clinicDBAll('receipts'),patients=await clinicDBAll('patients');
+  const receipts=clinicRepositoryReceipts(),patients=clinicRepositoryPatients();
   const clinicSettings=clinicRepositoryGetSettingsSync();
   const product=typeof aqsa7GetProductManifest==='function'?aqsa7GetProductManifest():{productId:'dental-clinic'};
   const clinic=typeof aqsa7GetClinicConfig==='function'?aqsa7GetClinicConfig():{tenantId:'alssaedy-clinic',instanceId:'alssaedy-clinic-sana-a'};
-  return {schema:'AQSA7_PRODUCT_BACKUP',legacySchema:'ALSSAEDY_CLINIC_BACKUP',schemaVersion:4,exportedAt:new Date().toISOString(),productId:product.productId,tenantId:clinic.tenantId,instanceId:clinic.instanceId,receipts,patients,settings:{
-    clinic:{
-      currency:clinicSettings.currency||'YER',
-      size:clinicSettings.receiptSize||'a5',
-      texts:clinicSettings.receiptTexts||'',
-      customLogo:clinicSettings.customLogo||''
-    },
-    ui:{
-      theme:localStorage.getItem('alssaedy_theme')||'classic',
-      watermark:localStorage.getItem('alssaedy_watermark')||'on'
+  const identity=typeof aqsa7GetInstanceIdentity==='function'
+    ? aqsa7GetInstanceIdentity()
+    : {productId:product.productId,tenantId:clinic.tenantId,instanceId:clinic.instanceId};
+  const storage=typeof aqsa7GetInstanceStorageConfig==='function'
+    ? aqsa7GetInstanceStorageConfig()
+    : {databaseName:'ALSSAEDY_CLINIC_DB'};
+  return {
+    schema:'AQSA7_PRODUCT_BACKUP',
+    legacySchema:'ALSSAEDY_CLINIC_BACKUP',
+    schemaVersion:5,
+    exportedAt:new Date().toISOString(),
+    ownership:{scope:'instance',...identity,databaseName:storage.databaseName},
+    ...identity,
+    receipts,
+    patients,
+    settings:{
+      clinic:{
+        currency:clinicSettings.currency||'YER',
+        size:clinicSettings.receiptSize||'a5',
+        texts:clinicSettings.receiptTexts||'',
+        customLogo:clinicSettings.customLogo||''
+      },
+      ui:{
+        theme:localStorage.getItem('alssaedy_theme')||'classic',
+        watermark:localStorage.getItem('alssaedy_watermark')||'on'
+      }
     }
-  }};
+  };
 }
 async function exportFullBackup(){
   try{
@@ -536,13 +552,26 @@ async function importFullBackup(event){
   try{
     const payload=JSON.parse(await file.text());
     if(!['AQSA7_PRODUCT_BACKUP','ALSSAEDY_CLINIC_BACKUP'].includes(payload.schema))throw new Error('صيغة النسخة غير معتمدة.');
+    const scope=typeof aqsa7ValidateBackupScope==='function'
+      ? aqsa7ValidateBackupScope(payload)
+      : {scoped:true};
+    const own = record => {
+      if(typeof aqsa7OwnRecord==='function') return aqsa7OwnRecord(record,{allowUnscoped:true});
+      return typeof aqsa7StampRecord==='function' ? aqsa7StampRecord(record) : record;
+    };
+    const incomingPatients=(payload.patients||[]).map(own);
+    const incomingReceipts=(payload.receipts||[]).map(own);
+    if(scope.scoped===false && payload.schema==='ALSSAEDY_CLINIC_BACKUP'){
+      /* Legacy backups had no ownership metadata; they are explicitly adopted into the current instance. */
+    }
     const merge=confirm('هل تريد دمج البيانات مع البيانات الحالية؟ اضغط «إلغاء» للاستبدال الكامل.');
     if(!merge&& !confirm('سيتم استبدال السجل الحالي. هل أنت متأكد؟'))return;
     if(!merge){await clinicDBClear('receipts');await clinicDBClear('patients');}
-    for(const p of (payload.patients||[]))await clinicDBPut('patients',p);
-    for(const item of (payload.receipts||[])){
-      const exists=(await clinicDBAll('receipts')).some(x=>receiptFingerprint(x)===receiptFingerprint(item));
-      if(!exists)await clinicDBPut('receipts',item);
+    for(const p of incomingPatients)await clinicRepositoryPutPatient(p);
+    const existingReceipts=clinicRepositoryReceipts();
+    for(const item of incomingReceipts){
+      const exists=existingReceipts.some(x=>receiptFingerprint(x)===receiptFingerprint(item));
+      if(!exists){await clinicRepositoryPutReceipt(item);existingReceipts.push(item);}
     }
     const incomingClinic=payload.settings?.clinic || payload.settings || {};
     await clinicRepositoryPutSettings({
