@@ -93,6 +93,19 @@ jobs:
           if (!productBoundary.manifest.optionalCapabilities.includes('ai')) throw new Error('AI capability boundary missing');
           if (!productBoundary.clinic || productBoundary.clinic.productId !== 'dental-clinic' || !productBoundary.clinic.tenantId || !productBoundary.clinic.instanceId) throw new Error('Clinic instance configuration boundary missing');
           if (productBoundary.stamped.productId !== 'dental-clinic' || productBoundary.stamped.tenantId !== productBoundary.clinic.tenantId || productBoundary.stamped.instanceId !== productBoundary.clinic.instanceId) throw new Error('Repository record identity stamping failed');
+          const productContract = await page.evaluate(() => ({
+            validation: typeof window.aqsa7ValidateProductDefinition === 'function' ? window.aqsa7ValidateProductDefinition() : null,
+            modules: window.AQSA7_PRODUCT_MANIFEST?.modules || [],
+            enabledModules: window.AQSA7_CLINIC_CONFIG?.enabledModules || [],
+            defaultReceiptSize: window.AQSA7_CLINIC_CONFIG?.documentTemplates?.receipt?.defaultSize,
+            allowedReceiptSizes: window.AQSA7_CLINIC_CONFIG?.documentTemplates?.receipt?.allowedSizes || [],
+            databaseName: window.aqsa7GetInstanceStorageConfig?.()?.databaseName || ''
+          }));
+          if (!productContract.validation?.valid) throw new Error('Product definition validation failed: '+JSON.stringify(productContract.validation));
+          if (!productContract.modules.includes('billing-payments') || !productContract.modules.includes('receipts')) throw new Error('Shared module contract incomplete');
+          if (!productContract.enabledModules.every(id => productContract.modules.includes(id))) throw new Error('Instance enables a module outside the product definition');
+          if (!productContract.allowedReceiptSizes.includes(productContract.defaultReceiptSize)) throw new Error('Instance receipt default is outside the product template contract');
+          if (!productContract.databaseName) throw new Error('Instance storage contract missing database name');
 
           const shell = await page.evaluate(() => ({
             brand: document.querySelector('.brand-platform')?.textContent?.trim(),
