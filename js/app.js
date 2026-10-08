@@ -38,7 +38,7 @@ function getSizeProfile() {
     return SIZE_PROFILES[getSelectedSize()] || SIZE_PROFILES.a5;
 }
 
-function toggleDrawer(open, skipHistory=false){document.getElementById('settingsPanel').classList.toggle('open',open);if(open){pushPanelState('settings');activateAppTabVisual('settings');}else if(!skipHistory)closePanelState('settings');}
+function toggleDrawer(open, skipHistory=false){document.getElementById('settingsPanel').classList.toggle('open',open);if(open){if(!skipHistory)pushPanelState('settings');activateAppTabVisual('settings');}else if(!skipHistory)closePanelState('settings');}
 
 function setMode(mode) {
     document.body.setAttribute('data-mode', mode);
@@ -355,13 +355,25 @@ function updateActionAvailability() {
 let activeAppTab='receipt';
 let appRoute={screen:'receipt',patientId:''};
 function activateAppTab(tab){
+  const currentPanel=history.state?.alssaedyPanel||'';
   if(tab==='receipt'){
     activeAppTab='receipt'; appRoute={screen:'receipt',patientId:''};
-    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
+    closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);
+    if(currentPanel) history.replaceState(null,'',location.pathname+location.search);
+    activateAppTabVisual('receipt');window.scrollTo({top:0,behavior:'smooth'});return;
   }
-  if(tab==='patients'){openPatientsModal();return;}
-  if(tab==='history'){openHistoryModal();return;}
-  if(tab==='settings'){toggleDrawer(true);return;}
+  closePatientsModal(true);closeHistoryModal(true);toggleDrawer(false,true);
+  if(currentPanel===tab){
+    if(tab==='patients') openPatientsModal(true);
+    else if(tab==='history') openHistoryModal(true);
+    else if(tab==='settings') toggleDrawer(true,true);
+    return;
+  }
+  if(currentPanel) history.replaceState({alssaedyPanel:tab},'', '#'+tab);
+  else history.pushState({alssaedyPanel:tab},'', '#'+tab);
+  if(tab==='patients') openPatientsModal(true);
+  else if(tab==='history') openHistoryModal(true);
+  else if(tab==='settings') toggleDrawer(true,true);
 }
 function activateAppTabVisual(tab){
   ['receipt','patients','history','settings'].forEach(t=>document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))?.classList.toggle('active',t===tab));
