@@ -35,7 +35,7 @@ jobs:
 
       - name: Verify AI vendor isolation in business/platform modules
         run: |
-          if grep -Eri -- '@(openai|anthropic|google-generative-ai|google/genai|mistralai|cohere|groq)|from[[:space:]]+["'"'](openai|anthropic|@google|mistralai|cohere|groq)|require\(["'"'](openai|anthropic|@google|mistralai|cohere|groq)' js/product.js js/capabilities.js js/repository.js js/storage.js js/app.js; then
+          if grep -Eri -- 'openai|anthropic|google-generative-ai|google/genai|mistralai|cohere|groq' js/product.js js/capabilities.js js/repository.js js/storage.js js/app.js; then
             echo 'Direct AI vendor/SDK reference leaked into core or business modules.'
             exit 1
           fi
