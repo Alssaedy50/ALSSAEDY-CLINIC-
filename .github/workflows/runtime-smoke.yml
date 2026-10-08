@@ -159,6 +159,20 @@ jobs:
 
           await page.locator('#tabHistory').click();
           if (!(await page.locator('#historyModal').evaluate(e => e.classList.contains('open')))) throw new Error('History panel did not open');
+          const historyLedger = await page.evaluate(() => ({
+            table: !!document.querySelector('#historyList.history-ledger-table'),
+            header: !!document.querySelector('.history-ledger-head-row'),
+            search: !!document.querySelector('#historySearch'),
+            filter: !!document.querySelector('#historyFilter'),
+            stats: document.querySelectorAll('#historyStats .stat-cell').length,
+            rows: document.querySelectorAll('#historyList .history-ledger-row').length
+          }));
+          if (!historyLedger.table || !historyLedger.header || !historyLedger.search || !historyLedger.filter || historyLedger.stats !== 4) throw new Error('History receipts ledger contract failed: '+JSON.stringify(historyLedger));
+          await page.locator('#historySearch').fill('اختبار إصدار السند');
+          if ((await page.locator('#historyList .history-ledger-row').count()) !== 0) throw new Error('History search unexpectedly matched unsaved smoke receipt');
+          await page.locator('#historySearch').fill('');
+          await page.locator('#historyFilter').selectOption('settled');
+          if ((await page.locator('#historyList .history-ledger-row').count()) < 0) throw new Error('History filter interaction failed');
           await page.locator('#historyModal .modal-close').click();
           if (await page.locator('#historyModal').evaluate(e => e.classList.contains('open'))) throw new Error('History panel did not close');
 
