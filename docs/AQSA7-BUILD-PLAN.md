@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: ACTIVE
-Last updated: 2026-10-08
+Last updated: 2026-10-08 (runtime gate re-verified)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -22,6 +22,41 @@ Transform the current ALSSAEDY CLINIC receipt application into a clean, reliable
 8. Every architectural change requires regression testing.
 9. Never release an unverified build.
 10. Update this ledger after every completed phase/task.
+
+
+## Strict 100% Free & Local-First Architectural Constraint
+
+This is a mandatory architectural constraint for AQSA7 and every product inside it.
+
+1. **No paid backend infrastructure is required for the core product.**
+   - Core functionality must operate without a paid backend service or paid cloud dependency.
+   - Any optional online service must have a local/offline-first fallback and must never become a hidden requirement for core clinic operation.
+
+2. **Persistence**
+   - Client-side **IndexedDB is the single durable application database** for clinic data.
+   - The durable local data path must have zero operational infrastructure cost.
+   - localStorage may only be used for explicitly scoped UI preferences, temporary draft/recovery state, migration compatibility, or similarly non-authoritative concerns.
+   - No second persistent database may be introduced for the same domain.
+
+3. **Assets & icons**
+   - Prefer inline SVG and lightweight local/static icon libraries such as Lucide SVG.
+   - Avoid heavy remote CDNs, remote runtime assets, and custom font dependencies unless there is a documented architectural reason.
+   - The application must remain usable when external asset networks are unavailable.
+
+4. **Export & print**
+   - Native browser/WebView print is the authoritative PDF/print engine.
+   - Preserve real text/vector output and the existing A4, A5 and 80mm thermal contracts.
+   - Do not introduce paid or cloud PDF/canvas conversion services.
+   - PNG remains a local raster export path where an image is specifically required.
+
+5. **Hosting target**
+   - Prefer static edge hosting/distribution such as Cloudflare Pages or GitHub Pages.
+   - Hosting must not be required for local clinic data persistence or core receipt operation.
+
+6. **Data protection / backup**
+   - AQSA7 must provide an automatic scheduled reminder/trigger for local encrypted JSON backup.
+   - The backup flow must be designed to protect against accidental browser storage clearing.
+   - Backup/restore integrity, encryption design and scheduling behavior are mandatory reliability work and must be verified before release.
 
 ## Target architecture
 
@@ -79,7 +114,7 @@ Tasks:
 - 0.15 final audit report and remediation order
 
 ### Phase 1 — Architecture Cleanup
-Status: IN PROGRESS
+Status: IN PROGRESS — EXIT GATE OPEN
 - establish clear module boundaries
 - remove proven dead/legacy paths
 - unify state ownership
@@ -91,6 +126,70 @@ Status: IN PROGRESS
 - clean CSS responsibilities
 
 ### Phase 2 — UX/UI Reconstruction
+
+
+### AQSA7 Design System Specification — Phase 2 Mandatory Foundation
+
+Phase 2 must not evolve into screen-by-screen AI-generated styling. All new screens and components must use one shared design-token and component system.
+
+#### Design tokens
+
+The authoritative global design tokens belong in `css/ui.css`:
+
+| Token | Required value | Intended use |
+|---|---|---|
+| Primary Navy/Blue | `#1E3A8A` | primary navigation, major actions, clinical identity |
+| Accent/Paid Green | `#059669` | paid/success/positive financial states |
+| Warning/Balance Amber | `#D97706` | balance/warning states |
+| Neutral Slate Surface | `#F8FAFC` | application/background surfaces |
+| White Surface | `#FFFFFF` | cards, panels, receipt surfaces |
+| Border Gray | `#E2E8F0` | borders/dividers |
+
+Typography:
+- Use `system-ui, -apple-system, sans-serif` as the primary system font stack.
+- Use `font-variant-numeric: tabular-nums;` for currency amounts, ledger entries and phone numbers.
+- Do not introduce per-screen font systems.
+
+Interaction guardrails:
+- Action buttons and form inputs must have minimum 44px–48px touch targets.
+- Mobile/clinical touchscreen interaction must remain the baseline.
+- Focus, keyboard navigation, disabled states and readable contrast are part of the component contract.
+
+#### Component Blueprint Standardization
+
+The following components are mandatory shared patterns:
+
+1. **Top App Shell & Navigation Dock**
+   - unified product identity
+   - stable navigation ownership
+   - active-state indication
+   - responsive mobile/desktop behavior
+
+2. **Patient Directory / Ledger Table**
+   - consistent search/filter affordances
+   - aligned tabular numbers
+   - clear patient identity and financial status
+   - mobile-safe responsive transformation
+
+3. **Patient Account Detail**
+   - sticky summary header
+   - patient identity + financial summary
+   - chronological visit/receipt timeline
+   - consistent action hierarchy
+
+4. **Receipt Issuance Panel**
+   - clear clinical/financial input grouping
+   - consistent currency and amount presentation
+   - primary save/print/export actions
+   - preserved receipt geometry and print contracts
+
+#### Design-system rules
+
+- Components must be reusable before screen-specific variants are introduced.
+- Tokens must be referenced rather than hard-coded repeatedly across screens.
+- New CSS must respect existing ownership boundaries.
+- Do not redesign protected receipt print geometry merely for visual consistency.
+- Phase 2 visual work must preserve the functional architecture established in Phase 1.
 Status: NOT STARTED
 - AQSA7 app shell
 - clear section navigation
@@ -204,6 +303,47 @@ Completed:
 
 Current:
 - Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
+- Phase 1 exit gate is open; Phase 2 is blocked until runtime verification passes.
+
+
+### Phase 1 Exit Verification — 2026-10-08
+
+#### Task 1.8 — CSS/UX Regression Verification: COMPLETE
+
+Task 1.8 is recorded as complete at the **static regression level**. The verified contract includes:
+- A4 print geometry.
+- A5 print geometry.
+- 80mm thermal auto-height/auto-break behavior.
+- Zero page-margin print layout.
+- Single authoritative/materialized print-date node.
+- RTL/BiDi isolation for numerals, currencies and other sensitive numeric text.
+- No stale `downloadReceiptPDF()` action remains; PDF/print authority is `triggerNativePrint()`.
+- Sync presentation ownership is centralized without duplicate CSS ownership.
+
+Important: Task 1.8 does not by itself constitute browser or Android runtime certification. Runtime execution belongs to Task 1.9.
+
+#### Task 1.9 — Runtime Visual Smoke Baseline: BLOCKED / IN PROGRESS
+
+A real GitHub Actions execution is now visible for the latest checkpoint commit `7d7abaa2fb2a9643f0528044805ce3cf3dd0f28a`:
+- Workflow: `AQSA7 Runtime Smoke`
+- Run: `37706809166`
+- Result: **FAILURE**
+- Browser job: `browser-smoke`
+- Failure point: `Run mobile browser smoke`
+- Root cause from job log: Node could not resolve the `playwright` package in the `npx --yes -p playwright@1.55.0 node ...` invocation (`ERR_MODULE_NOT_FOUND`).
+
+This is an infrastructure/test-runner defect in the smoke workflow, not evidence that the application itself passed or failed the intended browser assertions. The smoke assertions did not execute.
+
+Therefore:
+- Task 1.9 remains **OPEN**.
+- Phase 1 remains **IN PROGRESS**.
+- Phase 2 must **not** be started until the browser smoke actually executes and passes, followed by the Android/WebView baseline or an explicitly documented acceptance boundary.
+
+The next engineering action is to fix the smoke runner's Playwright dependency resolution at its root, rerun the workflow, inspect the actual browser assertions, then perform the Android/WebView baseline.
+
+#### Phase 1 exit gate
+
+Phase 1 is **not 100% complete yet**. It will be marked 100% only after Task 1.9 produces a genuine browser runtime PASS and the Android/WebView runtime baseline is completed or formally accepted into a later explicitly scoped regression gate without compromising the release gate.
 
 ### Phase 1.9 — Runtime Visual Smoke Baseline: IN PROGRESS
 
