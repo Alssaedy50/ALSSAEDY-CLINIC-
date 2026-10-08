@@ -281,6 +281,7 @@ function setPayMethod(method) {
 
 function toggleService(element) {
     element.classList.toggle('active');
+    if (typeof updateReceiptIssuancePanel === 'function') updateReceiptIssuancePanel();
 }
 
 
