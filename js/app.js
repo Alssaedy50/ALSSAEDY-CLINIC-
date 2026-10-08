@@ -276,6 +276,8 @@ function clearReceiptInputs() {
         });
         setPayMethod(document.body.getAttribute('data-mode') === 'digital' ? 'نقداً' : '');
         document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
+        window.aqsa7CurrentVisitId='';window.aqsa7VisitServiceItems=[];
+        if(typeof renderClinicServiceLines==='function')renderClinicServiceLines();
         localStorage.removeItem('alssaedy_draft');
         if (typeof calculateLedger === 'function') calculateLedger();
         if (typeof toast === 'function') toast('تم تفريغ حقول السند.', 'info');
