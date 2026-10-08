@@ -1200,6 +1200,94 @@ Next authorized task:
 - Task 4.1 — Backup Artifact & Schema Contract — **COMPLETE**.
 - Next authorized task: **Task 4.2 — Encryption & Integrity Layer**.
 
+### Phase 4 / Task 4.2 — Encryption & Integrity Layer
+
+Status: **COMPLETE**
+
+Implementation decision:
+- Local Backup Artifact protection uses the browser/platform Web Crypto API only; no cloud, paid service or external cryptographic dependency was introduced.
+- The artifact is encrypted with AES-256-GCM, providing confidentiality plus authenticated integrity in one standard primitive.
+- The encryption key is derived from a user-supplied backup password with PBKDF2-HMAC-SHA-256 using a random 16-byte salt and 600,000 iterations.
+- Each backup receives a fresh random 12-byte GCM IV and a 128-bit authentication tag.
+- The encrypted envelope is versioned independently from the payload schema so the cryptographic suite can evolve without silently reinterpreting older artifacts.
+- Authenticated additional data binds artifact type, artifact version, schema version, algorithm, KDF and KDF iteration count to the ciphertext. Changes to those protected contract values therefore fail closed.
+- No password, derived key, token or secret is persisted in source code, IndexedDB, localStorage, GitHub or the backup artifact.
+
+Cryptographic contract:
+- envelope artifactType: AQSA7_BACKUP_ARTIFACT
+- envelope artifactVersion: 1
+- envelope schemaVersion: 5
+- crypto.version: 1
+- crypto.algorithm: AES-GCM-256
+- crypto.kdf: PBKDF2-HMAC-SHA256
+- crypto.iterations: 600000
+- crypto.salt: random 16-byte Base64 value
+- crypto.iv: random 12-byte Base64 value
+- crypto.tagLength: 128
+- crypto.encoding: base64
+- ciphertext: authenticated encrypted representation of the complete Backup Artifact
+- productId / tenantId / instanceId / application metadata / payload remain inside the authenticated encrypted artifact and are restored only after successful decryption and validation.
+- The current plaintext JSON backup is no longer treated as the secure target representation; the full-backup restore path rejects unencrypted JSON.
+
+Key-handling boundary:
+- The user supplies the backup password at export and restore time.
+- The password is used only in memory to derive a non-extractable AES-GCM key through Web Crypto.
+- AQSA7 does not store the password or derived key.
+- Password loss is unrecoverable by design; there is no hidden recovery key or cloud escrow.
+- A minimum password length of 8 characters is enforced by the current UX. Security strength therefore depends materially on the user's chosen password.
+- Web Crypto is required. If the platform does not expose the required secure cryptographic primitives, encrypted backup creation/restoration fails closed rather than falling back to plaintext or custom cryptography.
+- This key model stays within the local-first architecture and does not require a new authentication system or persistence authority.
+
+Restore security behavior:
+1. Parse the encrypted envelope.
+2. Reject unsupported artifact/crypto/version metadata before decryption.
+3. Derive the key from the supplied password and verify AES-GCM authentication.
+4. Reject wrong-password, tampered or corrupted ciphertext as an authenticated failure.
+5. Parse the decrypted artifact and validate artifact identity/schema.
+6. Re-run existing product/tenant/instance backup-scope validation.
+7. Only then perform the existing merge/replace repository restore behavior.
+8. Provider/cloud paths are not involved.
+
+Files changed:
+- js/storage.js — implemented local encrypted backup envelope, Web Crypto encryption/decryption, password handling, fail-closed encrypted restore and rejection of plaintext full-backup input.
+- index.html — bumped storage asset version from 1.2.1 to 1.2.2 so deployed clients do not retain the previous backup implementation under the same cache key.
+- .github/workflows/runtime-smoke.yml — added browser verification for round-trip, tamper/corruption, wrong-key, cryptographic-metadata and incompatible-schema rejection.
+
+Verification evidence:
+- Source inspection reconfirmed js/storage.js, js/product.js, js/repository.js and the existing backup/sync paths before implementation.
+- Web Crypto design was selected from standard browser primitives: PBKDF2 is intended for password-derived keys, AES-GCM provides authenticated encryption, and Web Crypto is broadly available in modern browsers/secure contexts. citeturn0search0turn0search2turn0search5turn0search7
+- Browser runtime verification was added to the authoritative Runtime Smoke workflow for:
+  - encrypt → decrypt round trip;
+  - preservation of artifactType, schemaVersion and ownership metadata;
+  - modified ciphertext rejection;
+  - wrong password rejection;
+  - invalid cryptographic metadata rejection;
+  - incompatible schema rejection.
+- Existing ownership isolation checks remain in the same runtime smoke path.
+- The restore implementation does not write to IndexedDB until decryption, authentication, artifact/schema and ownership validation have succeeded.
+- No second database, repository, persistence authority, provider or cloud dependency was introduced.
+- Existing plaintext full-backup JSON is explicitly rejected by the secure restore path.
+
+Known limitations:
+- There is intentionally no password-recovery mechanism. A lost backup password means the encrypted artifact cannot be restored.
+- The current minimum password length is 8 characters; stronger user-chosen passwords materially improve resistance to offline guessing.
+- Cryptographic metadata supports future algorithm/KDF versioning, but changing the active suite is a future implementation task and is not performed here.
+- The legacy clinic cloud snapshot path remains outside this encryption layer and is not silently converted into the canonical Backup Engine/provider architecture by Task 4.2.
+
+Task 4.2 gate decision:
+- Encryption boundary: **MET**.
+- Authenticated integrity/tamper detection: **MET**.
+- Wrong-key/corruption/incompatible-metadata fail-closed behavior: **MET**.
+- Key-handling/no-secret-persistence boundary: **MET**.
+- Ownership/restore validation preservation: **MET**.
+- Web/PWA/Android-compatible Web Crypto design: **MET**.
+- No-cloud/no-provider/no-second-store constraint: **MET**.
+- Task 4.2: **COMPLETE**.
+
+Next authorized task:
+- **Task 4.3 — Generic Backup Engine**.
+
+
 ### Phase 4 / Task 4.1 — Backup Artifact & Schema Contract
 
 Status: **COMPLETE**
