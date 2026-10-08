@@ -382,7 +382,6 @@ function setClinicWorkspaceView(view){
   const receiptSurface=document.querySelector('#productWorkspace .page-canvas-wrapper');
   const isDashboard=view==='dashboard';
   if(dashboard) dashboard.hidden=!isDashboard;
-  if(head) head.hidden=isDashboard;
   if(tools) tools.hidden=isDashboard;
   if(receiptSurface) receiptSurface.hidden=isDashboard;
   if(isDashboard && typeof renderClinicDashboard==='function') renderClinicDashboard();
@@ -478,9 +477,9 @@ function navigatePlatform(route){
 function openConfiguredDentalProduct(){
   const identity=getAQSA7InstanceIdentitySafe();
   if(identity.productId!==AQSA7_DENTAL_PRODUCT_ID){toast?.('المنتج المكوّن غير متاح حالياً.','error');return;}
-  setAQSA7Route('dental',true);
   activeAppTab='dashboard';
   activateAppTabVisual('dashboard');
+  setAQSA7Route('dental',true);
   if(!document.getElementById('digDate')?.value) setTodayDate();
   if(!document.getElementById('digReceiptNo')?.value) generateNextReceiptNo();
   if(!document.getElementById('selectedPayMethod')?.value) setPayMethod('نقداً');
