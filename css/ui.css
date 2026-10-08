@@ -998,3 +998,129 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   .history-search-wrap{grid-column:auto}
   .history-patient-ledger-row{grid-template-columns:1fr 1fr}
 }
+
+
+/* ===== AQSA7 Phase 8.7 — Mobile UX Reconstruction =====
+   Mobile is a clinic workflow, not a scaled desktop canvas.
+   Keep business/data/export ownership unchanged; adapt composition only.
+*/
+@media screen and (max-width:700px){
+  :root{--mobile-gutter:10px;--mobile-radius:14px}
+  body{overflow-x:hidden}
+  .site-navbar{position:sticky;top:0;z-index:40}
+  .nav-container{width:100%;box-sizing:border-box;padding:7px var(--mobile-gutter);gap:6px}
+  .nav-brand{min-width:0}
+  .brand-copy{min-width:0}
+  .brand-title{max-width:calc(100vw - 150px);font-size:10px}
+  .nav-controls{gap:5px}
+  .nav-controls .btn-pill,.nav-controls .btn-tool{min-height:44px}
+  .app-tabs{width:100%;max-width:100%;overflow-x:auto;scrollbar-width:none;justify-content:flex-start;gap:3px}
+  .app-tabs::-webkit-scrollbar,.clinic-local-nav::-webkit-scrollbar{display:none}
+  .app-tab{flex:1 0 76px;min-width:76px;min-height:44px;padding:7px 5px}
+  .app-tab b{font-size:9px}
+  .page-canvas-wrapper{padding:8px var(--mobile-gutter) 88px;box-sizing:border-box}
+  .quick-action-bar{width:100%;box-sizing:border-box;overflow-x:auto;justify-content:flex-start;flex-wrap:nowrap}
+  .quick-action-bar>*{flex:0 0 auto}
+  .quick-btns-row .q-btn{min-height:44px!important;height:44px!important;padding-block:7px}
+
+  .aqsa7-product-context{padding:0 var(--mobile-gutter);box-sizing:border-box}
+  .context-topline{gap:6px}
+  .context-back-btn,.context-home-btn{min-height:44px}
+  .clinic-local-nav{width:100%;margin-inline:0;overflow-x:auto;justify-content:flex-start;flex-wrap:nowrap}
+  .clinic-local-nav .app-tab{flex:1 0 74px;min-width:74px}
+  .clinic-workflow-tools{margin-inline:0;border-radius:12px}
+  .clinic-workflow-tools-label{gap:6px}
+  .clinic-workflow-tools-label small{font-size:8px}
+
+  .clinic-dashboard{padding:14px var(--mobile-gutter) 72px}
+  .clinic-dashboard-head h2{font-size:22px}
+  .clinic-dashboard-actions{gap:7px}
+  .dashboard-action{min-height:46px;padding:9px 10px}
+  .clinic-dashboard-stats{gap:7px}
+  .clinic-dashboard-stat{padding:12px}
+  .clinic-dashboard-stat strong{font-size:19px}
+  .clinic-dashboard-card{padding:12px;border-radius:14px}
+  .clinic-dashboard-list-row{padding:9px}
+
+  .clinic-patient-workspace{padding:14px var(--mobile-gutter) 72px}
+  .clinic-patient-workspace-head{gap:10px}
+  .clinic-patient-workspace-head h2{font-size:22px}
+  .clinic-patient-workspace-actions{gap:6px}
+  .clinic-patient-workspace .patient-directory-tools{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;
+    padding:8px;overflow:hidden
+  }
+  .clinic-patient-workspace .patient-directory-tools>*{min-width:0}
+  .clinic-patient-workspace .patient-form{padding:11px;border-radius:12px}
+  .clinic-patient-workspace .patient-account-panel{border-radius:13px}
+  .clinic-patient-workspace .patient-detail-content{padding-inline:9px}
+  .clinic-patient-workspace input,.clinic-patient-workspace select,.clinic-patient-workspace textarea{max-width:100%;box-sizing:border-box}
+
+  .clinic-visit-billing-panel{padding:13px;border-radius:14px;margin-bottom:12px}
+  .clinic-visit-head{margin-bottom:11px}
+  .clinic-visit-head h3{font-size:1.05rem}
+  .clinic-visit-patient{padding:10px;margin-bottom:10px}
+  .clinic-service-line{grid-template-columns:minmax(0,1fr) 72px;gap:6px}
+  .clinic-service-line input{min-height:42px;padding:9px}
+  .clinic-service-line-total{min-height:42px;display:flex;align-items:center;justify-content:flex-start;padding:8px}
+  .clinic-service-remove{width:44px;height:44px}
+  .clinic-visit-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .clinic-visit-add,.clinic-visit-reset{min-height:44px;padding:9px 10px}
+  .clinic-billing-summary{gap:7px}
+  .clinic-billing-summary>div{padding:11px}
+
+  .receipt-issuance-panel{border-radius:14px}
+  .receipt-issuance-head{gap:8px}
+  .receipt-lifecycle-status{min-height:36px}
+  .receipt-action-row,.issuance-actions,.receipt-issuance-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .receipt-action-row>*,.issuance-actions>* ,.receipt-issuance-actions>*{min-height:44px;width:100%}
+  .history-ledger-tools{gap:8px}
+  .history-ledger-tools input,.history-ledger-tools select,.history-date-filter input{min-height:44px;width:100%;box-sizing:border-box}
+  .history-filter-reset{min-height:44px}
+  .history-patient-ledger{margin:10px 0;border-radius:12px}
+  .history-patient-ledger-head{padding:11px 12px}
+  .history-patient-ledger-head h4{font-size:14px}
+  .history-patient-ledger-row{padding:10px 11px;gap:8px}
+  .history-patient-ledger-row strong{font-size:12px}
+
+  .modal-screen{padding:6px!important}
+  .modal-box{width:100%;max-width:none;border-radius:14px;max-height:calc(100dvh - 12px)}
+  .modal-box>.modal-close{min-width:44px;width:44px;height:44px}
+  .settings-drawer{width:100%!important;border-radius:0!important}
+  .drawer-body{padding-inline:10px!important}
+  .setting-card{margin-bottom:8px}
+  .setting-card .grid-btns,.setting-card .grid-btns.two{grid-template-columns:1fr 1fr;gap:7px}
+  .setting-card input,.setting-card select,.setting-card textarea{min-height:44px;box-sizing:border-box}
+
+  .floating-action-dock{left:6px;right:6px;bottom:max(6px,env(safe-area-inset-bottom));width:auto;max-width:none;padding:5px;z-index:50}
+  .dock-btn{min-height:46px;padding:8px 5px}
+  .dock-text{font-size:9px}
+
+  .product-workspace-head{padding:12px var(--mobile-gutter) 7px}
+  .product-workspace-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:6px}
+  .workspace-action{min-height:44px;width:100%}
+}
+
+@media screen and (max-width:430px){
+  .brand-badge{display:none}
+  .brand-title{max-width:145px}
+  .app-tab{flex-basis:70px;min-width:70px}
+  .clinic-local-nav .app-tab{flex-basis:68px;min-width:68px}
+  .clinic-dashboard-actions{grid-template-columns:1fr}
+  .clinic-dashboard-actions .dashboard-action-primary{grid-column:auto}
+  .clinic-patient-workspace .patient-directory-tools{grid-template-columns:1fr}
+  .clinic-visit-actions{grid-template-columns:1fr}
+  .receipt-action-row,.issuance-actions,.receipt-issuance-actions{grid-template-columns:1fr}
+  .setting-card .grid-btns,.setting-card .grid-btns.two{grid-template-columns:1fr}
+}
+
+@media screen and (max-width:360px){
+  .app-tab b{font-size:8.5px}
+  .clinic-local-nav .app-tab{padding-inline:3px}
+  .dashboard-action{font-size:9px}
+}
+
+@media print{
+  /* Mobile reconstruction must never alter physical receipt/export dimensions. */
+  .clinic-dashboard,.clinic-patient-workspace{display:none!important}
+}
