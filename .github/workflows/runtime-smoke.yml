@@ -1474,7 +1474,7 @@ jobs:
           mkdir -p artifacts/phase-8-10/mobile artifacts/phase-8-10/desktop
           node --input-type=module <<'NODE'
           import { chromium } from 'playwright';
-          import { mkdir, writeFile } from 'node:fs/promises';
+          import { writeFile } from 'node:fs/promises';
 
           const browser = await chromium.launch({headless:true});
           const report = [];
@@ -1525,7 +1525,12 @@ jobs:
               await page.screenshot({path:file,fullPage:false,animations:'disabled'});
               report.push({...state,viewport:viewport.name,screenshot:file});
               if (surface.id==='patient-workspace') await page.locator('#patientsModal .patient-workspace-close').click();
-              if (surface.id==='history-financial-ledger') await page.locator('#historyModal .modal-close').click();
+              if (surface.id==='history-financial-ledger') {
+                await page.locator('#historyModal .modal-close').click();
+                // History navigation may change the visual context; restore the configured
+                // Dental product exactly as the existing desktop regression does.
+                await page.evaluate(() => { if (typeof setPlatformVisual === 'function') setPlatformVisual('dental'); });
+              }
               if (surface.id==='settings') await page.locator('#settingsPanel .btn-close').click();
             }
             if (errors.length) throw new Error('Phase 8.10 '+viewport.name+' browser errors: '+errors.join(' | '));
