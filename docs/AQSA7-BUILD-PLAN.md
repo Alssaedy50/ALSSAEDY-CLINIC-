@@ -2903,20 +2903,51 @@ Next authorized task:
 - Phase 7.6 — Documentation & Release Decision.
 
 ### Phase 7.6 — Documentation & Release Decision
-Status: PENDING
+Status: COMPLETE — DOCUMENTATION CONSOLIDATED / RELEASE DECISION RECORDED
 
-Exit criteria:
-- Build Plan reflects the exact final architecture and ownership.
-- Reuse Registry/traceability records are current.
-- Obsolete/contradictory instructions are removed or explicitly superseded.
-- No unnecessary new documentation artifacts remain.
-- Release decision is based on evidence, not on implementation intent.
+Final architecture and ownership:
+- AQSA7 is accepted in its current Platform-first composition: AQSA7 Platform → Products/Projects → Dental Clinic → ALSSAEDY CLINIC workspace.
+- js/app.js remains the single route/context state owner; no second router was introduced.
+- js/product.js remains the single Product/Tenant/Instance authority; no second product registry/configuration source was introduced.
+- js/capabilities.js remains the shared capability registry.
+- js/repository.js + IndexedDB remain the single durable application data authority.
+- js/storage.js remains the Dental receipt/patient/history/settings business-behavior owner.
+- js/export.js + the existing Android bridge remain the export/print/share boundary.
+- Existing backup/recovery/provider/security modules remain authoritative; Phase 7 did not create parallel persistence, backup, repository, state, or provider paths.
+- index.html + css/* provide the platform/product composition and presentation layer; the Phase 7.5 correction is isolated to css/ui.css.
+- Android remains a thin wrapper around the shared application core.
+
+Reuse Registry / traceability:
+- The authoritative Reuse Registry remains in section 7.0-H of this Build Plan.
+- The current runtime contains the established 14 platform/product traceability entries and their existing owners/actions.
+- Phase 7.5 independently verified rendered UI, DOM traceability, navigation separation and absence of duplicate authoritative paths.
+- No new documentation catalog, component registry, test ledger or parallel architecture document was created.
+
+Obsolete / contradictory instructions resolved:
+- The stale Phase 7 hard-stop text that said the immediate next step was Phase 7.0 has been superseded by the actual completed Phase 7 sequence through 7.5 and is removed from the authoritative current-state section.
+- Historical Phase 7.0/7.1 planning text is retained as historical execution evidence, not as a current authorization.
+- Historical Phase 6/v1.3.0 release documentation remains unchanged as historical release evidence and is not rewritten to misrepresent the later Platform transition.
+
+Release decision — evidence-based:
+- v1.3.0 remains the historical released artifact. Its signed APK and release assets were produced before the Phase 7 Platform transition.
+- The current main state includes the accepted Phase 7 Platform composition and the Phase 7.5 UX correction, so it must not be represented as identical to the v1.3.0 release artifact.
+- No new GitHub Release/tag/version bump is created by Phase 7.6. Creating a new public release requires explicit version/release authorization after the Platform transition is packaged and re-verified as a release candidate.
+- Current decision: Platform state ACCEPTED in source; RELEASED ARTIFACT unchanged; new release NOT CUT by this phase.
+- This is a release decision, not an implementation blocker: the repository is internally coherent and the next release can be prepared explicitly without retroactively altering v1.3.0 history.
+
+Phase 7.6 final gate:
+- Build Plan architecture/ownership: PASS.
+- Reuse Registry/traceability: PASS.
+- Contradictory current-state instructions: CONSOLIDATED.
+- Documentation inflation: PASS — no unnecessary new artifact created.
+- Evidence-based release decision: PASS.
+- Phase 7.6: COMPLETE.
 
 ### Phase 7 hard stop
 
-No implementation task may proceed beyond the currently authorized step.
+Phase 7.0 through Phase 7.6 are complete. No further Phase 7 implementation task is authorized by this plan.
 
-The immediate next step is **Phase 7.0 read-only inventory**. Do not redesign, refactor, create new UI modules, create new repositories, create new state stores, create new scripts, or alter production behavior until Phase 7.0 has established what already exists and what is actually missing.
+Any future development must begin from a newly approved task/phase with explicit scope, verification criteria and release/version decision.
 
 ### Phase 7 anti-repetition rule
 
@@ -2939,7 +2970,7 @@ The burden of proof is on **new implementation**, not on reuse.
 
 
 
-Last updated: 2026-10-08 (corrective platform-transition plan authorized; Phase 0–6 remain historical, Phase 7.0 is the only next execution step)
+Last updated: 2026-10-08 (Phase 7.6 complete; Platform-first source state accepted; v1.3.0 remains historical release; no new release cut)
 
 ## Current authoritative decisions
 
