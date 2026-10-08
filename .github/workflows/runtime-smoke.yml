@@ -236,6 +236,8 @@ jobs:
           await page.locator('#tabHistory').click();
           if (!(await page.locator('#historyModal').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop history surface did not open');
           if ((await page.locator('#historyModal').evaluate(e => Math.round(e.getBoundingClientRect().width))) < 380) throw new Error('Desktop history surface is unexpectedly narrow');
+          await page.locator('#historyModal .modal-close').click();
+          if (await page.locator('#historyModal').evaluate(e => e.classList.contains('open'))) throw new Error('Desktop history surface did not close');
 
           await page.locator('#tabSettings').click();
           if (!(await page.locator('#settingsPanel').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop settings surface did not open');
