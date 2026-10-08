@@ -1020,7 +1020,7 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   .app-tab b{font-size:9px}
   .page-canvas-wrapper{padding:8px var(--mobile-gutter) 88px;box-sizing:border-box}
   .quick-action-bar{width:100%;box-sizing:border-box;overflow-x:auto;justify-content:flex-start;flex-wrap:nowrap}
-  .quick-action-bar>*{flex:0 0 auto}
+  .quick-action-bar>*{flex:0 0 auto}\n  .q-btn{min-height:44px}
 
   .aqsa7-product-context{padding:0 var(--mobile-gutter);box-sizing:border-box}
   .context-topline{gap:6px}
