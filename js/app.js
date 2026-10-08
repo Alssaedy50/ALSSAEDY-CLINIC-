@@ -467,9 +467,9 @@ window.addEventListener('popstate',(e)=>{
   if(panel==='history'){setAQSA7Route('dental',false);document.getElementById('historyModal')?.classList.add('open');activateAppTabVisual('history');return;}
   if(panel==='settings'){setAQSA7Route('dental',false);document.getElementById('settingsPanel')?.classList.add('open');activateAppTabVisual('settings');return;}
   const hash=location.hash;
-  if(hash==='#products'){setAQSA7Route('products',false);return;}
-  if(hash==='#product-dental-clinic'){setAQSA7Route('dental',false);return;}
-  setAQSA7Route('home',false);
+  if(hash==='#products'){closeAllAppPanels();setAQSA7Route('products',false);return;}
+  if(hash==='#product-dental-clinic'){closeAllAppPanels();setAQSA7Route('dental',false);return;}
+  closeAllAppPanels();setAQSA7Route('home',false);
 });
 function openShareModal(){document.getElementById('shareModal').classList.add('open');}
 function closeShareModal(){document.getElementById('shareModal').classList.remove('open');}
