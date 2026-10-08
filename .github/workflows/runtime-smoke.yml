@@ -548,6 +548,43 @@ jobs:
             throw new Error('Google Drive provider smoke failed: '+JSON.stringify(googleDriveProviderSmoke));
           }
 
+          const cloudRecoverySmoke = await page.evaluate(async () => {
+            const recovery=window.aqsa7CloudRecovery;
+            const contract=window.AQSA7_CLOUD_RECOVERY_CONTRACT;
+            const runtime=window.aqsa7BackupProviderRuntime;
+            const originalEngine=window.aqsa7BackupEngine;
+            if(!recovery || !contract || !runtime || !originalEngine) throw new Error('Cloud recovery boundary missing.');
+            if(contract.contractId!=='aqsa7-cloud-recovery' || contract.schemaVersion!==1 || contract.providerIndependent!==true || contract.localFirst!==true || contract.persistence!=='none' || contract.restoreTarget!=='repository-indexeddb'){
+              throw new Error('Cloud recovery contract incompatible: '+JSON.stringify(contract));
+            }
+            const adapter={
+              getDescriptor:()=>({id:'recovery-smoke-provider',name:'Recovery Smoke Provider',version:'1',operations:['health','list','put','get','delete'],platforms:['web','pwa','desktop','android']}),
+              health:async()=>({status:'success'}),
+              list:async()=>({status:'success',items:[{backupId:'cloud-1'}]}),
+              put:async()=>({status:'error',error:{code:'UNAVAILABLE'}}),
+              get:async()=>({status:'success',artifact:{artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}}),
+              delete:async()=>({status:'success'})
+            };
+            runtime.clear();
+            runtime.register(adapter);
+            window.aqsa7BackupEngine={
+              decryptAndValidate:async(envelope,password)=>({artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,patients:[],receipts:[],settings:{}}),
+              restoreArtifact:async()=>({status:'restored',mode:'merge',patients:0,receipts:0})
+            };
+            try{
+              const identity={productId:'aqsa7',tenantId:'tenant-1',instanceId:'instance-1'};
+              const list=await recovery.list('recovery-smoke-provider',identity);
+              const restored=await recovery.recover('recovery-smoke-provider',identity,'cloud-1','smoke-password');
+              return {list:list.status,count:list.items?.length||0,restored:restored.status};
+            }finally{
+              window.aqsa7BackupEngine=originalEngine;
+              runtime.clear();
+            }
+          });
+          if(cloudRecoverySmoke.list!=='success' || cloudRecoverySmoke.count!==1 || cloudRecoverySmoke.restored!=='restored'){
+            throw new Error('Cloud recovery smoke failed: '+JSON.stringify(cloudRecoverySmoke));
+          }
+
 
           const sharedCapabilities = await page.evaluate(() => ({
             ids: typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [],
