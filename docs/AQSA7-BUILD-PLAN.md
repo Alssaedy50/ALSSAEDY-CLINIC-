@@ -1719,8 +1719,9 @@ Explicitly out of scope:
 - Phase 5 full regression/disaster-recovery verification.
 
 Verification evidence:
-- Implementation checkpoint: `c4e147df73a58817a4010055556ff520986a6b19`.
-- Runtime Smoke verification is required before closing Task 4.6.
+- Implementation checkpoint: `bd880ab80fc52b4fca35a11427c0b5e552bf34cd`.
+- An initial Runtime Smoke attempt on `99c5dde4539874bdd7387f9da1318c742e6df878` failed during the mobile smoke gate; no product/runtime regression was accepted as verified from that run.
+- The smoke assertions were hardened to avoid timing-sensitive UX-state comparison and brittle text matching; final verification is required on the new checkpoint.
 - Required checks: UX contract presence, visible encrypted-backup/restore actions, local status state, restore input availability, plus all existing crypto/engine/provider/restore checks and browser/mobile regression.
 
 Gate:
@@ -1796,7 +1797,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.6 implementation complete; verification pending; Phase 4 in progress)
+Last updated: 2026-10-08 (Task 4.6 implementation complete; verification pending after smoke-test correction; Phase 4 in progress)
 
 ## Current authoritative decisions
 
