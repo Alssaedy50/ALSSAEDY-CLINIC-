@@ -536,6 +536,7 @@ jobs:
               return {health:health.status,list:list.status,put:put.status,putId:put.backupId,get:get.status,getArtifact:get.artifact?.artifactType,del:del.status,missingAuth,calls:calls.length};
             } finally {
               window.fetch=originalFetch;
+              window.aqsa7GoogleDriveAuth.clear();
               runtime.clear();
             }
           });
