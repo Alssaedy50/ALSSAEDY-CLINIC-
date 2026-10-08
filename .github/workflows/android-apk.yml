@@ -73,7 +73,7 @@ jobs:
 
       - name: Verify APK metadata
         run: |
-          ${ANDROID_HOME}/build-tools/35.0.0/aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -E "package: name='com.alssaedy.clinic'|versionCode='15'|versionName='1.1.5'"
+          ${ANDROID_HOME}/build-tools/35.0.0/aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -E "package: name='com.alssaedy.clinic'|versionCode='18'|versionName='1.3.0'"
 
       - name: Remove temporary signing key
         if: always()
@@ -82,7 +82,7 @@ jobs:
       - name: Upload installable debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: ALSSAEDY-CLINIC-v1.1.5-debug-APK
+          name: ALSSAEDY-CLINIC-v1.3.0-debug-APK
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 90
@@ -90,7 +90,7 @@ jobs:
       - name: Upload signed production APK
         uses: actions/upload-artifact@v4
         with:
-          name: ALSSAEDY-CLINIC-v1.1.5-release-SIGNED
+          name: ALSSAEDY-CLINIC-v1.3.0-release-SIGNED
           path: android-app/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 90
@@ -103,7 +103,7 @@ jobs:
         run: |
           RELEASE_TAG="${GITHUB_REF_NAME#release/}"
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then RELEASE_TAG="$GITHUB_REF_NAME"; fi
-          if [[ "$RELEASE_TAG" != v* ]]; then RELEASE_TAG="v1.1.5"; fi
+          if [[ "$RELEASE_TAG" != v* ]]; then RELEASE_TAG="v1.3.0"; fi
           gh release create "$RELEASE_TAG" \
             android-app/app/build/outputs/apk/release/app-release.apk \
             --title "ALSSAEDY CLINIC $RELEASE_TAG" \
