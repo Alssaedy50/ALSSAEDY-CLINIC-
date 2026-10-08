@@ -3190,6 +3190,7 @@ Execution:
 - Extend the existing Runtime Smoke Playwright workflow only; no new test framework.
 - Capture Platform Home, Products/Projects, Dashboard, Patient Workspace, Visit/Services/Billing, Receipt Issuance, History/Financial Ledger and Settings at both representative viewports.
 - Initial screenshot review found the mobile action dock clipped at the viewport edge and overlaying content. A narrow CSS correction now constrains it to five columns inside the viewport and reserves bottom content space; Runtime Smoke asserts all five controls are visible and within bounds.
+- Final current-run artifact [#383](https://github.com/Alssaedy50/AQSA7/actions/runs/37858095988/artifacts/11584214623) visually reviewed: 16 screenshots / 8 surfaces / 2 viewports. All four required gates passed on source commit `a5a59f09aa7b42644f2e228b82f35b251e3331e4`; documentation-head gates and merge remain pending.
 - Upload the current-run screenshots plus a JSON measurement report as the `aqsa7-phase-8-10-rendered-ux` artifact.
 - Review actual screenshots and report before making any visual defect claims.
 - Fix only evidenced UX defects within scope; preserve route/product/capability/repository/storage/export ownership.
