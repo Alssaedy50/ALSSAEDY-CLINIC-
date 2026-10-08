@@ -167,7 +167,7 @@
   }
 
   function create(options={}){
-    const auth=options.auth;
+    const auth=options.auth || window.aqsa7GoogleDriveAuth;
     return Object.freeze({
       getDescriptor:()=>CONTRACT,
       health:request=>health(request,{auth}),
