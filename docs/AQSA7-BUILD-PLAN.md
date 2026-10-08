@@ -1256,7 +1256,7 @@ Files changed:
 Verification evidence:
 - Source inspection reconfirmed js/storage.js, js/product.js, js/repository.js and the existing backup/sync paths before implementation.
 - Web Crypto design was selected from standard browser primitives: PBKDF2 is intended for password-derived keys, AES-GCM provides authenticated encryption, and Web Crypto is broadly available in modern browsers/secure contexts. citeturn0search0turn0search2turn0search5turn0search7
-- Browser runtime verification was added to the authoritative Runtime Smoke workflow for:
+- Browser runtime verification was executed in the authoritative Runtime Smoke workflow for:
   - encrypt → decrypt round trip;
   - preservation of artifactType, schemaVersion and ownership metadata;
   - modified ciphertext rejection;
