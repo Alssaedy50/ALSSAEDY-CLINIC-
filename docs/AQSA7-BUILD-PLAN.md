@@ -221,53 +221,25 @@ Status: COMPLETE
 ### Phase 2 — UX/UI Reconstruction
 Status: IN PROGRESS
 
-Current next task:
-- **Task 2.7 — Settings / Configuration surface reconstruction — IN PROGRESS**
-- Executor: **AI / Technical Lead**
-
 Completed Phase 2 tasks:
 - 2.1 Design System Foundation — COMPLETE
 - 2.2 Top App Shell & Navigation Dock — COMPLETE
 - 2.3 Patient Directory / Ledger Table — COMPLETE
 - 2.4 Patient Account Detail — COMPLETE
 - 2.5 Receipt Issuance Panel — COMPLETE
+- 2.6 History / Receipts Ledger Reconstruction — COMPLETE
+- 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
-### Phase 2 / Task 2.6 — History / Receipts Ledger Reconstruction: COMPLETE
+Current next task:
+- **Task 2.8 — UX/UI Integration & Cross-Surface Consistency Pass**
+- Executor: **AI / Technical Lead**
+
+### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
 
 Implementation:
-- Reconstructed History as a responsive receipts ledger with receipt number/date, patient/phone, services, total, paid, remaining balance, status and actions.
-- Added authoritative search/filtering, newest-first ordering, live result count and empty/no-match states.
-- Preserved IndexedDB/repository ownership and existing loadReceipt(), deleteReceipt(), CSV export and full-clear workflows.
-- Kept one DOM/rendering path across desktop and mobile with 44px primary actions.
-- Kept protected receipt print/export geometry unchanged.
-- Fixed a runtime regression where the ledger header disappeared on empty/filter results by moving the header outside dynamic rendering.
-
-Files:
-- index.html
-- js/storage.js
-- css/polish.css
-- .github/workflows/runtime-smoke.yml
-
-Verification:
-- Runtime Smoke 37714117777 — PASS on checkpoint 3eb338fe886d863e105c3c0fc842a211895b2bc3.
-- Android APK 37714117833 — SUCCESS on the same checkpoint.
-- GitHub Pages build/deployment 37714117358 — SUCCESS on the same checkpoint.
-- Receipt image export 37714117805 — FAILS only at the existing PDF selectable-text assertion after PDF generation; unrelated to Task 2.6 and remains a known release blocker.
-
-Exit decision:
-- Implementation/design criteria: MET.
-- Browser runtime gate: PASS.
-- Android build: PASS.
-- Pages/deployment: PASS.
-- Task 2.6: COMPLETE.
-- Phase 2 remains IN PROGRESS because the next UX/UI reconstruction is Task 2.7 and the known receipt-export verification issue remains unresolved.
-
-### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: IN PROGRESS
-
-Implementation checkpoint:
 - Added a dedicated AQSA7 Settings overview/header with clear configuration categories.
 - Preserved all existing setting IDs, handlers and persistence/state ownership; no duplicate settings state machine was introduced.
-- Standardized settings cards and interactive controls with Phase 2 design tokens, responsive spacing and 44px minimum controls.
+- Standardized settings cards and interactive controls with Phase 2 design tokens, responsive spacing and a 44px minimum control contract.
 - Added runtime-smoke coverage for the settings overview, six category chips, setting-card presence and touch-target contract.
 - No receipt print/export geometry was changed.
 
@@ -277,54 +249,44 @@ Files changed:
 - .github/workflows/runtime-smoke.yml
 
 Verification:
-- Pages build/deployment 37714713371 — SUCCESS on checkpoint 4fe031730a23dacab5ccfa488383904229613526.
+- Runtime Smoke 37714713602 — PASS on checkpoint 4fe031730a23dacab5ccfa488383904229613526.
+- Pages build/deployment 37714713371 — SUCCESS on the same checkpoint.
 - Android APK 37714713699 — SUCCESS on the same checkpoint.
-- Receipt image export 37714713641 — FAILS at the existing PDF selectable-text assertion after PDF generation; unrelated to Task 2.7.
-- Runtime Smoke 37714713602 — IN PROGRESS at documentation checkpoint.
-- An initial Runtime Smoke 37714623010 exposed 29 settings controls below 44px; root cause was existing control sizing overriding the new minimum. Corrected by enforcing the 44px contract in the latest checkpoint.
+- Receipt image export 37714713641 — FAILS at the existing PDF selectable-text assertion after PDF generation; unrelated to Task 2.7 and remains a known release blocker.
+- Initial Runtime Smoke 37714623010 exposed 29 settings controls below 44px; root cause was existing control sizing overriding the new minimum and was corrected in the final checkpoint.
 
 Exit decision:
 - Implementation/design criteria: MET.
+- Browser runtime gate: PASS.
 - Android: PASS.
 - Pages: PASS.
-- Browser runtime: PENDING final smoke result.
-- Task 2.7 remains IN PROGRESS until the latest Runtime Smoke passes.
+- Task 2.7: COMPLETE.
+- Known receipt-export verification issue remains a separate release blocker.
 
-### Phase 2 / Task 2.5 — Receipt Issuance Panel Reconstruction: COMPLETE
+### Phase 2 / Task 2.8 — UX/UI Integration & Cross-Surface Consistency Pass: IN PROGRESS
 
-Implementation:
-- Added a dedicated no-print Receipt Issuance Panel above the protected receipt paper.
-- Added live patient context, selected-service count/list, receipt number/date, financial summary and payment/reference status.
-- Added primary save, preview, print/PDF and share actions using the existing authoritative handlers.
-- Kept all actual receipt inputs inside the existing receipt DOM; the panel is a read/command surface, not a second input or persistence state.
-- Added the authoritative live calculateLedger() path and connected it to the issuance summary.
-- Connected payment-method and service-selection changes to the same live summary.
-- Applied Phase 2 design tokens, responsive mobile behavior and the 44px interaction contract.
-- Preserved IndexedDB/repository ownership and protected A5/A4/80mm print/export geometry.
+Purpose:
+- Verify and consolidate the completed Phase 2 surfaces as one coherent product rather than independent screen redesigns.
+- Detect duplicated styling/state/rendering responsibilities introduced during Tasks 2.1–2.7.
+- Verify shared navigation, spacing, typography, status semantics, financial presentation and responsive behavior across Receipt, Patients, Patient Account, History and Settings.
+- Preserve the authoritative IndexedDB/repository model and all existing receipt print/export geometry.
 
-Files:
-- index.html
-- js/storage.js
-- js/app.js
-- js/ui.js
-- css/templates.css
-- .github/workflows/runtime-smoke.yml
+Exit criteria:
+1. One shared visual token system is used across all Phase 2 surfaces.
+2. Navigation/state ownership remains single-path with no duplicate screen state machines.
+3. Primary actions and interactive controls meet the 44px contract where applicable.
+4. Desktop and mobile use the same DOM/data path with responsive CSS rather than duplicated screens.
+5. No Phase 2 surface introduces console/page errors during browser runtime smoke.
+6. Existing core workflows remain reachable: receipt, patients, history, settings, patient account, receipt load/edit/save/print/share.
+7. No protected A5/A4/80mm receipt geometry regression.
+8. CI browser smoke, Android build and Pages build all pass for the final integration checkpoint.
 
-Verification:
-- AQSA7 Runtime Smoke 37712304937 — PASS on final application checkpoint 5cd3fa26edf1b549b7739a1c7ae20ac26bec4919.
-- Android APK 37712305064 — SUCCESS on the same application checkpoint.
-- GitHub Pages build 37712304503 — build job SUCCESS; deployment job was still processing when recorded.
-- Receipt image export 37712304962 — FAIL in the known pre-existing PDF selectable-text assertion after PDF generation; unrelated to Task 2.5.
-
-Exit decision:
-- Task 2.5 functional/design criteria: MET.
-- Browser runtime gate: PASS.
-- Android build: PASS.
-- Pages build: PASS.
-- Phase 2 remains IN PROGRESS.
-
-Known release/regression blocker:
-- Existing receipt image/PDF verification has a pre-existing PDF selectable-text assertion failure after PDF generation. This remains unresolved and must be cleared before Phase 2/full regression/release exit.
+Planned verification:
+- static/source audit of duplicated selectors, handlers and state ownership
+- browser smoke at mobile viewport plus desktop-width smoke
+- Android build
+- Pages build/deployment
+- receipt export test treated as a separate existing blocker unless root cause is directly changed by this integration work
 
 ### Phase 3 — Productization
 - Separate reusable Dental Clinic product from clinic configuration.
@@ -383,7 +345,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Phase 2 Task 2.5 completed)
+Last updated: 2026-10-08 (Phase 2 Task 2.7 completed; Task 2.8 started)
 
 ## Current authoritative decisions
 
