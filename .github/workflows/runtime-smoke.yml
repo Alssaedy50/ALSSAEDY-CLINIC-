@@ -1028,7 +1028,9 @@ jobs:
           if (!receiptLifecycle.contract || JSON.stringify(receiptLifecycle.contract.statuses) !== JSON.stringify(['issued','voided']) || receiptLifecycle.contract.issued !== 'issued' || receiptLifecycle.contract.voided !== 'voided' || !receiptLifecycle.panel || !receiptLifecycle.lifecycleStatus || !receiptLifecycle.cancelAction || !receiptLifecycle.voidNotice || !receiptLifecycle.paperDateEditorRemoved) fail('Phase 8.5 receipt lifecycle/template boundary failed', receiptLifecycle);
 
           await page.evaluate(() => {
-            clearReceiptInputs();
+            ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+            setPayMethod('نقداً');
+            document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
             document.getElementById('digReceiptNo').value = 'PH8-5-001';
             document.getElementById('digDate').value = '2026-10-08';
             document.getElementById('digClientName').value = 'Phase8.5 Receipt Patient';
