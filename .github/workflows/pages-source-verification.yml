@@ -1,0 +1,69 @@
+name: GitHub Pages Source Verification
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-pages-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Verify live Pages matches current main source
+        env:
+          PAGES_URL: https://alssaedy50.github.io/AQSA7/
+          LIVE_INTEGRATIONS_URL: https://alssaedy50.github.io/AQSA7/js/integrations.js
+        run: |
+          set -euo pipefail
+
+          echo "source_commit=$GITHUB_SHA"
+          echo "pages_url=$PAGES_URL"
+          echo "live_integrations_url=$LIVE_INTEGRATIONS_URL"
+
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --connect-timeout 10 --max-time 60 \
+            "$PAGES_URL" -o /tmp/aqsa7-pages-index.html
+
+          grep -Fq 'js/integrations.js' /tmp/aqsa7-pages-index.html
+
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --connect-timeout 10 --max-time 60 \
+            "$LIVE_INTEGRATIONS_URL" -o /tmp/aqsa7-live-integrations.js
+
+          source_hash="$(sha256sum js/integrations.js | awk '{print $1}')"
+          live_hash="$(sha256sum /tmp/aqsa7-live-integrations.js | awk '{print $1}')"
+
+          echo "source_integrations_sha256=$source_hash"
+          echo "live_integrations_sha256=$live_hash"
+
+          if [ "$source_hash" != "$live_hash" ]; then
+            echo "::error::Live GitHub Pages js/integrations.js does not match current main source."
+            exit 1
+          fi
+
+          printf '%s\n' \
+            "AQSA7 GitHub Pages source verification" \
+            "source_commit=$GITHUB_SHA" \
+            "pages_url=$PAGES_URL" \
+            "live_integrations_url=$LIVE_INTEGRATIONS_URL" \
+            "source_integrations_sha256=$source_hash" \
+            "live_integrations_sha256=$live_hash" \
+            "result=PASS" > aqsa7-pages-verification.txt
+
+      - name: Upload Pages verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aqsa7-pages-verification-evidence
+          path: aqsa7-pages-verification.txt
+          if-no-files-found: ignore
