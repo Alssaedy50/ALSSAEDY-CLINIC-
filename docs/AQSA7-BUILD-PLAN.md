@@ -205,6 +205,29 @@ Completed:
 Current:
 - Phase 1 / Task 1.9 — Runtime Visual Smoke Baseline (browser/Android)
 
+### Phase 1.9 — Runtime Visual Smoke Baseline: IN PROGRESS
+
+Runtime test infrastructure added to main:
+- `.github/workflows/runtime-smoke.yml`
+- Commit: `6a7a871a434498551c38fbe686709692791da5ae`
+- Uses Chromium through Playwright and a local static server.
+- Covers mobile 390×844 baseline.
+- Verifies page load/title, critical DOM nodes, required runtime functions, formatted date rendering, Patients route + Back behavior, History opening, Settings opening/closing, console errors and page errors.
+- Captures a runtime screenshot as a CI artifact.
+
+Execution status:
+- The workflow file is present on main.
+- No GitHub Actions run is exposed for this commit through the available repository workflow connector, so a real browser execution cannot yet be truthfully marked PASS.
+- Existing Vercel status for the commit is unrelated to this smoke test and is currently failing due a Vercel build-rate-limit/upgrade target.
+- Android/WebView visual execution is also not available through the current connector.
+
+Gate:
+- **Do not close Task 1.9 or Phase 1 yet.**
+- Do not start Phase 2 until the runtime smoke baseline has an actual PASS result and the remaining Android/WebView checks are either executed or explicitly scoped into Phase 5.
+
+Next:
+- Phase 1 / Task 1.9 — obtain and verify an actual browser runtime PASS, then perform the Android/WebView smoke baseline before closing Phase 1.
+
 ### Phase 1.8 — CSS/UX Regression Verification: COMPLETE
 
 Verification executed against current `main` after the CSS responsibility cleanup.
