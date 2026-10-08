@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0–8.8 COMPLETE / Phase 8.9 AUTHORIZED NEXT
-Last updated: 2026-10-09 (Phase 8.8 Print/PDF/Physical Voucher QA completed and verified; Phase 8.9 authorized)
+Status: PHASE 8 ACTIVE — Phase 8.0–8.8 COMPLETE / Phase 8.9 IN PROGRESS
+Last updated: 2026-10-09 (Phase 8.9 full regression opened after re-verifying Phase 8.8 main/PR state)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3034,8 +3034,8 @@ Priority register:
 - **8.6 History & Financial Ledger — COMPLETE**
 - **8.7 Mobile UX — COMPLETE**
 - **8.8 Print / PDF / Physical Voucher QA — COMPLETE**
-- 8.9 Full Regression — PLANNED
-- 8.10 Rendered UX Acceptance — PLANNED
+- **8.9 Full Regression — IN PROGRESS**
+- **8.10 Rendered UX Acceptance — PLANNED**
 
 
 ### Phase 8.1 gate
@@ -3152,10 +3152,28 @@ Gate decision:
 ### Current phase
 **Phase 8.9 — Full Regression.**
 
-Objective: run the complete application regression after the Phase 8 clinic UX, receipt, ledger, mobile, and print/PDF reconstruction work. This phase must validate that no previously verified capability regressed.
+Status: IN PROGRESS — branch `phase-8-9-full-regression` opened from verified `main` checkpoint `b011ac760da2be95392a4d2b9d627ccf838febb7`.
 
+Objective: run the complete application regression after Phase 8.2–8.8 clinic UX, patient workspace, visit/service billing, receipt lifecycle, financial history/ledger, mobile UX and print/PDF work. Validate previously verified behavior without creating parallel owners or changing product business logic.
 
-Last updated: 2026-10-09 (Phase 8.8 print/PDF/physical voucher QA completed and verified; Phase 8.9 authorized)
+Phase 8.9 scope:
+- Reuse the existing Runtime Smoke workflow and its current cross-phase browser assertions; add targeted financial/date-range/voided-receipt regression checks where coverage was incomplete.
+- Run Runtime Smoke, Pages Source Verification, Receipt Export and Android Build against the PR head.
+- Inspect all required check results and failed-job logs; fix root causes and rerun before merge.
+- Keep Functional, Architecture and Product/UX acceptance evidence distinct. Phase 8.10 owns rendered cross-device UX acceptance.
+- Do not change repository/persistence authority, receipt schema, route owner, export/print architecture or Android bridge unless a proven regression requires a narrowly scoped fix.
+- Physical stock, binding, ink and real printer scaling remain manual proof, not something CI can claim.
+
+Exit criteria:
+1. Existing Phase 8.2–8.8 regression assertions remain green.
+2. Date range filtering rejects out-of-range records and invalid reversed ranges.
+3. Financial summary excludes voided receipts from active totals while retaining void counts/history.
+4. Patient financial ledger renders from existing receipt records with no second persistence path.
+5. Required Runtime Smoke, Pages Source Verification, Receipt Export and Android Build gates pass on the final PR head.
+6. PR is merged only after required gates pass; final main SHA and phase status are re-verified.
+7. Phase 8.10 is authorized only after Phase 8.9 is COMPLETE.
+
+Last updated: 2026-10-09 (Phase 8.9 full regression started after re-verifying Phase 8.8 completion and current main checkpoint).
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED

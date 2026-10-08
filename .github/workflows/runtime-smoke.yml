@@ -1147,6 +1147,9 @@ jobs:
           // 2) Receipt create/edit/save and durable repository verification.
           await page.evaluate(() => {
             window.aqsa7EditingReceiptId='';
+            // Isolate this fixture from the preceding Phase 8.4/8.5 visit-service state.
+            window.aqsa7CurrentVisitId = '';
+            window.aqsa7VisitServiceItems = [];
             document.getElementById('digReceiptNo').value = 'PH5-001';
             document.getElementById('digDate').value = '2026-10-08';
             document.getElementById('digClientName').value = 'Phase5 Regression Patient';
@@ -1205,6 +1208,53 @@ jobs:
           if ((await page.locator('#historyList .history-ledger-row').count()) !== 1) fail('History search failed');
           await page.locator('#historyFilter').selectOption('balance');
           if ((await page.locator('#historyList .history-ledger-row').count()) !== 1) fail('History balance filter failed');
+
+          // Phase 8.9 — cross-phase financial regression: date bounds, invalid ranges,
+          // active-vs-voided accounting, and patient-ledger projection from the same records.
+          const financialRegression = await page.evaluate(() => {
+            const history = safeHistory();
+            const target = history.filter(r => ['PH5-001','PH8-5-001'].includes(r.recNo));
+            const summary = getHistoryFinancialSummary(target);
+            const before = {
+              search: document.getElementById('historySearch')?.value || '',
+              from: document.getElementById('historyFromDate')?.value || '',
+              to: document.getElementById('historyToDate')?.value || '',
+              filter: document.getElementById('historyFilter')?.value || 'all'
+            };
+            document.getElementById('historyFromDate').value = '2026-10-09';
+            document.getElementById('historyToDate').value = '2026-10-09';
+            renderHistory();
+            const excludedByDate = document.querySelectorAll('#historyList .history-ledger-row').length === 0;
+            document.getElementById('historyFromDate').value = '2026-10-10';
+            document.getElementById('historyToDate').value = '2026-10-08';
+            renderHistory();
+            // Reversed ranges must fail closed (no rows); renderHistory's final count
+            // label is intentionally not used as the rejection signal.
+            const invalidRangeRejected = document.querySelectorAll('#historyList .history-ledger-row').length === 0;
+            resetHistoryFilters();
+            return {summary, excludedByDate, invalidRangeRejected, before};
+          });
+          if (financialRegression.summary.count !== 1 ||
+              financialRegression.summary.voided !== 1 ||
+              Number(financialRegression.summary.total) !== 1500 ||
+              Number(financialRegression.summary.paid) !== 1200 ||
+              Number(financialRegression.summary.balance) !== 300 ||
+              !financialRegression.excludedByDate ||
+              !financialRegression.invalidRangeRejected) {
+            fail('Phase 8.9 financial/date-range regression failed', financialRegression);
+          }
+          const patientLedgerRegression = await page.evaluate(() => {
+            const root = document.getElementById('historyPatientLedgerList');
+            const text = root?.innerText || '';
+            return {
+              rendered: !!root && root.querySelectorAll('.history-patient-ledger-row').length > 0,
+              containsTargetPatient: text.includes('Phase5 Regression Patient'),
+              emptyState: !!root?.querySelector('.history-ledger-empty')
+            };
+          });
+          if (!patientLedgerRegression.rendered || !patientLedgerRegression.containsTargetPatient || patientLedgerRegression.emptyState) {
+            fail('Phase 8.9 patient financial ledger projection failed', patientLedgerRegression);
+          }
 
           // 5) Backup engine: encrypted round-trip + ownership + plaintext rejection + restore preparation.
           const backup = await page.evaluate(async () => {
