@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: RELEASE CANDIDATE — v1.4.0
-Last updated: 2026-10-08 (Phase 7.6 documentation reconciled; v1.4.0 release packaging authorized)
+Status: PHASE 8 ACTIVE — Phase 8.0 COMPLETE / Phase 8.1 AUTHORIZED
+Last updated: 2026-10-08 (Phase 8.0 real-clinic UX audit completed; receipt model clarified; Phase 8.1 authorized)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3062,7 +3062,7 @@ Priority register:
 Objective: reconstruct the user-facing navigation/workspace hierarchy around daily clinic work while preserving `js/app.js` as the sole route/context owner and without implementing the Phase 8.5 receipt redesign early.
 
 
-Last updated: 2026-10-08 (v1.4.0 package prepared and verified; v1.3.0 remains historical release)
+Last updated: 2026-10-08 (Phase 8.0 audit complete; v1.4.0 remains the verified release-candidate baseline; Phase 8.1 is the next authorized task)
 
 ## Current authoritative decisions
 
