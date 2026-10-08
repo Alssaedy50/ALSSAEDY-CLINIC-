@@ -709,7 +709,81 @@ Gate decision:
 - Task 3.5 is now authorized to start.
 
 Next authorized task:
-- Task 3.5 — AI Capability Layer & Provider Adapter Contract.
+- Task 3.5 — AI Capability Layer & Provider Adapter Contract — PENDING VERIFICATION (implementation complete; final main-branch export/Pages gate pending).
+
+### Phase 3 / Task 3.5 — AI Capability Layer & Provider Adapter Contract
+
+Status: **PENDING VERIFICATION** (implementation complete; final main-branch cross-platform/export verification still required)
+
+Purpose:
+- Establish one platform-level, provider-independent AI capability boundary reusable by Dental, medical, retail, supermarket, restaurant, café and future products.
+- Keep business/vertical modules dependent only on AQSA7 AI capability contracts, never on a model vendor, SDK, API key or provider-specific request format.
+- Preserve local-first operation: AI is optional, disabled by default, has no persistence ownership, no secrets, and no mandatory paid/online dependency.
+- Provide stable contracts for capabilities, structured outputs, prompts, tools/function calling, retrieval/context, streaming, provider discovery, usage controls, safety policy and observability.
+
+Research and decision:
+- Google Gemini documentation confirms structured JSON-schema output and application-owned function execution; the model proposes function calls while the application remains responsible for executing them. citeturn0search1turn0search2
+- MCP documentation confirms a provider-neutral tool/resource/prompt protocol with explicit client/server boundaries; AQSA7 does not adopt MCP as a dependency here, but the same separation supports a clean future interoperability boundary. citeturn0search3turn0search15
+- Current provider pricing was reviewed to reject any provider as a mandatory core dependency; external model use remains optional and must be policy-controlled. citeturn2search1turn2search24
+- Decision: implement a lightweight native AQSA7 AI contract now, without importing any AI SDK. Provider adapters will be thin transport/model adapters behind the contract; future local or external providers can be added without changing business modules.
+
+Implementation:
+- Added `js/ai.js` as the single authoritative Platform AI Capability Layer.
+- Versioned contract ID: `aqsa7-ai-capability-layer`, schemaVersion 1.
+- Stable reusable capabilities: `summarize`, `extract`, `classify`, `search`, `generate`, `recommend`.
+- Prompt/instruction templates are generic platform assets, not Dental/business logic.
+- Structured request/result contract includes capability ID, authorized input/context, output schema, tool descriptors, retrieval context, streaming flag, policy and metadata.
+- Tool boundary explicitly requires application-side authorization/validation before any requested tool executes; AI never receives direct repository authority.
+- Retrieval boundary explicitly consumes existing AQSA7 repository/capability data and never creates a second database/store.
+- Provider adapter contract defines descriptor, capability discovery, execute, optional stream/model-list/health; adapter ownership is limited to transport/auth/model invocation.
+- Default adapter is an explicit `unconfigured` fail-soft adapter; AI unavailable/disabled does not affect core product operation.
+- Policy contract denies external transmission and sensitive data by default and requires explicit enablement; high-impact/recommendation/extraction/generation outputs require human review by default.
+- Usage/cost controls are adapter metadata/limits only; no mandatory paid service is introduced.
+- Observability hooks are defined without permitting sensitive payload logging.
+- `index.html` loads `js/ai.js` before `js/product.js`.
+- Dental Product Definition now references the platform AI contract and keeps AI optional/disabled by default with explicit allowed capabilities and sensitive-data denial.
+- No Repository, State Machine, IndexedDB store, backup path, vendor SDK, API key or secret was added for AI.
+
+Files changed:
+- js/ai.js
+- js/product.js
+- index.html
+- .github/workflows/runtime-smoke.yml
+- docs/AQSA7-BUILD-PLAN.md
+
+Verification performed:
+- JavaScript syntax validation: PASS in Runtime Smoke PR run `37724762032`.
+- AI vendor isolation assertion: PASS in `37724762032`; no direct provider/SDK reference is permitted in product/shared capability/repository/storage/app modules.
+- Mobile browser smoke: PASS in `37724762032`.
+- Desktop browser integration smoke: PASS in `37724762032`.
+- Android debug + signed production build, signature and metadata verification: PASS in `37724762052`.
+- Initial verification run `37724650951` failed only because the new shell grep assertion had invalid quoting; root cause was test-harness syntax, not application code. The assertion was simplified, rerun, and passed in `37724762032`.
+- Remaining required verification before closure: main-branch receipt/export and Pages/Cloudflare checks on the final documented commit.
+
+Task 3.5 exit criteria:
+1. Platform-level AI boundary exists independently of any product/provider.
+2. Business modules have no direct AI vendor/SDK dependency.
+3. Stable capability contracts and versioning exist.
+4. Provider/model adapters are isolated behind one contract.
+5. Structured output and validation boundary exists.
+6. Tool/function-calling boundary preserves normal AQSA7 authorization/validation.
+7. Retrieval/context boundary uses existing AQSA7 data authorities and does not create a second store.
+8. Streaming/provider capability discovery are represented by the adapter contract.
+9. AI is optional, fail-soft and disabled by default.
+10. Sensitive/external data transmission is explicitly denied unless policy permits it.
+11. Secrets are not embedded or persisted by the AI layer.
+12. No paid/mandatory AI dependency is introduced.
+13. Static JS, browser mobile/desktop and Android verification pass.
+14. Receipt/export and Pages/cross-platform verification pass on the final main commit.
+15. Build Plan records research, decisions, implementation, failures/resolution and final evidence.
+
+Gate decision:
+- Architecture/implementation: MET.
+- Provider independence/no vendor leakage: MET.
+- Safety/local-first/no persistence or secret ownership: MET.
+- Static/mobile/desktop/Android verification: MET.
+- Final main-branch export/Pages verification: **PENDING**.
+- Task 3.5 remains **PENDING VERIFICATION** and Task 3.6 is not authorized.
 
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
@@ -761,7 +835,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 3.4 final cross-platform verification completed; Task 3.5 authorized)
+Last updated: 2026-10-08 (Task 3.5 implementation complete; final main-branch verification pending)
 
 ## Current authoritative decisions
 
