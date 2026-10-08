@@ -467,6 +467,34 @@ jobs:
 
 
 
+          const backupProviderRuntime = await page.evaluate(async () => {
+            const runtime = window.aqsa7BackupProviderRuntime;
+            const contract = window.AQSA7_BACKUP_PROVIDER_RUNTIME_CONTRACT;
+            const baseContract = window.AQSA7_BACKUP_PROVIDER_CONTRACT;
+            if (!runtime || !contract || !baseContract) throw new Error('Backup Provider runtime boundary missing.');
+            if (contract.contractId !== 'aqsa7-backup-provider-runtime' || contract.schemaVersion !== 1 || contract.providerIndependent !== true || contract.persistence !== 'memory-only' || contract.secretStorage !== false) {
+              throw new Error('Backup Provider runtime contract incompatible: '+JSON.stringify(contract));
+            }
+            runtime.clear();
+            const fake = {
+              getDescriptor:()=>({id:'runtime-smoke-provider',name:'Runtime Smoke Provider',version:'1',operations:['health'],platforms:['web','pwa','desktop','android']}),
+              health:async()=>({status:'success',providerId:'runtime-smoke-provider',operation:'health'}),
+              list:async()=>({status:'error',error:{code:'UNAVAILABLE'}}),
+              put:async()=>({status:'error',error:{code:'UNAVAILABLE'}}),
+              get:async()=>({status:'error',error:{code:'UNAVAILABLE'}}),
+              delete:async()=>({status:'error',error:{code:'UNAVAILABLE'}})
+            };
+            const descriptor = runtime.register(fake);
+            const listed = runtime.list();
+            const health = await runtime.health('runtime-smoke-provider',{productId:'aqsa7',tenantId:'smoke-tenant',instanceId:'smoke-instance'});
+            const duplicateRejected = (()=>{ try { runtime.register(fake); return false; } catch (_) { return true; } })();
+            const removed = runtime.unregister('runtime-smoke-provider');
+            return {descriptorId:descriptor.id,listed:listed.length,healthStatus:health.status,duplicateRejected,removed,afterRemove:runtime.list().length};
+          });
+          if (backupProviderRuntime.descriptorId !== 'runtime-smoke-provider' || backupProviderRuntime.listed !== 1 || backupProviderRuntime.healthStatus !== 'success' || !backupProviderRuntime.duplicateRejected || !backupProviderRuntime.removed || backupProviderRuntime.afterRemove !== 0) {
+            throw new Error('Backup Provider runtime registry failed: '+JSON.stringify(backupProviderRuntime));
+          }
+
           const sharedCapabilities = await page.evaluate(() => ({
             ids: typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [],
             manifest: window.AQSA7_SHARED_CAPABILITY_MANIFEST || null,
