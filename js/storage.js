@@ -253,17 +253,54 @@ function getHistoryStats(list) {
     return { count: items.length, total: totals.total, paid: totals.paid, balance: totals.balance };
 }
 
-function renderHistoryStats(list) {
-    const box = document.getElementById('historyStats');
-    if (!box) return;
-    const s = getHistoryStats(list);
-    const fmt = n => Number(n || 0).toLocaleString('ar-EG');
-    box.innerHTML =
-        '<div class="stat-cell"><span class="stat-label">عدد السندات</span><strong>' + fmt(s.count) + '</strong></div>' +
-        '<div class="stat-cell"><span class="stat-label">إجمالي الحسابات</span><strong>' + fmt(s.total) + '</strong></div>' +
-        '<div class="stat-cell"><span class="stat-label">إجمالي المدفوع</span><strong>' + fmt(s.paid) + '</strong></div>' +
-        '<div class="stat-cell stat-balance"><span class="stat-label">إجمالي المتبقي</span><strong>' + fmt(s.balance) + '</strong></div>';
+function getHistoryFinancialSummary(list){
+    const all=Array.isArray(list)?list:[];
+    const active=all.filter(isReceiptActive);
+    const voided=all.length-active.length;
+    const patients=new Set(active.map(item=>String(item.patientId||item.patientPhone||item.name||item.id||''))).size;
+    const billing=window.aqsa7BillingContract;
+    const s=billing?billing.summarizeReceivables(active):active.reduce((a,item)=>({count:a.count+1,total:a.total+(Number(item.total)||0),paid:a.paid+(Number(item.paid)||0),balance:a.balance+(Number(item.balance)||0)}),{count:0,total:0,paid:0,balance:0});
+    return {...s,patients,voided};
 }
+
+function renderHistoryStats(list) {
+    const box=document.getElementById('historyStats');if(!box)return;
+    const s=getHistoryFinancialSummary(list);
+    const fmt=n=>Number(n||0).toLocaleString('ar-EG');
+    box.innerHTML=
+      '<div class="stat-cell"><span class="stat-label">السندات السارية</span><strong>'+fmt(s.count)+'</strong></div>'+
+      '<div class="stat-cell"><span class="stat-label">المرضى</span><strong>'+fmt(s.patients)+'</strong></div>'+
+      '<div class="stat-cell"><span class="stat-label">إجمالي الحسابات</span><strong>'+fmt(s.total)+'</strong></div>'+
+      '<div class="stat-cell"><span class="stat-label">إجمالي المدفوع</span><strong>'+fmt(s.paid)+'</strong></div>'+
+      '<div class="stat-cell stat-balance"><span class="stat-label">إجمالي المتبقي</span><strong>'+fmt(s.balance)+'</strong></div>'+
+      '<div class="stat-cell"><span class="stat-label">سندات ملغاة</span><strong>'+fmt(s.voided)+'</strong></div>';
+}
+
+function renderPatientFinancialLedger(list){
+    const root=document.getElementById('historyPatientLedgerList');if(!root)return;
+    const all=Array.isArray(list)?list:[];
+    const active=all.filter(isReceiptActive);
+    const groups=new Map();
+    active.forEach(item=>{
+      const key=String(item.patientId||item.patientPhone||item.name||'unknown');
+      const current=groups.get(key)||{name:item.name||'مريض بدون اسم',phone:item.patientPhone||'',count:0,total:0,paid:0,balance:0,lastDate:''};
+      current.count+=1;current.total+=Number(item.total)||0;current.paid+=Number(item.paid)||0;current.balance+=Number(item.balance)||0;
+      if(String(item.date||'')>String(current.lastDate||''))current.lastDate=item.date||'';
+      groups.set(key,current);
+    });
+    const rows=[...groups.values()].sort((a,b)=>b.balance-a.balance||String(b.lastDate).localeCompare(String(a.lastDate))).slice(0,20);
+    const count=document.getElementById('historyPatientLedgerCount');if(count)count.textContent=groups.size+' مريض';
+    if(!rows.length){root.innerHTML='<div class="history-ledger-empty">لا توجد حسابات مالية نشطة لعرضها.</div>';return;}
+    const fmt=n=>Number(n||0).toLocaleString('ar-EG');
+    root.innerHTML=rows.map(p=>'<article class="history-patient-ledger-row">'+
+      '<div><strong>'+escapeHTML(p.name)+'</strong><small>'+escapeHTML(p.phone||'بدون هاتف')+' · '+fmt(p.count)+' زيارة/سند</small></div>'+
+      '<div><span>الحساب</span><strong>'+fmt(p.total)+'</strong></div>'+
+      '<div><span>المدفوع</span><strong>'+fmt(p.paid)+'</strong></div>'+
+      '<div class="'+(p.balance>0?'is-due':'is-paid')+'"><span>المتبقي</span><strong>'+fmt(p.balance)+'</strong></div>'+
+      '<div><span>آخر حركة</span><strong>'+escapeHTML(typeof formatReceiptDate==='function'?formatReceiptDate(p.lastDate):p.lastDate||'—')+'</strong></div>'+
+    '</article>').join('');
+}
+
 
 function filterHistory(list, query) {
     const q = String(query || '').trim().toLowerCase();
@@ -285,7 +322,15 @@ function renderHistory() {
     if (!container) return;
     const query = document.getElementById('historySearch')?.value || '';
     const filter = document.getElementById('historyFilter')?.value || 'all';
+    const fromDate = document.getElementById('historyFromDate')?.value || '';
+    const toDate = document.getElementById('historyToDate')?.value || '';
     let filtered = filterHistory(history, query);
+    if(fromDate) filtered=filtered.filter(item=>String(item.date||'')>=fromDate);
+    if(toDate) filtered=filtered.filter(item=>String(item.date||'')<=toDate);
+    if(fromDate&&toDate&&fromDate>toDate){
+      const note=document.getElementById('historyLedgerCount');if(note)note.textContent='نطاق تاريخ غير صالح';
+      filtered=[];
+    }
 
     if (filter === 'balance') filtered = filtered.filter(item => isReceiptActive(item) && Number(item.balance) > 0);
     if (filter === 'settled') filtered = filtered.filter(item => isReceiptActive(item) && Number(item.balance) <= 0 && Number(item.total) > 0);
@@ -299,7 +344,8 @@ function renderHistory() {
         return String(b.recNo || '').localeCompare(String(a.recNo || ''), undefined, {numeric:true});
     });
 
-    renderHistoryStats(filtered.length === history.length && !query && filter === 'all' ? history : filtered);
+    renderHistoryStats(filtered.length === history.length && !query && !fromDate && !toDate && filter === 'all' ? history : filtered);
+    renderPatientFinancialLedger(filtered);
 
     const count = document.getElementById('historyLedgerCount');
     if (count) count.textContent = filtered.length + ' سند';
@@ -347,6 +393,12 @@ function renderHistory() {
     }).join('');
 
     container.innerHTML = rows;
+}
+
+function resetHistoryFilters(){
+    ['historySearch','historyFromDate','historyToDate'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const filter=document.getElementById('historyFilter');if(filter)filter.value='all';
+    renderHistory();
 }
 
 function loadReceipt(id) {
