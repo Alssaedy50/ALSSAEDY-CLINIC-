@@ -951,7 +951,7 @@ jobs:
             functions: ['saveReceiptLocally','savePatientManual','renderPatients','renderHistory','triggerNativePrint','downloadReceiptImage','openPreviewModal','openShareModal','exportTransactionsFile'].filter(n => typeof window[n] === 'function')
           }));
           if (shell.dir !== 'rtl' || shell.lang !== 'ar') fail('RTL/Arabic shell contract failed', shell);
-          if (shell.tabs.length !== 4) fail('Primary navigation coverage failed', shell);
+          if (shell.tabs.length !== 5) fail('Primary navigation coverage failed', shell);
           if (shell.functions.length !== 9) fail('Core action function coverage failed', shell);
 
           // 2) Receipt create/edit/save and durable repository verification.
