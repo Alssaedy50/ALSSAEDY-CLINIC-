@@ -987,7 +987,6 @@ Gate decision:
 - Independent deployment-to-source evidence is reproducible from GitHub Actions run 37728292037 and artifact 11528691666.
 - The final documentation commit is docs-only; the authoritative Task 3.6 source file js/integrations.js remains byte-identical to the verified source and retains the verified live SHA-256.
 - Task 3.6: **COMPLETE**.
-- Task 3.7: **NEXT AUTHORIZED TASK**.
 ### Phase 3 / Task 3.7 — Reliability, Backup & Security Boundary Contract / Phase 4 Readiness
 
 Status: **DEFINED / READY FOR EXECUTION**
@@ -1199,7 +1198,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 3.6 independently verified and closed; Pages source-to-live evidence recorded; Task 3.7 authorized)
+Last updated: 2026-10-08 (Task 3.7 formally defined and ready for execution; Phase 4 not started)
 
 ## Current authoritative decisions
 
