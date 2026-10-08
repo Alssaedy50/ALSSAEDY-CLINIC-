@@ -334,10 +334,6 @@ async function renderPatients(){
 
   const count=document.getElementById('patientsDirectoryCount');
   if(count)count.textContent=rows.length+' مريض'+(rows.length===1?'':'');
-  if(!rows.length){
-    box.innerHTML='<div class="empty-state patient-ledger-empty">لا توجد نتائج مطابقة للبحث أو التصفية.</div>';
-    return;
-  }
   const currency=p=>p.financial.receipts[0]?.currencyName||'ريال يمني';
   const status=p=>p.financial.balance>0
     ? '<span class="patient-status patient-status-balance">متبقي</span>'
@@ -356,7 +352,7 @@ async function renderPatients(){
     '<div class="patient-status-cell" data-label="الحالة">'+status(p)+'<small>موعد: '+visit(p)+'</small></div>'+
     '<div class="patient-list-actions"><button type="button" class="patient-open-btn" onclick="selectPatient(\''+String(p.id).replace(/'/g,'')+'\')">فتح الحساب</button></div>'+
     '</article>').join('');
-  box.innerHTML=desktopHead+cards;
+  box.innerHTML=desktopHead+(cards||'<div class="empty-state patient-ledger-empty">لا توجد نتائج مطابقة للبحث أو التصفية.</div>');
 }
 async function selectPatient(id){
   const list=await getPatients(),p=list.find(x=>x.id===id);if(!p)return;
