@@ -929,7 +929,7 @@ jobs:
           const cloud = await page.evaluate(async () => {
             const identity = window.aqsa7GetInstanceIdentity();
             let getCalls = 0;
-            const fake = { getDescriptor:()=>({id:'phase5-provider',name:'Phase5 Provider',kind:'test',version:1,providerIndependent:true}), health:async()=>({status:'success'}), list:async()=>({status:'success',backups:[]}), put:async()=>({status:'success'}), get:async()=>{getCalls++; return {status:'success',artifact:{artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}}}, delete:async()=>({status:'success'}) };
+            const fake = { getDescriptor:()=>({id:'phase5-provider',name:'Phase5 Provider',kind:'test',version:1,operations:['health','list','put','get','delete'],providerIndependent:true}), health:async()=>({status:'success'}), list:async()=>({status:'success',backups:[]}), put:async()=>({status:'success'}), get:async()=>{getCalls++; return {status:'success',artifact:{artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}}}, delete:async()=>({status:'success'}) };
             window.aqsa7BackupProviderRuntime.register(fake);
             const listed = await window.aqsa7CloudRecovery.list('phase5-provider', identity);
             window.aqsa7BackupProviderRuntime.unregister('phase5-provider');
