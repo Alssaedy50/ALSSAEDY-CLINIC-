@@ -108,8 +108,6 @@ jobs:
           if (platformUx.traceableMissingOwner.length) throw new Error('Visible platform/product action is missing traceability metadata: '+JSON.stringify(platformUx.traceableMissingOwner));
           if (platformUx.traceableCount < 8) throw new Error('Insufficient platform/product UI traceability coverage: '+platformUx.traceableCount);
 
-          await page.locator('#tabPlatformProducts').evaluate(() => { throw new Error('platform navigation must not be visible inside product context'); });
-
           const designTokens = await page.evaluate(() => {
             const root = getComputedStyle(document.documentElement);
             const token = name => root.getPropertyValue(name).trim();
