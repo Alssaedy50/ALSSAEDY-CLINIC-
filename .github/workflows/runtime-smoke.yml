@@ -829,6 +829,80 @@ jobs:
           await browser.close();
           NODE
 
+      - name: Phase 7.4 cross-platform navigation, history and PWA regression
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+
+          const browser = await chromium.launch({headless:true});
+          const context = await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1});
+          const page = await context.newPage();
+          const errors = [];
+          page.on('pageerror', e => errors.push(String(e)));
+          page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+
+          const fail = (msg, data) => { throw new Error(msg + (data ? ': ' + JSON.stringify(data) : '')); };
+          await page.goto('http://127.0.0.1:4173/index.html', {waitUntil:'networkidle'});
+
+          // 1) Platform route is the default and product entry is addressable.
+          if (!(await page.locator('#platformHome').isVisible())) fail('Platform home is not the default route');
+          await page.locator('#tabPlatformProducts').click();
+          if (!page.url().includes('#platform-products')) fail('Products route was not reflected in browser history');
+          await page.locator('#dentalProductCard .platform-primary-btn').click();
+          if (!page.url().includes('#product-dental-clinic')) fail('Dental product route was not reflected in browser history');
+          if (!(await page.locator('#productWorkspace').isVisible())) fail('Dental workspace did not open from addressable route');
+
+          // 2) Refresh must reconstruct the same product context without a second router.
+          await page.reload({waitUntil:'networkidle'});
+          if (!(await page.locator('#productWorkspace').isVisible())) fail('Product context was not restored after refresh');
+          if (!(await page.locator('#aqsa7ProductContext').isVisible())) fail('Product context bar was not restored after refresh');
+          if (await page.locator('.platform-tabs').isVisible()) fail('Platform navigation leaked into product context after refresh');
+
+          // 3) Browser Back must return to Products, then Home, without stale Dental controls.
+          await page.goBack({waitUntil:'networkidle'});
+          if (!(await page.locator('#platformProducts').isVisible())) fail('Browser Back did not return to Products');
+          if (await page.locator('#productWorkspace').isVisible()) fail('Dental workspace remained visible after browser Back to Products');
+          await page.goBack({waitUntil:'networkidle'});
+          if (!(await page.locator('#platformHome').isVisible())) fail('Browser Back did not return to Platform Home');
+          if (await page.locator('#dentalModeControls').isVisible()) fail('Dental controls leaked into Platform Home');
+
+          // 4) Direct deep-link entry must reconstruct Dental product context.
+          await page.goto('http://127.0.0.1:4173/index.html#product-dental-clinic', {waitUntil:'networkidle'});
+          if (!(await page.locator('#productWorkspace').isVisible())) fail('Direct Dental deep-link did not reconstruct workspace');
+          if (!(await page.locator('#aqsa7ProductContext').isVisible())) fail('Direct Dental deep-link lost product context');
+          if (!(await page.locator('#dentalModeControls').isVisible())) fail('Direct Dental deep-link lost Dental controls');
+
+          // 5) PWA contract must remain installable and platform-branded.
+          const pwa = await page.evaluate(async () => {
+            const response = await fetch('./manifest.webmanifest', {cache:'no-store'});
+            const manifest = await response.json();
+            const sw = navigator.serviceWorker ? await navigator.serviceWorker.ready : null;
+            return {
+              name: manifest.name,
+              shortName: manifest.short_name,
+              startUrl: manifest.start_url,
+              display: manifest.display,
+              icons: Array.isArray(manifest.icons) ? manifest.icons.length : 0,
+              serviceWorker: !!sw
+            };
+          });
+          if (pwa.name !== 'AQSA7' || pwa.shortName !== 'AQSA7') fail('PWA identity is not AQSA7', pwa);
+          if (!String(pwa.startUrl).includes('index.html')) fail('PWA start_url does not target the application shell', pwa);
+          if (!['standalone','fullscreen','minimal-ui'].includes(pwa.display)) fail('PWA display mode is not app-like', pwa);
+          if (pwa.icons < 1 || !pwa.serviceWorker) fail('PWA manifest/service-worker contract incomplete', pwa);
+
+          // 6) Android shell source must use the AQSA7 platform identity consistently.
+          const androidIdentity = await page.evaluate(() => ({
+            appTitle: document.title,
+            platformHeader: document.querySelector('#platformBrandTitle')?.textContent?.trim() || ''
+          }));
+          if (!/AQSA7/.test(androidIdentity.platformHeader)) fail('Platform shell identity is not AQSA7', androidIdentity);
+
+          if (errors.length) fail('Cross-platform browser/page errors', errors);
+          await browser.close();
+          console.log('PHASE_7_4_CROSS_PLATFORM_REGRESSION=PASS');
+          NODE
+
       - name: Phase 5 full regression — core data, backup, exports, cloud boundary, offline and RTL
         run: |
           node --input-type=module <<'NODE'
