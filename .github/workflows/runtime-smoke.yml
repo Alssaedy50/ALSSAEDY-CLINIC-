@@ -331,6 +331,48 @@ jobs:
           const exportedEnvelope = JSON.parse(backupDelegation.content);
           if (exportedEnvelope.artifactType !== 'AQSA7_BACKUP_ARTIFACT' || !exportedEnvelope.crypto || !exportedEnvelope.ciphertext) throw new Error('Backup Engine export did not produce an encrypted artifact.');
 
+          const backupProvider = await page.evaluate(async () => {
+            const contract = window.AQSA7_BACKUP_PROVIDER_CONTRACT;
+            if (!contract || contract.contractId !== 'aqsa7-backup-provider-adapter-contract' || contract.schemaVersion !== 1) {
+              throw new Error('Backup Provider Adapter Contract missing.');
+            }
+            if (contract.providerIndependent !== true || contract.enabledByDefault !== false || contract.coreDependency !== false) {
+              throw new Error('Backup Provider contract violates provider-independent/local-first boundary.');
+            }
+            const identity = {productId:'dental-clinic',tenantId:'tenant-test',instanceId:'instance-test'};
+            const engineArtifact = await window.aqsa7BackupEngine.createArtifact();
+            const password = 'AQSA7-' + crypto.randomUUID() + '-provider-test';
+            const encrypted = await window.aqsa7EncryptBackupArtifact(engineArtifact,password);
+            const fake = {
+              getDescriptor: () => ({id:'test-provider',name:'Test Provider',kind:'test',version:'1',operations:['health','list','put','get','delete'],platforms:['web','pwa','desktop','android']}),
+              health: async () => ({status:'success'}),
+              list: async request => ({status:'success',items:[],ownership:request.ownership}),
+              put: async request => ({status:'success',backupId:'backup-test',ownership:request.ownership}),
+              get: async request => ({status:'success',artifact:request.artifact,ownership:request.ownership}),
+              delete: async request => ({status:'success',backupId:request.backupId,ownership:request.ownership})
+            };
+            const descriptor = window.aqsa7ValidateBackupProviderAdapter(fake);
+            const putRequest = window.aqsa7CreateBackupProviderRequest('put',identity,encrypted,{idempotencyKey:'provider-test-1'});
+            const putResult = await window.aqsa7ExecuteBackupProvider(fake,'put',identity,{artifact:encrypted,idempotencyKey:'provider-test-1'});
+            let plaintextRejected = false;
+            try { window.aqsa7ValidateBackupProviderArtifact(engineArtifact); } catch (_) { plaintextRejected = true; }
+            let foreignRequestRejected = false;
+            try { window.aqsa7CreateBackupProviderRequest('put',{productId:'dental-clinic',tenantId:'tenant-test'},encrypted); } catch (_) { foreignRequestRejected = true; }
+            return {
+              contract,
+              descriptor,
+              requestOwnership: putRequest.ownership,
+              result: putResult,
+              plaintextRejected,
+              foreignRequestRejected
+            };
+          });
+          if (backupProvider.descriptor?.id !== 'test-provider') throw new Error('Backup Provider descriptor validation failed: '+JSON.stringify(backupProvider));
+          if (backupProvider.requestOwnership?.tenantId !== 'tenant-test' || backupProvider.requestOwnership?.instanceId !== 'instance-test') throw new Error('Backup Provider ownership propagation failed: '+JSON.stringify(backupProvider));
+          if (backupProvider.result?.status !== 'success' || backupProvider.result?.providerId !== 'test-provider') throw new Error('Backup Provider execution contract failed: '+JSON.stringify(backupProvider));
+          if (!backupProvider.plaintextRejected || !backupProvider.foreignRequestRejected) throw new Error('Backup Provider security/ownership boundary failed: '+JSON.stringify(backupProvider));
+
+
 
           const sharedCapabilities = await page.evaluate(() => ({
             ids: typeof window.aqsa7ListSharedCapabilityIds === 'function' ? window.aqsa7ListSharedCapabilityIds() : [],
