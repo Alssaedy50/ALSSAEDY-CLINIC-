@@ -1147,6 +1147,9 @@ jobs:
           // 2) Receipt create/edit/save and durable repository verification.
           await page.evaluate(() => {
             window.aqsa7EditingReceiptId='';
+            // Isolate this fixture from the preceding Phase 8.4/8.5 visit-service state.
+            window.aqsa7CurrentVisitId = '';
+            window.aqsa7VisitServiceItems = [];
             document.getElementById('digReceiptNo').value = 'PH5-001';
             document.getElementById('digDate').value = '2026-10-08';
             document.getElementById('digClientName').value = 'Phase5 Regression Patient';
