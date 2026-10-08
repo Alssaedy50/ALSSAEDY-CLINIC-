@@ -118,8 +118,16 @@ async function clinicRepositoryHydrate(){
       catch(error){ rejected.push({store:'patients',id:item.id,reason:error.message}); }
     }
   }
-  repo.receipts=(await clinicDBAll('receipts')).map(item=>assertOwnedRecord(item,{store:'receipts',allowUnscoped:true})).filter(item=>isOwnedRecord(item));
-  repo.patients=(await clinicDBAll('patients')).map(item=>assertOwnedRecord(item,{store:'patients',allowUnscoped:true})).filter(item=>isOwnedRecord(item));
+  repo.receipts=[];
+  for(const item of await clinicDBAll('receipts')){
+    try{ repo.receipts.push(assertOwnedRecord(item,{store:'receipts',allowUnscoped:true})); }
+    catch(_){ /* already recorded in rejected list above */ }
+  }
+  repo.patients=[];
+  for(const item of await clinicDBAll('patients')){
+    try{ repo.patients.push(assertOwnedRecord(item,{store:'patients',allowUnscoped:true})); }
+    catch(_){ /* already recorded in rejected list above */ }
+  }
   for (const item of repo.receipts) await clinicDBPut('receipts', item);
   for (const item of repo.patients) await clinicDBPut('patients', item);
   repo.isolation = {
