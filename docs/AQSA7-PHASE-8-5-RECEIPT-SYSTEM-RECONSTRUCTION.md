@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.5 Receipt System Reconstruction
 
-Status: IN PROGRESS — implementation complete on branch `phase-8-5-receipt-system-reconstruction`
+Status: COMPLETE — merged and fully regression-verified
 Date: 2026-10-09
 
 ## Objective
@@ -113,6 +113,18 @@ Out of scope:
 
 ## Gate decision
 
-**PENDING CI GATE.**
+**COMPLETE — REQUIRED CI GATES PASSED.**
+
+### Completion evidence
+- PR #62 merged to `main`.
+- Verified PR head: `7a7295f96a5d654480a01e656db7fa20f2d861ab`.
+- Merge commit: `915a03ab2f8a619aea8fbc2487580a56c5f7b491`.
+- Runtime Smoke: PASS.
+- Browser Smoke: PASS.
+- Pages Source Verification: PASS.
+- Receipt Export: PASS.
+- Android/Build: PASS.
+- Cloudflare Workers build check: external deployment-rate-limit failure; non-blocking for the required AQSA7 gates.
+
 
 Completion evidence will be recorded here and in `docs/AQSA7-BUILD-PLAN.md` only after all required CI gates are green and the PR is merged.
