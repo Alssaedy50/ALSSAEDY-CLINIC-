@@ -899,3 +899,40 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 @media(max-width:760px){.clinic-dashboard{padding:18px 12px 60px}.clinic-dashboard-head{align-items:flex-start;flex-direction:column}.clinic-dashboard-head h2{font-size:24px}.clinic-dashboard-actions{display:grid;grid-template-columns:1fr 1fr}.dashboard-action-primary{grid-column:1/-1}.clinic-dashboard-stats{grid-template-columns:1fr 1fr}.clinic-dashboard-grid{grid-template-columns:1fr}}
 @media(max-width:430px){.clinic-dashboard-stats{grid-template-columns:1fr}.clinic-dashboard-actions{grid-template-columns:1fr}.dashboard-action-primary{grid-column:auto}}
 @media print{.clinic-dashboard{display:none!important}}
+
+/* ===== AQSA7 Phase 8.3 — Persistent Patient Workspace ===== */
+.clinic-patient-workspace{max-width:1180px;margin:0 auto;padding:22px 18px 84px;box-sizing:border-box}
+.clinic-patient-workspace[hidden]{display:none!important}
+.patient-workspace-shell{min-width:0}
+.clinic-patient-workspace-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px;padding-bottom:13px;border-bottom:1px solid #dbe4ef}
+.clinic-patient-workspace-head h2{margin:5px 0 4px;color:#0f172a;font-size:27px}
+.clinic-patient-workspace-head p{margin:0;color:#64748b;font-size:10px;line-height:1.6}
+.clinic-patient-workspace-actions{display:flex;gap:7px;flex-wrap:wrap}
+.clinic-patient-workspace-actions .tool-btn{min-height:42px}
+.patient-workspace-close{color:#475569!important}
+.clinic-patient-workspace hr{border:0;border-top:1px solid #e2e8f0;margin:16px 0}
+.clinic-patient-workspace .patient-directory{margin-top:0}
+.clinic-patient-workspace .patient-form{border:1px solid #dbe4ef;border-radius:15px;background:#f8fafc;padding:14px;margin-bottom:12px}
+.clinic-patient-workspace .patient-form:not(.patient-detail-edit-open){display:none}
+.clinic-patient-workspace .patient-form.patient-detail-edit-open{display:grid}
+.clinic-patient-workspace .patient-account-panel{border:1px solid #dbe4ef;border-radius:16px;background:#fff;overflow:hidden;margin-bottom:12px}
+.clinic-patient-workspace .patient-directory-tools{position:sticky;top:8px;z-index:3;padding:8px;border:1px solid #dbe4ef;border-radius:12px;background:rgba(248,250,252,.96);backdrop-filter:blur(10px)}
+.clinic-patient-workspace .patient-ledger-table{min-height:120px}
+.clinic-patient-workspace .patient-ledger-row{transition:transform .15s ease,box-shadow .15s ease}
+.clinic-patient-workspace .patient-ledger-row:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.07)}
+.clinic-patient-workspace .patient-detail-sticky{position:sticky;top:0;z-index:4;background:#fff;border-bottom:1px solid #e2e8f0}
+.clinic-patient-workspace .patient-detail-topline{padding:9px 12px 0}
+.clinic-patient-workspace .patient-detail-content{padding:0 12px 16px}
+.clinic-patient-workspace .patient-detail-section-title{margin-top:14px}
+@media(max-width:760px){
+  .clinic-patient-workspace{padding:16px 10px 60px}
+  .clinic-patient-workspace-head{align-items:flex-start;flex-direction:column}
+  .clinic-patient-workspace-head h2{font-size:23px}
+  .clinic-patient-workspace-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .clinic-patient-workspace-actions .tool-btn{width:100%}
+  .clinic-patient-workspace .patient-directory-tools{position:static;display:grid}
+}
+@media(max-width:430px){
+  .clinic-patient-workspace-actions{grid-template-columns:1fr}
+}
+@media print{.clinic-patient-workspace{display:none!important}}
