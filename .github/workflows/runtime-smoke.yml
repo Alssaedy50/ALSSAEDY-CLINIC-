@@ -852,6 +852,8 @@ jobs:
           if (!mobileUx.historyLedger.visible || !mobileUx.historyLedger.twoColumn) throw new Error('Phase 8.7 history ledger mobile layout missing: '+JSON.stringify(mobileUx));
           if (mobileUx.touchBelow44.length) throw new Error('Phase 8.7 visible touch control below 44px: '+JSON.stringify(mobileUx.touchBelow44));
 
+          await page.locator('#historyModal .modal-close').click();
+          if (await page.locator('#historyModal').evaluate(e => e.classList.contains('open'))) throw new Error('Phase 8.7 history modal did not close after mobile inspection');
           await page.locator('#tabReceipt').click();
           await page.screenshot({path:'aqsa7-runtime-receipt.png',fullPage:true});
 
