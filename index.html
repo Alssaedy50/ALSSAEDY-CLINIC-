@@ -767,7 +767,21 @@
                     <option value="settled">مسددة بالكامل</option>
                     <option value="voided">السندات الملغاة</option>
                 </select>
+                <label class="history-date-filter">من
+                    <input type="date" id="historyFromDate" class="live-input" onchange="renderHistory()">
+                </label>
+                <label class="history-date-filter">إلى
+                    <input type="date" id="historyToDate" class="live-input" onchange="renderHistory()">
+                </label>
+                <button type="button" class="tool-btn history-filter-reset" onclick="resetHistoryFilters()">مسح التصفية</button>
             </div>
+            <section class="history-patient-ledger" aria-labelledby="historyPatientLedgerTitle">
+                <div class="history-patient-ledger-head">
+                    <div><span class="directory-kicker">PATIENT FINANCIAL LEDGER</span><h4 id="historyPatientLedgerTitle">الحسابات حسب المريض</h4></div>
+                    <span id="historyPatientLedgerCount" class="directory-count">0 مريض</span>
+                </div>
+                <div id="historyPatientLedgerList" class="history-patient-ledger-list"></div>
+            </section>
             <div class="history-ledger-table-wrap">
                 <div class="history-ledger-head-row">
                     <span>السند</span><span>المريض</span><span>الخدمة</span><span>الإجمالي</span><span>المدفوع</span><span>المتبقي</span><span>الحالة</span><span>إجراء</span>
@@ -777,7 +791,7 @@
             <div class="history-footer">
                 <span class="history-footer-note">السند الملغى يبقى محفوظاً للمرجعية ولا يدخل في الإجماليات المالية.</span>
                 <button type="button" class="tool-btn" onclick="exportTransactionsFile('csv')">📊 تصدير CSV</button>
-                <button type="button" class="tool-btn" onclick="clearAllHistory()">🗑️ مسح السجل بالكامل</button>
+                <span class="history-footer-note">السجل المالي يعتمد على السندات السارية؛ السندات الملغاة محفوظة للمرجعية ولا تُحذف من مسار المعاملات.</span>
             </div>
         </div>
     </div>
