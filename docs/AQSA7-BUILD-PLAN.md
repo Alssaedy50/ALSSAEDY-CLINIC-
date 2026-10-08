@@ -691,10 +691,10 @@ Status: IN PROGRESS
 Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
 
 Current next task: **Task 3.4 — Tenant / Instance Isolation Contract**
-- Identify reusable business capabilities independently of Dental-specific screens.
-- Define authoritative module contracts and ownership.
-- Move shared semantics behind generic capability boundaries without cloning or over-generalizing dental rules.
-- Preserve the Product Manifest/Instance Configuration contract established in Task 3.2.
+- Define the authoritative tenant/instance isolation contract across product configuration, repository records, backup/restore and future cloud/sync boundaries.
+- Ensure one instance cannot accidentally read/write another instance's durable data.
+- Preserve the single IndexedDB authority and shared-core model.
+- Keep tenant isolation explicit without introducing a second database or a new parallel state machine.
 
 Planned Phase 3 architectural gates/tasks:
 - 3.1 Reusable Dental Clinic Product Boundary — COMPLETE.
