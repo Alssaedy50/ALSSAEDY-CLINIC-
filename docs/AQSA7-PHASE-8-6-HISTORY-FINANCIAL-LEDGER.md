@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.6 History & Financial Ledger
 
-Status: IN PROGRESS — CI gate pending
+Status: COMPLETE — merged and fully regression-verified
 Date: 2026-10-09
 
 ## Objective
@@ -60,4 +60,14 @@ Required: Runtime Smoke, Browser Smoke, Pages Source Verification, Receipt Expor
 
 Separate acceptance: Functional Gate, Architecture Gate, Product/UX Gate.
 
-Current gate: PENDING CI.
+Current gate: COMPLETE — required GitHub gates passed.
+
+Completion evidence:
+- PR #63 merged to main.
+- Verified head: 37d10de1676cd3e99710af0aa9a95c4687ea5896.
+- Merge commit: b90ebc4333e21d51e260ad92d1262ca149336ed2.
+- Browser Smoke: PASS.
+- Pages Source Verification: PASS.
+- Receipt Export: PASS.
+- Android/Build: PASS.
+- Workers deployment check: external rate-limit failure; non-blocking.
