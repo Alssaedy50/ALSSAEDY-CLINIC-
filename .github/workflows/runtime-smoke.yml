@@ -230,6 +230,8 @@ jobs:
           await page.locator('#tabPatients').click();
           if (!(await page.locator('#patientsModal').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop patients surface did not open');
           if ((await page.locator('#patientsModal').evaluate(e => Math.round(e.getBoundingClientRect().width))) < 600) throw new Error('Desktop patients surface is unexpectedly narrow');
+          await page.locator('#patientsModal .modal-close').click();
+          if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Desktop patients surface did not close');
 
           await page.locator('#tabHistory').click();
           if (!(await page.locator('#historyModal').evaluate(e => e.classList.contains('open')))) throw new Error('Desktop history surface did not open');
