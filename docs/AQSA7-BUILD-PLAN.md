@@ -2032,6 +2032,71 @@ Task 4.10 gate:
 Next authorized task:
 - **Task 4.11 — Security / Tenant / Platform Hardening.**
 
+### Phase 4 / Task 4.11 — Security / Tenant / Platform Hardening
+
+Status: **COMPLETE**
+
+Purpose:
+- Close the Phase 4 security/isolation/platform-hardening boundary without introducing a new authentication system, persistence authority, state machine or provider implementation.
+- Make Product/Tenant/Instance ownership enforcement stronger at remote-provider operations.
+- Harden the Android wrapper and WebView boundary so the native bridge remains reachable only from the bundled application surface and external navigation leaves the WebView.
+- Prevent implicit Android app-data backup/device-transfer paths from creating an ungoverned second recovery copy of local business data.
+- Keep the service-worker shell aligned with the complete Phase 4 runtime module set.
+
+Security decisions:
+- Google Drive get and delete now perform a metadata ownership preflight and fail with normalized FORBIDDEN when the remote file's appProperties do not match the requested Product/Tenant/Instance identity.
+- Google Drive remains limited to the provider adapter boundary; tokens are still resolved externally and never persisted by AQSA7.
+- Android WebView explicitly disables file-origin JavaScript access to arbitrary local/content URLs.
+- Android WebView keeps the bundled file:///android_asset/ application surface internal, sends supported external HTTP(S)/WhatsApp/mail/tel links to the system handler, and rejects unknown schemes.
+- The Android JavaScript bridge URL-opening method now applies the same scheme allowlist.
+- Android automatic app-data backup is disabled with android:allowBackup="false", legacy backup exclusions and Android 12+ cloud/device-transfer extraction rules. This prevents an implicit platform-managed recovery path from becoming a second ungoverned backup channel.
+- Service-worker cache version is advanced to v1.2.2-core and now includes all Phase 4 runtime modules, including provider runtime, Google Drive auth/provider, cloud recovery, restore/migration, local backup UX and scheduling.
+- Existing Product/Tenant/Instance ownership helpers remain the single ownership authority. No second tenant model or authorization database was introduced.
+- Existing js/sync.js and api/clinic-sync.js remain transitional/non-authoritative and were not replaced or expanded by this task.
+
+Files changed:
+- js/google-drive-provider.js
+- android-app/app/src/main/java/com/alssaedy/clinic/MainActivity.java
+- android-app/app/src/main/AndroidManifest.xml
+- android-app/app/src/main/res/xml/backup_rules.xml
+- android-app/app/src/main/res/xml/data_extraction_rules.xml
+- sw.js
+- .github/workflows/runtime-smoke.yml
+- docs/AQSA7-BUILD-PLAN.md
+
+Verification:
+- Source inspection completed for Product/Tenant/Instance ownership, Repository/IndexedDB, Backup Engine, provider contract/runtime, Google Drive adapter, Cloud Recovery, Android WebView bridge, Android manifest and service worker.
+- External security guidance reviewed from official Android documentation for WebView JavaScript bridges and Android backup behavior.
+- PR #50: https://github.com/Alssaedy50/AQSA7/pull/50
+- Runtime Smoke: PASS — run 37794161248 (#234); security-boundary step, JavaScript syntax validation, mobile browser smoke and desktop browser smoke all passed.
+- Android APK: PASS — run 37794161261 (#458); debug APK build, signed production APK build, signature verification and metadata verification all passed.
+- Receipt export: PASS — run 37794161505 (#408).
+- GitHub Pages Source Verification: PASS — run 37794161454 (#88).
+- Provider smoke specifically verified foreign-tenant Google Drive get and delete requests are rejected as FORBIDDEN.
+- Platform smoke specifically verified Android backup flags, extraction rules, WebView file-origin restrictions and service-worker Phase 4 cache coverage.
+
+No Future Surprise gate:
+- Tenant/instance isolation remains data-driven through the existing Product contract and provider ownership boundary.
+- Remote provider object access cannot bypass ownership checks merely by presenting a provider object ID.
+- Android wrapper no longer relies on implicit platform backup/transfer as an ungoverned recovery mechanism; AQSA7's explicit encrypted local/cloud backup remains the intended recovery model.
+- The native bridge remains a thin platform adapter and does not own business state.
+- Service-worker caching now covers the complete Phase 4 runtime dependency chain without creating another persistence authority.
+- No authentication system, server-side authorization system, second database, repository, state machine, sync engine or new cloud provider was introduced.
+
+Task 4.11 gate decision:
+- Tenant/Product/Instance ownership hardening: MET.
+- Remote provider object ownership enforcement: MET.
+- Android/WebView platform hardening: MET.
+- Implicit Android backup/transfer isolation: MET.
+- Offline/service-worker Phase 4 runtime coverage: MET.
+- Runtime verification: MET.
+- Android verification: MET.
+- Pages source verification: MET.
+- Task 4.11: COMPLETE.
+
+Next authorized task:
+- **Phase 5 — Full Regression**, according to the authoritative phase sequence.
+
 ### Phase 5 — Full Regression
 Must verify:
 - all buttons/actions/forms/inputs
@@ -2062,7 +2127,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.10 Cloud Recovery verified complete; next authorized task Task 4.11 Security / Tenant / Platform Hardening)
+Last updated: 2026-10-08 (Task 4.11 Security / Tenant / Platform Hardening verified complete; next authorized phase Phase 5 Full Regression)
 
 ## Current authoritative decisions
 
