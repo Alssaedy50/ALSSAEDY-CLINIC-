@@ -29,10 +29,12 @@ function updateReceiptIssuancePanel(){
   const mode=document.getElementById('receiptIssuanceMode');if(mode)mode.textContent=document.body.getAttribute('data-mode')==='manual'?'نموذج طباعة':'سند رقمي';
 }
 function calculateLedger(){
-  const paid=Math.max(0,Number.parseFloat(document.getElementById('digPaid')?.value)||0), total=Math.max(0,Number.parseFloat(document.getElementById('digTotal')?.value)||0);
+  const billing=window.aqsa7BillingContract;
+  const paid=billing ? billing.normalizeAmount(document.getElementById('digPaid')?.value) : Math.max(0,Number.parseFloat(document.getElementById('digPaid')?.value)||0);
+  const total=billing ? billing.normalizeAmount(document.getElementById('digTotal')?.value) : Math.max(0,Number.parseFloat(document.getElementById('digTotal')?.value)||0);
   const paidTable=document.getElementById('digPaidTable'),balance=document.getElementById('digBalance'),taf=document.getElementById('digTafqeet');
   if(paidTable)paidTable.value=paid?paid:'';
-  if(balance)balance.value=(total||paid)?Math.max(0,total-paid):'';
+  if(balance)balance.value=(total||paid)?(billing ? billing.calculateBalance(total,paid) : Math.max(0,total-paid)):'';
   if(paid>0&&taf&&typeof tafqeetRial==='function')taf.value=tafqeetRial(paid);
   updateReceiptIssuancePanel();
 }
@@ -49,7 +51,7 @@ function collectReceiptData() {
         patientPhone:document.getElementById('digPatientPhone')?.value.trim()||'',
         patientId:window.currentPatientId||'',
         paid:String(paid),total:String(total),
-        balance:String(Math.max(0,total-paid)),change:String(Math.max(0,paid-total)),
+        balance:String(billing ? billing.calculateBalance(total,paid) : Math.max(0,total-paid)),change:String(billing ? billing.calculateChange(total,paid) : Math.max(0,paid-total)),
         tooth:document.getElementById('digTooth').value.trim(),
         customService:document.getElementById('digCustomService')?.value.trim()||'',
         tafqeet:document.getElementById('digTafqeet').value.trim(),
@@ -169,6 +171,8 @@ function updateHistoryCount() {
 
 function getHistoryStats(list) {
     const items = Array.isArray(list) ? list : safeHistory();
+    const billing = window.aqsa7BillingContract;
+    if (billing) return billing.summarizeReceivables(items);
     const totals = items.reduce((acc, item) => {
         acc.total += Number(item.total) || 0;
         acc.paid += Number(item.paid) || 0;
