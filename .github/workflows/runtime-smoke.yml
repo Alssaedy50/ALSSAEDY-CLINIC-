@@ -154,7 +154,7 @@ jobs:
             serviceCount: document.querySelector('#issuanceServiceCount')?.textContent,
             method: document.querySelector('#issuancePayMethod')?.textContent
           }));
-          if (issuanceValues.patient !== 'اختبار إصدار السند' || issuanceValues.total !== '1,000' || issuanceValues.paid !== '400' || issuanceValues.balance !== '600' || issuanceValues.serviceCount !== '1' || issuanceValues.method !== 'نقداً') throw new Error('Receipt issuance live summary failed');
+          if (issuanceValues.patient !== 'اختبار إصدار السند' || issuanceValues.total !== '1,000' || issuanceValues.paid !== '400' || issuanceValues.balance !== '600' || issuanceValues.serviceCount !== '1' || issuanceValues.method !== 'نقداً') throw new Error('Receipt issuance live summary failed: '+JSON.stringify(issuanceValues));
 
 
           await page.locator('#tabHistory').click();
