@@ -96,14 +96,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ALSSAEDY-CLINIC-v1.4.1-release-SHA256
-          path: android-app/app/build/outputs/apk/release/ALSSAEDY-CLINIC-v1.4.0-release-SIGNED.apk.sha256
+          path: android-app/app/build/outputs/apk/release/ALSSAEDY-CLINIC-v1.4.1-release-SIGNED.apk.sha256
           if-no-files-found: error
           retention-days: 90
 
       - name: Upload signed production APK
         uses: actions/upload-artifact@v4
         with:
-          name: ALSSAEDY-CLINIC-v1.4.0-release-SIGNED
+          name: ALSSAEDY-CLINIC-v1.4.1-release-SIGNED
           path: android-app/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 90
@@ -118,7 +118,7 @@ jobs:
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then RELEASE_TAG="$GITHUB_REF_NAME"; elif [[ "$RELEASE_TAG" != v* ]]; then RELEASE_TAG="v$RELEASE_TAG"; fi
           if [[ "$RELEASE_TAG" != v* ]]; then echo "::error::Invalid release tag: $RELEASE_TAG"; exit 1; fi
           APK="android-app/app/build/outputs/apk/release/app-release.apk"
-          SHA="android-app/app/build/outputs/apk/release/ALSSAEDY-CLINIC-v1.4.0-release-SIGNED.apk.sha256"
+          SHA="android-app/app/build/outputs/apk/release/ALSSAEDY-CLINIC-v1.4.1-release-SIGNED.apk.sha256"
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" "$APK" "$SHA" --clobber
           else
