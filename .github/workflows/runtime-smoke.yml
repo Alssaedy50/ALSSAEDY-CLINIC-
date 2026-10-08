@@ -757,6 +757,11 @@ jobs:
 
           await page.goto('http://127.0.0.1:4173/index.html', {waitUntil:'networkidle'});
 
+          // AQSA7 Phase 7.2: desktop layout assertions run inside the configured Dental product.
+          await page.locator('#tabPlatformProducts').click();
+          await page.locator('#dentalProductCard .platform-primary-btn').click();
+          await page.locator('#productWorkspace').waitFor({state:'visible'});
+
           const layout = await page.evaluate(() => {
             const width = el => el ? Math.round(el.getBoundingClientRect().width) : 0;
             const receipt = document.querySelector('#receiptPrintArea');
