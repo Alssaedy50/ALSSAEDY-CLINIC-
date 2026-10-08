@@ -50,3 +50,58 @@
 .sync-status.sync-busy{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
 html[data-night="on"] .sync-badge{background:#1e293b;color:#cbd5e1}
 html[data-night="on"] .sync-status{background:#111c33;border-color:#1e293b;color:#cbd5e1}
+
+
+/* ===== AQSA7 Phase 2 / Task 2.6 — History / Receipts Ledger ===== */
+.history-ledger-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:2px 0 10px}
+.history-ledger-head h3{margin:2px 0 3px;color:var(--color-text);font-size:15px}
+.history-ledger-head p{margin:0;color:var(--color-text-muted);font-size:8.5px;line-height:1.5}
+.history-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:6px 0 10px}
+.stat-cell{background:var(--color-surface);border:1px solid var(--color-border);border-radius:9px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:3px}
+.stat-cell .stat-label{font-size:8.5px;color:var(--color-text-muted);font-weight:700}
+.stat-cell strong{font-size:12px;color:var(--color-primary);font-variant-numeric:tabular-nums}
+.stat-balance{background:#fff7ed;border-color:#fed7aa}.stat-balance strong{color:var(--color-warning)}
+.history-ledger-tools{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:7px;margin-bottom:10px}
+.history-search-wrap{min-width:0;position:relative;display:flex;align-items:center}
+.history-search-wrap>span{position:absolute;inset-inline-start:10px;z-index:1}
+.history-search{width:100%;max-width:100%;box-sizing:border-box;min-height:44px!important;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0!important;padding-inline-start:32px!important;font-size:11px}
+.history-ledger-table{display:flex;flex-direction:column;gap:5px;max-height:420px;overflow:auto}
+.history-ledger-head-row,.history-ledger-row{display:grid;grid-template-columns:1fr 1.35fr 1.5fr .85fr .85fr .85fr .7fr 1.35fr;gap:6px;align-items:center}
+.history-ledger-head-row{position:sticky;top:0;z-index:1;padding:7px 8px;background:#f1f5f9;border:1px solid var(--color-border);border-radius:7px;color:var(--color-text-muted);font-size:7.5px;font-weight:900}
+.history-ledger-row{padding:8px;border:1px solid var(--color-border);border-radius:9px;background:var(--color-white);min-height:54px}
+.history-ledger-row>div{min-width:0}
+.history-ledger-row strong{display:block;color:var(--color-text);font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-ledger-row small{display:block;margin-top:2px;color:var(--color-text-muted);font-size:7.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-service-cell{color:var(--color-text-muted);font-size:7.5px;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-money{font-variant-numeric:tabular-nums;text-align:center}
+.history-money span{display:block;color:var(--color-text);font-size:8.5px;font-weight:900}
+.history-money small{font-size:6.5px}
+.history-status-cell{text-align:center}
+.history-status{display:inline-block;padding:4px 6px;border-radius:999px;font-size:7px;font-weight:900;white-space:nowrap}
+.history-status-paid{background:#ecfdf5;color:#047857}.history-status-due{background:#fff7ed;color:#c2410c}
+.history-list-actions{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.history-action{min-height:44px;padding:5px 7px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-surface);color:var(--color-text);font:inherit;font-size:8px;font-weight:900;cursor:pointer}
+.history-action:hover{border-color:var(--color-primary)}
+.history-open{color:var(--color-primary)}.history-delete{color:var(--color-danger)}
+.history-ledger-empty{padding:28px 12px;text-align:center;border:1px dashed var(--color-border);border-radius:10px;background:var(--color-surface);color:var(--color-text-muted);display:flex;flex-direction:column;gap:5px;font-size:9px}
+.history-ledger-empty strong{color:var(--color-text);font-size:10px}
+.history-footer{display:flex;gap:7px;justify-content:flex-end;margin-top:9px}
+@media(max-width:900px){
+ .history-ledger-head-row{display:none}
+ .history-ledger-row{grid-template-columns:1.1fr 1.5fr .9fr .9fr;gap:7px;padding:9px}
+ .history-service-cell{grid-column:1/-1;padding-top:2px;border-top:1px solid #f1f5f9}
+ .history-money{text-align:start}.history-status-cell{text-align:start}
+ .history-list-actions{grid-column:4;grid-row:2 / span 3;align-items:stretch;flex-direction:column}
+ .history-action{width:100%}
+}
+@media(max-width:600px){
+ .history-ledger-head{align-items:center}.history-ledger-tools{grid-template-columns:1fr}
+ .history-ledger-row{grid-template-columns:1fr 1fr}.history-service-cell{grid-column:1/-1}
+ .history-money{text-align:start}.history-status-cell{text-align:start}
+ .history-list-actions{grid-column:2;grid-row:auto;flex-direction:row;align-items:center}
+ .history-action{flex:1}.history-footer{display:grid;grid-template-columns:1fr}
+ .history-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+html[data-night="on"] .history-ledger-head-row{background:#0f172a;border-color:#1e293b}
+html[data-night="on"] .history-ledger-row,html[data-night="on"] .history-ledger-empty{background:#111c33;border-color:#1e293b}
+html[data-night="on"] .history-service-cell{border-color:#1e293b}
