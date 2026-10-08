@@ -3028,7 +3028,7 @@ Priority register:
 - **8.0 Real Clinic UX Audit — COMPLETE**
 - **8.1 Information Architecture — COMPLETE**
 - **8.2 Clinic Dashboard — COMPLETE**
-- **8.3 Patient Workspace — AUTHORIZED NEXT**
+- **8.3 Patient Workspace — IN PROGRESS**
 - 8.4 Visit / Services / Billing — PLANNED
 - 8.5 Receipt System Reconstruction — PLANNED
 - 8.6 History & Financial Ledger — PLANNED
