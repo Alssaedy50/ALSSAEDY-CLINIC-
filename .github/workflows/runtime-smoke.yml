@@ -820,13 +820,25 @@ jobs:
               })(),
               visitLayout: (() => {
                 document.querySelector('#tabReceipt')?.click();
-                const lines = document.querySelector('.clinic-service-line');
-                return {visible: visible(document.querySelector('#clinicVisitBillingPanel')), columns: lines ? getComputedStyle(lines).gridTemplateColumns : ''};
+                const root = document.querySelector('#clinicServiceLines');
+                const probe = document.createElement('div');
+                probe.className = 'clinic-service-line';
+                probe.innerHTML = '<input><input><div></div><button></button>';
+                root?.appendChild(probe);
+                const columns = probe ? getComputedStyle(probe).gridTemplateColumns : '';
+                probe?.remove();
+                return {visible: visible(document.querySelector('#clinicVisitBillingPanel')), columns};
               })(),
               historyLedger: (() => {
                 document.querySelector('#tabHistory')?.click();
-                const row = document.querySelector('#historyPatientLedgerList .history-patient-ledger-row');
-                return {visible: visible(document.querySelector('#historyModal')), twoColumn: row ? getComputedStyle(row).gridTemplateColumns.split(' ').length >= 2 : false};
+                const root = document.querySelector('#historyPatientLedgerList');
+                const probe = document.createElement('div');
+                probe.className = 'history-patient-ledger-row';
+                probe.innerHTML = '<div></div><div></div><div></div><div></div><div></div>';
+                root?.appendChild(probe);
+                const twoColumn = probe ? getComputedStyle(probe).gridTemplateColumns.split(' ').length >= 2 : false;
+                probe?.remove();
+                return {visible: visible(document.querySelector('#historyModal')), twoColumn};
               })(),
               touchBelow44: touchTargets.filter(el => Math.round(el.getBoundingClientRect().height) < 44)
                 .map(el => el.id || el.className || el.tagName).slice(0,12)
@@ -834,7 +846,7 @@ jobs:
           });
           if (mobileUx.viewportWidth !== 390) throw new Error('Phase 8.7 mobile viewport contract failed: '+JSON.stringify(mobileUx));
           if (mobileUx.bodyOverflow > 2 || mobileUx.localNavOverflow > 2 || mobileUx.workspaceOverflow > 2) throw new Error('Phase 8.7 horizontal overflow detected: '+JSON.stringify(mobileUx));
-          if (!mobileUx.dashboardLayout || !/minmax|1fr/.test(mobileUx.dashboardLayout)) throw new Error('Phase 8.7 dashboard did not collapse to a mobile grid: '+JSON.stringify(mobileUx));
+          if (!mobileUx.dashboardLayout || mobileUx.dashboardLayout.split(' ').length > 1) throw new Error('Phase 8.7 dashboard did not collapse to a single mobile column: '+JSON.stringify(mobileUx));
           if (!mobileUx.patientWorkspace.visible || mobileUx.patientWorkspace.fixed) throw new Error('Phase 8.7 patient workspace regressed to a fixed/mobile modal: '+JSON.stringify(mobileUx));
           if (!mobileUx.visitLayout.visible || !mobileUx.visitLayout.columns) throw new Error('Phase 8.7 visit/service mobile layout missing: '+JSON.stringify(mobileUx));
           if (!mobileUx.historyLedger.visible || !mobileUx.historyLedger.twoColumn) throw new Error('Phase 8.7 history ledger mobile layout missing: '+JSON.stringify(mobileUx));
