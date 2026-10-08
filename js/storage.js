@@ -24,7 +24,8 @@ function updateReceiptIssuancePanel(){
   set('issuanceReceiptNo',value('digReceiptNo')||'—');set('issuanceDate',value('digDate')||'—');
   set('issuanceTotal',total.toLocaleString());set('issuancePaid',paid.toLocaleString());set('issuanceBalance',balance.toLocaleString());
   ['issuanceTotalCurrency','issuancePaidCurrency','issuanceBalanceCurrency'].forEach(id=>set(id,info.symbol));
-  set('issuancePayMethod',document.getElementById('selectedPayMethod')?.value||'نقداً');set('issuanceReference',value('digRef')?'المرجع: '+value('digRef'):'بدون مرجع');
+  set('issuancePayMethod',document.getElementById('selectedPayMethod')?.value||'نقداً');
+  if(typeof syncClinicVisitPatientContext==='function')syncClinicVisitPatientContext();set('issuanceReference',value('digRef')?'المرجع: '+value('digRef'):'بدون مرجع');
   panel.classList.toggle('has-balance',balance>0);panel.classList.toggle('is-settled',balance<=0&&total>0);panel.classList.toggle('is-manual',document.body.getAttribute('data-mode')==='manual');
   const mode=document.getElementById('receiptIssuanceMode');if(mode)mode.textContent=document.body.getAttribute('data-mode')==='manual'?'نموذج طباعة':'سند رقمي';
 }
@@ -37,6 +38,7 @@ function calculateLedger(){
   if(balance)balance.value=(total||paid)?(billing ? billing.calculateBalance(total,paid) : Math.max(0,total-paid)):'';
   if(paid>0&&taf&&typeof tafqeetRial==='function')taf.value=tafqeetRial(paid);
   updateReceiptIssuancePanel();
+  if(typeof updateClinicVisitBilling==='function')updateClinicVisitBilling();
 }
 
 function getClinicServiceItems(){return Array.isArray(window.aqsa7VisitServiceItems)?window.aqsa7VisitServiceItems:[];}
