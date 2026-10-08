@@ -231,7 +231,7 @@ Completed Phase 2 tasks:
 - 2.7 Settings / Configuration Surface Reconstruction — COMPLETE
 
 Current next task:
-- **Task 2.9 — Receipt Export / Print Verification Blocker Resolution**
+- **Phase 3 / Task 3.1 — Reusable Dental Clinic Product Boundary**
 - Executor: **AI / Technical Lead**
 
 ### Phase 2 / Task 2.7 — Settings / Configuration Surface Reconstruction: COMPLETE
@@ -297,7 +297,7 @@ Exit decision:
 - Task 2.8: COMPLETE.
 - Phase 2 remains IN PROGRESS until the receipt export/print verification blocker is cleared.
 
-### Phase 2 / Task 2.9 — Receipt Export / Print Verification Blocker Resolution: IN PROGRESS
+### Phase 2 / Task 2.9 — Receipt Export / Print Verification Blocker Resolution: COMPLETE
 
 Purpose:
 - Clear the known receipt export verification blocker without changing the authoritative native print/PDF architecture or protected A5/A4/80mm geometry.
@@ -308,9 +308,30 @@ Purpose:
 Implementation:
 - Updated `tests/receipt-export-test.mjs` to normalize Unicode bidi controls and extraction whitespace before checking required receipt text.
 - The content contract remains strict: normalized patient identity, receipt number and formatted date must be present; raw ISO date must remain absent.
-- No receipt CSS, print geometry or application data/state path was changed.
+- No receipt CSS, print geometry or application data/state path was changed before the root cause was isolated. The final fix was limited to the authoritative size-selection path in `js/app.js`: `setSize()` now synchronizes a single dynamic `@page` rule with the selected A5/A4/80mm profile.
+- This fixed the genuine A4 vector-PDF regression: the static print stylesheet declared A5 globally while the DOM changed to A4, so Chromium could paginate the 297mm receipt onto multiple pages.
+- PDF text assertions were hardened separately to account for normal pdftotext whitespace/BiDi extraction artifacts while retaining stable receipt identifiers and Arabic selectable-text presence.
+
+### Phase 2 / Task 2.9 Verification & Exit Decision
+
+Verification:
+- Receipt export verification 37716604934 — PASS on final checkpoint 925620d0c2ae9a173a6ded40155505b119340658.
+- Browser runtime smoke 37716604833 — PASS on the same checkpoint.
+- Android APK 37716604807 — SUCCESS on the same checkpoint.
+- GitHub Pages build/deployment 37716604067 — SUCCESS on the same checkpoint.
+- A5 and A4 vector PDFs now pass one-page and selectable-text verification; PNG export checks for A5/A4/80mm also pass.
+
+Exit decision:
+- Receipt export blocker: CLEARED.
+- Native print/PDF architecture remains authoritative.
+- A5/A4/80mm size profiles remain intact.
+- Phase 2 UX/UI + integration + receipt export verification gates are now complete.
+- Phase 2: COMPLETE.
 
 ### Phase 3 — Productization
+Status: IN PROGRESS
+Current next task: **Task 3.1 — Reusable Dental Clinic Product Boundary**
+
 - Separate reusable Dental Clinic product from clinic configuration.
 - Clinic profile/configuration model.
 - Product defaults.
