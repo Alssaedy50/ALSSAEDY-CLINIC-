@@ -59,6 +59,27 @@
             </div>
         </div>
 
+        <section class="no-print receipt-issuance-panel" id="receiptIssuancePanel" aria-labelledby="receiptIssuanceTitle">
+            <div class="receipt-issuance-head"><div><span class="directory-kicker">RECEIPT ISSUANCE</span><h3 id="receiptIssuanceTitle">إصدار سند جديد</h3><p>أدخل بيانات السند في النموذج أدناه، وتابع الملخص المالي هنا قبل الحفظ أو الطباعة.</p></div><span class="receipt-mode-badge" id="receiptIssuanceMode">سند رقمي</span></div>
+            <div class="receipt-issuance-context">
+                <div class="issuance-context-card"><span>المريض</span><strong id="issuancePatientName">مريض جديد</strong><small id="issuancePatientPhone">لم يتم اختيار ملف</small></div>
+                <div class="issuance-context-card"><span>الخدمات المحددة</span><strong id="issuanceServiceCount">0</strong><small id="issuanceServices">لم تُحدد خدمة بعد</small></div>
+                <div class="issuance-context-card"><span>رقم السند</span><strong id="issuanceReceiptNo">—</strong><small id="issuanceDate" dir="ltr">—</small></div>
+            </div>
+            <div class="receipt-issuance-finance" aria-live="polite">
+                <div><span>الإجمالي</span><strong id="issuanceTotal">0</strong><small id="issuanceTotalCurrency">ر.ي</small></div>
+                <div><span>المدفوع</span><strong id="issuancePaid">0</strong><small id="issuancePaidCurrency">ر.ي</small></div>
+                <div><span>المتبقي</span><strong id="issuanceBalance">0</strong><small id="issuanceBalanceCurrency">ر.ي</small></div>
+                <div><span>طريقة الدفع</span><strong id="issuancePayMethod">نقداً</strong><small id="issuanceReference">بدون مرجع</small></div>
+            </div>
+            <div class="receipt-issuance-actions" aria-label="إجراءات السند">
+                <button type="button" class="issuance-action issuance-save" onclick="saveReceiptLocally()">💾 حفظ السند</button>
+                <button type="button" class="issuance-action" onclick="openPreviewModal()">👁️ معاينة</button>
+                <button type="button" class="issuance-action issuance-print" onclick="triggerNativePrint()">🖨️ طباعة / PDF</button>
+                <button type="button" class="issuance-action issuance-share" onclick="openShareModal()">📲 إرسال</button>
+            </div>
+        </section>
+
         <div class="receipt-paper" id="receiptPrintArea">
             <div class="watermark-layer" id="watermarkLayer"></div>
 
