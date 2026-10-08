@@ -2122,10 +2122,10 @@ Must verify:
 Verified on the Phase 5 regression branch after Task 4.11.
 
 Evidence:
-- AQSA7 Runtime Smoke run 37797851030 (#247): PASS
-- Build ALSSAEDY Clinic Android APK run 37797850801 (#471): PASS
-- GitHub Pages Source Verification run 37797851568 (#101): PASS
-- Verify receipt image export run 37797850848 (#420): PASS
+- AQSA7 Runtime Smoke run 37799057676 (#251): PASS
+- Build ALSSAEDY Clinic Android APK run 37799057752 (#475): PASS
+- GitHub Pages Source Verification run 37799057873 (#105): PASS
+- Verify receipt image export run 37799057669 (#424): PASS
 
 The executable Phase 5 regression gate covered:
 - Arabic RTL shell, primary navigation and core action surface
