@@ -246,7 +246,7 @@ jobs:
               patients: [],
               settings: {clinic:{currency:'YER'},ui:{theme:'classic'}}
             };
-            const password='AQSA7-test-password-2026';
+            const password='AQSA7-' + crypto.randomUUID() + '-test';
             const envelope=await window.aqsa7EncryptBackupArtifact(artifact,password);
             const roundTrip=await window.aqsa7DecryptBackupArtifact(envelope,password);
             let tamperRejected=false,wrongKeyRejected=false,metadataRejected=false,incompatibleRejected=false;
@@ -257,7 +257,7 @@ jobs:
               tampered.ciphertext=btoa(String.fromCharCode(...bytes));
               await window.aqsa7DecryptBackupArtifact(tampered,password);
             } catch (_) { tamperRejected=true; }
-            try { await window.aqsa7DecryptBackupArtifact(envelope,'wrong-password-2026'); } catch (_) { wrongKeyRejected=true; }
+            try { await window.aqsa7DecryptBackupArtifact(envelope,'wrong-password-test'); } catch (_) { wrongKeyRejected=true; }
             try {
               const bad=JSON.parse(JSON.stringify(envelope));
               bad.crypto.algorithm='AES-CBC-256';
