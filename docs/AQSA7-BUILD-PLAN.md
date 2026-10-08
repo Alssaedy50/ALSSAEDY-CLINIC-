@@ -1841,7 +1841,7 @@ Task 4.7 gate decision:
 - Fail-soft reliability behavior: **MET**.
 - Static JavaScript syntax verification for the new scheduler: **PASS** (`node --check`).
 - Runtime Smoke workflow was updated and committed, but the available GitHub workflow connector exposes commit-associated **pull-request runs only**; it returned no run for the final main commit. Therefore the required push-triggered Runtime Smoke evidence cannot be independently observed through the available execution interface.
-- Runtime verification: **PENDING — GitHub Actions push-run evidence not observable yet**.
+- Runtime verification: **PR verification requested on dedicated verification branch; pending green Runtime Smoke run**.
 - Task 4.7: **PENDING VERIFICATION**.
 
 Next authorized task after verification:
