@@ -1509,11 +1509,16 @@ jobs:
                 const rect = el?.getBoundingClientRect();
                 const visible = !!el && !el.hidden && getComputedStyle(el).display !== 'none' &&
                   getComputedStyle(el).visibility !== 'hidden' && !!rect && rect.width > 0 && rect.height > 0;
+                const dock=document.querySelector('.floating-action-dock');
+                const dockRect=dock?.getBoundingClientRect();
+                const dockButtons=dock?[...dock.querySelectorAll('.dock-btn')]:[];
+                const dockVisibleButtons=dockButtons.filter(x=>{const r=x.getBoundingClientRect();const s=getComputedStyle(x);return r.width>0&&r.height>0&&s.display!=='none'&&r.left>=-1&&r.right<=window.innerWidth+1}).length;
                 return {
                   surface:id,viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,
                   visible,documentOverflow:Math.max(0,document.documentElement.scrollWidth-window.innerWidth),
                   surfaceWidth:rect ? Math.round(rect.width) : 0,
                   surfaceHeight:rect ? Math.round(rect.height) : 0,
+                  dock:{left:dockRect?Math.round(dockRect.left):null,right:dockRect?Math.round(dockRect.right):null,buttonCount:dockButtons.length,visibleButtons:dockVisibleButtons},
                   heading:(el?.innerText||'').trim().slice(0,120).replace(/\\s+/g,' '),
                   primaryActions:el ? [...el.querySelectorAll('button,a,[role="button"]')].filter(x=>{const r=x.getBoundingClientRect();const s=getComputedStyle(x);return r.width>0&&r.height>0&&!x.hidden&&s.display!=='none'}).length : 0
                 };
@@ -1521,6 +1526,7 @@ jobs:
               if (!state.visible) throw new Error('Phase 8.10 surface not visibly rendered: '+JSON.stringify(state));
               if (state.viewportWidth !== viewport.width) throw new Error('Phase 8.10 viewport mismatch: '+JSON.stringify(state));
               if (state.documentOverflow > 2) throw new Error('Phase 8.10 horizontal page overflow: '+JSON.stringify(state));
+              if (state.dock.buttonCount !== 5 || state.dock.visibleButtons !== 5 || state.dock.left < -1 || state.dock.right > viewport.width+1) throw new Error('Phase 8.10 action dock is clipped or outside the viewport: '+JSON.stringify(state.dock));
               const file = 'artifacts/phase-8-10/'+viewport.name+'/'+surface.id+'.png';
               await page.screenshot({path:file,fullPage:false,animations:'disabled'});
               report.push({...state,viewport:viewport.name,screenshot:file});
