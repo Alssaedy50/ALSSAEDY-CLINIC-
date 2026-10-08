@@ -129,6 +129,9 @@ jobs:
             throw new Error('Patient directory ledger contract failed');
           }
 
+          await page.goBack();
+          if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Patients panel did not close on Back');
+
           await page.locator('#tabReceipt').click();
           const issuance = await page.evaluate(() => ({
             panel: !!document.querySelector('#receiptIssuancePanel'),
@@ -153,8 +156,6 @@ jobs:
           }));
           if (issuanceValues.patient !== 'اختبار إصدار السند' || issuanceValues.total !== '1,000' || issuanceValues.paid !== '400' || issuanceValues.balance !== '600' || issuanceValues.serviceCount !== '1' || issuanceValues.method !== 'نقداً') throw new Error('Receipt issuance live summary failed');
 
-          await page.goBack();
-          if (await page.locator('#patientsModal').evaluate(e => e.classList.contains('open'))) throw new Error('Patients panel did not close on Back');
 
           await page.locator('#tabHistory').click();
           if (!(await page.locator('#historyModal').evaluate(e => e.classList.contains('open')))) throw new Error('History panel did not open');
