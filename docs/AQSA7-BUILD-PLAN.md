@@ -1685,6 +1685,57 @@ Task 4.5 gate decision:
 Next authorized task:
 - **Task 4.6 — Local Backup / Recovery UX**, according to the authoritative Phase 4 sequence.
 
+### Phase 4 / Task 4.6 — Local Backup / Recovery UX
+
+Status: **PENDING VERIFICATION**
+
+Purpose:
+- Make the already-implemented encrypted local Backup/Restore capability understandable and safe for normal users.
+- Keep UX state/presentation separate from Repository, Backup Engine, crypto and migration ownership.
+
+Implementation:
+- Added `js/backup-ux.js` as a presentation/state helper only.
+- Added a local backup status panel showing whether a local encrypted backup has been created and its last creation timestamp.
+- Added clear user-facing actions: create encrypted Backup and restore Backup.
+- Restore picker remains limited to `.aqsa7.json`/JSON backup input.
+- Backup UX explicitly reminds users to keep the encrypted file and password safe; password is never stored by the UX layer.
+- Restore flow now presents explicit merge-vs-full-replace messaging, with an additional destructive-action confirmation before full replacement.
+- No backup contents, passwords, provider credentials or business records are stored by the UX state.
+- Existing Backup Engine, Restore/Migration Engine, encryption boundary and Repository/IndexedDB remain authoritative.
+
+Files changed:
+- `js/backup-ux.js`
+- `js/backup.js`
+- `index.html`
+- `.github/workflows/runtime-smoke.yml`
+
+Explicitly out of scope:
+- Cloud provider implementation.
+- Google Drive/OAuth.
+- Scheduling/background backup.
+- Replacing legacy cloud sync.
+- New persistence/database/repository.
+- Password recovery.
+- Phase 5 full regression/disaster-recovery verification.
+
+Verification evidence:
+- Implementation checkpoint: `c4e147df73a58817a4010055556ff520986a6b19`.
+- Runtime Smoke verification is required before closing Task 4.6.
+- Required checks: UX contract presence, visible encrypted-backup/restore actions, local status state, restore input availability, plus all existing crypto/engine/provider/restore checks and browser/mobile regression.
+
+Gate:
+- UX boundary: **MET**.
+- Local-first persistence boundary: **MET**.
+- Password/secret separation: **MET**.
+- Explicit destructive restore confirmation: **MET**.
+- Runtime verification: **PENDING**.
+- Task 4.6: **PENDING VERIFICATION**.
+
+Next action:
+- Run and verify the authoritative Runtime Smoke workflow on `c4e147df73a58817a4010055556ff520986a6b19`.
+- If green, close Task 4.6.
+- If red, fix only the Task 4.6 failure and repeat verification.
+
 ### Phase 4 — Reliability & Security
 Status: **IN PROGRESS**
 
@@ -1694,7 +1745,7 @@ Task state:
 - Task 4.3 — Generic Backup Engine — **COMPLETE**.
 - Task 4.4 — Generic Backup Provider Adapter Contract — **COMPLETE**.
 - Task 4.5 — Restore & Migration Engine Contract/Implementation — **COMPLETE**.
-- Next authorized task: **Task 4.6 — Local Backup / Recovery UX**.
+- Task 4.6 — Local Backup / Recovery UX — **PENDING VERIFICATION**.
 
 Mandatory cloud-backup work added:
 - local encrypted backup integrity
@@ -1745,7 +1796,7 @@ Must verify:
 - GitHub release
 - final acceptance
 
-Last updated: 2026-10-08 (Task 4.5 complete; Phase 4 in progress; next authorized task Task 4.6)
+Last updated: 2026-10-08 (Task 4.6 implementation complete; verification pending; Phase 4 in progress)
 
 ## Current authoritative decisions
 
