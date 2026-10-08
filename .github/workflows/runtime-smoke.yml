@@ -1158,3 +1158,73 @@ jobs:
         if: always()
         run: |
           if [ -f /tmp/aqsa7-http.pid ]; then kill $(cat /tmp/aqsa7-http.pid) || true; fi
+
+
+      - name: Phase 7.5 rendered UI evidence capture
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const browser = await chromium.launch({headless:true});
+          const capture = async (name, viewport, url, setup) => {
+            const context = await browser.newContext({viewport, deviceScaleFactor:1});
+            const page = await context.newPage();
+            await page.goto(url, {waitUntil:'networkidle'});
+            if (setup) await setup(page);
+            await page.screenshot({path:`phase-7-5-${name}.png`, fullPage:true});
+            fs.writeFileSync(`phase-7-5-${name}.html`, await page.content());
+            await context.close();
+          };
+
+          await capture('mobile-platform-home', {width:390,height:844}, 'http://127.0.0.1:4173/index.html', async page => {
+            if (!(await page.locator('#platformHome').isVisible())) throw new Error('Platform Home missing');
+          });
+          await capture('mobile-products', {width:390,height:844}, 'http://127.0.0.1:4173/index.html#products', async page => {
+            if (!(await page.locator('#platformProducts').isVisible())) throw new Error('Products/Projects missing');
+            if (!(await page.locator('#dentalProductCard').isVisible())) throw new Error('Dental product card missing');
+          });
+          await capture('mobile-dental-workspace', {width:390,height:844}, 'http://127.0.0.1:4173/index.html#product-dental-clinic', async page => {
+            if (!(await page.locator('#productWorkspace').isVisible())) throw new Error('Dental workspace missing');
+            if (!(await page.locator('#aqsa7ProductContext').isVisible())) throw new Error('Product context missing');
+            if (await page.locator('.platform-tabs').isVisible()) throw new Error('Platform navigation leaked into Dental');
+          });
+          await capture('desktop-platform-home', {width:1440,height:1000}, 'http://127.0.0.1:4173/index.html', async page => {
+            if (!(await page.locator('#platformHome').isVisible())) throw new Error('Desktop Platform Home missing');
+          });
+          await capture('desktop-products', {width:1440,height:1000}, 'http://127.0.0.1:4173/index.html#products', async page => {
+            if (!(await page.locator('#platformProducts').isVisible())) throw new Error('Desktop Products/Projects missing');
+          });
+          await capture('desktop-dental-workspace', {width:1440,height:1000}, 'http://127.0.0.1:4173/index.html#product-dental-clinic', async page => {
+            if (!(await page.locator('#productWorkspace').isVisible())) throw new Error('Desktop Dental workspace missing');
+            const audit = await page.evaluate(() => {
+              const visible = el => !!el && !el.hidden && getComputedStyle(el).display !== 'none';
+              const ids = [...document.querySelectorAll('[data-ui-id]')].filter(visible);
+              const buttons = [...document.querySelectorAll('button')].filter(visible);
+              return {
+                title: document.title,
+                platformBrand: document.querySelector('#platformBrandTitle')?.textContent?.trim() || '',
+                workspaceTitle: document.querySelector('#productWorkspaceTitle')?.textContent?.trim() || '',
+                context: document.querySelector('#aqsa7ProductContext')?.textContent?.trim() || '',
+                platformTabsVisible: visible(document.querySelector('.platform-tabs')),
+                dentalModeVisible: visible(document.querySelector('#dentalModeControls')),
+                traceability: ids.map(e => ({id:e.dataset.uiId, owner:e.dataset.owner||'', action:e.dataset.action||''})),
+                buttonsUnder44px: buttons.filter(e => Math.round(e.getBoundingClientRect().height)<44).map(e=>e.id||e.textContent.trim().slice(0,40)),
+                horizontalOverflow: [...document.querySelectorAll('body, main, #productWorkspace')].map(e=>({id:e.id||e.tagName, overflow:Math.max(0,e.scrollWidth-e.clientWidth)}))
+              };
+            });
+            fs.writeFileSync('phase-7-5-audit.json', JSON.stringify(audit,null,2));
+          });
+
+          await browser.close();
+          NODE
+
+      - name: Upload Phase 7.5 rendered UI evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: aqsa7-phase-7-5-rendered-ui-evidence
+          path: |
+            phase-7-5-*.png
+            phase-7-5-*.html
+            phase-7-5-audit.json
+          if-no-files-found: error
