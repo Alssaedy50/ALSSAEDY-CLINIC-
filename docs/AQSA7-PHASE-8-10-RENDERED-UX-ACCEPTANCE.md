@@ -1,6 +1,6 @@
 # AQSA7 — Phase 8.10 Rendered UX Acceptance
 
-Status: IN PROGRESS — rendered evidence capture and review pending
+Status: IN PROGRESS — initial screenshot review found a mobile action-dock clipping defect; CSS correction and final evidence rerun pending
 Date: 2026-10-09
 Branch: `phase-8-10-rendered-ux-acceptance`
 Base `main`: `d3b5b524f6b5ce7cf2bd1a47b3c78a3e381d3cd1`
@@ -30,11 +30,17 @@ Surfaces to capture on both viewports:
 - Reuse the existing `.github/workflows/runtime-smoke.yml` and installed Playwright runner.
 - Add a dedicated evidence-capture step and upload the current-run PNGs plus JSON viewport/overflow/surface measurements as `aqsa7-phase-8-10-rendered-ux`.
 - Keep evidence capture isolated from application data and do not create synthetic production records.
-- No production application source, business logic, persistence model or architecture boundary is intended to change in this phase unless screenshot evidence proves a specific defect.
+- Initial screenshots from run #37857343189 were inspected. On mobile, the persistent action dock was visibly clipped at the left edge and covered the last visible content row.
+- A narrowly scoped correction was applied in `css/ui.css`: on screens ≤700px the dock uses five equal columns, stays within 8px horizontal insets, and the page canvas reserves bottom space. Existing desktop behavior is retained.
+- Runtime Smoke now records dock geometry and asserts all five dock buttons remain inside the viewport. This is a screenshot-grounded presentation fix only; business logic, persistence and architecture are unchanged.
 
 ## Evidence acceptance
 
 Required artifact: `aqsa7-phase-8-10-rendered-ux`
+
+Initial reviewed artifact (pre-fix): `aqsa7-phase-8-10-rendered-ux` from run [#37857353829](https://github.com/Alssaedy50/AQSA7/actions/runs/37857353829). The initial capture step stopped at Settings because history navigation changed the active visual context; the existing `setPlatformVisual('dental')` recovery was added before the Settings capture. The resulting complete artifact from run #37857543189 contains 16 screenshots and the JSON report. That pre-fix set confirmed the dock clipping; it is diagnostic evidence, not the final acceptance set.
+
+The current PR head adds an explicit dock geometry assertion and must produce a new 16-image artifact after the correction.
 Expected evidence:
 - 16 PNG screenshots, 8 surfaces × 2 viewports.
 - `rendered-ux-report.json` with viewport size, visibility, dimensions, overflow and visible action counts.
@@ -44,9 +50,9 @@ Screenshots must be visually inspected after the workflow completes. DOM/viewpor
 
 ## Gate decisions
 
-- Functional Gate: pending current-run CI.
-- Architecture Gate: pending change-impact review; intended scope is test workflow and documentation only.
-- Product/UX Gate: pending screenshot inspection and evidence-based findings.
+- Functional Gate: pending final current-run CI.
+- Architecture Gate: no route, repository, data authority, business behavior or export boundary changes; one presentation-only mobile CSS correction plus tests/docs. Final gate pending CI.
+- Product/UX Gate: initial screenshot inspection identified and corrected the dock clipping; final post-fix screenshot review pending.
 - Physical paper stock, binding, ink and real printer scaling are outside this phase and remain manual print-shop proof.
 
 ## Exit criteria
