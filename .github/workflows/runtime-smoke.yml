@@ -786,6 +786,238 @@ jobs:
           await browser.close();
           NODE
 
+      - name: Phase 5 full regression — core data, backup, exports, cloud boundary, offline and RTL
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+
+          const browser = await chromium.launch({headless:true});
+          const context = await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1});
+          const page = await context.newPage();
+          const errors = [];
+          page.on('pageerror', e => errors.push(String(e)));
+          page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+
+          const fail = (msg, data) => { throw new Error(msg + (data ? ': ' + JSON.stringify(data) : '')); };
+          await page.goto('http://127.0.0.1:4173/index.html', {waitUntil:'networkidle'});
+
+          // 1) Core shell / RTL / all primary navigation surfaces.
+          const shell = await page.evaluate(() => ({
+            dir: document.documentElement.dir,
+            lang: document.documentElement.lang,
+            tabs: [...document.querySelectorAll('.app-tab')].map(x => x.id),
+            functions: ['saveReceiptLocally','savePatientManual','renderPatients','renderHistory','triggerNativePrint','downloadReceiptImage','openPreviewModal','openShareModal','exportTransactionsFile'].filter(n => typeof window[n] === 'function')
+          }));
+          if (shell.dir !== 'rtl' || shell.lang !== 'ar') fail('RTL/Arabic shell contract failed', shell);
+          if (shell.tabs.length !== 4) fail('Primary navigation coverage failed', shell);
+          if (shell.functions.length !== 9) fail('Core action function coverage failed', shell);
+
+          // 2) Receipt create/edit/save and durable repository verification.
+          await page.evaluate(() => {
+            document.getElementById('digReceiptNo').value = 'PH5-001';
+            document.getElementById('digDate').value = '2026-10-08';
+            document.getElementById('digClientName').value = 'Phase5 Regression Patient';
+            document.getElementById('digPatientPhone').value = '777000005';
+            document.getElementById('digTotal').value = '1500';
+            document.getElementById('digPaid').value = '1000';
+            document.getElementById('digCustomService').value = 'Phase 5 service';
+            document.getElementById('digRef').value = 'PH5-REF';
+            calculateLedger();
+          });
+          await page.evaluate(async () => { await saveReceiptLocally(); });
+          const receiptAfterSave = await page.evaluate(async () => ({
+            receipts: (await clinicRepositoryReceipts()).filter(r => r.recNo === 'PH5-001'),
+            patients: (await clinicRepositoryPatients()).filter(p => p.phone === '777000005')
+          }));
+          if (receiptAfterSave.receipts.length !== 1 || receiptAfterSave.patients.length !== 1) fail('Receipt/patient durable save failed', receiptAfterSave);
+          await page.evaluate(async () => {
+            const item = (await clinicRepositoryReceipts()).find(r => r.recNo === 'PH5-001');
+            if (!item) throw new Error('receipt missing for edit');
+            item.paid = 1200; item.balance = 300; item.updatedAt = new Date().toISOString();
+            await clinicRepositoryPutReceipt(item);
+          });
+          const edited = await page.evaluate(async () => (await clinicRepositoryReceipts()).find(r => r.recNo === 'PH5-001'));
+          if (Number(edited?.paid) !== 1200 || Number(edited?.balance) !== 300) fail('Receipt edit persistence failed', edited);
+
+          // 3) Patient CRUD/navigation/edit and search/filter surface.
+          await page.evaluate(async () => {
+            document.getElementById('patientFormId').value = '';
+            document.getElementById('patientFormName').value = 'Phase5 Manual Patient';
+            document.getElementById('patientFormGender').value = 'ذكر';
+            document.getElementById('patientFormAge').value = '34';
+            document.getElementById('patientFormPhone').value = '777000006';
+            document.getElementById('patientFormProblem').value = 'Regression';
+            document.getElementById('patientFormNotes').value = 'Phase5';
+            await savePatientManual();
+          });
+          const manualPatient = await page.evaluate(async () => (await clinicRepositoryPatients()).find(p => p.phone === '777000006'));
+          if (!manualPatient || manualPatient.name !== 'Phase5 Manual Patient') fail('Manual patient create failed', manualPatient);
+          await page.evaluate(async () => {
+            document.getElementById('patientFormId').value = window.currentPatientId;
+            document.getElementById('patientFormName').value = 'Phase5 Manual Patient Updated';
+            await savePatientManual();
+          });
+          const updatedPatient = await page.evaluate(async () => (await clinicRepositoryPatients()).find(p => p.phone === '777000006'));
+          if (updatedPatient?.name !== 'Phase5 Manual Patient Updated') fail('Patient edit persistence failed', updatedPatient);
+          await page.evaluate(() => { document.getElementById('patientDirectorySearch').value = 'Phase5 Manual Patient Updated'; renderPatients(); });
+          await page.waitForTimeout(150);
+          if ((await page.locator('#patientsList .patient-ledger-row').count()) !== 1) fail('Patient search failed');
+
+          // 4) History/search/filter after persisted receipt.
+          await page.evaluate(() => renderHistory());
+          await page.waitForTimeout(100);
+          await page.locator('#historySearch').fill('PH5-001');
+          if ((await page.locator('#historyList .history-ledger-row').count()) !== 1) fail('History search failed');
+          await page.locator('#historyFilter').selectOption('balance');
+          if ((await page.locator('#historyList .history-ledger-row').count()) !== 1) fail('History balance filter failed');
+
+          // 5) Backup engine: encrypted round-trip + ownership + plaintext rejection + restore preparation.
+          const backup = await page.evaluate(async () => {
+            const identity = window.aqsa7GetCurrentInstanceIdentity();
+            const artifact = await window.aqsa7BackupEngine.buildArtifact();
+            const encrypted = await window.aqsa7BackupEngine.encryptArtifact(artifact, 'phase5-pass-123');
+            const prepared = await window.aqsa7BackupEngine.decryptAndValidate(encrypted, 'phase5-pass-123');
+            let wrongPassword = false, plaintextRejected = false, foreignRejected = false;
+            try { await window.aqsa7BackupEngine.decryptAndValidate(encrypted, 'wrong-pass'); } catch (_) { wrongPassword = true; }
+            try { await window.aqsa7BackupEngine.decryptAndValidate(artifact, 'phase5-pass-123'); } catch (_) { plaintextRejected = true; }
+            try {
+              const foreign = structuredClone(prepared);
+              foreign.ownership.tenantId = 'foreign-tenant';
+              await window.aqsa7BackupEngine.restoreArtifact(foreign);
+            } catch (_) { foreignRejected = true; }
+            return {
+              artifactType: artifact.artifactType,
+              schemaVersion: artifact.schemaVersion,
+              ciphertext: typeof encrypted.ciphertext === 'string' && encrypted.ciphertext.length > 0,
+              restoredReceipt: prepared.payload.receipts.some(r => r.recNo === 'PH5-001'),
+              wrongPassword, plaintextRejected, foreignRejected, identity
+            };
+          });
+          if (backup.artifactType !== 'AQSA7_BACKUP_ARTIFACT' || backup.schemaVersion !== 5 || !backup.ciphertext || !backup.restoredReceipt || !backup.wrongPassword || !backup.plaintextRejected || !backup.foreignRejected) fail('Backup/recovery regression failed', backup);
+
+          // 6) Provider + Google Drive + cloud recovery with fake transport; no real credentials.
+          const provider = await page.evaluate(async () => {
+            const originalFetch = window.fetch;
+            const identity = window.aqsa7GetCurrentInstanceIdentity();
+            let stored = null;
+            window.fetch = async (url, init = {}) => {
+              const u = String(url);
+              if (u.includes('uploadType=multipart')) {
+                stored = { id:'ph5-drive-1', appProperties:{aqsa7ProductId:identity.productId,aqsa7TenantId:identity.tenantId,aqsa7InstanceId:identity.instanceId,aqsa7BackupId:'ph5-backup-1'} };
+                return new Response(JSON.stringify(stored), {status:200,headers:{'Content-Type':'application/json'}});
+              }
+              if (u.includes('/files/ph5-drive-1?fields=')) return new Response(JSON.stringify(stored), {status:200,headers:{'Content-Type':'application/json'}});
+              if (u.includes('alt=media')) return new Response(JSON.stringify({artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}), {status:200,headers:{'Content-Type':'application/json'}});
+              if ((init.method || 'GET') === 'DELETE') return new Response(null,{status:204});
+              return originalFetch(url, init);
+            };
+            const auth = window.aqsa7GoogleDriveAuth;
+            auth.configure({getAccessToken: async () => 'phase5-fake-token'});
+            const adapter = window.aqsa7CreateGoogleDriveBackupProvider({auth});
+            const put = await window.aqsa7ExecuteBackupProvider(adapter,'put',identity,{backupId:'ph5-backup-1',artifact:{artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}});
+            const get = await window.aqsa7ExecuteBackupProvider(adapter,'get',identity,{backupId:'ph5-drive-1'});
+            const foreign = await window.aqsa7ExecuteBackupProvider(adapter,'get',{...identity,tenantId:'foreign'}, {backupId:'ph5-drive-1'});
+            const del = await window.aqsa7ExecuteBackupProvider(adapter,'delete',identity,{backupId:'ph5-drive-1'});
+            auth.clear(); window.fetch = originalFetch;
+            return {put:put.status,get:get.status,getArtifact:get.artifact?.artifactType,foreign:foreign.error?.code,del:del.status};
+          });
+          if (provider.put !== 'success' || provider.get !== 'success' || provider.getArtifact !== 'AQSA7_BACKUP_ARTIFACT' || provider.foreign !== 'FORBIDDEN' || provider.del !== 'success') fail('Google Drive/provider regression failed', provider);
+
+          // 7) Cloud recovery contract delegates to provider boundary and remains non-persistent.
+          const cloud = await page.evaluate(async () => {
+            const identity = window.aqsa7GetCurrentInstanceIdentity();
+            let getCalls = 0;
+            const fake = { getDescriptor:()=>({id:'phase5-provider',name:'Phase5 Provider',kind:'test',version:1,providerIndependent:true}), health:async()=>({status:'success'}), list:async()=>({status:'success',backups:[]}), put:async()=>({status:'success'}), get:async()=>{getCalls++; return {status:'success',artifact:{artifactType:'AQSA7_BACKUP_ARTIFACT',artifactVersion:1,schemaVersion:5,crypto:{algorithm:'AES-GCM-256'},ciphertext:'opaque'}}}, delete:async()=>({status:'success'}) };
+            window.aqsa7BackupProviderRuntime.register(fake);
+            const listed = await window.aqsa7CloudRecovery.list('phase5-provider', identity);
+            window.aqsa7BackupProviderRuntime.unregister('phase5-provider');
+            return {listStatus:listed.status,getCalls,identity};
+          });
+          if (cloud.listStatus !== 'success') fail('Cloud recovery provider boundary failed', cloud);
+
+          // 8) Sync: exercise GET/PUT/409 retry semantics with a fake endpoint.
+          const sync = await page.evaluate(async () => {
+            localStorage.setItem('alssaedy_sync_key','phase5-sync-key');
+            let puts = 0;
+            const originalFetch = window.fetch;
+            window.fetch = async (url, init={}) => {
+              if (String(url).includes('/api/clinic-sync')) {
+                if ((init.method||'GET') === 'GET') return new Response(JSON.stringify({found:puts>0,record:puts>0?{version:1,payload:{}}:null}),{status:200,headers:{'Content-Type':'application/json'}});
+                puts++;
+                if (puts===1) return new Response(JSON.stringify({error:'conflict',record:{version:1}}),{status:409,headers:{'Content-Type':'application/json'}});
+                return new Response(JSON.stringify({record:{version:2}}),{status:200,headers:{'Content-Type':'application/json'}});
+              }
+              return originalFetch(url,init);
+            };
+            const result = await window.syncBackupNow(true);
+            window.fetch = originalFetch;
+            return {puts,statusText:document.getElementById('syncStatus')?.textContent||'',result};
+          });
+          if (sync.puts < 2 || !/تم|نجاح|رفع|نسخ/.test(sync.statusText)) fail('Sync conflict/retry regression failed', sync);
+
+          // 9) Export/print/share/preview action surfaces.
+          const exportSurface = await page.evaluate(async () => {
+            let printCalls=0;
+            window.print=()=>{printCalls++;};
+            triggerNativePrint();
+            const previewPromise = openPreviewModal();
+            await new Promise(r=>setTimeout(r,100));
+            const previewOpen = document.getElementById('previewModal')?.classList.contains('open');
+            closePreviewModal();
+            openShareModal();
+            const shareOpen = document.getElementById('shareModal')?.classList.contains('open');
+            closeShareModal();
+            const csv = buildTransactionsExport('csv');
+            const json = buildTransactionsExport('json');
+            return {printCalls,previewOpen,shareOpen,csv:csv.includes('PH5-001'),json:json.includes('ALSSAEDY_CLINIC_TRANSACTIONS')};
+          });
+          if (exportSurface.printCalls !== 1 || !exportSurface.previewOpen || !exportSurface.shareOpen || !exportSurface.csv || !exportSurface.json) fail('Print/preview/share/export regression failed', exportSurface);
+
+          // 10) A5/A4/80mm + logo + bidi/Arabic rendering.
+          const sizes = await page.evaluate(() => {
+            const out={};
+            for (const size of ['a5','a4','thermal']) {
+              setSize(size);
+              const p=getSizeProfile();
+              out[size]={attr:document.documentElement.getAttribute('data-size'),width:p.width,height:p.height,print:p.printSize};
+            }
+            return out;
+          });
+          if (sizes.a5.attr!=='a5' || sizes.a4.attr!=='a4' || sizes.thermal.attr!=='thermal') fail('Physical-size switching failed', sizes);
+          if (sizes.a5.width!=='148mm' || sizes.a4.width!=='210mm' || sizes.thermal.width!=='80mm') fail('Physical-size profile failed', sizes);
+          const bidi = await page.evaluate(() => ({dir:document.documentElement.dir,arabic:document.querySelector('.main-voucher-title')?.textContent||'',bdi:typeof bidiIsolate==='function' ? bidiIsolate('PH5-001') : ''}));
+          if (bidi.dir!=='rtl' || !bidi.arabic.includes('سند') || !bidi.bdi.includes('PH5-001')) fail('Arabic RTL/BiDi regression failed', bidi);
+
+          // 11) Offline/cache upgrade: service worker controls the app and cached navigation survives network loss.
+          await page.evaluate(async () => { if (navigator.serviceWorker) await navigator.serviceWorker.ready; });
+          await page.reload({waitUntil:'networkidle'});
+          await page.waitForTimeout(500);
+          const swState = await page.evaluate(() => ({controller:!!navigator.serviceWorker?.controller, cache:window.caches?null:'browser-cache-api'}));
+          if (!swState.controller) fail('Service worker did not control regression page', swState);
+          await context.setOffline(true);
+          await page.reload({waitUntil:'domcontentloaded'});
+          await page.waitForTimeout(800);
+          const offline = await page.evaluate(() => ({title:document.title,receipt:!!document.querySelector('#receiptPrintArea'),logo:!!document.querySelector('#clinicLogoImg')}));
+          await context.setOffline(false);
+          if (!offline.receipt || !offline.logo || !offline.title.includes('سند قبض')) fail('Offline cache recovery failed', offline);
+
+          // 12) Cleanup only the synthetic Phase 5 records; verify deletion APIs and isolation.
+          await page.evaluate(async () => {
+            for (const r of (await clinicRepositoryReceipts()).filter(x => x.recNo === 'PH5-001')) await clinicRepositoryDeleteReceipt(r.id);
+            for (const p of (await clinicRepositoryPatients()).filter(x => x.phone === '777000005' || x.phone === '777000006')) await clinicRepositoryDeletePatient(p.id);
+            await clinicRepositoryHydrate();
+          });
+          const cleanup = await page.evaluate(async () => ({
+            receipts:(await clinicRepositoryReceipts()).some(r=>r.recNo==='PH5-001'),
+            patients:(await clinicRepositoryPatients()).some(p=>p.phone==='777000005'||p.phone==='777000006')
+          }));
+          if (cleanup.receipts || cleanup.patients) fail('Phase 5 synthetic data cleanup failed', cleanup);
+
+          if (errors.length) fail('Browser console/page errors', errors);
+          await browser.close();
+          console.log('PHASE_5_FULL_REGRESSION=PASS');
+          NODE
+
       - name: Upload runtime screenshot
         if: always()
         uses: actions/upload-artifact@v4
