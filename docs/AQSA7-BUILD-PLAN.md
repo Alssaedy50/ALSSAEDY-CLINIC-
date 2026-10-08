@@ -2798,13 +2798,51 @@ Next authorized task:
 - Phase 7.4 — Behavioral & Cross-Platform Regression.
 
 ### Phase 7.4 — Behavioral & Cross-Platform Regression
-Status: PENDING
+Status: COMPLETE — CROSS-PLATFORM REGRESSION VERIFIED
 
-Exit criteria:
-- Existing Phase 5/6 regression coverage remains green.
-- New platform navigation/workspace/product tests pass.
-- Affected Android/PWA/Pages behavior is verified.
-- No regression in receipt, patient, history, settings, backup/recovery, export/print/share or relevant integrations.
+Implementation:
+- Added a dedicated Phase 7.4 browser regression gate covering:
+  - platform default route;
+  - Products/Projects history route;
+  - Dental product route;
+  - refresh reconstruction of product context;
+  - browser Back reconstruction of Products and Platform Home;
+  - direct Dental deep-link reconstruction;
+  - PWA manifest identity/display/start URL/service-worker readiness;
+  - platform manifest linkage and AQSA7 platform identity.
+- Corrected the PWA manifest as part of the regression because source inspection found stale clinic-first metadata and references to removed logo.png assets. The manifest now identifies AQSA7 and references the existing assets/Saedy_Dental_Logo.svg without introducing a new asset system.
+- Corrected one test-only route expectation after verification against the authoritative setAQSA7Route() implementation: Products uses #products, not #platform-products.
+- Corrected one test-only identity assertion so the AQSA7 platform identity is checked in Platform Home rather than the Dental product context, where the existing product title is intentionally ALSSAEDY CLINIC.
+- No business/data/navigation implementation was duplicated or replaced to satisfy the regression gate.
+
+Verification evidence:
+- Final implementation checkpoint: c00fdbb3e604d75cd23e76926881fd30c60383b9.
+- GitHub Actions on the final checkpoint:
+  - AQSA7 Runtime Smoke #297 — PASS.
+  - Phase 7.4 cross-platform navigation/history/PWA regression — PASS.
+  - Phase 5 full regression — PASS.
+  - Android APK #526 — PASS.
+  - GitHub Pages Source Verification #151 — PASS.
+  - GitHub Pages deployment #537 — PASS.
+  - Receipt image export #468 — PASS.
+- Runtime Smoke #297 also passed the pre-existing mobile browser smoke, desktop browser integration smoke, JavaScript/security boundary checks and the complete Phase 5 regression suite.
+- An earlier run failed twice on intentionally introduced regression assertions; each failure was independently diagnosed from the GitHub Actions log and corrected before the final gate:
+  1. route assertion used a non-authoritative hash;
+  2. platform identity was checked while inside the Dental product context.
+- No final production/business regression remains.
+
+Phase 7.4 gate decision:
+- Existing Phase 5/6 regression coverage: MET.
+- Platform navigation/workspace/product regression: MET.
+- Browser history/refresh/deep-link behavior: MET.
+- Android verification: MET.
+- PWA/Pages verification: MET.
+- Receipt export verification: MET.
+- Receipt/patient/history/settings/backup/recovery/export/print/share/integration regression: MET.
+- Phase 7.4: COMPLETE.
+
+Next authorized task:
+- Phase 7.5 — Independent Product/UX Acceptance Gate.
 
 ### Phase 7.5 — Independent Product/UX Acceptance Gate
 Status: PENDING
