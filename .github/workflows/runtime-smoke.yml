@@ -876,7 +876,7 @@ jobs:
           // 5) Backup engine: encrypted round-trip + ownership + plaintext rejection + restore preparation.
           const backup = await page.evaluate(async () => {
             const identity = window.aqsa7GetInstanceIdentity();
-            const artifact = await window.aqsa7BackupEngine.buildArtifact();
+            const artifact = await window.aqsa7BackupEngine.createArtifact();
             const encrypted = await window.aqsa7BackupEngine.encryptArtifact(artifact, 'phase5-pass-123');
             const prepared = await window.aqsa7BackupEngine.decryptAndValidate(encrypted, 'phase5-pass-123');
             let wrongPassword = false, plaintextRejected = false, foreignRejected = false;
