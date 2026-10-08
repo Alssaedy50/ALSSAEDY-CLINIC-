@@ -891,7 +891,7 @@ jobs:
               artifactType: artifact.artifactType,
               schemaVersion: artifact.schemaVersion,
               ciphertext: typeof encrypted.ciphertext === 'string' && encrypted.ciphertext.length > 0,
-              restoredReceipt: prepared.payload.receipts.some(r => r.recNo === 'PH5-001'),
+              restoredReceipt: prepared.receipts.some(r => r.recNo === 'PH5-001'),
               wrongPassword, plaintextRejected, foreignRejected, identity
             };
           });
