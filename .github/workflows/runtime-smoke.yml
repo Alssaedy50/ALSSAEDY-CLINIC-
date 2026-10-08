@@ -726,7 +726,7 @@ jobs:
             actions: document.querySelectorAll('.receipt-issuance-actions .issuance-action').length,
             calculator: typeof window.calculateLedger === 'function'
           }));
-          if (!issuance.panel || !issuance.context || issuance.finance !== 4 || issuance.actions !== 4 || !issuance.calculator) throw new Error('Receipt issuance panel contract failed');
+          if (!issuance.panel || !issuance.context || issuance.finance !== 4 || issuance.actions !== 5 || !issuance.calculator) throw new Error('Receipt issuance panel contract failed');
           await page.locator('#digClientName').fill('اختبار إصدار السند');
           await page.locator('#digTotal').fill('1000');
           await page.locator('#digPaid').fill('400');
