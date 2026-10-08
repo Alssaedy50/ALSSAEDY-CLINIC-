@@ -1469,6 +1469,98 @@ jobs:
           console.log('PHASE_5_FULL_REGRESSION=PASS');
           NODE
 
+      - name: Phase 8.10 rendered UX acceptance — mobile and desktop evidence
+        run: |
+          mkdir -p artifacts/phase-8-10/mobile artifacts/phase-8-10/desktop
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import { writeFile } from 'node:fs/promises';
+
+          const browser = await chromium.launch({headless:true});
+          const report = [];
+          const surfaces = [
+            {id:'platform-home',selector:'#platformHome',action:async()=>{}},
+            {id:'products-projects',selector:'#platformProducts',action:async p=>p.locator('#tabPlatformProducts').click()},
+            {id:'clinic-dashboard',selector:'#clinicDashboard',action:async p=>{await p.locator('#dentalProductCard .platform-primary-btn').click();await p.locator('#productWorkspace').waitFor({state:'visible'});await p.locator('#tabDashboard').click();}},
+            {id:'patient-workspace',selector:'#patientsModal',action:async p=>p.locator('#tabPatients').click()},
+            {id:'visit-services-billing',selector:'#clinicVisitBillingPanel',action:async p=>p.locator('#tabReceipt').click()},
+            {id:'receipt-issuance',selector:'#receiptIssuancePanel',action:async p=>p.locator('#tabReceipt').click()},
+            {id:'history-financial-ledger',selector:'#historyModal',action:async p=>p.locator('#tabHistory').click()},
+            {id:'settings',selector:'#settingsPanel',action:async p=>p.locator('#tabSettings').click()}
+          ];
+
+          for (const viewport of [
+            {name:'mobile',width:390,height:844},
+            {name:'desktop',width:1440,height:1000}
+          ]) {
+            const context = await browser.newContext({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1});
+            const page = await context.newPage();
+            const errors = [];
+            page.on('pageerror', e => errors.push(String(e)));
+            page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+            await page.emulateMedia({reducedMotion:'reduce'});
+            await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'networkidle'});
+            for (const surface of surfaces) {
+              await surface.action(page);
+              await page.locator(surface.selector).waitFor({state:'visible',timeout:5000});
+              await page.waitForTimeout(120);
+              const state = await page.evaluate(({id,width}) => {
+                const el = document.querySelector(({ 'platform-home':'#platformHome','products-projects':'#platformProducts','clinic-dashboard':'#clinicDashboard','patient-workspace':'#patientsModal','visit-services-billing':'#clinicVisitBillingPanel','receipt-issuance':'#receiptIssuancePanel','history-financial-ledger':'#historyModal','settings':'#settingsPanel' })[id]);
+                const rect = el?.getBoundingClientRect();
+                const visible = !!el && !el.hidden && getComputedStyle(el).display !== 'none' &&
+                  getComputedStyle(el).visibility !== 'hidden' && !!rect && rect.width > 0 && rect.height > 0;
+                const dock=document.querySelector('.floating-action-dock');
+                const dockRect=dock?.getBoundingClientRect();
+                const dockButtons=dock?[...dock.querySelectorAll('.dock-btn')]:[];
+                const dockVisibleButtons=dockButtons.filter(x=>{const r=x.getBoundingClientRect();const s=getComputedStyle(x);return r.width>0&&r.height>0&&s.display!=='none'&&r.left>=-1&&r.right<=window.innerWidth+1}).length;
+                return {
+                  surface:id,viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,
+                  visible,documentOverflow:Math.max(0,document.documentElement.scrollWidth-window.innerWidth),
+                  surfaceWidth:rect ? Math.round(rect.width) : 0,
+                  surfaceHeight:rect ? Math.round(rect.height) : 0,
+                  dock:{left:dockRect?Math.round(dockRect.left):null,right:dockRect?Math.round(dockRect.right):null,buttonCount:dockButtons.length,visibleButtons:dockVisibleButtons},
+                  heading:(el?.innerText||'').trim().slice(0,120).replace(/\\s+/g,' '),
+                  primaryActions:el ? [...el.querySelectorAll('button,a,[role="button"]')].filter(x=>{const r=x.getBoundingClientRect();const s=getComputedStyle(x);return r.width>0&&r.height>0&&!x.hidden&&s.display!=='none'}).length : 0
+                };
+              },{id:surface.id,width:viewport.width});
+              if (!state.visible) throw new Error('Phase 8.10 surface not visibly rendered: '+JSON.stringify(state));
+              if (state.viewportWidth !== viewport.width) throw new Error('Phase 8.10 viewport mismatch: '+JSON.stringify(state));
+              if (state.documentOverflow > 2) throw new Error('Phase 8.10 horizontal page overflow: '+JSON.stringify(state));
+              const productSurface = !['platform-home','products-projects'].includes(surface.id);
+              if (productSurface && (state.dock.buttonCount !== 5 || state.dock.visibleButtons !== 5 || state.dock.left < -1 || state.dock.right > viewport.width+1)) throw new Error('Phase 8.10 action dock is clipped or outside the viewport: '+JSON.stringify(state.dock));
+              if (!productSurface && state.dock.visibleButtons !== 0) throw new Error('Phase 8.10 product action dock leaked into the platform-only surface: '+JSON.stringify(state.dock));
+              const file = 'artifacts/phase-8-10/'+viewport.name+'/'+surface.id+'.png';
+              await page.screenshot({path:file,fullPage:false,animations:'disabled'});
+              report.push({...state,viewport:viewport.name,screenshot:file});
+              if (surface.id==='patient-workspace') await page.locator('#patientsModal .patient-workspace-close').click();
+              if (surface.id==='history-financial-ledger') {
+                await page.locator('#historyModal .modal-close').click();
+                // History navigation may change the visual context; restore the configured
+                // Dental product exactly as the existing desktop regression does.
+                await page.evaluate(() => { if (typeof setPlatformVisual === 'function') setPlatformVisual('dental'); });
+              }
+              if (surface.id==='settings') await page.locator('#settingsPanel .btn-close').click();
+            }
+            if (errors.length) throw new Error('Phase 8.10 '+viewport.name+' browser errors: '+errors.join(' | '));
+            await context.close();
+          }
+          await browser.close();
+          await writeFile('artifacts/phase-8-10/rendered-ux-report.json',JSON.stringify({
+            phase:'8.10',viewports:[{name:'mobile',width:390,height:844},{name:'desktop',width:1440,height:1000}],
+            screenshotCount:report.length,results:report
+          },null,2));
+          if (report.length !== 16) throw new Error('Expected 16 rendered UX screenshots, got '+report.length);
+          console.log('PHASE_8_10_RENDERED_UX_EVIDENCE=PASS screenshots='+report.length);
+          NODE
+
+      - name: Upload Phase 8.10 rendered UX evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aqsa7-phase-8-10-rendered-ux
+          path: artifacts/phase-8-10/
+          if-no-files-found: error
+
       - name: Upload runtime screenshot
         if: always()
         uses: actions/upload-artifact@v4

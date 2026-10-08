@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
-Status: PHASE 8 ACTIVE — Phase 8.0–8.9 COMPLETE / Phase 8.10 AUTHORIZED NEXT
-Last updated: 2026-10-09 (Phase 8.9 full regression completed, all required gates passed, PR #66 merged and main verified)
+Status: PHASE 8 ACTIVE — Phase 8.0–8.9 COMPLETE / Phase 8.10 IN PROGRESS
+Last updated: 2026-10-09 (Phase 8.10 rendered UX acceptance started from verified main commit d3b5b524f6b5ce7cf2bd1a47b3c78a3e381d3cd1)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3035,7 +3035,7 @@ Priority register:
 - **8.7 Mobile UX — COMPLETE**
 - **8.8 Print / PDF / Physical Voucher QA — COMPLETE**
 - **8.9 Full Regression — COMPLETE**
-- **8.10 Rendered UX Acceptance — AUTHORIZED NEXT**
+- **8.10 Rendered UX Acceptance — IN PROGRESS**
 
 
 ### Phase 8.1 gate
@@ -3179,26 +3179,31 @@ Gate decision:
 ### Current phase
 **Phase 8.10 — Rendered UX Acceptance.**
 
-Status: AUTHORIZED NEXT — do not mark complete from functional CI alone.
+Status: IN PROGRESS — rendered evidence capture and review pending CI.
 
-Objective: inspect and verify the actual rendered AQSA7 platform and Dental clinic workflows at mobile and desktop breakpoints, using the existing shared application core and authoritative runtime workflows. Validate the visible product composition and interaction outcomes, not just DOM presence or successful builds.
+Branch: `phase-8-10-rendered-ux-acceptance`
+Verified base `main`: `d3b5b524f6b5ce7cf2bd1a47b3c78a3e381d3cd1`
 
-Required scope:
-- Verify platform Home → Products/Projects → Dental product → clinic workspace navigation and context separation.
-- Review the actual rendered Dashboard, Patient Workspace, Visit/Services/Billing, Receipt Issuance, History/Financial Ledger and Settings surfaces.
-- Inspect mobile and desktop viewport behavior, overflow, touch targets, hierarchy, readable density, empty/error/success states, and primary action discoverability.
-- Capture/review rendered evidence at the approved representative viewport sizes and record concrete findings.
-- Fix only verified UX defects within the approved scope; preserve the route, product, capability, repository, storage and export owners.
-- Re-run all required regression gates for any shared source/CSS change. Keep physical print-shop proof separate from rendered-screen acceptance.
+Objective: inspect and verify actual rendered AQSA7 platform and Dental clinic workflows at mobile (390×844) and desktop (1440×1000) breakpoints. Validate visible composition and interaction outcomes, not just DOM presence or successful builds.
+
+Execution:
+- Extend the existing Runtime Smoke Playwright workflow only; no new test framework.
+- Capture Platform Home, Products/Projects, Dashboard, Patient Workspace, Visit/Services/Billing, Receipt Issuance, History/Financial Ledger and Settings at both representative viewports.
+- Initial screenshot review found the mobile action dock clipped at the viewport edge and overlaying content. A narrow CSS correction now constrains it to five columns inside the viewport and reserves bottom content space; Runtime Smoke asserts all five controls are visible and within bounds.
+- Final current-run artifact [#383](https://github.com/Alssaedy50/AQSA7/actions/runs/37858095988/artifacts/11584214623) visually reviewed: 16 screenshots / 8 surfaces / 2 viewports. All four required gates passed on source commit `a5a59f09aa7b42644f2e228b82f35b251e3331e4`; documentation-head gates and merge remain pending.
+- Upload the current-run screenshots plus a JSON measurement report as the `aqsa7-phase-8-10-rendered-ux` artifact.
+- Review actual screenshots and report before making any visual defect claims.
+- Fix only evidenced UX defects within scope; preserve route/product/capability/repository/storage/export ownership.
+- Re-run all four required gates after any shared source/CSS change. Keep physical print-shop proof separate.
 
 Exit criteria:
-1. Rendered evidence covers the platform hierarchy and all Phase 8 core clinic workflows at mobile and desktop sizes.
-2. No blocking visual, navigation, overflow or interaction defects remain in the tested surfaces.
-3. Any fixes are minimal, traceable and regression-verified.
+1. Sixteen valid current-run screenshots cover the eight named surfaces at mobile and desktop sizes.
+2. Screenshots are inspected, not merely generated; visual findings and any blockers are tied to named evidence.
+3. No blocking visual, navigation, overflow or interaction defects remain in tested surfaces, or unresolved findings are explicitly recorded.
 4. Functional, Architecture and Product/UX gate decisions are recorded separately.
-5. The Build Plan and Phase 8.10 document record exact screenshots/evidence, final commit and next authorized action.
+5. Build Plan and Phase 8.10 document record exact screenshots/artifact, final commit, gate results and next authorized action.
 
-Last updated: 2026-10-09 (Phase 8.9 closed after all four required CI gates passed and PR #66 merged).
+Last updated: 2026-10-09 (Phase 8.10 started after verifying Phase 8.9 completion and current main).
 
 ### Phase 8.4 — Visit / Services / Billing
 Status: COMPLETE — CI AND REGRESSION VERIFIED
