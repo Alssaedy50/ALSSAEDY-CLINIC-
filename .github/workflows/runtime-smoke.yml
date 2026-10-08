@@ -372,6 +372,48 @@ jobs:
           if (backupProvider.result?.status !== 'success' || backupProvider.result?.providerId !== 'test-provider') throw new Error('Backup Provider execution contract failed: '+JSON.stringify(backupProvider));
           if (!backupProvider.plaintextRejected || !backupProvider.foreignRequestRejected) throw new Error('Backup Provider security/ownership boundary failed: '+JSON.stringify(backupProvider));
 
+          const restoreMigration = await page.evaluate(async () => {
+            const contract = window.AQSA7_RESTORE_MIGRATION_CONTRACT;
+            if (!contract || contract.contractId !== 'aqsa7-restore-migration-engine' || contract.schemaVersion !== 1 || contract.currentSchemaVersion !== 5) {
+              throw new Error('Restore/Migration Engine contract missing or incompatible.');
+            }
+            const artifact = await window.aqsa7BackupEngine.createArtifact();
+            const plan = window.aqsa7PlanRestoreMigration(artifact);
+            const migrated = window.aqsa7MigrateRestoreArtifact(artifact);
+            const prepared = window.aqsa7PrepareRestoreArtifact({
+              artifactType:'AQSA7_BACKUP_ARTIFACT',
+              artifactVersion:1,
+              crypto:{version:1,algorithm:'AES-GCM-256'},
+              ciphertext:'opaque-test'
+            },artifact);
+            let oldSchemaRejected=false;
+            try {
+              window.aqsa7PlanRestoreMigration({...artifact,schemaVersion:4});
+            } catch (_) { oldSchemaRejected=true; }
+            let futureSchemaRejected=false;
+            try {
+              window.aqsa7PlanRestoreMigration({...artifact,schemaVersion:999});
+            } catch (_) { futureSchemaRejected=true; }
+            let foreignRejected=false;
+            try {
+              window.aqsa7PlanRestoreMigration({...artifact,tenantId:'foreign-tenant'});
+            } catch (_) { foreignRejected=true; }
+            return {
+              contract,
+              plan,
+              migrated:{schemaVersion:migrated.schemaVersion,productId:migrated.productId,tenantId:migrated.tenantId,instanceId:migrated.instanceId},
+              prepared:{validated:prepared.validated,migrationId:prepared.plan.migrationId},
+              oldSchemaRejected,
+              futureSchemaRejected,
+              foreignRejected
+            };
+          });
+          if (restoreMigration.plan?.fromSchemaVersion !== 5 || restoreMigration.plan?.toSchemaVersion !== 5 || restoreMigration.plan?.requiresTransform !== false) throw new Error('Restore migration plan failed: '+JSON.stringify(restoreMigration));
+          if (restoreMigration.migrated?.schemaVersion !== 5 || !restoreMigration.migrated?.tenantId || !restoreMigration.migrated?.instanceId) throw new Error('Restore migration lost ownership/schema metadata: '+JSON.stringify(restoreMigration));
+          if (!restoreMigration.prepared?.validated || restoreMigration.prepared?.migrationId !== 'AQSA7_BACKUP_5_IDENTITY') throw new Error('Restore preparation failed: '+JSON.stringify(restoreMigration));
+          if (!restoreMigration.oldSchemaRejected || !restoreMigration.futureSchemaRejected || !restoreMigration.foreignRejected) throw new Error('Restore migration fail-closed compatibility/ownership checks failed: '+JSON.stringify(restoreMigration));
+
+
 
 
           const sharedCapabilities = await page.evaluate(() => ({
