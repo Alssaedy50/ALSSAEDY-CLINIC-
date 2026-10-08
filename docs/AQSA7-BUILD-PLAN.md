@@ -582,132 +582,73 @@ Exit decision:
 ### Phase 3 — Productization & Multi-Product Platform Foundation
 Status: IN PROGRESS
 
-### Phase 3 / Task 3.3 — Generic Shared Capability / Module Boundaries: COMPLETE
+Phase 3 proves that AQSA7 is a reusable multi-product platform rather than only a reusable Dental Clinic application.
+
+Completed:
+- 3.1 Reusable Dental Clinic Product Boundary — COMPLETE.
+- 3.2 Product Manifest & Instance Configuration Contract — COMPLETE.
+- 3.3 Generic Shared Capability / Module Boundaries — COMPLETE.
+- 3.4 Tenant / Instance Isolation Contract — IMPLEMENTED; FINAL CROSS-PLATFORM CI VERIFICATION PENDING.
+
+### Phase 3 / Task 3.4 — Tenant / Instance Isolation Contract
 
 Purpose:
-- Establish explicit reusable shared-business capability contracts between Platform Core and Vertical Products.
-- Keep genuinely generic business semantics reusable while leaving dental-specific clinical rules inside the Dental vertical.
-- Ensure the Dental product consumes shared capability definitions through the Product Manifest/Instance contract rather than inventing parallel capability definitions.
-
-Research / architecture basis:
-- Domain-driven bounded-context guidance was reviewed from Microsoft Learn: domain boundaries should follow cohesive business responsibilities and avoid unrelated model coupling.
-- Modular-monolith guidance was reviewed from Martin Fowler: a monolith can be modularized around business capabilities; strong module boundaries require explicit ownership and discipline.
-- JavaScript browser module guidance was reviewed from MDN; AQSA7 retains classic script loading for compatibility and establishes explicit runtime module contracts without introducing a bundler/runtime dependency at this stage.
-- Decision: use a lightweight registry/contract boundary inside the existing single application rather than microservices or separate physical databases. This is consistent with AQSA7 local-first, free, cross-platform constraints and avoids premature distribution complexity.
+- Establish one authoritative product/tenant/instance ownership contract across product configuration, repository records, backup/restore and future cloud/sync boundaries.
+- Prevent one instance from silently reading or writing another instance's durable records.
+- Preserve IndexedDB as the single durable application database and avoid any duplicate Repository or State Machine.
 
 Implementation:
-- Added js/capabilities.js as the single authoritative shared-business capability registry.
-- Registered reusable capabilities: people, appointments, catalog, inventory, purchasing, sales, billing, receipts, staff, branches, reporting, documents, messaging and workflow.
-- Each capability declares purpose, ownership, exclusions, logical data contracts and API surface. These are contracts only; physical persistence remains owned by the single AQSA7 repository/IndexedDB boundary.
-- Added a reusable billing capability contract for amount normalization, balance/change calculation and receivable summaries.
-- Bound the Dental Product Manifest to registered shared capabilities instead of maintaining an independent list. The Dental product currently enables people, appointments, catalog, billing and receipts.
-- Preserved Dental-specific entities such as clinical-visit, dental-service and treatment inside the Dental vertical domain definition; they were not moved into shared capability code.
-- Routed existing receipt ledger calculations and patient financial summaries through the shared billing contract, so the shared boundary is actively used rather than being documentation-only.
-- No second database, provider, state machine, backup path or AI dependency was introduced.
-
-Files changed:
-- js/capabilities.js
-- js/product.js
-- js/storage.js
-- index.html
-- .github/workflows/runtime-smoke.yml
-
-Execution exit criteria used from the approved plan:
-1. Shared capabilities have explicit ownership and exclusions.
-2. Dental-specific domain rules remain outside shared capability contracts.
-3. Product Manifest consumes the shared capability registry.
-4. At least one real shared business behavior is consumed by existing Dental workflows.
-5. No second durable data source or competing state machine is introduced.
-6. Shared capability contracts are platform/client independent and remain usable by Web/PWA/Desktop/Android shared core.
-7. JavaScript syntax/static validation passes.
-8. Mobile + desktop runtime smoke passes with no console/page errors.
-9. Receipt/export regression passes.
-10. Android and Pages gates pass.
-11. Any non-gating external CI failure is recorded and does not get silently ignored.
-
-Verification status:
-- Android APK 37720126065 — SUCCESS.
-- Receipt image/PDF export 37720126069 — SUCCESS.
-- GitHub Pages build/deployment 37720125728 — SUCCESS.
-- Runtime Smoke 37720126111 — PASS. JavaScript syntax validation, mobile browser smoke, desktop browser integration smoke and console/page-error checks all passed on final checkpoint 80449038dbe2aaa8796f44ee023d591f10a86da9.
-- Commit combined status also reports a Vercel context failure caused by the external Vercel build-rate-limit/upgrade gate. Vercel is not an AQSA7 required deployment target and this status is therefore non-gating, but it remains recorded.
-- Final implementation and verification gates are green; Task 3.3 is COMPLETE.
-
-Current phase-gate decision:
-- Implementation: MET.
-- Architecture boundary: MET.
-- Shared capability actively consumed: MET.
-- Static/runtime verification: MET.
-- Task 3.3: COMPLETE. Task 3.4 is the next authorized task.
-Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
-
-### Phase 3 / Task 3.2 — Product Manifest & Instance Configuration Contract: COMPLETE
-
-Purpose:
-- Formalize one authoritative machine-readable Product Definition for reusable vertical behavior.
-- Separate product semantics from concrete organization/tenant configuration.
-- Make enabled modules, domain entities, navigation, defaults, templates, roles, integrations, AI policy and migration version explicit.
-- Make instance/tenant ownership explicit and derive durable storage scope from the instance contract.
-- Avoid introducing a second manifest or competing configuration state source.
-
-Implementation:
-- js/product.js is now the single authoritative Product Definition + Instance Configuration boundary.
-- Product manifest schema version is 2 and declares product identity/version, vertical, reusable modules, capabilities, domain entities/relationships, navigation, product defaults, document templates, roles, integrations, AI capability policy and migration contract.
-- Concrete ALSSAEDY CLINIC configuration is a separate instance definition with explicit tenantId, instanceId, productId, organization identity, branding/locale, enabled modules, feature flags, permissions, document defaults, integration configuration, AI policy and instance storage.
-- Added runtime contract APIs: aqsa7GetProductManifest(), aqsa7GetClinicConfig(), aqsa7GetInstanceStorageConfig(), aqsa7ValidateProductDefinition(), aqsa7StampRecord().
-- Product validation rejects product/instance version mismatch, unknown enabled modules, invalid receipt defaults and invalid storage scope.
-- index.html now loads the product contract before the repository so repository initialization can consume instance configuration safely.
-- js/repository.js derives the IndexedDB database name from the configured instance storage boundary while retaining the existing ALSSAEDY database name for this configured instance; IndexedDB remains the sole durable data store.
-- No duplicate product manifest, product state machine or second persistence path was introduced.
-- Runtime smoke now verifies the product/instance contract, shared module declarations, enabled-module validity, receipt-template defaults and instance database scope.
+- js/product.js is the authoritative ownership boundary and exposes aqsa7GetInstanceIdentity(), aqsa7OwnRecord(), aqsa7ValidateBackupScope(), and aqsa7StampRecord() through the same ownership contract.
+- Fully unscoped legacy records may be explicitly adopted into the current configured instance.
+- Partially scoped records are rejected.
+- Records carrying a foreign productId, tenantId or instanceId are rejected rather than rewritten.
+- js/repository.js enforces ownership at the durable write boundary for tenant-scoped receipts and patients and filters invalid foreign records during hydration.
+- js/storage.js creates instance-scoped backup metadata with schemaVersion: 5, product/tenant/instance identity and the configured database name.
+- Backup import validates top-level ownership before destructive replacement/merge and validates every incoming tenant-scoped record before writing.
+- Legacy unscoped backups remain importable only through explicit adoption into the current instance; identified foreign backups fail closed.
+- No second durable database, Repository, persistence path or State Machine was introduced.
+- IndexedDB remains the sole durable local data authority. IndexedDB itself is origin-scoped by the browser; AQSA7 therefore adds explicit application-level product/tenant/instance ownership checks at the repository and backup boundaries. citeturn0search0turn0search2
 
 Files changed:
 - js/product.js
 - js/repository.js
-- index.html
+- js/storage.js
 - .github/workflows/runtime-smoke.yml
+- docs/AQSA7-BUILD-PLAN.md
 
-Verification:
-- Runtime Smoke 37718680604 — PASS; mobile and desktop browser integration both passed on checkpoint b61477028c0f2476b21a13e732c81b7506e88857.
-- Receipt image/PDF export 37718680570 — SUCCESS on the same checkpoint.
-- GitHub Pages build/deployment 37718679562 — SUCCESS on the same checkpoint.
-- Android APK 37718680556 — SUCCESS on the same checkpoint.
-- During verification, a test-harness race in the existing patient-directory assertion was isolated; the smoke test was corrected to await the rendered ledger before asserting it. A transient repository script syntax defect introduced while changing script order was also caught by runtime verification and fixed at root before the final green checkpoint.
-- No receipt geometry/export regression was introduced.
+Task 3.4 exit criteria:
+1. One authoritative instance identity exists.
+2. Unscoped legacy records are adoptable only into the current instance.
+3. Partial ownership metadata is rejected.
+4. Foreign product/tenant/instance records are rejected at the durable write boundary.
+5. Hydration does not expose foreign/invalid tenant-scoped records to application state.
+6. Backup artifacts declare instance ownership.
+7. Backup import rejects mismatched ownership before destructive writes.
+8. Incoming records are individually ownership-validated.
+9. No duplicate durable database/repository/state machine exists.
+10. JavaScript static parsing passes.
+11. Isolation behavior checks pass for adoption and mismatch rejection.
+12. Browser mobile + desktop runtime, receipt/export, Android and Pages verification must pass before the task can be closed.
 
-Exit decision:
-- Product Definition contract: MET.
-- Instance/Tenant configuration contract: MET.
-- Repository storage boundary consumes instance configuration: MET.
-- Browser mobile/desktop gate: PASS.
-- Receipt export: PASS.
-- Pages: PASS.
-- Android: PASS.
-- Task 3.2: COMPLETE.
+Verification completed so far:
+- GitHub source inspection: PASS on implementation checkpoint dc300945ef8bf590f2ad1a3cccc19151f7377e05.
+- Independent JavaScript static parsing of product.js, repository.js, storage.js: PASS.
+- Independent isolation harness: PASS for current identity, unscoped adoption, foreign record rejection, partial identity rejection and foreign backup-scope rejection.
+- Runtime smoke now contains explicit Task 3.4 isolation assertions.
+- Combined GitHub status on the current documentation head reports only the known non-gating Vercel build-rate-limit failure.
+- The available GitHub connector can retrieve pull-request workflow runs but does not expose the push-triggered workflow runs required to independently verify the latest main push. Therefore the cross-platform CI gate is PENDING, not assumed green.
 
-### Phase 3 — Productization & Multi-Product Platform Foundation
-Status: IN PROGRESS
+Gate decision:
+- Implementation: MET.
+- Isolation contract: MET.
+- Architecture/no-duplication constraint: MET.
+- Static/isolation verification: MET.
+- Cross-platform CI verification: PENDING.
+- Task 3.4 remains PENDING FINAL VERIFICATION.
+- Task 3.5 MUST NOT START until the cross-platform verification gate is green.
 
-Phase 3 is now explicitly responsible for proving that AQSA7 is a reusable multi-product platform, not merely a reusable Dental Clinic application.
-
-Current next task: **Task 3.4 — Tenant / Instance Isolation Contract**
-- Define the authoritative tenant/instance isolation contract across product configuration, repository records, backup/restore and future cloud/sync boundaries.
-- Ensure one instance cannot accidentally read/write another instance's durable data.
-- Preserve the single IndexedDB authority and shared-core model.
-- Keep tenant isolation explicit without introducing a second database or a new parallel state machine.
-
-Planned Phase 3 architectural gates/tasks:
-- 3.1 Reusable Dental Clinic Product Boundary — COMPLETE.
-- 3.2 Product Manifest & Instance Configuration Contract — COMPLETE.
-- 3.3 Generic Shared Capability / Module Boundaries — COMPLETE.
-- 3.4 Tenant / Instance Isolation Contract — NEXT.
-- 3.4 Tenant / Instance Isolation Contract.
-- 3.5 AI Capability Layer & Provider Adapter Contract.
-- 3.6 Integration / Interoperability Adapter Contract.
-- 3.7 Second-Vertical Architecture Proof — model a non-dental product without cloning AQSA7; exact vertical selected by research.
-- 3.8 Cross-Product Architecture Verification Gate.
-
- Implementation order may be adaptively reordered when necessary, but material scope or architecture changes remain subject to User approval under the AI Research, Analysis & Adaptive Planning Authority above.
+Next authorized task after closure:
+- Task 3.5 — AI Capability Layer & Provider Adapter Contract.
 
 ### Phase 4 — Reliability & Security
 Mandatory cloud-backup work added:
