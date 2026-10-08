@@ -738,3 +738,15 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 @media print{
  .aqsa7-platform-screen,.aqsa7-product-context,.platform-tabs{display:none!important}
 }
+
+/* Phase 7.5 acceptance fix — keep platform/product surfaces above the desktop background overlay. */
+.aqsa7-platform-screen,
+.aqsa7-product-workspace {
+    position: relative;
+    z-index: 1;
+    background: #f1f5f9;
+}
+.aqsa7-product-context {
+    position: relative;
+    z-index: 2;
+}
