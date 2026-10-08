@@ -33,6 +33,13 @@ jobs:
         run: |
           for file in js/*.js; do node --check "$file"; done
 
+      - name: Verify AI vendor isolation in business/platform modules
+        run: |
+          if grep -Eri -- '@(openai|anthropic|google-generative-ai|google/genai|mistralai|cohere|groq)|from[[:space:]]+["'"'](openai|anthropic|@google|mistralai|cohere|groq)|require\(["'"'](openai|anthropic|@google|mistralai|cohere|groq)' js/product.js js/capabilities.js js/repository.js js/storage.js js/app.js; then
+            echo 'Direct AI vendor/SDK reference leaked into core or business modules.'
+            exit 1
+          fi
+
       - name: Start static server
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/aqsa7-http.log 2>&1 &
@@ -110,6 +117,36 @@ jobs:
           if (!productContract.enabledModules.every(id => productContract.modules.includes(id))) throw new Error('Instance enables a module outside the product definition');
           if (!productContract.allowedReceiptSizes.includes(productContract.defaultReceiptSize)) throw new Error('Instance receipt default is outside the product template contract');
           if (!productContract.databaseName) throw new Error('Instance storage contract missing database name');
+
+          const aiContract = await page.evaluate(() => ({
+            manifest: window.AQSA7_AI_MANIFEST || null,
+            ids: window.AQSA7_AI_MANIFEST ? Object.keys(window.AQSA7_AI_MANIFEST.capabilities) : [],
+            frozenManifest: Object.isFrozen(window.AQSA7_AI_MANIFEST),
+            frozenCapability: Object.isFrozen(window.AQSA7_AI_MANIFEST?.capabilities?.summarize),
+            prompt: window.aqsa7GetAIPromptTemplate?.('summarize') || null,
+            descriptor: (() => {
+              try { return window.aqsa7CreateAIProviderDescriptor(window.aqsa7GetDefaultAIAdapter()); } catch (e) { return {error:String(e)}; }
+            })(),
+            disabledError: (() => {
+              try { window.aqsa7ValidateAIRequest({capabilityId:'summarize', input:'x', policy:{enabled:false}}); return null; } catch (e) { return String(e); }
+            })(),
+            externalDenied: (() => {
+              try { window.aqsa7ValidateAIRequest({capabilityId:'summarize', input:'x', external:true, policy:{enabled:true,allowExternalTransmission:false}}); return null; } catch (e) { return String(e); }
+            })(),
+            sensitiveDenied: (() => {
+              try { window.aqsa7ValidateAIRequest({capabilityId:'summarize', input:'x', sensitive:true, policy:{enabled:true,allowSensitiveData:false}}); return null; } catch (e) { return String(e); }
+            })()
+          }));
+          if (!aiContract.manifest || aiContract.manifest.layer !== 'platform-ai' || aiContract.manifest.providerIndependent !== true || aiContract.manifest.coreDependency !== false) throw new Error('AI platform contract missing/provider-coupled');
+          if (aiContract.manifest.secrets !== 'none' || aiContract.manifest.persistence !== 'none') throw new Error('AI contract introduced secrets or persistence ownership');
+          for (const id of ['summarize','extract','classify','search','generate','recommend']) if (!aiContract.ids.includes(id)) throw new Error('Missing AI capability: '+id);
+          if (!aiContract.frozenManifest || !aiContract.frozenCapability) throw new Error('AI contract is mutable');
+          if (!aiContract.prompt?.template || aiContract.prompt.version !== 1) throw new Error('AI prompt template contract missing');
+          if (aiContract.descriptor?.id !== 'unconfigured' || !Array.isArray(aiContract.descriptor?.capabilities)) throw new Error('Default AI adapter must fail-soft as unconfigured');
+          if (aiContract.disabledError !== 'Error: AQSA7_AI_DISABLED') throw new Error('AI disabled policy is not fail-closed');
+          if (aiContract.externalDenied !== 'Error: AQSA7_AI_EXTERNAL_TRANSMISSION_DENIED') throw new Error('External AI transmission policy is not fail-closed');
+          if (aiContract.sensitiveDenied !== 'Error: AQSA7_AI_SENSITIVE_DATA_DENIED') throw new Error('Sensitive-data AI policy is not fail-closed');
+          if (!productContract.validation?.valid) throw new Error('Product definition validation failed after AI contract integration: '+JSON.stringify(productContract.validation));
           const isolation = await page.evaluate(async () => {
             const identity = typeof window.aqsa7GetInstanceIdentity === 'function' ? window.aqsa7GetInstanceIdentity() : null;
             const owned = typeof window.aqsa7OwnRecord === 'function' ? window.aqsa7OwnRecord({id:'isolation-smoke'}) : null;
