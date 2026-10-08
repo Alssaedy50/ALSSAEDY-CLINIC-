@@ -8,7 +8,176 @@ Umbrella product target: AQSA7
 
 ## Mission
 
-Transform the current ALSSAEDY CLINIC receipt application into a clean, reliable, reusable Dental Clinic product that can live inside the AQSA7 umbrella platform and later be configured/sold to other clinics.
+Transform AQSA7 from the current clinic-first user experience into a genuine reusable **multi-product platform shell**, while preserving the already-implemented and verified business capabilities.
+
+The first configured product remains **ALSSAEDY CLINIC / Dental Clinic**, but it must live inside the AQSA7 Platform rather than define the platform itself.
+
+The target user-visible hierarchy is:
+
+**AQSA7 Platform → Workspace / Dashboard → Products / Projects → Dental Clinic → ALSSAEDY CLINIC**
+
+Future verticals must be addable through the existing product/capability boundaries without cloning the application.
+
+### Current Reality Baseline — 2026-10-08
+
+Phase 0–6 implementation, reliability and release work are historically verified, but the released UX does **not** satisfy the intended platform-level product requirement.
+
+Authoritative source inspection shows:
+
+- `index.html` is still clinic-first: the root navigation is Receipt / Patients / History / Settings and the clinic receipt surface dominates the initial experience.
+- The existing platform/product architecture already exists in `js/product.js`, `js/capabilities.js`, `js/repository.js`, `js/integrations.js` and related contracts; these are assets to reuse, not invitations to create parallel implementations.
+- Android still loads the bundled clinic-first `index.html` through the existing WebView wrapper.
+- The v1.3.0 release and its automated regression evidence remain valid for the functionality they actually verify. They do **not** prove platform-level UX acceptance.
+
+Therefore the corrective work is **not a rebuild of the existing application**. It is a controlled migration of the user-facing shell and product composition around the already-existing verified core.
+
+### Primary corrective objective
+
+Create a verifiable platform shell and product/workspace composition while keeping existing Dental business logic, data authority, repository boundaries, backup/recovery, export/print, AI/integration contracts and cross-platform core intact unless an actual dependency gap is proven.
+
+### Absolute anti-duplication rule
+
+Before creating any file, module, component, state path, repository, schema, adapter, helper or command, the execution team must first prove that the capability does not already exist.
+
+**Existing implementation wins. Reuse > adapt > refactor > replace > create new.**
+
+No parallel implementation may be introduced merely because the current implementation is inconvenient to use.
+
+## Corrective Transition Control — Mandatory
+
+This section supersedes any earlier assumption that a functionally verified clinic UI is automatically an accepted AQSA7 platform UI.
+
+### 1. No-build baseline gate
+
+Before any implementation begins, create a **read-only inventory** of the current repository and running product surfaces.
+
+The inventory must identify, at minimum:
+
+- existing pages/routes/views;
+- every top-level navigation item;
+- every button/action/menu;
+- every form/input/modal;
+- every state transition;
+- every business action and its handler;
+- every data source/repository;
+- every persistence path;
+- every export/print/share path;
+- every platform/product/tenant/instance contract;
+- every Android bridge capability;
+- every existing CI/runtime verification covering the affected behavior;
+- exact source files owning each item.
+
+This inventory is a baseline, not a second implementation.
+
+### 2. Reuse Registry — mandatory before creation
+
+The project must maintain a lightweight **Reuse Registry / Component Traceability Matrix** in the authoritative documentation.
+
+For every proposed element, record:
+
+**Element ID → Current owner → Existing implementation → Reuse/adapt/refactor/create decision → Dependencies → Verification**
+
+A new file/module is allowed only when the registry proves that no suitable existing owner exists or that the existing owner cannot satisfy the approved contract without unacceptable coupling.
+
+### 3. UI-to-code traceability
+
+Every user-visible platform surface introduced or changed must be traceable:
+
+**UI ID → page/surface → component/DOM owner → event/action → business function → data/repository owner → affected tests → verification evidence**
+
+This is specifically to prevent the previous failure mode where a platform name was added around a clinic-first interface.
+
+### 4. No duplicate paths
+
+For each capability, there must be exactly one authoritative:
+
+- navigation path;
+- state owner;
+- business action;
+- persistence owner;
+- export/print action;
+- product configuration source.
+
+If two implementations already exist, consolidate them before adding another one unless a documented compatibility boundary requires both.
+
+### 5. Platform acceptance is user-visible and testable
+
+The statement **“AQSA7 is a platform”** is not accepted because files are named platform/core/product or because contracts exist internally.
+
+The platform acceptance gate must demonstrate, in the actual UI:
+
+1. AQSA7 is the primary application shell.
+2. A user can enter a workspace/dashboard.
+3. Products/projects are first-class navigable entities.
+4. Dental Clinic is one configured product, not the entire application shell.
+5. ALSSAEDY CLINIC is an instance/configuration of that product.
+6. Shared capabilities remain reusable and are not duplicated inside the Dental product.
+7. Existing Dental workflows remain reachable and functional.
+8. The structure clearly permits a second product without cloning the application.
+9. Web/PWA and Android use the same product/core contracts rather than separate business implementations.
+
+### 6. Three separate acceptance gates
+
+Never merge these into one “PASS”:
+
+- **Functional Gate:** existing and changed actions work.
+- **Architecture Gate:** ownership, contracts, reuse and boundaries are correct.
+- **Product/UX Gate:** the actual user-visible product matches AQSA7's approved platform hierarchy and interaction model.
+
+A release/phase cannot claim overall acceptance while Product/UX Gate is failed or unverified.
+
+### 7. Change-impact rule
+
+Any change to a shared file/module must list its affected surfaces before implementation.
+
+Minimum impact scan:
+
+**changed owner → dependents → user-visible surfaces → data paths → platform clients → tests**
+
+This follows established traceability/change-management practice: requirements and implementation artifacts should remain linked so a change can be assessed for its downstream impact rather than handled as an isolated edit. citeturn0search4turn0search12
+
+### 8. No documentation inflation
+
+Do not create a new plan, architecture document, component catalog, test ledger or command script when an authoritative existing document can be updated.
+
+Prefer:
+
+- update the existing Build Plan;
+- extend an existing test;
+- update an existing module;
+- reuse an existing command/workflow;
+- delete/supersede contradictory documentation.
+
+Create a new artifact only when its ownership and purpose are genuinely distinct.
+
+### 9. No contradictory execution commands
+
+Each execution handoff must contain:
+
+- one objective;
+- one authoritative target branch/ref;
+- exact files/areas in scope;
+- exact evidence required;
+- explicit “do not create/modify” boundaries;
+- the next gate.
+
+If a later instruction conflicts with the Build Plan or current GitHub state, stop and reconcile the authoritative plan first.
+
+### 10. Preserve verified functionality by default
+
+The corrective phase may reorganize presentation and composition, but must not casually rewrite:
+
+- IndexedDB authority;
+- repository/data contracts;
+- backup/recovery contracts;
+- provider boundaries;
+- sync boundaries;
+- AI capability boundary;
+- export/print mechanisms;
+- Android bridge contracts;
+- verified Dental business workflows.
+
+Any exception requires a dependency finding and targeted regression evidence.
 
 ## Non-negotiable engineering rules
 
@@ -646,7 +815,7 @@ Status: COMPLETE
 Status: COMPLETE
 
 ### Phase 2 — UX/UI Reconstruction
-Status: COMPLETE
+Status: FUNCTIONALLY COMPLETE; PRODUCT/UX ACCEPTANCE FAILED IN RETROSPECT
 
 Completed Phase 2 tasks:
 - 2.1 Design System Foundation — COMPLETE
@@ -2202,9 +2371,115 @@ Final main-branch acceptance verification:
 - Receipt export 37800520553 (#428): PASS
 - GitHub Pages deployment 37800519837 (#497): PASS
 
-Phase 6 release gate is CLOSED. No Phase 7 implementation is authorized by this plan without explicit approval.
+Phase 6 release gate is CLOSED as a historical release gate for v1.3.0 functionality. Its closure is not being retroactively erased.
 
-Last updated: 2026-10-08 (post-release consistency cleanup; Phase 0–6 complete, v1.3.0 accepted, no Phase 7 authorized)
+## Phase 7 — AQSA7 Platform UX Transition & Traceability
+
+Status: AUTHORIZED — PLANNING / BASELINE ONLY
+
+Purpose:
+
+Move the user-facing product from a clinic-first application into the approved AQSA7 platform hierarchy **without rebuilding verified functionality and without accumulating duplicate files, modules, commands or state paths**.
+
+### Phase 7.0 — Repository & Product Baseline Inventory
+Status: NEXT
+
+Exit criteria:
+- Complete read-only inventory of the actual current source and user-visible surfaces.
+- Identify existing owners for platform shell, product manifest/configuration, navigation, routing/state, capabilities, repository/data, export/print, Android bridge and tests.
+- Record reuse decisions before any new implementation.
+- Produce a baseline mapping of every current top-level UI action to its source owner and behavior.
+- No production code changes.
+
+### Phase 7.1 — Platform Composition Contract
+Status: PENDING
+
+Exit criteria:
+- Define the exact AQSA7 shell/workspace/product/instance hierarchy using existing product and capability contracts.
+- Identify what can be composed from existing code and what is genuinely missing.
+- No duplicate product registry, capability registry, repository or state machine.
+- No new abstraction unless Phase 7.0 proves a real gap.
+
+### Phase 7.2 — Platform Shell Migration
+Status: PENDING
+
+Exit criteria:
+- Replace the clinic-first root composition with the approved AQSA7 platform shell.
+- Keep Dental Clinic as the first configured product/instance.
+- Preserve existing Dental workflows and verified data paths.
+- Web/PWA and Android consume the same web core.
+
+### Phase 7.3 — Product/Workspace UX Reconstruction
+Status: PENDING
+
+Exit criteria:
+- Dashboard/workspace, Products/Projects, product entry and settings surfaces are coherent.
+- Every visible action has one traceable owner.
+- No duplicated buttons/options caused by migration.
+- Mobile/desktop/RTL behavior remains coherent.
+
+### Phase 7.4 — Behavioral & Cross-Platform Regression
+Status: PENDING
+
+Exit criteria:
+- Existing Phase 5/6 regression coverage remains green.
+- New platform navigation/workspace/product tests pass.
+- Affected Android/PWA/Pages behavior is verified.
+- No regression in receipt, patient, history, settings, backup/recovery, export/print/share or relevant integrations.
+
+### Phase 7.5 — Independent Product/UX Acceptance Gate
+Status: PENDING
+
+This is the decisive gate that was missing from the previous release acceptance.
+
+Required evidence:
+- Actual rendered UI inspection.
+- Platform hierarchy acceptance against the criteria in this plan.
+- Navigation/action traceability check.
+- Duplicate-path/file/state scan.
+- Cross-platform verification.
+- Explicit PASS/FAIL for Functional, Architecture and Product/UX gates.
+
+Only after this gate passes may the corrected platform state be considered an accepted AQSA7 product direction.
+
+### Phase 7.6 — Documentation & Release Decision
+Status: PENDING
+
+Exit criteria:
+- Build Plan reflects the exact final architecture and ownership.
+- Reuse Registry/traceability records are current.
+- Obsolete/contradictory instructions are removed or explicitly superseded.
+- No unnecessary new documentation artifacts remain.
+- Release decision is based on evidence, not on implementation intent.
+
+### Phase 7 hard stop
+
+No implementation task may proceed beyond the currently authorized step.
+
+The immediate next step is **Phase 7.0 read-only inventory**. Do not redesign, refactor, create new UI modules, create new repositories, create new state stores, create new scripts, or alter production behavior until Phase 7.0 has established what already exists and what is actually missing.
+
+### Phase 7 anti-repetition rule
+
+The previous Phase 2/3/4/5/6 work is not to be repeated merely because the UI target changed.
+
+Phase 7 may consume and reuse existing:
+- product definition/manifest;
+- shared capabilities;
+- tenant/instance boundaries;
+- AI capability layer;
+- integration contract;
+- reliability/backup/security boundaries;
+- repository/data layer;
+- export/print;
+- PWA/offline;
+- Android bridge;
+- regression tests and CI workflows.
+
+The burden of proof is on **new implementation**, not on reuse.
+
+
+
+Last updated: 2026-10-08 (corrective platform-transition plan authorized; Phase 0–6 remain historical, Phase 7.0 is the only next execution step)
 
 ## Current authoritative decisions
 
