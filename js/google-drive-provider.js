@@ -64,7 +64,7 @@
     return e;
   }
 
-  async function request(path, init, accessToken){
+  async function driveRequest(path, init, accessToken){
     const response=await fetch(BASE+path,{
       ...init,
       headers:{Accept:'application/json',Authorization:'Bearer '+accessToken,...(init?.headers||{})}
@@ -99,9 +99,7 @@
     return {status:'success',user:body.user||null,storageQuota:body.storageQuota||null};
   }
 
-  async function requestPath(path,init,accessToken){
-    return request(path,init,accessToken);
-  }
+  async function requestPath(path,init,accessToken){ return driveRequest(path,init,accessToken); }
 
   async function list(request, options){
     const accessToken=await token(options);
@@ -112,7 +110,7 @@
       fields:'nextPageToken,files(id,name,mimeType,size,createdTime,modifiedTime,appProperties,md5Checksum)'
     });
     if(request.cursor) params.set('pageToken',request.cursor);
-    const response=await request('/files?'+params.toString(),{},accessToken);
+    const response=await driveRequest('/files?'+params.toString(),{},accessToken);
     const body=await response.json();
     return {status:'success',items:(body.files||[]).map(file=>({
       backupId:file.appProperties?.aqsa7BackupId || file.id,
@@ -157,14 +155,14 @@
 
   async function get(request, options){
     const accessToken=await token(options);
-    const response=await request('/files/'+encodeURIComponent(request.backupId)+'?alt=media',{},accessToken);
+    const response=await driveRequest('/files/'+encodeURIComponent(request.backupId)+'?alt=media',{},accessToken);
     const artifact=await response.json();
     return {status:'success',backupId:request.backupId,artifact};
   }
 
   async function remove(request, options){
     const accessToken=await token(options);
-    await request('/files/'+encodeURIComponent(request.backupId),{method:'DELETE'},accessToken);
+    await driveRequest('/files/'+encodeURIComponent(request.backupId),{method:'DELETE'},accessToken);
     return {status:'success',backupId:request.backupId};
   }
 
