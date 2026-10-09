@@ -1,10 +1,27 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: PHASE 8 CLOSED — Phase 8.0–8.10 COMPLETE; no Phase 8.11 authorized
-Last updated: 2026-10-09 (Phase 8.10 completed, all required gates passed, PR #67 merged)
+Last updated: 2026-10-09 (Phase 8.10 closed; v1.4.1 release state reconciled; documentation correction in progress)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
+
+## Latest Authoritative Release Reconciliation — 2026-10-09
+
+This section supersedes older statements elsewhere in this ledger that describe v1.4.0 as the current or pending release. Those entries are retained as historical phase evidence, not as the current release decision.
+
+- **Current published Android release:** v1.4.1.
+- **Release page:** https://github.com/Alssaedy50/AQSA7/releases/tag/v1.4.1
+- **APK:** https://github.com/Alssaedy50/AQSA7/releases/download/v1.4.1/app-release.apk
+- **Package:** `com.alssaedy.clinic`; versionCode `20`; versionName `1.4.1`.
+- **Release commit:** `86dda13d667f35561c1c426308f4702e96378e84`.
+- **Android workflow:** https://github.com/Alssaedy50/AQSA7/actions/runs/37862359511 — PASS.
+- **Required GitHub gates observed on that commit:** Runtime Smoke, Receipt Export, Pages Source/Build and Android APK — PASS.
+- **Web/PWA:** https://alssaedy50.github.io/AQSA7/; the Pages source verification confirmed the deployed `js/integrations.js` hash matched the source hash. This does not prove every live asset or integration is healthy.
+- **External checks:** Vercel reported a build-rate-limit failure; the Cloudflare Workers build check also failed and its root cause was not established in this verification. These external checks remain unresolved and must not be reported as passing.
+- **Not verified by CI:** physical Android-device installation/interaction, production Google OAuth with an authorized account, and actual printer/share behavior on a connected device.
+- **Package handling:** the APK is a full installable package with bundled web assets, not an incremental patch. When updating an existing installation, install over it rather than uninstalling first if preserving local app data matters. The CI result is not proof of physical-device acceptance.
+- **Next project step:** Phase 8.10 is complete and Phase 8 is closed. No Phase 8.11 is authorized. Do not resume an old Phase 8.6 pointer or invent a new phase; consult the current priority register and obtain explicit authorization before starting another implementation task.
 
 ## Mission
 
@@ -36,7 +53,7 @@ Authoritative current state:
 - Web/PWA and Android use the same shared application core; Android remains a thin wrapper.
 - Phase 7.5 rendered UI acceptance passed after the isolated `css/ui.css` stacking/layout correction.
 
-The current source is therefore the accepted Platform-first composition and is the source package to be released as **v1.4.0**. The historical v1.3.0 artifact remains unchanged and must not be represented as the current source state.
+The accepted Platform-first composition became the v1.4.0 release baseline at that historical point. The current published corrective Android release is **v1.4.1**; see the Latest Authoritative Release Reconciliation at the top of this ledger.
 
 ### Primary corrective objective
 
@@ -3274,8 +3291,8 @@ Gate decision:
 - Product/UX scope gate: PASS at functional/runtime contract level; rendered cross-device acceptance remains Phase 8.10.
 - **Phase 8.5: COMPLETE.**
 
-### Next authorized task
-**Phase 8.6 — History & Financial Ledger.**
+### Historical task pointer — superseded
+The old **Phase 8.6 — History & Financial Ledger** pointer is stale historical text and is superseded by the completed Phase 8.6–8.10 records above. Phase 8.10 is complete; Phase 8 is closed, and no Phase 8.11 is authorized. Consult the current project priority register and obtain explicit authorization before starting any further task.
 
 ## Current authoritative decisions
 
