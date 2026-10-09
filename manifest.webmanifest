@@ -12,9 +12,9 @@
   "theme_color": "#073b63",
   "icons": [
     {
-      "src": "assets/Saedy_Dental_Logo.svg",
+      "src": "assets/logo.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

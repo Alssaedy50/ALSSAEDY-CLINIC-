@@ -94,7 +94,7 @@
       doctorNameEn: 'Dr. Salahaldeen Alssaedy',
       specialtyAr: 'طب وجراحة الفم والأسنان',
       specialtyEn: 'Dentistry',
-      logo: 'assets/Saedy_Dental_Logo.svg'
+      logo: 'assets/logo.png'
     }),
     locale: freeze({
       language: 'ar',

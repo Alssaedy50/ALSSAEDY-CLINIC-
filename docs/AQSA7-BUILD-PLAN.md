@@ -3296,3 +3296,34 @@ Gate decision:
 - Product identity/organization defaults are separated from reusable product semantics; repository IndexedDB scope is selected from the configured instance contract.
 - Runtime/browser, receipt export, Pages and Android gates are green on final Task 3.2 checkpoint b61477028c0f2476b21a13e732c81b7506e88857.
 - Phase 4 owns backup/security implementation; Phase 5 owns cross-platform and disaster-recovery verification.
+
+## Phase 8.11 — Mobile-first export, official logo and receipt-surface cleanup
+
+Scope: root-cause fixes for the reported printing/export defects on the Platform-first v1.4.x line. No storage, routing, product-registry or business-logic contracts were changed.
+
+### Task 1 — Void notice
+- `.receipt-void-notice` is hidden by default (`display:none`) and shown only when the owning `.receipt-paper` carries `.is-void`. The previous `display:block !important` / print-media override that leaked the red banner onto every exported receipt is removed.
+- `index.html` no longer relies on the `hidden` attribute; visibility is CSS-owned and `js/storage.js` toggles `.is-void` on `#receiptPrintArea`.
+
+### Task 2 — Canvas export
+- `js/export.js` forces `.receipt-paper` to a strict desktop width derived from the active size profile (`mm × 96/25.4`: A5 559px, A4 794px, 80mm 302px) before capture and restores the inline `width`/`max-width` afterwards, so mobile viewports can no longer collapse the captured sheet.
+- Capture options are `{ scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' }`; the clone is rendered at a desktop-width window so responsive media queries cannot re-collapse it.
+- `downloadBlob()` validates the blob and wraps `URL.createObjectURL()` in try/catch; `canvasToPngBlob()` rejects on a failed/empty conversion.
+
+### Task 3 — Official logo
+- The official `assets/logo.png` (1,181,189 bytes) replaces the placeholder SVG across `index.html`, `js/app.js`, `js/product.js`, `sw.js` and `manifest.webmanifest`.
+- During export the logo is inlined to a Base64 data URI so `html2canvas` renders it without relative-path/CORS failures.
+
+### Task 4 — Date RTL/LTR harmony
+- Date markup uses `<bdi>` islands: an RTL sequence (day / month / year) with a nested LTR year island rendering `2026` + `م`, preventing overlap and dotted-line clashes in both digital and blank-paper modes.
+- `css/receipt.css` fixes the flex gaps so text, separators and dotted slots stay separated and aligned.
+
+### Task 5 — Mobile UX / button unification
+- The floating bottom dock (`.floating-action-dock`) is removed from markup and CSS; mobile shell padding no longer reserves space for it.
+- Primary actions (`.dashboard-action`, `.workspace-action`, `.issuance-action`, `.q-btn`, patient-workspace tool buttons) are standardised to a ≥48px touch target with consistent padding and radius.
+- Verified no horizontal overflow at 360px and 390px viewports; the mobile receipt keeps its multi-column services/ledger grids.
+
+### Verification
+- Receipt export regression (`tests/receipt-export-test.mjs`) expectations remain compatible: aspect ratios, `scale: 4` override, date fields and blank-template contracts are preserved.
+- Runtime smoke (`runtime-smoke.yml`) updated: void notice asserted hidden by default, and the dock assertion now requires the removed dock to be absent on product surfaces.
+- Local Chromium checks confirmed void-notice gating, `<bdi>` date structure, logo inlining (1,574,942-char data URI from a 1330×1182 PNG), forced-width capture + restore, blob guards, dock removal and mobile layout. Live `html2canvas` pixel capture is exercised by the existing CI receipt-export gate; headless environments without the CI rendering stack cannot execute it locally.

@@ -1101,9 +1101,10 @@ jobs:
             lifecycleStatus: Boolean(document.querySelector('#receiptLifecycleStatus')),
             cancelAction: Boolean(document.querySelector('.issuance-cancel')),
             voidNotice: Boolean(document.querySelector('#receiptVoidNotice')),
+            voidNoticeDefaultHidden: getComputedStyle(document.querySelector('#receiptVoidNotice')).display === 'none',
             paperDateEditorRemoved: !document.querySelector('#paperTemplateDate')
           }));
-          if (!receiptLifecycle.contract || JSON.stringify(receiptLifecycle.contract.statuses) !== JSON.stringify(['issued','voided']) || receiptLifecycle.contract.issued !== 'issued' || receiptLifecycle.contract.voided !== 'voided' || !receiptLifecycle.panel || !receiptLifecycle.lifecycleStatus || !receiptLifecycle.cancelAction || !receiptLifecycle.voidNotice || !receiptLifecycle.paperDateEditorRemoved) fail('Phase 8.5 receipt lifecycle/template boundary failed', receiptLifecycle);
+          if (!receiptLifecycle.contract || JSON.stringify(receiptLifecycle.contract.statuses) !== JSON.stringify(['issued','voided']) || receiptLifecycle.contract.issued !== 'issued' || receiptLifecycle.contract.voided !== 'voided' || !receiptLifecycle.panel || !receiptLifecycle.lifecycleStatus || !receiptLifecycle.cancelAction || !receiptLifecycle.voidNotice || !receiptLifecycle.voidNoticeDefaultHidden || !receiptLifecycle.paperDateEditorRemoved) fail('Phase 8.5 receipt lifecycle/template boundary failed', receiptLifecycle);
 
           await page.evaluate(() => {
             ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
@@ -1527,7 +1528,7 @@ jobs:
               if (state.viewportWidth !== viewport.width) throw new Error('Phase 8.10 viewport mismatch: '+JSON.stringify(state));
               if (state.documentOverflow > 2) throw new Error('Phase 8.10 horizontal page overflow: '+JSON.stringify(state));
               const productSurface = !['platform-home','products-projects'].includes(surface.id);
-              if (productSurface && (state.dock.buttonCount !== 5 || state.dock.visibleButtons !== 5 || state.dock.left < -1 || state.dock.right > viewport.width+1)) throw new Error('Phase 8.10 action dock is clipped or outside the viewport: '+JSON.stringify(state.dock));
+              if (productSurface && state.dock.buttonCount !== 0) throw new Error('Removed floating action dock must not be present: '+JSON.stringify(state.dock));
               if (!productSurface && state.dock.visibleButtons !== 0) throw new Error('Phase 8.10 product action dock leaked into the platform-only surface: '+JSON.stringify(state.dock));
               const file = 'artifacts/phase-8-10/'+viewport.name+'/'+surface.id+'.png';
               await page.screenshot({path:file,fullPage:false,animations:'disabled'});

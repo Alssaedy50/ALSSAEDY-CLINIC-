@@ -19,7 +19,7 @@ function updateCurrencyInText(info){
  const end=document.querySelector('.tafqeet-closing');if(end)end.textContent=info.nameAr + ' فقط لا غير.';
 }
 const DESIGN_CONTRACT_VERSION='1.0';
-const OFFICIAL_LOGO_URL = (window.OFFICIAL_LOGO_DATA && String(window.OFFICIAL_LOGO_DATA).trim()) ? window.OFFICIAL_LOGO_DATA : 'assets/Saedy_Dental_Logo.svg';
+const OFFICIAL_LOGO_URL = 'assets/logo.png';
 async function saveLogoDurably(value){ return clinicRepositoryPutSetting('customLogo',value||''); }
 function loadLogoDurably(){ return Promise.resolve(clinicRepositoryGetSettingSync('customLogo')); }
 

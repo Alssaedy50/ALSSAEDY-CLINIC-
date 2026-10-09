@@ -135,6 +135,51 @@ async function waitForReceiptFonts() {
     await document.fonts.ready;
 }
 
+const MM_TO_PX = 96 / 25.4;
+// Desktop floor keeps the cloned capture document from matching the mobile
+// media queries, which would otherwise re-collapse the sheet into one column.
+const EXPORT_DESKTOP_VIEWPORT = 1024;
+
+function getExportCaptureWidth(profile) {
+    // Force a strict desktop sheet width for the capture. Derived from the
+    // physical profile so the exported aspect ratio stays exact (A5 = 559px,
+    // A4 = 794px, 80mm = 302px) regardless of the mobile viewport.
+    const mm = parseFloat(String(profile?.width || ''));
+    if (Number.isFinite(mm) && mm > 0) return Math.round(mm * MM_TO_PX);
+    return Math.round(148 * MM_TO_PX);
+}
+
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+}
+
+async function inlineImageAsDataUrl(url) {
+    const src = String(url || '').trim();
+    if (!src || /^data:/i.test(src)) return src;
+    try {
+        const response = await fetch(src, { mode: 'cors', credentials: 'same-origin' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const contentType = response.headers.get('content-type') || 'image/png';
+        return 'data:' + contentType + ';base64,' + arrayBufferToBase64(await response.arrayBuffer());
+    } catch (_) {
+        return src;
+    }
+}
+
+function inlineReceiptLogoDataUrl() {
+    // html2canvas can silently drop a relative-path logo. Inlining it as a
+    // Base64 data URI guarantees the official logo renders in the export.
+    const img = document.getElementById('clinicLogoImg');
+    const fallback = typeof OFFICIAL_LOGO_URL !== 'undefined' ? OFFICIAL_LOGO_URL : 'assets/logo.png';
+    return inlineImageAsDataUrl(img?.getAttribute('src') || fallback);
+}
+
 async function generateReceiptCanvas(options = {}) {
     await ensureLibraries();
     await waitForReceiptFonts();
@@ -147,120 +192,157 @@ async function generateReceiptCanvas(options = {}) {
     document.documentElement.style.setProperty('--export-width', exportBox.width);
     document.documentElement.style.setProperty('--export-height', exportBox.height);
 
-    return withCaptureState(() => {
+    const forcedWidth = getExportCaptureWidth(profile);
+    const logoDataUrl = await inlineReceiptLogoDataUrl();
+
+    return withCaptureState(async () => {
         document.body.classList.add('exporting-receipt');
 
-        const captureWidth = Math.max(
-            document.documentElement.clientWidth || 0,
-            receipt.scrollWidth || 0,
-            receipt.offsetWidth || 0
-        );
-        const captureHeight = Math.max(
-            document.documentElement.clientHeight || 0,
-            receipt.scrollHeight || 0,
-            receipt.offsetHeight || 0
-        );
+        const previousWidth = receipt.style.getPropertyValue('width');
+        const previousWidthPriority = receipt.style.getPropertyPriority('width');
+        const previousMaxWidth = receipt.style.getPropertyValue('max-width');
+        const previousMaxWidthPriority = receipt.style.getPropertyPriority('max-width');
+        receipt.style.setProperty('width', forcedWidth + 'px', 'important');
+        receipt.style.setProperty('max-width', forcedWidth + 'px', 'important');
 
-        return html2canvas(receipt, {
-            scale: options.scale || 4,
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#ffffff',
-            logging: false,
-            // Do NOT use html2canvas letterRendering for Arabic: it can split
-            // joined glyphs and place individual letters on top of each other.
-            letterRendering: false,
-            imageTimeout: 20000,
-            removeContainer: true,
-            windowWidth: captureWidth,
-            windowHeight: captureHeight,
-            onclone: (clonedDocument) => {
-                const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
-                if (!clonedReceipt) return;
+        try {
+            const captureWindowWidth = Math.max(
+                document.documentElement.clientWidth || 0,
+                receipt.scrollWidth || 0,
+                receipt.offsetWidth || 0,
+                forcedWidth,
+                EXPORT_DESKTOP_VIEWPORT
+            );
+            const captureWindowHeight = Math.max(
+                document.documentElement.clientHeight || 0,
+                receipt.scrollHeight || 0,
+                receipt.offsetHeight || 0
+            );
 
-                // Freeze typography/layout for Canvas. The live UI may use
-                // responsive transforms, flex sizing and editable controls;
-                // the exported sheet must not inherit those behaviours.
-                const style = clonedDocument.createElement('style');
-                style.textContent = `
-                    #receiptPrintArea, #receiptPrintArea * {
-                        font-family: "Cairo", "Noto Kufi Arabic", "Tajawal", sans-serif !important;
-                        letter-spacing: normal !important;
-                        font-feature-settings: "liga" 1, "calt" 1 !important;
-                        -webkit-font-feature-settings: "liga" 1, "calt" 1 !important;
-                        text-rendering: geometricPrecision !important;
-                    }
-                    #receiptPrintArea .main-voucher-title,
-                    #receiptPrintArea .row-label,
-                    #receiptPrintArea .meta-label,
-                    #receiptPrintArea .paid-title,
-                    #receiptPrintArea .paid-unit,
-                    #receiptPrintArea .tafqeet-text,
-                    #receiptPrintArea .tafqeet-closing,
-                    #receiptPrintArea .services-banner,
-                    #receiptPrintArea .custom-check-item,
-                    #receiptPrintArea .ledger-header,
-                    #receiptPrintArea .sig-title,
-                    #receiptPrintArea .footer-blessing,
-                    #receiptPrintArea .footer-address {
-                        direction: rtl !important;
-                        unicode-bidi: isolate !important;
-                        letter-spacing: normal !important;
-                    }
-                    #receiptPrintArea .receipt-header,
-                    #receiptPrintArea .title-strip,
-                    #receiptPrintArea .meta-data-strip,
-                    #receiptPrintArea .row-flex,
-                    #receiptPrintArea .paid-hero-bar,
-                    #receiptPrintArea .pay-opts-row,
-                    #receiptPrintArea .section-signatures {
-                        transform: none !important;
-                    }
-                    #receiptPrintArea .receipt-header { display: grid !important; }
-                    #receiptPrintArea .main-voucher-title { display: inline-block !important; white-space: nowrap !important; }
-                    #receiptPrintArea .title-strip { display: flex !important; }
-                    #receiptPrintArea .row-label { flex: 0 0 auto !important; }
-                `;
-                clonedDocument.head.appendChild(style);
+            return await html2canvas(receipt, {
+                scale: options.scale || 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                // Do NOT use html2canvas letterRendering for Arabic: it can split
+                // joined glyphs and place individual letters on top of each other.
+                letterRendering: false,
+                imageTimeout: 20000,
+                removeContainer: true,
+                windowWidth: captureWindowWidth,
+                windowHeight: captureWindowHeight,
+                onclone: (clonedDocument) => {
+                    const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
+                    if (!clonedReceipt) return;
 
-                materializeReceiptDate(receipt, clonedReceipt);
-                materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
-                const logo=clonedReceipt.querySelector('#clinicLogoImg');
-                 if(logo){
-                     logo.style.opacity='1';
-                     logo.style.filter='none';
-                     logo.style.imageRendering='auto';
-                     logo.removeAttribute('width');
-                     logo.removeAttribute('height');
-                 }
-            }
-        });
+                    // Freeze typography/layout for Canvas. The live UI may use
+                    // responsive transforms, flex sizing and editable controls;
+                    // the exported sheet must not inherit those behaviours.
+                    const style = clonedDocument.createElement('style');
+                    style.textContent = `
+                        #receiptPrintArea, #receiptPrintArea * {
+                            font-family: "Cairo", "Noto Kufi Arabic", "Tajawal", sans-serif !important;
+                            letter-spacing: normal !important;
+                            font-feature-settings: "liga" 1, "calt" 1 !important;
+                            -webkit-font-feature-settings: "liga" 1, "calt" 1 !important;
+                            text-rendering: geometricPrecision !important;
+                        }
+                        #receiptPrintArea .main-voucher-title,
+                        #receiptPrintArea .row-label,
+                        #receiptPrintArea .meta-label,
+                        #receiptPrintArea .paid-title,
+                        #receiptPrintArea .paid-unit,
+                        #receiptPrintArea .tafqeet-text,
+                        #receiptPrintArea .tafqeet-closing,
+                        #receiptPrintArea .services-banner,
+                        #receiptPrintArea .custom-check-item,
+                        #receiptPrintArea .ledger-header,
+                        #receiptPrintArea .sig-title,
+                        #receiptPrintArea .footer-blessing,
+                        #receiptPrintArea .footer-address {
+                            direction: rtl !important;
+                            unicode-bidi: isolate !important;
+                            letter-spacing: normal !important;
+                        }
+                        #receiptPrintArea .receipt-header,
+                        #receiptPrintArea .title-strip,
+                        #receiptPrintArea .meta-data-strip,
+                        #receiptPrintArea .row-flex,
+                        #receiptPrintArea .paid-hero-bar,
+                        #receiptPrintArea .pay-opts-row,
+                        #receiptPrintArea .section-signatures {
+                            transform: none !important;
+                        }
+                        #receiptPrintArea .receipt-header { display: grid !important; }
+                        #receiptPrintArea .main-voucher-title { display: inline-block !important; white-space: nowrap !important; }
+                        #receiptPrintArea .title-strip { display: flex !important; }
+                        #receiptPrintArea .row-label { flex: 0 0 auto !important; }
+                    `;
+                    clonedDocument.head.appendChild(style);
+
+                    materializeReceiptDate(receipt, clonedReceipt);
+                    materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
+                    const logo = clonedReceipt.querySelector('#clinicLogoImg');
+                    if (logo) {
+                        if (logoDataUrl) logo.setAttribute('src', logoDataUrl);
+                        logo.style.opacity = '1';
+                        logo.style.filter = 'none';
+                        logo.style.imageRendering = 'auto';
+                        logo.removeAttribute('width');
+                        logo.removeAttribute('height');
+                    }
+                }
+            });
+        } finally {
+            if (previousWidth) receipt.style.setProperty('width', previousWidth, previousWidthPriority);
+            else receipt.style.removeProperty('width');
+            if (previousMaxWidth) receipt.style.setProperty('max-width', previousMaxWidth, previousMaxWidthPriority);
+            else receipt.style.removeProperty('max-width');
+        }
     }).finally(() => document.body.classList.remove('exporting-receipt'));
 }
 
 function canvasToPngBlob(canvas) {
-    return new Promise(resolve => {
-        if (canvas.toBlob) canvas.toBlob(blob => resolve(blob), 'image/png');
-        else {
-            const dataUrl = canvas.toDataURL('image/png');
-            const bin = atob(dataUrl.split(',')[1]);
-            const arr = new Uint8Array(bin.length);
-            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-            resolve(new Blob([arr], { type: 'image/png' }));
+    return new Promise((resolve, reject) => {
+        const fail = () => reject(new Error('تعذر تحويل السند إلى صورة.'));
+        if (canvas.toBlob) {
+            try {
+                canvas.toBlob(blob => blob ? resolve(blob) : fail(), 'image/png');
+            } catch (_) { fail(); }
+        } else {
+            try {
+                const dataUrl = canvas.toDataURL('image/png');
+                const bin = atob(dataUrl.split(',')[1]);
+                const arr = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                resolve(new Blob([arr], { type: 'image/png' }));
+            } catch (_) { fail(); }
         }
     });
 }
 
 function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.rel = 'noopener';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    if (!(blob instanceof Blob) || blob.size === 0) {
+        throw new Error('ملف التصدير غير صالح.');
+    }
+    let url = '';
+    try {
+        url = URL.createObjectURL(blob);
+    } catch (error) {
+        throw new Error('تعذر إنشاء رابط التنزيل: ' + (error?.message || 'خطأ غير معروف'));
+    }
+    try {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } finally {
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 2000);
+    }
 }
 
 /* ---- print preview ---- */

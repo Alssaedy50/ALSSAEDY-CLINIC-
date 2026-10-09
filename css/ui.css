@@ -139,13 +139,20 @@ body {
     background: rgba(255,255,255,0.12);
     border: 1px solid rgba(255,255,255,0.2);
     color: #f8fafc;
-    padding: 3px 8px;
-    font-size: 9px;
-    font-weight: 700;
-    border-radius: 5px;
+    min-height:48px;
+    padding:10px 14px;
+    font-size:11px;
+    font-weight:800;
+    border-radius:12px;
     cursor: pointer;
     font-family: inherit;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    transition:transform .12s ease,background .12s ease;
 }
+.q-btn:active { transform: scale(.98); }
 .q-btn.q-clear { background: rgba(185, 28, 28, 0.3); border-color: rgba(185, 28, 28, 0.5); }
 
 .page-canvas-wrapper {
@@ -160,44 +167,6 @@ body {
     padding-right: 8px;
     min-height: 100vh;
 }
-
-.floating-action-dock {
-    position: fixed;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100;
-    background: rgba(15, 23, 42, 0.96);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 25px;
-    padding: 4px 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-    max-width: 98vw;
-    width: auto;
-}
-
-.dock-btn {
-    background: transparent;
-    border: none;
-    color: #f1f5f9;
-    padding: 5px 8px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-}
-.dock-icon { font-size: 11px; }
-.dock-text { font-size: 9px; font-weight: 700; }
-.dock-btn:active { transform: scale(0.95); }
 
 .btn-pdf { background: #2563eb; color: #fff; }
 .btn-share { background: #10b981; color: #fff; }
@@ -255,7 +224,7 @@ body {
 
 /* Responsive/accessibility safeguards */
 .btn-save:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
-@media screen and (max-width:760px){.nav-container{flex-wrap:wrap;justify-content:center}.nav-brand{width:100%;justify-content:center}.nav-controls{width:100%;justify-content:center;flex-wrap:wrap}.quick-action-bar{flex-wrap:wrap;gap:5px;justify-content:center}.quick-btns-row{flex-wrap:wrap;justify-content:center}.floating-action-dock{gap:2px;padding:3px 4px}.dock-btn{padding:5px 6px}}
+@media screen and (max-width:760px){.nav-container{flex-wrap:wrap;justify-content:center}.nav-brand{width:100%;justify-content:center}.nav-controls{width:100%;justify-content:center;flex-wrap:wrap}.quick-action-bar{flex-wrap:wrap;gap:5px;justify-content:center}.quick-btns-row{flex-wrap:wrap;justify-content:center}}
 /* Mobile-first receipt presentation and user typography controls */
 .receipt-paper{font-family:var(--receipt-font-family)}
 .setting-label{display:block;font-size:9px;font-weight:800;color:#475569;margin:7px 0 4px}
@@ -279,10 +248,10 @@ body {
     .brand-title{font-size:13px}
     .brand-badge{font-size:9px}
     .btn-pill,.btn-tool{font-size:11px;padding:7px 9px}
-    .page-canvas-wrapper{padding:10px 12px 92px}
+    .page-canvas-wrapper{padding:10px 12px 32px}
     .quick-action-bar{max-width:none;margin-bottom:10px;padding:8px}
     .quick-title{font-size:11px}
-    .q-btn{font-size:10.5px;padding:7px 9px}
+    .q-btn{font-size:11px;padding:9px 10px}
     .receipt-paper{
         transform:none!important;width:100%!important;max-width:none!important;
         min-height:0!important;height:auto!important;padding:14px 13px 12px!important;
@@ -316,9 +285,6 @@ body {
     .receipt-footer{padding-top:8px}.footer-blessing{font-size:11px;line-height:1.5}
     .footer-meta-line{font-size:10px;flex-direction:column;gap:5px}.footer-phones{white-space:normal;line-height:1.4}
     .live-input{font-size:12px;padding:3px 4px}
-    .floating-action-dock{bottom:max(8px,env(safe-area-inset-bottom));width:calc(100vw - 12px);border-radius:16px;gap:3px;padding:5px}
-    .dock-btn{flex:1;justify-content:center;padding:8px 4px;border-radius:11px}
-    .dock-icon{font-size:14px}.dock-text{font-size:10px}
     .settings-drawer{width:min(360px,94vw)}
 }
 
@@ -367,20 +333,6 @@ body.exporting-receipt .footer-phones{font-size:10px;font-weight:900;padding:2px
 .compact-type-row{grid-template-columns:38px 1fr 38px;margin-top:3px}
 .date-setting-note{margin-top:7px;padding:6px 7px;border:1px dashed #cbd5e1;border-radius:5px;background:#fff;font-size:8.5px;line-height:1.5;color:#475569}
 
-
-/* FINAL DATE + ACTION DOCK — 2026-10-07 */
-.floating-action-dock {
-    background: rgba(15, 23, 42, 0.94) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-}
-.dock-btn {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #f8fafc !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-.dock-btn:hover {
-    background: rgba(255, 255, 255, 0.18) !important;
-}
 
 /* DATA MANAGEMENT — compact professional controls */
 .data-management-card .tool-btn{min-height:32px}
@@ -448,10 +400,10 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 /* ===== AQSA7 Phase 2 — shared interaction contract ===== */
 @media screen {
   button, input, select, textarea { font-family: var(--font-ui); }
-  .app-tab, .btn-pill, .btn-tool, .tool-btn, .dock-btn, .btn-close,
+  .app-tab, .btn-pill, .btn-tool, .tool-btn, .btn-close,
   .font-step, .date-picker-btn { min-height: var(--touch-target); }
   .app-tab:focus-visible, .btn-pill:focus-visible, .btn-tool:focus-visible,
-  .tool-btn:focus-visible, .dock-btn:focus-visible, .btn-close:focus-visible,
+  .tool-btn:focus-visible, .btn-close:focus-visible,
   .font-step:focus-visible, .date-picker-btn:focus-visible,
   input:focus-visible, select:focus-visible, textarea:focus-visible {
     outline: 2px solid var(--color-primary);
@@ -709,7 +661,8 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 .product-workspace-title h1{margin:5px 0 4px;color:#0f172a;font-size:24px}
 .product-workspace-title p{margin:0;color:#64748b;font-size:10px;line-height:1.6}
 .product-workspace-actions{display:flex;gap:7px;flex-wrap:wrap}
-.workspace-action{min-height:40px;padding:7px 11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font:inherit;font-size:9px;font-weight:900;cursor:pointer}
+.workspace-action{min-height:48px;padding:11px 15px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font:inherit;font-size:11px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .12s ease,box-shadow .12s ease}
+.workspace-action:active{transform:scale(.98)}
 .workspace-action-primary{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
 .aqsa7-product-workspace[hidden]{display:none!important}
 @media(max-width:760px){
@@ -871,7 +824,8 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 .clinic-dashboard-status{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #dbeafe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:9px;font-weight:900;white-space:nowrap}
 .clinic-dashboard-status span:first-child{font-size:8px}
 .clinic-dashboard-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.dashboard-action{min-height:44px;padding:9px 15px;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#334155;font:inherit;font-size:10px;font-weight:900;cursor:pointer}
+.dashboard-action{min-height:48px;padding:11px 16px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font:inherit;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .12s ease,box-shadow .12s ease}
+.dashboard-action:active{transform:scale(.98)}
 .dashboard-action-primary{background:#1d4ed8;border-color:#1d4ed8;color:#fff;box-shadow:0 8px 18px rgba(29,78,216,.16)}
 .clinic-dashboard-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
 .clinic-dashboard-stat{padding:15px;border:1px solid #dbe4ef;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(15,23,42,.05)}
@@ -908,7 +862,7 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 .clinic-patient-workspace-head h2{margin:5px 0 4px;color:#0f172a;font-size:27px}
 .clinic-patient-workspace-head p{margin:0;color:#64748b;font-size:10px;line-height:1.6}
 .clinic-patient-workspace-actions{display:flex;gap:7px;flex-wrap:wrap}
-.clinic-patient-workspace-actions .tool-btn{min-height:42px}
+.clinic-patient-workspace-actions .tool-btn{min-height:48px}
 .patient-workspace-close{color:#475569!important}
 .clinic-patient-workspace hr{border:0;border-top:1px solid #e2e8f0;margin:16px 0}
 .clinic-patient-workspace .patient-directory{margin-top:0}
@@ -954,8 +908,10 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 .receipt-lifecycle-status.is-issued{background:#eaf7f0;color:#166534}
 .receipt-lifecycle-status.is-voided{background:#fbe9e9;color:#991b1b}
 .issuance-cancel{background:#fff1f2!important;color:#9f1239!important;border-color:#fecdd3!important}
-.receipt-void-notice{margin:0 auto 10px;padding:8px 12px;border:2px solid #b91c1c;border-radius:8px;background:#fff1f2;color:#991b1b;text-align:center;font-weight:900;font-size:13px}
-.receipt-paper:has(.receipt-void-notice:not([hidden])){box-shadow:0 0 0 3px rgba(185,28,28,.12),0 8px 24px rgba(15,23,42,.12)}
+.receipt-void-notice{display:none;margin:0 auto 10px;padding:8px 12px;border:2px solid #b91c1c;border-radius:8px;background:#fff1f2;color:#991b1b;text-align:center;font-weight:900;font-size:13px}
+/* The void notice is CSS-gated on the receipt state, never on print/export. */
+.receipt-paper.is-void .receipt-void-notice{display:block}
+.receipt-paper.is-void{box-shadow:0 0 0 3px rgba(185,28,28,.12),0 8px 24px rgba(15,23,42,.12)}
 .history-status-voided{background:#fee2e2;color:#991b1b}
 .history-void-reason{display:block;margin-top:3px;color:#991b1b;font-size:10px;line-height:1.35}
 .history-action.history-cancel{border-color:#fecdd3;color:#9f1239;background:#fff1f2}
@@ -967,7 +923,6 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
 }
 @media print{
   .receipt-lifecycle-status,.receipt-issuance-panel,.clinic-visit-billing-panel{display:none!important}
-  .receipt-void-notice{display:block!important}
 }
 
 
@@ -1018,10 +973,11 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   .app-tabs::-webkit-scrollbar,.clinic-local-nav::-webkit-scrollbar{display:none}
   .app-tab{flex:1 0 76px;min-width:76px;min-height:44px;padding:7px 5px}
   .app-tab b{font-size:9px}
-  .page-canvas-wrapper{padding:8px var(--mobile-gutter) 88px;box-sizing:border-box}
+  .page-canvas-wrapper{padding:8px var(--mobile-gutter) 32px;box-sizing:border-box}
   .quick-action-bar{width:100%;box-sizing:border-box;overflow-x:auto;justify-content:flex-start;flex-wrap:nowrap}
   .quick-action-bar>*{flex:0 0 auto}
-  .quick-btns-row .q-btn{min-height:44px!important;height:44px!important;padding-block:7px}
+  .quick-btns-row{width:100%}
+  .quick-btns-row .q-btn{min-height:48px!important;height:48px!important;padding-block:8px;flex:1}
 
   .aqsa7-product-context{padding:0 var(--mobile-gutter);box-sizing:border-box}
   .context-topline{gap:6px}
@@ -1035,7 +991,7 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   .clinic-dashboard{padding:14px var(--mobile-gutter) 72px}
   .clinic-dashboard-head h2{font-size:22px}
   .clinic-dashboard-actions{gap:7px}
-  .dashboard-action{min-height:46px;padding:9px 10px}
+  .dashboard-action{min-height:48px;padding:11px 10px}
   .clinic-dashboard-stats{gap:7px}
   .clinic-dashboard-stat{padding:12px}
   .clinic-dashboard-stat strong{font-size:19px}
@@ -1073,7 +1029,7 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   .receipt-issuance-head{gap:8px}
   .receipt-lifecycle-status{min-height:36px}
   .receipt-action-row,.issuance-actions,.receipt-issuance-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-  .receipt-action-row>*,.issuance-actions>* ,.receipt-issuance-actions>*{min-height:44px;width:100%}
+  .receipt-action-row>*,.issuance-actions>* ,.receipt-issuance-actions>*{min-height:48px;width:100%}
   .history-ledger-tools{gap:8px}
   .history-ledger-tools input,.history-ledger-tools select,.history-date-filter input{min-height:44px;width:100%;box-sizing:border-box}
   .history-filter-reset{min-height:44px}
@@ -1092,13 +1048,9 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   .setting-card .grid-btns,.setting-card .grid-btns.two{grid-template-columns:1fr 1fr;gap:7px}
   .setting-card input,.setting-card select,.setting-card textarea{min-height:44px;box-sizing:border-box}
 
-  .floating-action-dock{left:6px;right:6px;bottom:max(6px,env(safe-area-inset-bottom));width:auto;max-width:none;padding:5px;z-index:50}
-  .dock-btn{min-height:46px;padding:8px 5px}
-  .dock-text{font-size:9px}
-
   .product-workspace-head{padding:12px var(--mobile-gutter) 7px}
   .product-workspace-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:6px}
-  .workspace-action{min-height:44px;width:100%}
+  .workspace-action{min-height:48px;width:100%}
 }
 
 @media screen and (max-width:430px){
@@ -1125,38 +1077,7 @@ html[data-night="on"] .page-canvas-wrapper{background:transparent}
   .clinic-dashboard,.clinic-patient-workspace{display:none!important}
 }
 
-/* Phase 8.10 — keep the persistent action dock fully usable on narrow screens. */
+/* Mobile shell padding no longer reserves space for a floating dock. */
 @media screen and (max-width:700px){
-  .floating-action-dock{
-    inset-inline:8px!important;
-    left:8px!important;
-    right:8px!important;
-    width:auto!important;
-    max-width:none!important;
-    box-sizing:border-box!important;
-    display:grid!important;
-    grid-template-columns:repeat(5,minmax(0,1fr))!important;
-    align-items:stretch!important;
-    justify-content:stretch!important;
-    gap:3px!important;
-    padding:4px!important;
-    transform:none!important;
-  }
-  .floating-action-dock .dock-btn{
-    min-width:0!important;
-    width:100%!important;
-    padding:4px 2px!important;
-    flex:initial!important;
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:2px!important;
-    white-space:nowrap!important;
-    font-size:9px!important;
-    line-height:1.1!important;
-  }
-  .floating-action-dock .dock-icon{font-size:13px!important;line-height:1!important}
-  .floating-action-dock .dock-text{font-size:8px!important;line-height:1.1!important;text-align:center!important}
-  .page-canvas-wrapper{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}
+  .page-canvas-wrapper{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))!important}
 }

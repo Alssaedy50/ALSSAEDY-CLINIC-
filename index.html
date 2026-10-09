@@ -217,7 +217,7 @@
         </section>
 
         <div class="receipt-paper" id="receiptPrintArea">
-            <div class="receipt-void-notice" id="receiptVoidNotice" hidden>سند ملغى — لا يمثل مطالبة مالية سارية</div>
+            <div class="receipt-void-notice" id="receiptVoidNotice">سند ملغى — لا يمثل مطالبة مالية سارية</div>
             <div class="watermark-layer" id="watermarkLayer"></div>
 
             <header class="receipt-header">
@@ -226,7 +226,7 @@
                     <p class="editable" data-key="doc_spec">لطب وجراحة الفم والأسنان</p>
                 </div>
                 <div class="header-logo-wrap">
-                    <img src="assets/Saedy_Dental_Logo.svg" alt="شعار العيادة" id="clinicLogoImg" class="clinic-logo">
+                    <img src="assets/logo.png" alt="شعار العيادة" id="clinicLogoImg" class="clinic-logo">
                 </div>
                 <div class="header-clinic" dir="ltr">
                     <h2 class="editable" data-key="clinic_en">ALSSAEDY CLINIC FOR DENTISTRY</h2>
@@ -251,16 +251,16 @@
                 <div class="meta-cell date-field-wrapper">
                     <span class="meta-label">التاريخ:</span>
                     <div class="manual-only date-container" aria-label="التاريخ">
-                        <div class="date-sequence" dir="rtl">
-                            <span class="date-part date-slot" id="paperDateDay"></span>
-                            <span class="date-sep">/</span>
-                            <span class="date-part date-slot" id="paperDateMonth"></span>
-                            <span class="date-sep">/</span>
-                            <span class="date-part date-year" id="paperDateYear"><bdi class="paper-year-digits" id="paperYearDigits" dir="ltr">202</bdi><bdi class="paper-year-era" id="paperYearEra" dir="ltr">م</bdi></span>
-                        </div>
+                        <bdi class="date-sequence" dir="rtl">
+                            <bdi class="date-part date-slot" id="paperDateDay"></bdi>
+                            <bdi class="date-sep" aria-hidden="true">/</bdi>
+                            <bdi class="date-part date-slot" id="paperDateMonth"></bdi>
+                            <bdi class="date-sep" aria-hidden="true">/</bdi>
+                            <bdi class="date-part date-year" id="paperDateYear"><bdi class="paper-year-digits" id="paperYearDigits" dir="ltr">2026</bdi><bdi class="paper-year-era" id="paperYearEra" dir="ltr">م</bdi></bdi>
+                        </bdi>
                     </div>
                     <div class="digital-only digital-date-control">
-                        <span id="printDateValue" class="print-date-value export-field-value" aria-hidden="true" dir="ltr"></span>
+                        <bdi id="printDateValue" class="print-date-value export-field-value" aria-hidden="true" dir="ltr"></bdi>
                         <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو 07/10/2026 أو أي صيغة شائعة" dir="ltr" inputmode="numeric" autocomplete="off">
                         <button type="button" class="no-print date-picker-btn" aria-label="اختيار التاريخ" onclick="openDatePicker()">📅</button>
                         <input type="date" id="hiddenDatePicker" class="hidden-date-picker" tabindex="-1" aria-hidden="true">
@@ -410,29 +410,6 @@
             </footer>
         </div>
     </main>
-
-    <footer class="no-print floating-action-dock">
-        <button type="button" class="dock-btn btn-save" onclick="saveReceiptLocally()" title="حفظ بالسجل">
-            <span class="dock-icon">💾</span>
-            <span class="dock-text">حفظ</span>
-        </button>
-        <button type="button" class="dock-btn btn-img" onclick="downloadReceiptImage()" title="تحميل صورة">
-            <span class="dock-icon">🖼️</span>
-            <span class="dock-text">صورة</span>
-        </button>
-        <button type="button" class="dock-btn btn-preview" onclick="openPreviewModal()" title="معاينة الطباعة">
-            <span class="dock-icon">👁️</span>
-            <span class="dock-text">معاينة</span>
-        </button>
-        <button type="button" class="dock-btn btn-print" onclick="triggerNativePrint()" title="طباعة وحفظ PDF">
-            <span class="dock-icon">🖨️</span>
-            <span class="dock-text">طباعة / PDF</span>
-        </button>
-        <button type="button" class="dock-btn btn-share" onclick="openShareModal()" title="إرسال عبر واتساب">
-            <span class="dock-icon">📲</span>
-            <span class="dock-text">إرسال</span>
-        </button>
-    </footer>
 
     </div>
 

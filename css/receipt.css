@@ -350,13 +350,15 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 
 /* Canonical paper date: one isolated RTL flex island.
    DOM order is day / month / year; RTL flex places day on the right.
-   The year itself is a nested LTR island, guaranteeing 202م. */
-.date-field-wrapper{display:flex;align-items:center;gap:6px;direction:rtl!important;white-space:nowrap!important;}
-.date-field-wrapper .meta-label{flex:0 0 auto!important;}
+   The year itself is a nested LTR island, guaranteeing 2026م. */
+.date-field-wrapper{display:flex;align-items:center;gap:8px;column-gap:8px;direction:rtl!important;white-space:nowrap!important;}
+.date-field-wrapper .meta-label{flex:0 0 auto!important;margin-inline-end:2px;}
 .date-container{
   display:inline-flex!important;
   align-items:center!important;
+  justify-content:flex-start!important;
   flex:0 0 auto!important;
+  gap:6px!important;
   direction:rtl!important;
   unicode-bidi:isolate!important;
   white-space:nowrap!important;
@@ -364,13 +366,14 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .date-sequence{
   display:inline-flex!important;
   flex-direction:row!important;
-  align-items:baseline!important;
-  gap:4px!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:6px!important;
   direction:rtl!important;
   unicode-bidi:isolate!important;
   white-space:nowrap!important;
   font-size:10px!important;
-  line-height:1.15!important;
+  line-height:1!important;
   font-weight:700!important;
   color:var(--primary)!important;
 }
@@ -380,14 +383,26 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
   display:inline-flex!important;
   flex:0 0 auto!important;
   flex-direction:row!important;
-  align-items:baseline!important;
-  justify-content:flex-start!important;
-  gap:3px!important;
+  align-items:center!important;
+  justify-content:center!important;
   direction:ltr!important;
   unicode-bidi:isolate!important;
-  min-width:48px!important;
-  text-align:left!important;
   white-space:nowrap!important;
+}
+.date-sequence .date-slot{
+  width:26px!important;
+  min-width:26px!important;
+  height:15px!important;
+  border-bottom:1.5px dashed #64748b!important;
+  text-align:center!important;
+}
+.date-sequence .date-sep{direction:ltr!important;font-weight:800!important;color:var(--line-border,#64748b)!important;line-height:1!important;}
+.date-sequence .date-year{
+  direction:ltr!important;
+  min-width:44px!important;
+  gap:2px!important;
+  justify-content:flex-start!important;
+  text-align:left!important;
 }
 .date-sequence .paper-year-digits,
 .date-sequence .paper-year-era{
@@ -396,18 +411,9 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
   direction:ltr!important;
   unicode-bidi:isolate!important;
   white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
 }
-.date-sequence .date-slot{
-  width:25px!important;
-  min-width:25px!important;
-  height:15px!important;
-  border-bottom:1.5px dashed #64748b!important;
-  text-align:center!important;
-}
-.date-sequence .date-sep{direction:ltr!important;font-weight:800!important;}
-.date-sequence .date-year{direction:ltr!important;min-width:34px!important;text-align:left!important;}
-.date-sequence .paper-year-digits,.date-sequence .paper-year-era{direction:ltr!important;unicode-bidi:isolate!important;display:inline!important;}
-.digital-date-control{display:inline-flex!important;align-items:center!important;gap:4px!important;direction:ltr!important;flex:0 0 auto!important;}
+.digital-date-control{display:inline-flex!important;align-items:center!important;gap:8px!important;direction:ltr!important;flex:0 0 auto!important;}
 .digital-date-control #digDate{width:120px!important;text-align:center!important;font-weight:700!important;direction:ltr!important;}
 .date-picker-btn{background:none;border:0;cursor:pointer;font-size:12px;padding:2px 4px;}
 .hidden-date-picker{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;}

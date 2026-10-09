@@ -13,8 +13,7 @@ function syncReceiptEditorState(){
   if(save){ save.textContent=current ? (status==='voided' ? '🔒 سند ملغى' : '💾 تحديث السند') : '💾 حفظ السند'; save.disabled=status==='voided'; }
   if(cancel)cancel.hidden=!current || status==='voided';
   if(badge){ badge.textContent=current ? (status==='voided' ? 'ملغى' : 'سند محفوظ — قابل للتحديث') : 'سند جديد'; badge.classList.toggle('is-voided',status==='voided'); badge.classList.toggle('is-issued',status!=='voided'); }
-  const notice=document.getElementById('receiptVoidNotice');
-  if(notice){ notice.hidden=status!=='voided'; }
+  document.getElementById('receiptPrintArea')?.classList.toggle('is-void', status==='voided');
 }
 
 function escapeHTML(value) {
