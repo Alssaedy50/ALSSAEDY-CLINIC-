@@ -4,8 +4,11 @@ AQSA7 is a reusable, local-first multi-product platform. The first configured pr
 
 ## Current release
 
-- **Version:** v1.4.0
-- **Android:** versionCode 19, signed production APK
+- **Version:** v1.4.1
+- **Android:** versionCode 20, signed production APK
+- **Android package:** `com.alssaedy.clinic`
+- **Release:** https://github.com/Alssaedy50/AQSA7/releases/tag/v1.4.1
+- **APK:** https://github.com/Alssaedy50/AQSA7/releases/download/v1.4.1/app-release.apk
 - **Platform hierarchy:** AQSA7 Platform → Products / Projects → Dental Clinic → ALSSAEDY CLINIC workspace
 - **Receipt profiles:** A5 Portrait (148 × 210 mm), A4 and 80mm thermal
 - **Typography:** RTL Arabic primary + LTR English identity
@@ -35,7 +38,7 @@ The platform is intentionally structured so additional products can be added thr
 
 ## Verification and release
 
-The v1.4.0 release candidate must pass the existing Runtime Smoke, Android production build/signature, Pages source, and receipt-export gates before publication. The historical **v1.3.0** release remains unchanged as the prior released artifact.
+The **v1.4.1** Android release was published on 2026-10-08. Its signed production APK (versionCode 20) was built by GitHub Actions; Runtime Smoke, Receipt Export, Pages Source/Build and Android APK checks passed on the release commit. The historical **v1.3.0** and **v1.4.0** artifacts remain historical releases and are not the current release. External Vercel and Cloudflare deployment checks were not green at the last verification; they do not negate the successful APK/Pages gates, but the affected external deployments must not be described as fully verified.
 
 Known release limitations:
 - Live Google production OAuth upload/download/restore requires an authorized production OAuth client/account and is not covered by CI.
