@@ -236,7 +236,7 @@ async function applyMergedSyncSnapshot(rawSnapshot) {
     if (typeof setSize === 'function') setSize(clinicRepositoryGetSettingSync('receiptSize') || 'a5');
     if (typeof updateHistoryCount === 'function') updateHistoryCount();
     if (typeof renderHistory === 'function') renderHistory();
-    return {receipts:snapshot.receipts.length,patients:snapshot.patients.length};
+    return snapshot;
 }
 
 async function runBidirectionalSync(actionLabel) {
@@ -254,9 +254,10 @@ async function runBidirectionalSync(actionLabel) {
         let baseVersion = 0;
         if (remote.data?.found && remote.data?.record) {
             baseVersion = Number(remote.data.record.version) || 0;
+            if (!remote.data.record.payload || typeof remote.data.record.payload !== 'object') throw new Error('النسخة الموجودة على الخادم غير صالحة؛ لم يتم استبدالها.');
             merged = mergeSyncSnapshots(merged, remote.data.record.payload);
         }
-        await applyMergedSyncSnapshot(merged);
+        merged = await applyMergedSyncSnapshot(merged);
         for (let attempt=0; attempt<SYNC_MAX_CONFLICT_RETRIES; attempt++) {
             merged.updatedAt = new Date().toISOString();
             const response = await syncRequest('PUT',{body:{baseVersion,clientId:getSyncClientId(),updatedAt:merged.updatedAt,payload:merged}});
@@ -273,7 +274,7 @@ async function runBidirectionalSync(actionLabel) {
             // A device wrote while this one was syncing. Merge the returned revision and retry.
             baseVersion = Number(response.data.record.version) || 0;
             merged = mergeSyncSnapshots(merged,response.data.record.payload);
-            await applyMergedSyncSnapshot(merged);
+            merged = await applyMergedSyncSnapshot(merged);
         }
         throw new Error('تغيّرت البيانات على الخادم عدة مرات. أعد المحاولة بعد لحظات.');
     } catch (error) {
