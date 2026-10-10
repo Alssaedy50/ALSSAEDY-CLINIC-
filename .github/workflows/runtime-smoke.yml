@@ -33,6 +33,9 @@ jobs:
         run: |
           for file in js/*.js; do node --check "$file"; done
 
+      - name: Verify bidirectional sync merge semantics
+        run: node tests/sync-merge-test.mjs
+
       - name: Verify AI vendor isolation in business/platform modules
         run: |
           if grep -Eri -- 'openai|anthropic|google-generative-ai|google/genai|mistralai|cohere|groq' js/product.js js/capabilities.js js/repository.js js/storage.js js/app.js; then
