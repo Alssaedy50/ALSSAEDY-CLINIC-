@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: PHASE 8 CLOSED — Phase 8.0–8.10 COMPLETE; no Phase 8.11 authorized
-Last updated: 2026-10-09 (Phase 8.13 completed — export-crash root cause, deterministic capture surface, configurable blank date)
+Last updated: 2026-10-10 (maintenance correction — runtime gate, UI traceability, release metadata)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3396,3 +3396,27 @@ Scope: the third root-cause round on the v1.4.x line. No storage, routing, produ
 - Cache-busting `?v=` query strings are bumped to `1.2.7` in `index.html` and `sw.js` for the changed modules (`receipt.css`, `print.css`, `storage.js`, `export.js`, `app.js`), and the service-worker cache name to `alssaedy-clinic-v1.2.7-core`.
 - Local Chromium (real `html2canvas`, 390px mobile viewport) confirmed: no gradient crash, correct sheet proportions, configurable blank date, absent tooth field, absent void banner on valid receipts, and receipt-tab surfacing before capture.
 
+
+
+## Maintenance Correction — 2026-10-10
+
+### Completed — PR #70
+- Fixed the Runtime Smoke security-boundary assertion to match the active service-worker cache name `alssaedy-clinic-v1.2.7-core`; the prior assertion still expected `v1.2.3-core` and failed before browser tests.
+- Corrected a duplicate `data-ui-id` on the platform products navigation action and added a Runtime Smoke regression assertion that rejects duplicate UI traceability identifiers.
+- Reconciled README and this ledger with the current Android release line: **v1.4.1 / versionCode 20**.
+- Clarified the existing cloud feature's current scope: snapshot backup/restore is not continuous bidirectional multi-device synchronization.
+- Legacy files under `.backup-2026-10-06T17-20-18-651Z/` were deliberately retained as an excluded archive; `.assetsignore` keeps `.backup-*/` out of deployed assets. No application source archive was deleted.
+
+### Verification evidence
+- PR #70 merged to `main` at `ca4024d80d6d1f62b313247782ba88164a16f687`.
+- Runtime Smoke: PASS — [run 38078964468](https://github.com/Alssaedy50/AQSA7/actions/runs/38078964468).
+- Pages Source Verification: PASS — [run 38078964452](https://github.com/Alssaedy50/AQSA7/actions/runs/38078964452).
+- Receipt Export: PASS — [run 38078964455](https://github.com/Alssaedy50/AQSA7/actions/runs/38078964455).
+- Android Build: PASS — [run 38078964456](https://github.com/Alssaedy50/AQSA7/actions/runs/38078964456).
+- Post-merge main verification also passed all four gates against merge commit `ca4024d80d6d1f62b313247782ba88164a16f687`: Runtime Smoke [38079056100](https://github.com/Alssaedy50/AQSA7/actions/runs/38079056100), Pages [38079056094](https://github.com/Alssaedy50/AQSA7/actions/runs/38079056094), Receipt Export [38079056069](https://github.com/Alssaedy50/AQSA7/actions/runs/38079056069), Android Build [38079056064](https://github.com/Alssaedy50/AQSA7/actions/runs/38079056064).
+
+### Open blocker — multi-device cloud synchronization
+- `js/sync.js` currently implements versioned snapshot upload/restore with additive restore semantics; it does not reconcile updates to existing patient/receipt records as a bidirectional sync engine.
+- `api/clinic-sync.js` uses Vercel Blob APIs, while the current Cloudflare `worker.js` only forwards requests to static assets and `wrangler.jsonc` declares no D1/KV binding. The default same-origin `/api/clinic-sync` route is therefore not backed by the current Cloudflare Worker source.
+- Do not label cross-device synchronization as complete or silently introduce a second data authority. Next work must establish the intended production API host and provisioned storage binding, then implement conflict-safe merge semantics against the existing IndexedDB repository and test two independent clients. Credentials, database IDs and provider secrets must remain in platform configuration, not source files.
+- No production sync backend, database schema, secret or Cloudflare binding was changed in PR #70.
