@@ -76,7 +76,7 @@ export default async function handler(req, res) {
     const currentVersion = Number(current?.version || 0);
     const baseVersion = Number(body.baseVersion ?? 0);
     if (!Number.isSafeInteger(baseVersion) || baseVersion < 0) return res.status(400).json({ error: 'invalid_base_version' });
-    if (current && baseVersion !== currentVersion) {
+    if (baseVersion !== currentVersion) {
       return res.status(409).json({ error: 'sync_conflict', record: current });
     }
 
