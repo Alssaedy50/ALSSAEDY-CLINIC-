@@ -1,10 +1,24 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: PHASE 8 CLOSED — Phase 8.0–8.10 COMPLETE; no Phase 8.11 authorized
-Last updated: 2026-10-10 (maintenance correction — runtime gate, UI traceability, release metadata)
+Last updated: 2026-10-10 (maintenance cleanup, release reconciliation, runtime gate, UI traceability)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
+
+## Latest Authoritative Release Reconciliation — 2026-10-10
+
+This section is the current release reference. Older phase records and release notes are historical evidence unless explicitly stated otherwise here.
+
+- **Current published Android release:** v1.4.1.
+- **Release page:** https://github.com/Alssaedy50/AQSA7/releases/tag/v1.4.1
+- **Signed APK:** https://github.com/Alssaedy50/AQSA7/releases/download/v1.4.1/app-release.apk
+- **Android identity:** package `com.alssaedy.clinic`, versionCode `20`, versionName `1.4.1`.
+- **Verified release gates:** Runtime Smoke, Receipt Export, GitHub Pages source/build, and Android APK build/signature passed on the documented release/current maintenance baseline. New changes must pass their applicable gates before merge.
+- **External services:** Vercel and Cloudflare deployment checks were not green at the last documented verification; their live deployments remain unverified until checked independently. Do not infer external deployment health from GitHub Pages or Android CI.
+- **Not established by CI:** physical Android-device installation and interaction, live printer/share behavior, and production Google OAuth upload/download/restore.
+- **Scope control:** Phase 8.0–8.10 is closed. Phase 8.11 is not authorized. No new implementation phase may be inferred from stale task pointers; consult the current priority register and obtain explicit authorization before starting another phase.
+
 
 ## Mission
 
@@ -3274,8 +3288,8 @@ Gate decision:
 - Product/UX scope gate: PASS at functional/runtime contract level; rendered cross-device acceptance remains Phase 8.10.
 - **Phase 8.5: COMPLETE.**
 
-### Next authorized task
-**Phase 8.6 — History & Financial Ledger.**
+### Historical task pointer — superseded
+The old **Phase 8.6 — History & Financial Ledger** pointer is stale historical text and is superseded by the completed Phase 8.6–8.10 records. Phase 8.10 is complete; Phase 8 is closed, and no Phase 8.11 is authorized. Consult the current project priority register and obtain explicit authorization before starting any further task.
 
 ## Current authoritative decisions
 
