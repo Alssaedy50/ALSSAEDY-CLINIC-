@@ -19,6 +19,19 @@ This section is the current release reference. Older phase records and release n
 - **Not established by CI:** physical Android-device installation and interaction, live printer/share behavior, and production Google OAuth upload/download/restore.
 - **Scope control:** Phase 8.0–8.10 is closed. Phase 8.11 is not authorized. No new implementation phase may be inferred from stale task pointers; consult the current priority register and obtain explicit authorization before starting another phase.
 
+## Cloud Sync Maintenance Implementation — 2026-10-11
+
+This is a maintenance correction to the existing optional sync path, not a new product phase or a second persistence architecture.
+
+- `js/repository.js` remains the sole durable local authority (IndexedDB). Normal patient/receipt writes now stamp `updatedAt`; deleting a patient or receipt records a scoped tombstone so the deletion can propagate to other devices.
+- `js/sync.js` merges local and cloud patients/receipts by stable `id`, resolves updates by `updatedAt` with a deterministic tie-break, merges per-setting records, applies tombstones, and retries returned version conflicts up to five times. Manual “backup” and “restore” now perform a merge in both directions; automatic mode is debounced after repository writes/deletes.
+- `api/clinic-sync.js` validates the snapshot shape and version, uses SHA-256-derived private Blob paths, and retains read compatibility with the older path format.
+- The service-worker cache and script query versions are bumped so mobile/PWA clients can receive the changed source.
+- `tests/sync-merge-test.mjs` covers additions, update precedence, duplicate IDs, deletion tombstones, resurrection after a newer update, deterministic equal-time resolution, and foreign-app rejection.
+- **Unresolved production constraint:** Vercel Blob read-modify-write is not an atomic compare-and-swap primitive. Conflict retries protect normal overlapping edits, but strict correctness under exactly simultaneous writes is not guaranteed. If strict concurrent-write safety is required, move the version/merge transaction to a transactional database or another atomic coordination primitive before treating this as fully production-grade.
+- **Verification gate:** passing CI is necessary but does not prove the configured Vercel endpoint is deployed, credentials are present, or two real Android devices successfully exchange edits and deletions. Verify the live endpoint and perform a controlled two-device acceptance test before relying on cloud sync for patient data.
+
+
 
 ## Mission
 
