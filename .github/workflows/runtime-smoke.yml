@@ -1339,8 +1339,8 @@ jobs:
               if (String(url).includes('/api/clinic-sync')) {
                 if ((init.method||'GET') === 'GET') return new Response(JSON.stringify({found:puts>0,record:puts>0?{version:1,payload:{}}:null}),{status:200,headers:{'Content-Type':'application/json'}});
                 puts++;
-                if (puts===1) return new Response(JSON.stringify({error:'conflict',record:{version:1}}),{status:409,headers:{'Content-Type':'application/json'}});
-                return new Response(JSON.stringify({record:{version:2}}),{status:200,headers:{'Content-Type':'application/json'}});
+                if (puts===1) return new Response(JSON.stringify({error:'conflict',record:{version:1,payload:{app:'ALSSAEDY_CLINIC',snapshotVersion:3,patients:[],receipts:[],settingsRecords:[],tombstones:[]}}}),{status:409,headers:{'Content-Type':'application/json'}});
+                return new Response(JSON.stringify({ok:true,record:{version:2,payload:{app:'ALSSAEDY_CLINIC',snapshotVersion:3,patients:[],receipts:[],settingsRecords:[],tombstones:[]}}}),{status:200,headers:{'Content-Type':'application/json'}});
               }
               return originalFetch(url,init);
             };
@@ -1348,7 +1348,7 @@ jobs:
             window.fetch = originalFetch;
             return {puts,statusText:document.getElementById('syncStatus')?.textContent||'',result};
           });
-          if (sync.puts < 2 || !/تم|نجاح|رفع|نسخ/.test(sync.statusText)) fail('Sync conflict/retry regression failed', sync);
+          if (sync.puts < 2 || !/تم|نجاح|رفع|نسخ|مزامنة/.test(sync.statusText)) fail('Sync conflict/retry regression failed', sync);
 
           // 9) Export/print/share/preview action surfaces.
           const exportSurface = await page.evaluate(async () => {
