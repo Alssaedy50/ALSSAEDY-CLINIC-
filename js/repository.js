@@ -171,11 +171,13 @@ async function clinicRepositoryPutReceipt(item){
   const repo=window.__clinicRepository;
   const index=repo.receipts.findIndex(x=>x.id===item.id);
   if(index>=0) repo.receipts[index]=item; else repo.receipts.push(item);
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
   return item;
 }
 async function clinicRepositoryDeleteReceipt(id){
   await clinicDBDelete('receipts',id);
   window.__clinicRepository.receipts=window.__clinicRepository.receipts.filter(x=>String(x.id)!==String(id));
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
 }
 async function clinicRepositoryClearReceipts(){
   await clinicDBClear('receipts');
@@ -187,11 +189,13 @@ async function clinicRepositoryPutPatient(item){
   const repo=window.__clinicRepository;
   const index=repo.patients.findIndex(x=>x.id===item.id);
   if(index>=0) repo.patients[index]=item; else repo.patients.push(item);
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
   return item;
 }
 async function clinicRepositoryDeletePatient(id){
   await clinicDBDelete('patients',id);
   window.__clinicRepository.patients=window.__clinicRepository.patients.filter(x=>String(x.id)!==String(id));
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
 }
 
 async function hydrateDurableReceipts(){ return clinicRepositoryHydrate(); }
