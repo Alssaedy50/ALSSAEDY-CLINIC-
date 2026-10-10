@@ -36,7 +36,7 @@ Authoritative current state:
 - Web/PWA and Android use the same shared application core; Android remains a thin wrapper.
 - Phase 7.5 rendered UI acceptance passed after the isolated `css/ui.css` stacking/layout correction.
 
-The current source is therefore the accepted Platform-first composition and is the source package to be released as **v1.4.0**. The historical v1.3.0 artifact remains unchanged and must not be represented as the current source state.
+The current source is the accepted Platform-first composition, with the current Android release line at **v1.4.1 (versionCode 20)**. The historical v1.3.0 and v1.4.0 release artifacts remain historical evidence and must not be represented as the current Android release state.
 
 ### Primary corrective objective
 
