@@ -25,7 +25,7 @@
 .preview-modal-box{width:min(560px,94vw)!important;max-height:92vh;display:flex;flex-direction:column}
 .preview-note{font-size:10px!important}.preview-stage{margin:8px 0;overflow:auto;background:#e2e8f0;border-radius:10px;padding:10px;display:flex;justify-content:center;max-height:64vh}
 .preview-stage img{max-width:100%;height:auto;box-shadow:0 6px 24px rgba(15,23,42,.25);border-radius:4px;background:#fff}
-.preview-loading{color:#475569;font-size:11px;padding:30px 10px}.preview-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.preview-loading{color:#475569;font-size:11px;padding:30px 10px}.preview-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.preview-actions .tool-btn{min-height:48px!important}
 @media(max-width:600px){.preview-actions{grid-template-columns:1fr}}
 
 /* Feature components — patient presentation. */

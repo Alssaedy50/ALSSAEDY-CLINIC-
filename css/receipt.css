@@ -50,13 +50,20 @@ body.hide-watermark .watermark-layer { display: none !important; }
 .header-doc p { font-size: 9px; color: var(--text-muted); font-weight: 600; margin-top: 1px; }
 
 .header-logo-wrap {
-    width: 62px;
-    height: 62px;
+    width: calc(80px * var(--logo-scale, 1));
+    height: calc(80px * var(--logo-scale, 1));
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    padding: 0 !important;
 }
-.clinic-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
+.clinic-logo { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; padding: 0 !important; }
 
 .header-clinic { font-family: inherit; text-align: left; }
 .header-clinic h2 { font-size: 10px; font-weight: 800; color: var(--primary); line-height: 1.2; }
@@ -312,7 +319,7 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 /* Header: fixed three-column structure keeps the official logo centered. */
 .receipt-header{
   display:grid!important;
-  grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr)!important;
+  grid-template-columns:minmax(0,1fr) calc(80px * var(--logo-scale,1)) minmax(0,1fr)!important;
   align-items:center!important;
   column-gap:8px!important;
   width:100%!important;
@@ -320,14 +327,14 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 }
 .receipt-header .header-doc{min-width:0!important;text-align:right!important;justify-self:stretch!important;}
 .receipt-header .header-logo-wrap{
-  width:calc(62px * var(--logo-scale,1))!important;
-  height:calc(62px * var(--logo-scale,1))!important;
+  width:calc(80px * var(--logo-scale,1))!important;
+  height:calc(80px * var(--logo-scale,1))!important;
   justify-self:center!important;align-self:center!important;margin:0 auto!important;
 }
 .receipt-header .header-clinic{min-width:0!important;text-align:left!important;justify-self:stretch!important;}
 .receipt-header .header-doc h2,.receipt-header .header-clinic h2{line-height:1.18!important;}
 .receipt-header .header-doc p,.receipt-header .header-clinic p{line-height:1.2!important;margin-top:1px!important;}
-.receipt-paper .clinic-logo{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;}
+.receipt-paper .clinic-logo{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;}
 
 /* Typography scaling remains compatible with existing settings. */
 .receipt-paper{font-size:calc(10px * var(--receipt-body-scale));}
@@ -353,6 +360,17 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
    The year itself is a nested LTR island, guaranteeing 2026م. */
 .date-field-wrapper{display:flex;align-items:center;gap:8px;column-gap:8px;direction:rtl!important;white-space:nowrap!important;}
 .date-field-wrapper .meta-label{flex:0 0 auto!important;margin-inline-end:2px;}
+
+/* Digital vs blank-paper date are two explicit sibling views. Only one is
+   rendered per mode; the export class wins so the blank template can never
+   inherit the digital input and the digital export can never show dots. */
+.digital-date-view{display:inline-flex!important;}
+.blank-date-view{display:none!important;}
+body.blank-template-export .digital-date-view,
+[data-mode="manual"] .digital-date-view{display:none!important;}
+body.blank-template-export .blank-date-view,
+[data-mode="manual"] .blank-date-view{display:flex!important;}
+
 .date-container{
   display:inline-flex!important;
   align-items:center!important;
@@ -363,6 +381,7 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
   unicode-bidi:isolate!important;
   white-space:nowrap!important;
 }
+.blank-date-view .date-sequence,
 .date-sequence{
   display:inline-flex!important;
   flex-direction:row!important;
@@ -433,16 +452,16 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .footer-phones .phone-separator{color:#94a3b8!important;font-weight:900!important;}
 
 @media print{
-  .receipt-header{grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr)!important;column-gap:6px!important;}
-  .receipt-header .header-logo-wrap{width:calc(62px * var(--logo-scale,1))!important;height:calc(62px * var(--logo-scale,1))!important;}
+  .receipt-header{grid-template-columns:minmax(0,1fr) calc(80px * var(--logo-scale,1)) minmax(0,1fr)!important;column-gap:6px!important;}
+  .receipt-header .header-logo-wrap{width:calc(80px * var(--logo-scale,1))!important;height:calc(80px * var(--logo-scale,1))!important;}
   .date-sequence{font-size:10px!important;}
 }
 
 /* VISUAL QUALITY PASS v1.1 — preserves the existing clinic identity and layout contract. */
 .receipt-paper{border-radius:10px!important;box-shadow:0 10px 30px rgba(15,23,42,.10)!important;border:1px solid rgba(7,59,99,.12)!important;background:linear-gradient(180deg,#fff 0%,#fdfefe 100%)!important}
 .receipt-header{padding:7px 6px 5px!important}
-.header-logo-wrap{filter:drop-shadow(0 3px 6px rgba(7,59,99,.12))}
-.clinic-logo{background:#fff;border-radius:12px;padding:3px;object-fit:contain}
+.header-logo-wrap{filter:none!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+.clinic-logo{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;object-fit:contain}
 .receipt-title-box{margin:5px 0 7px!important}
 .title-strip{min-height:34px!important;border-radius:10px!important;box-shadow:0 3px 10px rgba(7,59,99,.08)}
 .main-voucher-title{letter-spacing:.1px!important}
@@ -460,7 +479,7 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 .balance-highlight{box-shadow:0 4px 12px rgba(7,59,99,.10)!important}
 .sig-draw-line{margin-top:14px!important}
 .receipt-footer{border-radius:8px!important;margin-top:6px!important}
-@media screen and (max-width:700px){.receipt-paper{box-shadow:none!important;border-radius:7px!important}.receipt-header{column-gap:5px!important}.header-logo-wrap{transform:scale(.94)}}
+@media screen and (max-width:700px){.receipt-paper{box-shadow:none!important;border-radius:7px!important}.receipt-header{column-gap:5px!important}}
 
 
 /* =========================================================
@@ -525,6 +544,7 @@ body.exporting-receipt .patient-contact-row .patient-phone-input {
   object-position:center!important;
   display:block!important;
   image-rendering:auto!important;
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;
 }
-.header-logo-wrap{aspect-ratio:1/1!important;overflow:visible!important}
+.header-logo-wrap{aspect-ratio:1/1!important;overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
 /* Date print visibility is owned by css/print.css; template input is owned by css/templates.css. */
