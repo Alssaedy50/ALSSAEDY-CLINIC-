@@ -35,6 +35,11 @@ await page.evaluate(() => {
 
 await page.waitForTimeout(500);
 
+// Canonical blank-paper write-in date line. It is dot-free and uses non-breaking
+// spaces so the handwriting gaps survive `white-space: nowrap`.
+const EXPECTED_BLANK_DATE = await page.evaluate(() => getDefaultBlankDateFormat());
+if (EXPECTED_BLANK_DATE.includes('.')) throw new Error('Blank date default still contains dots: ' + JSON.stringify(EXPECTED_BLANK_DATE));
+
 const dateCheck = await page.evaluate(() => ({
   digitalDate: document.getElementById('digDate')?.value || '',
   digitalDateInputs: document.querySelectorAll('#digDate').length,
@@ -46,7 +51,7 @@ const dateCheck = await page.evaluate(() => ({
   blankDateEraIsolate: getComputedStyle(document.querySelector('.blank-date-era') || document.body).unicodeBidi,
   pickerHandler: typeof openDatePicker === 'function'
 }));
-if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler || dateCheck.printDateValue !== '07/10/2026 م' || dateCheck.blankDateSlots !== '..... / ..... / 202...' || dateCheck.blankDateEra !== 'م' || !String(dateCheck.blankDateEraIsolate).includes('isolate')) {
+if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler || dateCheck.printDateValue !== '07/10/2026 م' || dateCheck.blankDateSlots !== EXPECTED_BLANK_DATE || dateCheck.blankDateSlots.includes('.') || dateCheck.blankDateEra !== 'م' || !String(dateCheck.blankDateEraIsolate).includes('isolate')) {
   throw new Error('Digital receipt date visibility failed: ' + JSON.stringify(dateCheck));
 }
 
@@ -63,13 +68,15 @@ if (nativePrintDateCheck.printDate !== '07/10/2026 م' ||
     nativePrintDateCheck.printDateDisplay === 'none' ||
     nativePrintDateCheck.digitalInputDisplay !== 'none' ||
     nativePrintDateCheck.pickerDisplay !== 'none' ||
-    nativePrintDateCheck.blankDateSlots !== '..... / ..... / 202...' ||
+    nativePrintDateCheck.blankDateSlots !== EXPECTED_BLANK_DATE ||
+    nativePrintDateCheck.blankDateSlots.includes('.') ||
     nativePrintDateCheck.blankDateEra !== 'م') {
   throw new Error('Native print date contract failed: ' + JSON.stringify(nativePrintDateCheck));
 }
 await page.emulateMedia({ media: 'screen' });
 
 // Blank date format is a configurable setting; the era token must stay isolated.
+// The dotted legacy format must be normalized away, not persisted.
 const blankFormatCheck = await page.evaluate(() => {
   setBlankDateFormat('__ / __ / 2026__');
   const custom = {
@@ -78,10 +85,18 @@ const blankFormatCheck = await page.evaluate(() => {
     stored: localStorage.getItem('alssaedy_blank_date_format') || ''
   };
   setBlankDateFormat('..... / ..... / 202...');
-  return custom;
+  const dotted = {
+    stored: localStorage.getItem('alssaedy_blank_date_format') || '',
+    hasDots: (document.getElementById('blankDateSlots')?.textContent || '').includes('.')
+  };
+  setBlankDateFormat(getDefaultBlankDateFormat());
+  return { custom, dotted };
 });
-if (blankFormatCheck.settingValue !== '__ / __ / 2026__' || blankFormatCheck.slots !== '__ / __ / 2026__' || blankFormatCheck.stored !== '__ / __ / 2026__') {
-  throw new Error('Configurable blank date format failed: ' + JSON.stringify(blankFormatCheck));
+if (blankFormatCheck.custom.settingValue !== '__ / __ / 2026__' || blankFormatCheck.custom.slots !== '__ / __ / 2026__' || blankFormatCheck.custom.stored !== '__ / __ / 2026__') {
+  throw new Error('Configurable blank date format failed: ' + JSON.stringify(blankFormatCheck.custom));
+}
+if (blankFormatCheck.dotted.hasDots || blankFormatCheck.dotted.stored.includes('.')) {
+  throw new Error('Legacy dotted blank date format was not normalized away: ' + JSON.stringify(blankFormatCheck.dotted));
 }
 
 const blankCheck = await page.evaluate(() => {
@@ -104,7 +119,8 @@ const blankCheck = await page.evaluate(() => {
   finishBlankTemplate(snapshot);
   return result;
 });
-if (blankCheck.date.slots !== '..... / ..... / 202...' ||
+if (blankCheck.date.slots !== EXPECTED_BLANK_DATE ||
+    blankCheck.date.slots.includes('.') ||
     blankCheck.date.era !== 'م' ||
     !String(blankCheck.date.slotsIsolate).includes('isolate') ||
     !String(blankCheck.date.eraIsolate).includes('isolate') ||
@@ -144,7 +160,7 @@ const blankTemplateContract = await page.evaluate(() => {
   setMode('digital');
   return result;
 });
-if (blankTemplateContract.digitalDate !== '07/10/2026' || blankTemplateContract.blankDateSlots !== '..... / ..... / 202...' || blankTemplateContract.blankDateEra !== 'م') {
+if (blankTemplateContract.digitalDate !== '07/10/2026' || blankTemplateContract.blankDateSlots !== EXPECTED_BLANK_DATE || blankTemplateContract.blankDateEra !== 'م') {
   throw new Error('Blank paper template boundary failed: '+JSON.stringify(blankTemplateContract));
 }
 
@@ -159,6 +175,50 @@ try { pdfText=execFileSync('pdftotext',[pdfPath,'-'],{encoding:'utf8'}); } catch
 for(const forbidden of ['2026-10-07','مريض الاختبار','TEST-001','25000']) {
   if(pdfText.includes(forbidden)) throw new Error('Blank PDF contains digital data: '+forbidden);
 }
+
+// REGRESSION (commit 9e0bfaf): exporting the blank template captured the
+// editable HTML form chrome (inputs, browser datepicker icon, checkboxes from
+// the receipt workspace) instead of the clean printable paper. Capture the
+// html2canvas clone and assert it is the sanitized #receiptPrintArea sheet:
+// no form controls, only the blank date view, pinned to the fixed A5 width.
+const blankCapture = await page.evaluate(async () => {
+  const snapshot = prepareBlankTemplate();
+  setSize('a5');
+  const out = {};
+  const orig = window.html2canvas;
+  window.html2canvas = function(el, opts) {
+    const wrapped = Object.assign({}, opts, { onclone: (doc) => {
+      const ret = opts.onclone ? opts.onclone(doc) : undefined;
+      try {
+        const r = doc.getElementById('receiptPrintArea');
+        out.targetId = el && el.id;
+        out.inputs = r.querySelectorAll('input, select, textarea').length;
+        out.buttons = r.querySelectorAll('button, .date-picker-btn').length;
+        out.hasDigitalDateView = !!r.querySelector('.digital-date-view');
+        out.digitalDateDisplay = (() => { const d = r.querySelector('.digital-date-view'); return d ? doc.defaultView.getComputedStyle(d).display : 'missing'; })();
+        out.blankDateDisplay = (() => { const d = r.querySelector('.blank-date-view'); return d ? doc.defaultView.getComputedStyle(d).display : 'missing'; })();
+        out.blankSlots = r.querySelector('#blankDateSlots')?.textContent || '';
+        out.pinnedWidth = r.style.getPropertyValue('width');
+        out.rectWidth = Math.round(r.getBoundingClientRect().width);
+      } catch (e) { out.err = String(e); }
+      return ret;
+    }});
+    return orig(el, wrapped);
+  };
+  await generateReceiptCanvas({ fullPage: true, scale: 2 });
+  window.html2canvas = orig;
+  finishBlankTemplate(snapshot);
+  setMode('digital');
+  return out;
+});
+if (blankCapture.err) throw new Error('Blank capture clone inspection failed: ' + blankCapture.err);
+if (blankCapture.targetId !== 'receiptPrintArea') throw new Error('Export did not target #receiptPrintArea: ' + blankCapture.targetId);
+if (blankCapture.inputs !== 0) throw new Error('Blank capture leaked form inputs: ' + blankCapture.inputs);
+if (blankCapture.buttons !== 0) throw new Error('Blank capture leaked interactive buttons/datepicker: ' + blankCapture.buttons);
+if (blankCapture.hasDigitalDateView && blankCapture.digitalDateDisplay !== 'none') throw new Error('Blank capture rendered the digital date view: ' + blankCapture.digitalDateDisplay);
+if (blankCapture.blankDateDisplay !== 'flex') throw new Error('Blank capture did not render the blank date view: ' + blankCapture.blankDateDisplay);
+if (blankCapture.blankSlots !== EXPECTED_BLANK_DATE || blankCapture.blankSlots.includes('.')) throw new Error('Blank capture blank date format wrong: ' + JSON.stringify(blankCapture.blankSlots));
+if (blankCapture.pinnedWidth !== '559px' || blankCapture.rectWidth !== 559) throw new Error('Blank A5 capture was not pinned to the physical 559px width: ' + JSON.stringify({pinned:blankCapture.pinnedWidth,rect:blankCapture.rectWidth}));
 
 const result = await page.evaluate(async () => {
   if (typeof html2canvas !== 'function') throw new Error('Bundled html2canvas is unavailable');

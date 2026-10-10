@@ -365,13 +365,26 @@ html[data-size="thermal"] .footer-meta-line{flex-direction:column;gap:2px} html[
 
 /* Digital vs blank-paper date are two explicit sibling views. Only one is
    rendered per mode; the export class wins so the blank template can never
-   inherit the digital input and the digital export can never show dots. */
+   inherit the digital input and the digital export can never show dots.
+   The blank template view is enforced with !important because html2canvas can
+   re-evaluate the cloned document independently of the live page. */
 .digital-date-view{display:inline-flex!important;}
 .blank-date-view{display:none!important;}
 body.blank-template-export .digital-date-view,
-[data-mode="manual"] .digital-date-view{display:none!important;}
+[data-mode="manual"] .digital-date-view{display:none!important;visibility:hidden!important;}
 body.blank-template-export .blank-date-view,
-[data-mode="manual"] .blank-date-view{display:flex!important;}
+[data-mode="manual"] .blank-date-view{display:flex!important;visibility:visible!important;}
+
+/* Blank template captures the clean printable paper (#receiptPrintArea /
+   .receipt-paper) only. Interactive form chrome — the editable inputs, the
+   hidden native date input and the calendar picker button — must never render
+   in the exported sheet. */
+body.blank-template-export #receiptPrintArea input,
+body.blank-template-export #receiptPrintArea select,
+body.blank-template-export #receiptPrintArea textarea,
+body.blank-template-export #receiptPrintArea button,
+body.blank-template-export #receiptPrintArea .date-picker-btn,
+body.blank-template-export #receiptPrintArea .hidden-date-picker{display:none!important;visibility:hidden!important;}
 
 /* Blank write-in date: label + slots + era as three isolated flex islands. */
 .blank-date-view{

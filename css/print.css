@@ -48,6 +48,16 @@ html[data-size="thermal"] .page-canvas-wrapper{width:80mm!important;height:auto!
 html[data-size="thermal"] .receipt-paper{width:80mm!important;height:auto!important;min-width:80mm!important;max-width:80mm!important;min-height:0!important;max-height:none!important;padding:5mm 4mm!important;overflow:visible!important}
 }
 
+/* Blank-template printable master: the vector PDF (native print) path must show
+   only the clean receipt paper, never the editable form chrome or the calendar
+   picker button from #receiptWorkspace. */
+body.blank-template-export #receiptPrintArea input,
+body.blank-template-export #receiptPrintArea select,
+body.blank-template-export #receiptPrintArea textarea,
+body.blank-template-export #receiptPrintArea button,
+body.blank-template-export #receiptPrintArea .date-picker-btn,
+body.blank-template-export #receiptPrintArea .hidden-date-picker{display:none!important;visibility:hidden!important}
+
 /* Blank A5 notebook contract: no auto numbering and a real binding margin. */
 body.blank-template-export .receipt-paper{
     padding-inline-start:15mm !important;

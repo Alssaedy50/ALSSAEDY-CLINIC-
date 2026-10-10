@@ -1420,6 +1420,7 @@ jobs:
               digitalDateView:getComputedStyle(document.querySelector('.digital-date-view')).display,
               blankDateView:getComputedStyle(document.querySelector('.blank-date-view')).display,
               blankDateSlots:document.getElementById('blankDateSlots')?.textContent||'',
+              blankDateDefault:typeof getDefaultBlankDateFormat==='function'?getDefaultBlankDateFormat():'',
               blankDateEra:document.querySelector('.blank-date-era')?.textContent||'',
               blankDateEraIsolate:getComputedStyle(document.querySelector('.blank-date-era')||document.body).unicodeBidi,
               blankDateEraLast:document.querySelector('.blank-date-view')?.lastElementChild===document.querySelector('.blank-date-era'),
@@ -1446,7 +1447,7 @@ jobs:
           const a5Ratio=parseFloat(printQa.a5Paper.height)/parseFloat(printQa.a5Paper.width); if (!Number.isFinite(a5Ratio) || Math.abs(a5Ratio-(210/148))>0.03) fail('Phase 8.8 A5 rendered sheet geometry failed', printQa.a5Paper);
           if (!printQa.printCss.includes('148mm') || !printQa.printCss.includes('210mm') || !/margin:\s*0(?:px)?/.test(printQa.printCss)) fail('Phase 8.8 print CSS contract failed', printQa.printCss);
           if (printQa.blank.mode!=='manual' || !printQa.blank.classPresent || printQa.blank.rec || printQa.blank.name || printQa.blank.phone || printQa.blank.paid || printQa.blank.total || printQa.blank.date) fail('Phase 8.8 blank voucher leaked digital transaction data', printQa.blank);
-          if (printQa.blank.digitalDateView!=='none' || printQa.blank.blankDateView!=='flex' || printQa.blank.blankDateSlots!=='..... / ..... / 202...' || printQa.blank.blankDateEra!=='م' || !String(printQa.blank.blankDateEraIsolate).includes('isolate') || !printQa.blank.blankDateEraLast || printQa.blank.voidNoticeText) fail('Blank paper date/void contract failed', printQa.blank);
+          if (printQa.blank.digitalDateView!=='none' || printQa.blank.blankDateView!=='flex' || printQa.blank.blankDateSlots!==printQa.blank.blankDateDefault || printQa.blank.blankDateSlots.includes('.') || printQa.blank.blankDateEra!=='م' || !String(printQa.blank.blankDateEraIsolate).includes('isolate') || !printQa.blank.blankDateEraLast || printQa.blank.voidNoticeText) fail('Blank paper date/void contract failed', printQa.blank);
           if (printQa.restored.rec!==printQa.original.rec || printQa.restored.name!==printQa.original.name || printQa.restored.phone!==printQa.original.phone || printQa.restored.paid!==printQa.original.paid || printQa.restored.total!==printQa.original.total || printQa.restored.mode!==printQa.original.mode || printQa.restored.size!==printQa.original.size) fail('Phase 8.8 blank voucher did not restore digital state', printQa.restored);
           const bidi = await page.evaluate(() => ({dir:document.documentElement.dir,arabic:document.querySelector('.main-voucher-title')?.textContent||'',bdi:typeof bidiIsolate==='function' ? bidiIsolate('PH5-001') : ''}));
           if (bidi.dir!=='rtl' || !bidi.arabic.includes('سند') || !bidi.bdi.includes('PH5-001')) fail('Arabic RTL/BiDi regression failed', bidi);

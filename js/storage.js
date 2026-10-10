@@ -1,6 +1,17 @@
 /* Receipt, patient and export domain logic. Persistence is owned by repository.js. */
 function safeHistory(){ return clinicRepositoryReceipts(); }
 
+/* Canonical blank-paper write-in date line (no dots). Wide non-breaking
+   blanks provide the handwriting room; slashes separate day/month, and the
+   year is prefixed 3-digit. U+00A0 is used instead of regular spaces because
+   CSS `white-space: nowrap` collapses ordinary space runs. The "م" era letter
+   is owned by the separate isolated .blank-date-era token and is never part of
+   this format string. */
+function getDefaultBlankDateFormat(){
+  const nbsp = '\u00a0';
+  return nbsp.repeat(8) + ' / ' + nbsp.repeat(8) + ' / 202' + nbsp.repeat(2);
+}
+
 function getReceiptLifecycleStatus(item){ return window.aqsa7ReceiptLifecycleContract?.normalizeStatus(item?.status) || (item?.status === 'voided' ? 'voided' : 'issued'); }
 function isReceiptActive(item){ return getReceiptLifecycleStatus(item) !== 'voided'; }
 function activeReceiptHistory(){ return safeHistory().filter(isReceiptActive); }

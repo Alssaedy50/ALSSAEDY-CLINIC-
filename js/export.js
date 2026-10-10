@@ -32,10 +32,13 @@ function withCaptureState(callback) {
     return Promise.resolve(callback()).finally(() => document.body.classList.remove('is-capturing'));
 }
 
-function materializeReceiptDate(sourceReceipt, clonedReceipt) {
-    const isBlankTemplate =
-        document.body.classList.contains('blank-template-export') ||
+function isBlankTemplateCapture() {
+    return document.body.classList.contains('blank-template-export') ||
         document.body.getAttribute('data-mode') === 'manual';
+}
+
+function materializeReceiptDate(sourceReceipt, clonedReceipt) {
+    const isBlankTemplate = isBlankTemplateCapture();
     const source = sourceReceipt.querySelector('#digDate');
     const cloned = clonedReceipt.querySelector('#digDate');
     const clonedPrintDate = clonedReceipt.querySelector('#printDateValue');
@@ -47,6 +50,20 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
             cloned.style.display='none';
         }
         if (clonedPrintDate) clonedPrintDate.remove();
+        // In blank template mode the digital view must never render. html2canvas
+        // can re-evaluate the cloned document independently of the live page, so
+        // the hidden state is enforced inline on the clone itself rather than
+        // relying only on the [data-mode="manual"] CSS cascade.
+        const digitalView = clonedReceipt.querySelector('.digital-date-view');
+        if (digitalView) {
+            digitalView.style.setProperty('display','none','important');
+            digitalView.setAttribute('aria-hidden','true');
+        }
+        const blankView = clonedReceipt.querySelector('.blank-date-view');
+        if (blankView) {
+            blankView.style.setProperty('display','flex','important');
+            blankView.style.setProperty('visibility','visible','important');
+        }
         // The blank date line is a configurable write-in sequence. Rewrite the
         // slot text from the saved preference and keep the era token isolated
         // so RTL ordering can never move "م" across the numerals.
@@ -55,7 +72,12 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
         if (blankSlots) {
             let format = '';
             try { format = (typeof getBlankDateFormat === 'function' ? getBlankDateFormat() : '') || ''; } catch (_) { format = ''; }
-            blankSlots.textContent = format || '..... / ..... / 202...';
+            if (!format) {
+                format = (typeof getDefaultBlankDateFormat === 'function')
+                    ? getDefaultBlankDateFormat()
+                    : '\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0 / \u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0 / 202\u00a0\u00a0';
+            }
+            blankSlots.textContent = format;
             blankSlots.setAttribute('dir','rtl');
             blankSlots.style.unicodeBidi = 'isolate';
         }
@@ -132,6 +154,28 @@ function materializeReceiptControls(sourceReceipt, clonedReceipt, clonedDocument
     });
 }
 
+/* Blank-template capture must be a clean printable sheet, never the editable
+   form. Strip every residual form control (inputs, selects, textareas), any
+   interactive button (e.g. the date-picker icon) and the hidden native date
+   input from the cloned #receiptPrintArea before rasterising. */
+function stripInteractiveControlsFromClone(clonedReceipt) {
+    if (!clonedReceipt) return;
+    clonedReceipt.querySelectorAll('input, textarea, select, button, .date-picker-btn, .hidden-date-picker').forEach(control => control.remove());
+}
+
+/* Freeze the cloned paper at the fixed physical desktop width during capture so
+   html2canvas can never re-collapse the sheet into the mobile single-column
+   view. Widths are the exact A5/A4 desktop pixel widths owned by the profile. */
+function pinCloneToDesktopWidth(clonedReceipt, forcedWidth) {
+    if (!clonedReceipt || !Number.isFinite(forcedWidth)) return;
+    clonedReceipt.style.setProperty('width', forcedWidth + 'px', 'important');
+    clonedReceipt.style.setProperty('min-width', forcedWidth + 'px', 'important');
+    clonedReceipt.style.setProperty('max-width', forcedWidth + 'px', 'important');
+    clonedReceipt.style.setProperty('display', 'block', 'important');
+    clonedReceipt.style.setProperty('margin', '0 auto', 'important');
+    clonedReceipt.style.setProperty('transform', 'none', 'important');
+}
+
 async function waitForReceiptFonts() {
     // html2canvas must capture shaped Arabic glyphs, not the fallback font.
     // Explicitly request the weights used by the receipt before the clone is made.
@@ -187,14 +231,14 @@ function inlineReceiptLogoDataUrl() {
     return inlineImageAsDataUrl(img?.getAttribute('src') || fallback);
 }
 
-// The receipt sheet lives inside the product workspace, which is hidden while
-// the dashboard tab is active. Capturing a hidden element yields a 0-size box,
-// so any export path (share menu, blank template, etc.) must first surface the
-// receipt tab deterministically.
+// The receipt sheet lives inside the product workspace (#receiptWorkspace),
+// which is hidden while the dashboard tab is active. Capturing a hidden element
+// yields a 0-size box, so any export path (share menu, blank template, etc.)
+// must first surface the receipt tab deterministically.
 function ensureReceiptWorkspaceActive() {
     const receipt = document.getElementById('receiptPrintArea');
     if (!receipt) return;
-    const workspace = receipt.closest('.page-canvas-wrapper');
+    const workspace = document.getElementById('receiptWorkspace') || receipt.closest('.page-canvas-wrapper');
     if (workspace && getComputedStyle(workspace).display !== 'none') return;
     if (typeof activateAppTab === 'function') activateAppTab('receipt');
     else if (typeof setClinicWorkspaceView === 'function') setClinicWorkspaceView('receipt');
@@ -272,12 +316,7 @@ async function generateReceiptCanvas(options = {}) {
                         // html2canvas captures the cloned document at the mobile
                         // viewport width, which collapses the sheet. Pin the clone
                         // to the exact physical desktop width before rasterising.
-                        clonedReceipt.style.setProperty('width', forcedWidth + 'px', 'important');
-                        clonedReceipt.style.setProperty('min-width', forcedWidth + 'px', 'important');
-                        clonedReceipt.style.setProperty('max-width', forcedWidth + 'px', 'important');
-                        clonedReceipt.style.setProperty('display', 'block', 'important');
-                        clonedReceipt.style.setProperty('margin', '0 auto', 'important');
-                        clonedReceipt.style.setProperty('transform', 'none', 'important');
+                        pinCloneToDesktopWidth(clonedReceipt, forcedWidth);
 
                         // Freeze typography/layout for Canvas. The live UI may use
                         // responsive transforms, flex sizing and editable controls;
@@ -347,6 +386,13 @@ async function generateReceiptCanvas(options = {}) {
 
                         materializeReceiptDate(receipt, clonedReceipt);
                         materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
+                        // Capture the clean printable paper only: strip residual
+                        // interactive form chrome (hidden inputs, the .no-print
+                        // datepicker button/icon) that survived the clone. Receipt
+                        // data was already materialised into text spans above, so
+                        // nothing visible is lost.
+                        stripInteractiveControlsFromClone(clonedReceipt);
+                        pinCloneToDesktopWidth(clonedReceipt, forcedWidth);
                         const logo = clonedReceipt.querySelector('#clinicLogoImg');
                         if (logo) {
                             if (logoDataUrl) logo.setAttribute('src', logoDataUrl);

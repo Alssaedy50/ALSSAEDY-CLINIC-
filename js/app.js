@@ -201,15 +201,27 @@ function parseAnyDate(value) {
     return null;
 }
 
-const DEFAULT_BLANK_DATE_FORMAT = '..... / ..... / 202...';
+const DEFAULT_BLANK_DATE_FORMAT = (typeof getDefaultBlankDateFormat === 'function')
+    ? getDefaultBlankDateFormat()
+    : '\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0 / \u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0 / 202\u00a0\u00a0';
+
+function normalizeBlankDateFormat(value) {
+    // The blank paper date is a clean write-in line. The legacy dotted format
+    // ("..... / ..... / 202...") is replaced wholesale by the canonical spaced
+    // slash format, and the era letter "م" is never carried (it is owned by the
+    // isolated .blank-date-era token).
+    const raw = String(value ?? '').replace(/م/g, '');
+    if (raw.includes('.')) return DEFAULT_BLANK_DATE_FORMAT;
+    // A blank/whitespace-only value falls back to the canonical default. The
+    // leading/trailing non-breaking spaces are significant handwriting gaps, so
+    // they are deliberately preserved (String.trim() would strip U+00A0).
+    return raw.replace(/[\s\u00a0]/g, '').length ? raw : DEFAULT_BLANK_DATE_FORMAT;
+}
 
 function getBlankDateFormat() {
     const el = document.getElementById('settingBlankDateFormat');
     const stored = (el && el.value) || localStorage.getItem('alssaedy_blank_date_format') || DEFAULT_BLANK_DATE_FORMAT;
-    const value = String(stored ?? '').trim() || DEFAULT_BLANK_DATE_FORMAT;
-    // The format must never carry its own era letter: "م" is owned by the
-    // isolated .blank-date-era token so BiDi can pin it at the line end.
-    return value.replace(/م/g, '').trim() || DEFAULT_BLANK_DATE_FORMAT;
+    return normalizeBlankDateFormat(stored);
 }
 
 function renderBlankDateSlots() {
@@ -220,7 +232,7 @@ function renderBlankDateSlots() {
 }
 
 function setBlankDateFormat(value) {
-    const safe = String(value ?? '').replace(/م/g, '').trim() || DEFAULT_BLANK_DATE_FORMAT;
+    const safe = normalizeBlankDateFormat(value);
     localStorage.setItem('alssaedy_blank_date_format', safe);
     const el = document.getElementById('settingBlankDateFormat');
     if (el && el.value !== safe) el.value = safe;
