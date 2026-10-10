@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { get, put } from '@vercel/blob';
 
 /* Multi-receipt cloud backup for the ALSSAEDY CLINIC app.
@@ -6,15 +7,13 @@ import { get, put } from '@vercel/blob';
 
 const MAX_BODY = 25 * 1024 * 1024;
 
-function keyHash(key) {
-  // Non-cryptographic hash is enough to derive a stable blob path.
+function legacyKeyHash(key) {
   let h = 2166136261;
-  for (let i = 0; i < key.length; i++) {
-    h ^= key.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
   return (h >>> 0).toString(16).padStart(8, '0');
 }
+function pathFor(key) { return 'sync/clinic-' + createHash('sha256').update(key, 'utf8').digest('hex') + '.json'; }
+function legacyPathFor(key) { return 'sync/clinic-' + legacyKeyHash(key) + '.json'; }
 
 function keyFrom(req) {
   const auth = String(req.headers?.authorization || '').trim();
@@ -26,16 +25,18 @@ function pathFor(key) {
   return 'sync/clinic-' + keyHash(key) + '.json';
 }
 
-async function readRecord(path) {
+async function readPath(path) {
   try {
     const result = await get(path, { access: 'private', token: process.env.BLOB_READ_WRITE_TOKEN, useCache: false });
     if (!result?.stream) return null;
-    const raw = await new Response(result.stream).text();
-    return JSON.parse(raw);
+    return JSON.parse(await new Response(result.stream).text());
   } catch (error) {
     if (error?.status === 404 || /not found|404/i.test(String(error?.message || ''))) return null;
     throw error;
   }
+}
+async function readRecord(key) {
+  return await readPath(pathFor(key)) || await readPath(legacyPathFor(key));
 }
 
 export default async function handler(req, res) {
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
     const path = pathFor(key);
 
     if (req.method === 'GET') {
-      const record = await readRecord(path);
+      const record = await readRecord(key);
       return res.status(200).json({ found: Boolean(record), record: record || null });
     }
 
@@ -68,7 +69,7 @@ export default async function handler(req, res) {
     }
     if (JSON.stringify(body.payload).length > MAX_BODY) return res.status(413).json({ error: 'payload_too_large' });
 
-    const current = await readRecord(path);
+    const current = await readRecord(key);
     const currentVersion = Number(current?.version || 0);
     const baseVersion = Number(body.baseVersion || 0);
     if (current && baseVersion !== currentVersion) {
