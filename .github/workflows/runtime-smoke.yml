@@ -1102,12 +1102,14 @@ jobs:
             cancelAction: Boolean(document.querySelector('.issuance-cancel')),
             voidNotice: Boolean(document.querySelector('#receiptVoidNotice')),
             voidNoticeDefaultHidden: getComputedStyle(document.querySelector('#receiptVoidNotice')).display === 'none',
-            paperDateEditorRemoved: !document.querySelector('#paperTemplateDate')
+            paperDateEditorRemoved: !document.querySelector('#paperTemplateDate'),
+            toothFieldRemoved: !document.querySelector('#digTooth'),
+            blankDateFormatSetting: Boolean(document.querySelector('#settingBlankDateFormat'))
           }));
-          if (!receiptLifecycle.contract || JSON.stringify(receiptLifecycle.contract.statuses) !== JSON.stringify(['issued','voided']) || receiptLifecycle.contract.issued !== 'issued' || receiptLifecycle.contract.voided !== 'voided' || !receiptLifecycle.panel || !receiptLifecycle.lifecycleStatus || !receiptLifecycle.cancelAction || !receiptLifecycle.voidNotice || !receiptLifecycle.voidNoticeDefaultHidden || !receiptLifecycle.paperDateEditorRemoved) fail('Phase 8.5 receipt lifecycle/template boundary failed', receiptLifecycle);
+          if (!receiptLifecycle.contract || JSON.stringify(receiptLifecycle.contract.statuses) !== JSON.stringify(['issued','voided']) || receiptLifecycle.contract.issued !== 'issued' || receiptLifecycle.contract.voided !== 'voided' || !receiptLifecycle.panel || !receiptLifecycle.lifecycleStatus || !receiptLifecycle.cancelAction || !receiptLifecycle.voidNotice || !receiptLifecycle.voidNoticeDefaultHidden || !receiptLifecycle.paperDateEditorRemoved || !receiptLifecycle.toothFieldRemoved || !receiptLifecycle.blankDateFormatSetting) fail('Phase 8.5 receipt lifecycle/template boundary failed', receiptLifecycle);
 
           await page.evaluate(() => {
-            ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+            ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digCustomService'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
             setPayMethod('نقداً');
             document.querySelectorAll('.custom-check-item').forEach(el => el.classList.remove('active'));
             document.getElementById('digReceiptNo').value = 'PH8-5-001';
@@ -1417,9 +1419,11 @@ jobs:
               digitalFields:document.querySelectorAll('.digital-only').length,
               digitalDateView:getComputedStyle(document.querySelector('.digital-date-view')).display,
               blankDateView:getComputedStyle(document.querySelector('.blank-date-view')).display,
-              blankYearDigits:document.getElementById('paperYearDigits')?.textContent||'',
-              blankYearEra:document.getElementById('paperYearEra')?.textContent||'',
-              blankDateSlots:[...document.querySelectorAll('.blank-date-view .date-slot')].map(s=>getComputedStyle(s).borderBottomStyle).join(','),
+              blankDateSlots:document.getElementById('blankDateSlots')?.textContent||'',
+              blankDateEra:document.querySelector('.blank-date-era')?.textContent||'',
+              blankDateEraIsolate:getComputedStyle(document.querySelector('.blank-date-era')||document.body).unicodeBidi,
+              blankDateEraLast:document.querySelector('.blank-date-view')?.lastElementChild===document.querySelector('.blank-date-era'),
+              blankSetting:document.getElementById('settingBlankDateFormat')?.value||'',
               voidNoticeText:document.getElementById('receiptVoidNotice')?.textContent||''
             };
             if(typeof finishBlankTemplate==='function') finishBlankTemplate(snapshot);
@@ -1442,7 +1446,7 @@ jobs:
           const a5Ratio=parseFloat(printQa.a5Paper.height)/parseFloat(printQa.a5Paper.width); if (!Number.isFinite(a5Ratio) || Math.abs(a5Ratio-(210/148))>0.03) fail('Phase 8.8 A5 rendered sheet geometry failed', printQa.a5Paper);
           if (!printQa.printCss.includes('148mm') || !printQa.printCss.includes('210mm') || !/margin:\s*0(?:px)?/.test(printQa.printCss)) fail('Phase 8.8 print CSS contract failed', printQa.printCss);
           if (printQa.blank.mode!=='manual' || !printQa.blank.classPresent || printQa.blank.rec || printQa.blank.name || printQa.blank.phone || printQa.blank.paid || printQa.blank.total || printQa.blank.date) fail('Phase 8.8 blank voucher leaked digital transaction data', printQa.blank);
-          if (printQa.blank.digitalDateView!=='none' || printQa.blank.blankDateView!=='flex' || printQa.blank.blankYearDigits!=='2026' || printQa.blank.blankYearEra!=='م' || printQa.blank.blankDateSlots!=='dashed,dashed' || printQa.blank.voidNoticeText) fail('Blank paper date/void contract failed', printQa.blank);
+          if (printQa.blank.digitalDateView!=='none' || printQa.blank.blankDateView!=='flex' || printQa.blank.blankDateSlots!=='..... / ..... / 202...' || printQa.blank.blankDateEra!=='م' || !String(printQa.blank.blankDateEraIsolate).includes('isolate') || !printQa.blank.blankDateEraLast || printQa.blank.voidNoticeText) fail('Blank paper date/void contract failed', printQa.blank);
           if (printQa.restored.rec!==printQa.original.rec || printQa.restored.name!==printQa.original.name || printQa.restored.phone!==printQa.original.phone || printQa.restored.paid!==printQa.original.paid || printQa.restored.total!==printQa.original.total || printQa.restored.mode!==printQa.original.mode || printQa.restored.size!==printQa.original.size) fail('Phase 8.8 blank voucher did not restore digital state', printQa.restored);
           const bidi = await page.evaluate(() => ({dir:document.documentElement.dir,arabic:document.querySelector('.main-voucher-title')?.textContent||'',bdi:typeof bidiIsolate==='function' ? bidiIsolate('PH5-001') : ''}));
           if (bidi.dir!=='rtl' || !bidi.arabic.includes('سند') || !bidi.bdi.includes('PH5-001')) fail('Arabic RTL/BiDi regression failed', bidi);

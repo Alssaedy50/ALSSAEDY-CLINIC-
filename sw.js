@@ -1,14 +1,14 @@
 /* ALSSAEDY Clinic — offline shell service worker.
    Strategy: cache-first for the app shell, network fallback, and a cached
    stale-while-revalidate path so the receipt tool works fully offline. */
-const CACHE_NAME = 'alssaedy-clinic-v1.2.5-core';
+const CACHE_NAME = 'alssaedy-clinic-v1.2.6-core';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/ui.css?v=1.2.2',
-  './css/receipt.css?v=1.2.2',
-  './css/print.css?v=1.2.2',
+  './css/ui.css?v=1.2.6',
+  './css/receipt.css?v=1.2.6',
+  './css/print.css?v=1.2.6',
   './css/templates.css?v=1.2.1',
   './css/polish.css?v=1.2.2',
   './js/tafqeet.js?v=1.2.1',
@@ -16,8 +16,8 @@ const APP_SHELL = [
   './js/ai.js?v=1.0.0',
   './js/integrations.js?v=1.0.0',
   './js/product.js?v=1.0.0',
-  './js/repository.js?v=1.2.2',
-  './js/storage.js?v=1.2.4',
+  './js/repository.js?v=1.2.6',
+  './js/storage.js?v=1.2.6',
   './js/backup.js?v=1.0.0',
   './js/backup-provider.js?v=1.0.0',
   './js/backup-provider-runtime.js?v=1.0.0',
@@ -27,10 +27,10 @@ const APP_SHELL = [
   './js/restore-migration.js?v=1.0.0',
   './js/backup-ux.js?v=1.0.0',
   './js/backup-scheduling.js?v=1.0.0',
-  './js/export.js?v=1.2.2',
+  './js/export.js?v=1.2.6',
   './js/templates.js?v=1.2.1',
-  './js/app.js?v=1.2.1',
-  './js/ui.js?v=1.2.1',
+  './js/app.js?v=1.2.6',
+  './js/ui.js?v=1.2.6',
   './js/sync.js?v=1.2.1',
   './android-app-bridge.js?v=1.2.1',
   './vendor/html2canvas/html2canvas.min.js?v=1.2.1',

@@ -74,7 +74,7 @@ function renderClinicServiceLines(){
     return '<div class="clinic-service-line"><input class="clinic-service-name" aria-label="اسم الخدمة" value="'+escapeHTML(item.name||'')+'" oninput="updateClinicServiceLine('+index+',\'name\',this.value)" placeholder="مثال: كشف ومعاينة"><input class="clinic-service-qty" aria-label="الكمية" type="number" min="1" step="1" value="'+qty+'" oninput="updateClinicServiceLine('+index+',\'qty\',this.value)"><input class="clinic-service-price" aria-label="سعر الوحدة" type="number" min="0" step="1" value="'+price+'" oninput="updateClinicServiceLine('+index+',\'unitPrice\',this.value)"><strong class="clinic-service-line-total">'+line.toLocaleString()+'</strong><button type="button" class="clinic-service-remove" aria-label="حذف الخدمة" onclick="removeClinicServiceLine('+index+')">×</button></div>';}).join(''):'<div class="clinic-service-empty">لا توجد خدمات في الزيارة. أضف أول خدمة للبدء.</div>';
   updateClinicVisitBilling();
 }
-function addClinicServiceLine(name='',unitPrice=0,qty=1){if(!Array.isArray(window.aqsa7VisitServiceItems))window.aqsa7VisitServiceItems=[];window.aqsa7VisitServiceItems.push({id:clinicServiceItemId(),name:String(name||''),qty:Math.max(1,Number(qty)||1),unitPrice:Math.max(0,Number(unitPrice)||0),tooth:'',notes:''});renderClinicServiceLines();document.querySelector('#clinicServiceLines .clinic-service-name:last-of-type')?.focus();}
+function addClinicServiceLine(name='',unitPrice=0,qty=1){if(!Array.isArray(window.aqsa7VisitServiceItems))window.aqsa7VisitServiceItems=[];window.aqsa7VisitServiceItems.push({id:clinicServiceItemId(),name:String(name||''),qty:Math.max(1,Number(qty)||1),unitPrice:Math.max(0,Number(unitPrice)||0),notes:''});renderClinicServiceLines();document.querySelector('#clinicServiceLines .clinic-service-name:last-of-type')?.focus();}
 function updateClinicServiceLine(index,key,value){const items=getClinicServiceItems(),item=items[index];if(!item)return;if(key==='qty')item.qty=Math.max(1,Number(value)||1);else if(key==='unitPrice')item.unitPrice=Math.max(0,Number(value)||0);else item[key]=String(value||'');renderClinicServiceLines();}
 function removeClinicServiceLine(index){const items=getClinicServiceItems();if(index<0||index>=items.length)return;items.splice(index,1);renderClinicServiceLines();}
 function resetClinicVisit(){window.aqsa7VisitServiceItems=[];renderClinicServiceLines();const total=document.getElementById('digTotal');if(total)total.value='';if(typeof calculateLedger==='function')calculateLedger();}
@@ -99,7 +99,6 @@ function collectReceiptData() {
         patientId:window.currentPatientId||'',
         paid:String(paid),total:String(total),
         balance:String(billing ? billing.calculateBalance(total,paid) : Math.max(0,total-paid)),change:String(billing ? billing.calculateChange(total,paid) : Math.max(0,paid-total)),
-        tooth:document.getElementById('digTooth').value.trim(),
         customService:document.getElementById('digCustomService')?.value.trim()||'',
         tafqeet:document.getElementById('digTafqeet').value.trim(),
         payMethod:document.getElementById('selectedPayMethod').value||'نقداً',
@@ -110,7 +109,7 @@ function collectReceiptData() {
     };
 }
 function receiptFingerprint(item){
-    return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.tooth,item.customService,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),JSON.stringify(item.serviceItems||[]),item.visitId||'',item.currency]);
+    return JSON.stringify([item.recNo,item.date,item.name,item.patientPhone,item.patientId,item.paid,item.total,item.balance,item.change,item.customService,item.tafqeet,item.payMethod,item.ref,(item.services||[]).slice().sort(),JSON.stringify(item.serviceItems||[]),item.visitId||'',item.currency]);
 }
 
 async function saveReceiptLocally(){
@@ -174,12 +173,12 @@ function buildTransactionsExport(format) {
     if (format === 'csv') {
         const headers = [
             'ID','Receipt No','Date','Patient Name','Patient Phone','Paid','Currency','Currency Name',
-            'Total','Balance','Change','Tooth / Location','Amount in Words',
+            'Total','Balance','Change','Amount in Words',
             'Payment Method','Reference','Services','Mode','Size','Exported At'
         ];
         const rows = history.map(item => [
             item.id,item.recNo,item.date,item.name,item.patientPhone,item.paid,item.currency||'YER',item.currencyName||'ريال يمني',
-            item.total,item.balance,item.change,item.tooth,item.tafqeet,
+            item.total,item.balance,item.change,item.tafqeet,
             item.payMethod,item.ref,Array.isArray(item.services) ? item.services.join(' | ') : '',
             item.mode,item.size,exportedAt
         ]);
@@ -311,7 +310,7 @@ function filterHistory(list, query) {
     return list.filter(item => {
         const haystack = [
             item.recNo, item.name, item.date, item.patientPhone, item.ref,
-            item.customService, item.tooth, item.tafqeet,
+            item.customService, item.tafqeet,
             Array.isArray(item.services) ? item.services.join(' ') : ''
         ].join(' ').toLowerCase();
         return haystack.includes(q);
@@ -415,7 +414,6 @@ function loadReceipt(id) {
     document.getElementById('digPatientPhone').value = item.patientPhone || '';
     document.getElementById('digPaid').value = item.paid || '';
     document.getElementById('digTotal').value = item.total || '';
-    document.getElementById('digTooth').value = item.tooth || '';
     if(document.getElementById('digCustomService'))document.getElementById('digCustomService').value=item.customService||'';
     document.getElementById('digTafqeet').value = item.tafqeet || '';
     document.getElementById('digRef').value = item.ref || '';
@@ -438,7 +436,7 @@ async function updatePatientVisitAfterReceiptChange(receipt){
   const patient=patients.find(p=>receipt.patientId&&String(p.id)===String(receipt.patientId)) || patients.find(p=>receipt.patientPhone&&p.phone===receipt.patientPhone);
   if(!patient || !Array.isArray(patient.visits))return;
   const visit=patient.visits.find(v=>String(v.receiptId)===String(receipt.id));
-  if(visit){Object.assign(visit,{visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,status:getReceiptLifecycleStatus(receipt),services:receipt.services||[],serviceItems:receipt.serviceItems||[],tooth:receipt.tooth||'',voidReason:receipt.voidReason||'',voidedAt:receipt.voidedAt||''});}
+  if(visit){Object.assign(visit,{visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,status:getReceiptLifecycleStatus(receipt),services:receipt.services||[],serviceItems:receipt.serviceItems||[],voidReason:receipt.voidReason||'',voidedAt:receipt.voidedAt||''});}
   patient.updatedAt=new Date().toISOString();
   await clinicRepositoryPutPatient(patient);
 }
@@ -466,7 +464,7 @@ async function upsertCurrentPatient(receipt){
   p.name=name;p.phone=phone;p.lastVisit=receipt.date;p.updatedAt=new Date().toISOString();
   if(!Array.isArray(p.visits))p.visits=[];
   const existingVisit=p.visits.find(v=>String(v.receiptId)===String(receipt.id));
-  const visitData={receiptId:receipt.id,visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,status:getReceiptLifecycleStatus(receipt),services:receipt.services||[],serviceItems:receipt.serviceItems||[],tooth:receipt.tooth||'',voidReason:receipt.voidReason||'',voidedAt:receipt.voidedAt||''};
+  const visitData={receiptId:receipt.id,visitId:receipt.visitId||'',date:receipt.date,total:receipt.total,paid:receipt.paid,balance:receipt.balance,currency:receipt.currency,status:getReceiptLifecycleStatus(receipt),services:receipt.services||[],serviceItems:receipt.serviceItems||[],voidReason:receipt.voidReason||'',voidedAt:receipt.voidedAt||''};
   if(existingVisit) Object.assign(existingVisit,visitData); else p.visits.push(visitData);
   await clinicRepositoryPutPatient(p);
   currentPatientId=p.id; window.currentPatientId=p.id;
@@ -613,7 +611,7 @@ function renderPatientAccount(p){
     const services=Array.isArray(r.services)&&r.services.length?r.services.join('، '):(r.customService||'زيارة');
     const balance=Number(r.balance)||0;
     const financialClass=balance>0?'patient-timeline-due':'patient-timeline-paid';
-    return '<article class="patient-timeline-item"><div class="patient-timeline-marker" aria-hidden="true"></div><div class="patient-timeline-card"><div class="patient-timeline-head"><div><strong>'+escapeHTML(services)+'</strong><small dir="ltr">'+escapeHTML(r.date||'—')+' • '+escapeHTML(r.recNo||'—')+'</small></div><span class="'+financialClass+'">'+(balance>0?'متبقي '+escapeHTML(r.balance||'0'):'مسدد')+'</span></div><div class="patient-timeline-finance"><span>الإجمالي <b>'+escapeHTML(r.total||'0')+' '+escapeHTML(r.currencySymbol||r.currencyName||'ر.ي')+'</b></span><span>المدفوع <b>'+escapeHTML(r.paid||'0')+'</b></span><span>طريقة الدفع <b>'+escapeHTML(r.payMethod||'—')+'</b></span></div>'+((r.tooth||r.tafqeet)?'<div class="patient-timeline-notes">'+(r.tooth?'<span>السن/الموضع: '+escapeHTML(r.tooth)+'</span>':'')+(r.tafqeet?'<span>ملاحظة: '+escapeHTML(r.tafqeet)+'</span>':'')+'</div>':'')+'<div class="patient-timeline-actions"><button type="button" class="tool-btn patient-timeline-open" onclick="loadReceipt(\''+String(r.id).replace(/'/g,'')+'\')">فتح السند</button></div></div></article>';
+    return '<article class="patient-timeline-item"><div class="patient-timeline-marker" aria-hidden="true"></div><div class="patient-timeline-card"><div class="patient-timeline-head"><div><strong>'+escapeHTML(services)+'</strong><small dir="ltr">'+escapeHTML(r.date||'—')+' • '+escapeHTML(r.recNo||'—')+'</small></div><span class="'+financialClass+'">'+(balance>0?'متبقي '+escapeHTML(r.balance||'0'):'مسدد')+'</span></div><div class="patient-timeline-finance"><span>الإجمالي <b>'+escapeHTML(r.total||'0')+' '+escapeHTML(r.currencySymbol||r.currencyName||'ر.ي')+'</b></span><span>المدفوع <b>'+escapeHTML(r.paid||'0')+'</b></span><span>طريقة الدفع <b>'+escapeHTML(r.payMethod||'—')+'</b></span></div>'+(r.tafqeet?'<div class="patient-timeline-notes"><span>ملاحظة: '+escapeHTML(r.tafqeet)+'</span></div>':'')+'<div class="patient-timeline-actions"><button type="button" class="tool-btn patient-timeline-open" onclick="loadReceipt(\''+String(r.id).replace(/'/g,'')+'\')">فتح السند</button></div></div></article>';
   }).join(''):'<div class="patient-detail-empty"><strong>لا توجد زيارات محفوظة بعد.</strong><span>أنشئ أول زيارة من زر «زيارة / سند جديد».</span></div>';
   panel.hidden=false;
   panel.innerHTML='<div class="patient-detail-sticky"><div class="patient-detail-topline"><button type="button" class="tool-btn patient-detail-back" onclick="returnToPatientDirectory()">← قائمة المرضى</button><span class="directory-kicker">PATIENT ACCOUNT</span></div><div class="patient-detail-identity"><div class="patient-detail-avatar" aria-hidden="true">'+escapeHTML(String(p.name||'م').trim().charAt(0)||'م')+'</div><div class="patient-detail-name"><strong>'+escapeHTML(p.name||'مريض بدون اسم')+'</strong><span>'+escapeHTML((p.gender||'—')+' • '+(p.age||'—')+' سنة')+' • <span dir="ltr">'+escapeHTML(p.phone||'لا يوجد هاتف')+'</span></span></div><div class="patient-detail-actions"><button type="button" class="tool-btn patient-detail-edit" onclick="togglePatientEdit()">✏️ تعديل الملف</button><button type="button" class="tool-btn patient-detail-danger" onclick="deleteCurrentPatient()">🗑️ حذف الملف</button><button type="button" class="tool-btn patient-detail-primary" onclick="startPatientVisit()">＋ زيارة / سند جديد</button></div></div><div class="patient-detail-finance"><div><span>إجمالي الحساب</span><strong>'+f.total.toLocaleString()+'</strong><small>'+escapeHTML(f.receipts[0]?.currencyName||'ريال يمني')+'</small></div><div><span>المدفوع</span><strong class="is-paid">'+f.paid.toLocaleString()+'</strong><small>مدفوع</small></div><div><span>المتبقي</span><strong class="'+(f.balance>0?'is-due':'is-settled')+'">'+f.balance.toLocaleString()+'</strong><small>'+status+'</small></div></div><div class="patient-detail-meta"><div class="patient-detail-meta-item"><span>المشكلة / التشخيص</span><strong>'+escapeHTML(p.problem||'غير مسجل')+'</strong></div><div class="patient-detail-meta-item"><span>التاريخ المرضي</span><strong>'+escapeHTML(p.medicalHistory||'غير مسجل')+'</strong></div>'+nextVisit+'</div></div><div class="patient-detail-content"><div class="patient-detail-section-title"><div><span class="directory-kicker">VISIT TIMELINE</span><h4>سجل الزيارات والسندات</h4></div><span>'+receipts.length+' زيارة</span></div><div class="patient-timeline">'+timeline+'</div></div>';
@@ -626,7 +624,7 @@ function startPatientVisit(){
 }
 
 function clearPatientVisitFields(){
-  ['accountServiceName','accountServicePrice','accountServicePaid','accountServiceTooth','accountServiceNotes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['accountServiceName','accountServicePrice','accountServicePaid','accountServiceNotes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
 }
 
 function createReceiptFromPatientAccount(){
@@ -634,7 +632,6 @@ function createReceiptFromPatientAccount(){
   const service=patientFormValue('accountServiceName');
   const price=Number(document.getElementById('accountServicePrice')?.value||0);
   const paid=Number(document.getElementById('accountServicePaid')?.value||0);
-  const tooth=patientFormValue('accountServiceTooth');
   const notes=patientFormValue('accountServiceNotes');
   if(!pName||!patientId()){alert('اختر أو احفظ ملف المريض أولاً.');return;}
   if(!service){alert('أدخل الخدمة المقدمة.');return;}
@@ -644,7 +641,6 @@ function createReceiptFromPatientAccount(){
   document.getElementById('digPatientPhone').value=patientFormValue('patientFormPhone');
   document.getElementById('digTotal').value=String(price);
   document.getElementById('digPaid').value=String(Math.min(Math.max(0,paid),price));
-  document.getElementById('digTooth').value=tooth;
   if(document.getElementById('digCustomService'))document.getElementById('digCustomService').value=service;
   document.getElementById('digTafqeet').value=notes;
   document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));window.aqsa7CurrentVisitId='';window.aqsa7VisitServiceItems=[];renderClinicServiceLines();
@@ -887,7 +883,7 @@ async function importDataFile(event){
       const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(Boolean);
       if(lines.length<2)throw new Error('ملف CSV فارغ.');
       const parseLine=line=>{const out=[];let cur='',quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'){cur+='"';i++;continue}if(c==='"'){quoted=!quoted;continue}if(c===','&&!quoted){out.push(cur);cur='';continue}cur+=c;}out.push(cur);return out;};
-      const headers=parseLine(lines[0]);imported=lines.slice(1).map(line=>{const vals=parseLine(line),o={};headers.forEach((h,i)=>o[h]=vals[i]||'');return {id:o.ID||('IMP-'+Date.now()+'-'+Math.random()),recNo:o['Receipt No']||o.recNo,date:o.Date||o.date,name:o['Patient Name']||o.name,patientPhone:o['Patient Phone']||'',paid:o.Paid||'0',total:o.Total||'0',balance:o.Balance||'0',change:o.Change||'0',tooth:o['Tooth / Location']||'',tafqeet:o['Amount in Words']||'',payMethod:o['Payment Method']||'نقداً',ref:o.Reference||'',services:String(o.Services||'').split(' | ').filter(Boolean),mode:o.Mode||'digital',size:o.Size||'a5',currency:o.Currency||'YER',currencyName:o.CurrencyName||'ريال يمني',currencySymbol:o.CurrencySymbol||'ر.ي'};});
+      const headers=parseLine(lines[0]);imported=lines.slice(1).map(line=>{const vals=parseLine(line),o={};headers.forEach((h,i)=>o[h]=vals[i]||'');return {id:o.ID||('IMP-'+Date.now()+'-'+Math.random()),recNo:o['Receipt No']||o.recNo,date:o.Date||o.date,name:o['Patient Name']||o.name,patientPhone:o['Patient Phone']||'',paid:o.Paid||'0',total:o.Total||'0',balance:o.Balance||'0',change:o.Change||'0',tafqeet:o['Amount in Words']||'',payMethod:o['Payment Method']||'نقداً',ref:o.Reference||'',services:String(o.Services||'').split(' | ').filter(Boolean),mode:o.Mode||'digital',size:o.Size||'a5',currency:o.Currency||'YER',currencyName:o.CurrencyName||'ريال يمني',currencySymbol:o.CurrencySymbol||'ر.ي'};});
     }else{
       const payload=JSON.parse(text);
       imported=Array.isArray(payload)?payload:(payload.receipts||[]);

@@ -201,35 +201,37 @@ function parseAnyDate(value) {
     return null;
 }
 
-function getPaperTemplateDateValue() {
-    return document.getElementById('paperTemplateDate')?.value?.trim() || '';
+const DEFAULT_BLANK_DATE_FORMAT = '..... / ..... / 202...';
+
+function getBlankDateFormat() {
+    const el = document.getElementById('settingBlankDateFormat');
+    const stored = (el && el.value) || localStorage.getItem('alssaedy_blank_date_format') || DEFAULT_BLANK_DATE_FORMAT;
+    const value = String(stored ?? '').trim() || DEFAULT_BLANK_DATE_FORMAT;
+    // The format must never carry its own era letter: "م" is owned by the
+    // isolated .blank-date-era token so BiDi can pin it at the line end.
+    return value.replace(/م/g, '').trim() || DEFAULT_BLANK_DATE_FORMAT;
 }
 
-function syncPaperDate(dateValue) {
-    const parsed = parseAnyDate(dateValue);
-    const day = document.getElementById('paperDateDay');
-    const month = document.getElementById('paperDateMonth');
-    const yearDigits = document.getElementById('paperYearDigits');
-    const yearEra = document.getElementById('paperYearEra');
-
-    if (day) day.textContent = parsed ? parsed.d : '';
-    if (month) month.textContent = parsed ? parsed.m : '';
-    if (yearDigits) yearDigits.textContent = parsed ? parsed.y : String(new Date().getFullYear());
-    if (yearEra) yearEra.textContent = 'م';
+function renderBlankDateSlots() {
+    const slots = document.getElementById('blankDateSlots');
+    // Only the format text is written here; the "م" token is never injected,
+    // so RTL reordering can never move it across the numerals.
+    if (slots) slots.textContent = getBlankDateFormat();
 }
 
-function setPaperTemplateDate(value) {
-    const input = document.getElementById('paperTemplateDate');
-    if (input && input.value !== String(value ?? '')) input.value = String(value ?? '');
-    syncPaperDate(value);
+function setBlankDateFormat(value) {
+    const safe = String(value ?? '').replace(/م/g, '').trim() || DEFAULT_BLANK_DATE_FORMAT;
+    localStorage.setItem('alssaedy_blank_date_format', safe);
+    const el = document.getElementById('settingBlankDateFormat');
+    if (el && el.value !== safe) el.value = safe;
+    if (typeof clinicRepositoryPutSetting === 'function') clinicRepositoryPutSetting('blankDateFormat', safe).catch(() => {});
+    renderBlankDateSlots();
 }
 
-function setPaperTemplateToday() {
-    setPaperTemplateDate(getLocalDateISO());
-}
-
-function clearPaperTemplateDate() {
-    setPaperTemplateDate('');
+function syncPaperDate() {
+    // The blank template date is a configurable write-in line, never the
+    // digital receipt date; re-render from the saved preference.
+    renderBlankDateSlots();
 }
 function openDatePicker() {
     const picker = document.getElementById('hiddenDatePicker');
@@ -271,7 +273,7 @@ function generateNextReceiptNo() {
 
 function clearReceiptInputs() {
     if (confirm('هل تريد تفريغ حقول السند الحالية؟')) {
-        ['digReceiptNo','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'].forEach(id => {
+        ['digReceiptNo','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digCustomService'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
@@ -566,6 +568,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     const durableSettings = clinicRepositoryGetSettingsSync();
     applyLogo(durableSettings.customLogo || OFFICIAL_LOGO_URL);
     setCurrency(durableSettings.currency || 'YER');
+    // Hydrate the configurable blank-paper date line from durable settings.
+    // Durable value wins; localStorage remains the fallback/mirror.
+    const savedBlankDateFormat = durableSettings.blankDateFormat || localStorage.getItem('alssaedy_blank_date_format') || DEFAULT_BLANK_DATE_FORMAT;
+    setBlankDateFormat(savedBlankDateFormat);
 
     const savedTexts = durableSettings.receiptTexts || '';
     if (savedTexts) {

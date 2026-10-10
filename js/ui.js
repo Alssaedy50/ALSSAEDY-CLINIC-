@@ -30,7 +30,7 @@ function applyNightMode(on) {
 function toggleNightMode() { applyNightMode(!isNightMode()); }
 
 /* ---------- Draft recovery ---------- */
-const DRAFT_FIELDS = ['digReceiptNo', 'digDate', 'digClientName', 'digPatientPhone', 'digPaid', 'digTotal', 'digTafqeet', 'digRef', 'digTooth', 'digCustomService', 'selectedPayMethod'];
+const DRAFT_FIELDS = ['digReceiptNo', 'digDate', 'digClientName', 'digPatientPhone', 'digPaid', 'digTotal', 'digTafqeet', 'digRef', 'digCustomService', 'selectedPayMethod'];
 function saveDraft() {
     try {
         const fields = {};

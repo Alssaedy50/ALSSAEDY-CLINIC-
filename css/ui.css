@@ -277,7 +277,7 @@ body {
     .services-grid-matrix{grid-template-columns:1fr 1fr;gap:7px 8px;padding:9px}
     .custom-check-item{font-size:11px;white-space:normal;line-height:1.35}
     .check-box-icon{width:17px;height:17px;flex:0 0 17px}.check-mark{font-size:11px}
-    .tooth-location-row{padding:7px 9px;min-height:36px}
+    .service-note-row{padding:7px 9px;min-height:36px}
     .ledger-grid-wrap{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px}
     .ledger-box{padding:8px 9px}.ledger-header{font-size:12px;margin-bottom:4px}
     .ledger-field{max-width:130px;font-size:13px}.currency-label{font-size:11px}

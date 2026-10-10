@@ -134,7 +134,8 @@ async function clinicRepositoryHydrate(){
     customLogo: localStorage.getItem('alssaedy_custom_logo') || '',
     currency: localStorage.getItem('alssaedy_currency') || '',
     receiptSize: localStorage.getItem('alssaedy_receipt_size') || '',
-    receiptTexts: localStorage.getItem('alssaedy_texts') || ''
+    receiptTexts: localStorage.getItem('alssaedy_texts') || '',
+    blankDateFormat: localStorage.getItem('alssaedy_blank_date_format') || ''
   };
   for (const [id, value] of Object.entries(legacySettings)) {
     if (!value || settingsById[id]) continue;

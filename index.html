@@ -11,9 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="vendor/html2canvas/html2canvas.min.js?v=1.2.1"></script>
-    <link rel="stylesheet" href="css/ui.css?v=1.2.2">
-    <link rel="stylesheet" href="css/receipt.css?v=1.2.2">
-    <link rel="stylesheet" href="css/print.css?v=1.2.2">
+    <link rel="stylesheet" href="css/ui.css?v=1.2.6">
+    <link rel="stylesheet" href="css/receipt.css?v=1.2.6">
+    <link rel="stylesheet" href="css/print.css?v=1.2.6">
     <link rel="stylesheet" href="css/templates.css?v=1.2.1">
     <link rel="stylesheet" href="css/polish.css?v=1.2.2">
 </head>
@@ -249,21 +249,17 @@
                     <input type="text" class="digital-only live-input num-input" id="digReceiptNo" placeholder="">
                 </div>
                 <div class="meta-cell date-field-wrapper">
-                    <span class="meta-label">التاريخ:</span>
                     <div class="digital-date-view digital-only digital-date-control">
+                        <span class="meta-label">التاريخ:</span>
                         <bdi id="printDateValue" class="print-date-value export-field-value" aria-hidden="true" dir="ltr"></bdi>
                         <input type="text" class="live-input" id="digDate" placeholder="YYYY-MM-DD أو 07/10/2026 أو أي صيغة شائعة" dir="ltr" inputmode="numeric" autocomplete="off">
                         <button type="button" class="no-print date-picker-btn" aria-label="اختيار التاريخ" onclick="openDatePicker()">📅</button>
                         <input type="date" id="hiddenDatePicker" class="hidden-date-picker" tabindex="-1" aria-hidden="true">
                     </div>
-                    <div class="blank-date-view manual-only">
-                        <bdi class="date-sequence" dir="rtl">
-                            <bdi class="date-part date-slot" id="paperDateDay"></bdi>
-                            <bdi class="date-sep" aria-hidden="true">/</bdi>
-                            <bdi class="date-part date-slot" id="paperDateMonth"></bdi>
-                            <bdi class="date-sep" aria-hidden="true">/</bdi>
-                            <bdi class="date-part date-year" id="paperDateYear"><bdi class="paper-year-digits" id="paperYearDigits" dir="ltr">2026</bdi><bdi class="paper-year-era" id="paperYearEra" dir="ltr">م</bdi></bdi>
-                        </bdi>
+                    <div class="blank-date-view manual-only" dir="rtl">
+                        <span class="blank-date-label" id="blankDateLabel">التاريخ:</span>
+                        <span class="blank-date-slots" id="blankDateSlots" dir="rtl">..... / ..... / 202...</span>
+                        <bdi class="blank-date-era" dir="rtl">م</bdi>
                     </div>
                 </div>
             </div>
@@ -338,15 +334,10 @@
                     <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>أشعة تشخيصية</span></div>
                     <div class="custom-check-item" onclick="toggleService(this)"><span class="check-box-icon"><span class="check-mark">✓</span></span><span>أخرى</span></div>
                 </div>
-                <div class="tooth-location-row">
+                <div class="service-note-row">
                     <span class="row-label editable" data-key="custom_service_lbl">خدمة أخرى / وصف الخدمة:</span>
                     <span class="manual-only write-dots flex-1"></span>
                     <input type="text" class="digital-only live-input flex-1" id="digCustomService" placeholder="">
-                </div>
-                <div class="tooth-location-row">
-                    <span class="row-label editable" data-key="tooth_lbl">رقم السن أو الموضع:</span>
-                    <span class="manual-only write-dots flex-1"></span>
-                    <input type="text" class="digital-only live-input flex-1" id="digTooth" placeholder="">
                 </div>
             </section>
 
@@ -485,6 +476,11 @@
                         <output id="logoSizeValue">100%</output>
                         <button type="button" class="font-step" onclick="adjustLogoSize(1)">+</button>
                     </div>
+                </div>
+                <div class="setting-card">
+                    <h4>🖨️ صيغة تاريخ السند الورقي</h4>
+                    <p class="setting-help">يظهر هذا النص في نموذج الطباعة الفارغ (الدفاتر) للكتابة اليدوية. تبقى لاحقة «م» مثبتة دائماً في نهاية السطر بشكل مستقل.</p>
+                    <input type="text" id="settingBlankDateFormat" class="setting-select" dir="ltr" value="..... / ..... / 202..." oninput="setBlankDateFormat(this.value)" onchange="setBlankDateFormat(this.value)">
                 </div>
                 <div class="setting-card typography-card">
                     <h4>🔤 الخط وحجم النص والتناسق</h4>
@@ -794,8 +790,8 @@
     <script src="js/ai.js?v=1.0.0"></script>
     <script src="js/integrations.js?v=1.0.0"></script>
     <script src="js/product.js?v=1.0.0"></script>
-    <script src="js/repository.js?v=1.2.2"></script>
-    <script src="js/storage.js?v=1.2.4"></script>
+    <script src="js/repository.js?v=1.2.6"></script>
+    <script src="js/storage.js?v=1.2.6"></script>
 <script src="js/backup.js?v=1.0.0"></script>
 <script src="js/backup-provider.js?v=1.0.0"></script>
     <script src="js/backup-provider-runtime.js?v=1.0.0"></script>
@@ -805,10 +801,10 @@
 <script src="js/restore-migration.js?v=1.0.0"></script>
 <script src="js/backup-ux.js?v=1.0.0"></script>
 <script src="js/backup-scheduling.js?v=1.0.0"></script>
-    <script src="js/export.js?v=1.2.2"></script>
+    <script src="js/export.js?v=1.2.6"></script>
     <script src="js/templates.js?v=1.2.1"></script>
-    <script src="js/app.js?v=1.2.1"></script>
-    <script src="js/ui.js?v=1.2.1"></script>
+    <script src="js/app.js?v=1.2.6"></script>
+    <script src="js/ui.js?v=1.2.6"></script>
     <script src="js/sync.js?v=1.2.1"></script>
     <script src="android-app-bridge.js?v=1.2.1"></script>
 </body>

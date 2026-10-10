@@ -41,14 +41,12 @@ const dateCheck = await page.evaluate(() => ({
   visibleDigitalDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none').length,
   visibleManualDateFields: Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length,
   printDateValue: document.getElementById('printDateValue')?.textContent || '',
-  paperYear: document.getElementById('paperDateYear')?.textContent || '',
-  paperYearDigits: document.getElementById('paperYearDigits')?.textContent || '',
-  paperYearEra: document.getElementById('paperYearEra')?.textContent || '',
-  paperYearDirection: getComputedStyle(document.getElementById('paperDateYear') || document.body).direction,
-  paperYearDisplay: getComputedStyle(document.getElementById('paperDateYear') || document.body).display,
+  blankDateSlots: document.getElementById('blankDateSlots')?.textContent || '',
+  blankDateEra: document.querySelector('.blank-date-era')?.textContent || '',
+  blankDateEraIsolate: getComputedStyle(document.querySelector('.blank-date-era') || document.body).unicodeBidi,
   pickerHandler: typeof openDatePicker === 'function'
 }));
-if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler || dateCheck.printDateValue !== '07/10/2026 م' || dateCheck.paperYearDigits !== '2026' || dateCheck.paperYearEra !== 'م' || !['flex','inline-flex'].includes(dateCheck.paperYearDisplay)) {
+if (dateCheck.digitalDate !== '2026-10-07' || dateCheck.digitalDateInputs !== 1 || dateCheck.visibleDigitalDateFields !== 1 || dateCheck.visibleManualDateFields !== 0 || !dateCheck.pickerHandler || dateCheck.printDateValue !== '07/10/2026 م' || dateCheck.blankDateSlots !== '..... / ..... / 202...' || dateCheck.blankDateEra !== 'م' || !String(dateCheck.blankDateEraIsolate).includes('isolate')) {
   throw new Error('Digital receipt date visibility failed: ' + JSON.stringify(dateCheck));
 }
 
@@ -58,27 +56,47 @@ const nativePrintDateCheck = await page.evaluate(() => ({
   printDateDisplay: getComputedStyle(document.getElementById('printDateValue')).display,
   digitalInputDisplay: getComputedStyle(document.getElementById('digDate')).display,
   pickerDisplay: getComputedStyle(document.getElementById('hiddenDatePicker')).display,
-  yearDigits: document.getElementById('paperYearDigits')?.textContent || '',
-  yearEra: document.getElementById('paperYearEra')?.textContent || ''
+  blankDateSlots: document.getElementById('blankDateSlots')?.textContent || '',
+  blankDateEra: document.querySelector('.blank-date-era')?.textContent || ''
 }));
 if (nativePrintDateCheck.printDate !== '07/10/2026 م' ||
     nativePrintDateCheck.printDateDisplay === 'none' ||
     nativePrintDateCheck.digitalInputDisplay !== 'none' ||
     nativePrintDateCheck.pickerDisplay !== 'none' ||
-    nativePrintDateCheck.yearDigits !== '2026' ||
-    nativePrintDateCheck.yearEra !== 'م') {
+    nativePrintDateCheck.blankDateSlots !== '..... / ..... / 202...' ||
+    nativePrintDateCheck.blankDateEra !== 'م') {
   throw new Error('Native print date contract failed: ' + JSON.stringify(nativePrintDateCheck));
 }
 await page.emulateMedia({ media: 'screen' });
 
+// Blank date format is a configurable setting; the era token must stay isolated.
+const blankFormatCheck = await page.evaluate(() => {
+  setBlankDateFormat('__ / __ / 2026__');
+  const custom = {
+    settingValue: document.getElementById('settingBlankDateFormat')?.value || '',
+    slots: document.getElementById('blankDateSlots')?.textContent || '',
+    stored: localStorage.getItem('alssaedy_blank_date_format') || ''
+  };
+  setBlankDateFormat('..... / ..... / 202...');
+  return custom;
+});
+if (blankFormatCheck.settingValue !== '__ / __ / 2026__' || blankFormatCheck.slots !== '__ / __ / 2026__' || blankFormatCheck.stored !== '__ / __ / 2026__') {
+  throw new Error('Configurable blank date format failed: ' + JSON.stringify(blankFormatCheck));
+}
+
 const blankCheck = await page.evaluate(() => {
   const snapshot = prepareBlankTemplate();
-  const fields = ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'];
+  const fields = ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digCustomService'];
   const values = Object.fromEntries(fields.map(id => [id, document.getElementById(id)?.value || '']));
+  const slotsEl = document.querySelector('.blank-date-view .blank-date-slots');
+  const eraEl = document.querySelector('.blank-date-view .blank-date-era');
   const date = {
-    day: document.getElementById('paperDateDay')?.textContent || '',
-    month: document.getElementById('paperDateMonth')?.textContent || '',
-    year: document.getElementById('paperDateYear')?.textContent || ''
+    slots: document.getElementById('blankDateSlots')?.textContent || '',
+    era: eraEl?.textContent || '',
+    slotsIsolate: getComputedStyle(slotsEl || document.body).unicodeBidi,
+    eraIsolate: getComputedStyle(eraEl || document.body).unicodeBidi,
+    // The era token must be the last laid-out child in the blank date view.
+    eraIsLastChild: document.querySelector('.blank-date-view')?.lastElementChild === eraEl
   };
   const visibleDigital = Array.from(document.querySelectorAll('.date-field-wrapper .digital-only')).filter(el => getComputedStyle(el).display !== 'none' && el.id !== 'hiddenDatePicker').length;
   const visibleManual = Array.from(document.querySelectorAll('.date-field-wrapper .manual-only')).filter(el => getComputedStyle(el).display !== 'none').length;
@@ -86,10 +104,12 @@ const blankCheck = await page.evaluate(() => {
   finishBlankTemplate(snapshot);
   return result;
 });
-if (blankCheck.date.year !== new Date().getFullYear() + 'م' ||
-    blankCheck.date.year.includes('202م') ||
+if (blankCheck.date.slots !== '..... / ..... / 202...' ||
+    blankCheck.date.era !== 'م' ||
+    !String(blankCheck.date.slotsIsolate).includes('isolate') ||
+    !String(blankCheck.date.eraIsolate).includes('isolate') ||
+    !blankCheck.date.eraIsLastChild ||
     Object.values(blankCheck.values).some(Boolean) ||
-    blankCheck.date.day !== '' || blankCheck.date.month !== '' ||
     blankCheck.visibleDigital !== 0 || blankCheck.visibleManual !== 1) {
   throw new Error('Blank printable template is not empty: ' + JSON.stringify(blankCheck));
 }
@@ -114,20 +134,17 @@ if (restoredAfterBlank.mode !== 'digital' ||
 }
 
 const blankTemplateContract = await page.evaluate(() => {
-  const dateEditor=document.getElementById('paperTemplateDate');
   document.getElementById('digDate').value='07/10/2026';
   setMode('manual');
   const result={
-    dateEditorPresent:Boolean(dateEditor),
     digitalDate:document.getElementById('digDate')?.value||'',
-    paperDay:document.getElementById('paperDateDay')?.textContent||'',
-    paperMonth:document.getElementById('paperDateMonth')?.textContent||'',
-    paperYear:document.getElementById('paperYearDigits')?.textContent||''
+    blankDateSlots:document.getElementById('blankDateSlots')?.textContent||'',
+    blankDateEra:document.querySelector('.blank-date-era')?.textContent||''
   };
   setMode('digital');
   return result;
 });
-if (blankTemplateContract.dateEditorPresent || blankTemplateContract.digitalDate !== '07/10/2026' || blankTemplateContract.paperDay !== '' || blankTemplateContract.paperMonth !== '') {
+if (blankTemplateContract.digitalDate !== '07/10/2026' || blankTemplateContract.blankDateSlots !== '..... / ..... / 202...' || blankTemplateContract.blankDateEra !== 'م') {
   throw new Error('Blank paper template boundary failed: '+JSON.stringify(blankTemplateContract));
 }
 
@@ -150,6 +167,13 @@ const result = await page.evaluate(async () => {
   }
   if (typeof generateReceiptCanvas !== 'function') {
     throw new Error('Image export pipeline is unavailable.');
+  }
+
+  // TASK 3: the official raster logo must be reachable and inlinable as Base64
+  // so html2canvas never drops it due to a relative-path/CORS failure.
+  const logoDataUrl = await inlineReceiptLogoDataUrl();
+  if (!String(logoDataUrl).startsWith('data:image/')) {
+    throw new Error('Official logo could not be inlined as a data URI.');
   }
 
   const source = document.getElementById('receiptPrintArea');

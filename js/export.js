@@ -39,7 +39,6 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
     const source = sourceReceipt.querySelector('#digDate');
     const cloned = clonedReceipt.querySelector('#digDate');
     const clonedPrintDate = clonedReceipt.querySelector('#printDateValue');
-    const clonedPaperYear = clonedReceipt.querySelector('#paperDateYear');
 
     if (isBlankTemplate) {
         if (cloned) {
@@ -48,14 +47,22 @@ function materializeReceiptDate(sourceReceipt, clonedReceipt) {
             cloned.style.display='none';
         }
         if (clonedPrintDate) clonedPrintDate.remove();
-        if (clonedPaperYear) {
-            const digits = clonedPaperYear.querySelector('#paperYearDigits') || clonedPaperYear.querySelector('.paper-year-digits');
-            const era = clonedPaperYear.querySelector('#paperYearEra') || clonedPaperYear.querySelector('.paper-year-era');
-            if (digits) { digits.textContent=String(new Date().getFullYear()); digits.setAttribute('dir','ltr'); }
-            if (era) { era.textContent='م'; era.setAttribute('dir','ltr'); }
-            clonedPaperYear.setAttribute('dir','ltr');
-            clonedPaperYear.style.direction='ltr';
-            clonedPaperYear.style.unicodeBidi='isolate';
+        // The blank date line is a configurable write-in sequence. Rewrite the
+        // slot text from the saved preference and keep the era token isolated
+        // so RTL ordering can never move "م" across the numerals.
+        const blankSlots = clonedReceipt.querySelector('#blankDateSlots') || clonedReceipt.querySelector('.blank-date-slots');
+        const era = clonedReceipt.querySelector('#blankDateEra') || clonedReceipt.querySelector('.blank-date-era');
+        if (blankSlots) {
+            let format = '';
+            try { format = (typeof getBlankDateFormat === 'function' ? getBlankDateFormat() : '') || ''; } catch (_) { format = ''; }
+            blankSlots.textContent = format || '..... / ..... / 202...';
+            blankSlots.setAttribute('dir','rtl');
+            blankSlots.style.unicodeBidi = 'isolate';
+        }
+        if (era) {
+            era.textContent = 'م';
+            era.setAttribute('dir','rtl');
+            era.style.unicodeBidi = 'isolate';
         }
         return;
     }
@@ -180,10 +187,24 @@ function inlineReceiptLogoDataUrl() {
     return inlineImageAsDataUrl(img?.getAttribute('src') || fallback);
 }
 
+// The receipt sheet lives inside the product workspace, which is hidden while
+// the dashboard tab is active. Capturing a hidden element yields a 0-size box,
+// so any export path (share menu, blank template, etc.) must first surface the
+// receipt tab deterministically.
+function ensureReceiptWorkspaceActive() {
+    const receipt = document.getElementById('receiptPrintArea');
+    if (!receipt) return;
+    const workspace = receipt.closest('.page-canvas-wrapper');
+    if (workspace && getComputedStyle(workspace).display !== 'none') return;
+    if (typeof activateAppTab === 'function') activateAppTab('receipt');
+    else if (typeof setClinicWorkspaceView === 'function') setClinicWorkspaceView('receipt');
+}
+
 async function generateReceiptCanvas(options = {}) {
     await ensureLibraries();
     await waitForReceiptFonts();
 
+    ensureReceiptWorkspaceActive();
     const receipt = document.getElementById('receiptPrintArea');
     if (!receipt) throw new Error('منطقة السند غير موجودة.');
 
@@ -593,13 +614,13 @@ function copyReceiptText() {
 }
 /* Blank printable template workflow. It never saves template data. */
 function snapshotReceiptForTemplate(){
-  const ids=['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth','digCustomService'];
+  const ids=['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digCustomService'];
   const fields={}; ids.forEach(id=>{const el=document.getElementById(id); if(el) fields[id]=el.value;});
   return {
     mode:document.body.getAttribute('data-mode')||'digital',
     size:getSelectedSize(),
     payMethod:document.getElementById('selectedPayMethod')?.value||'',
-    paperTemplateDate:getPaperTemplateDateValue(),
+    blankDateFormat:getBlankDateFormat(),
     services:Array.from(document.querySelectorAll('.custom-check-item')).map(el=>el.classList.contains('active')),
     fields
   };
@@ -610,19 +631,18 @@ function restoreReceiptAfterTemplate(snapshot){
   document.querySelectorAll('.custom-check-item').forEach((el,i)=>el.classList.toggle('active',!!snapshot.services?.[i]));
   setPayMethod(snapshot.payMethod||'');
   setSize(snapshot.size||'a5');
-  setPaperTemplateDate(snapshot.paperTemplateDate||'');
+  if (snapshot.blankDateFormat) setBlankDateFormat(snapshot.blankDateFormat);
   setMode(snapshot.mode||'digital');
   if(typeof calculateLedger==='function')calculateLedger();
   if(typeof syncReceiptDateFromInput==='function')syncReceiptDateFromInput();
 }
 function prepareBlankTemplate(){
   const snapshot=snapshotReceiptForTemplate();
-  const paperDate = getPaperTemplateDateValue();
   setMode('manual');
-  ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digTooth'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['digReceiptNo','digDate','digClientName','digPatientPhone','digPaid','digTotal','digPaidTable','digBalance','digTafqeet','digRef','digCustomService'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('.custom-check-item').forEach(el=>el.classList.remove('active'));
   setPayMethod('');
-  syncPaperDate(paperDate);
+  syncPaperDate();
   document.body.classList.add('blank-template-export');
   return snapshot;
 }
@@ -640,6 +660,7 @@ async function downloadBlankTemplateImage(){
 }
 async function downloadBlankTemplatePDF(){
   const snapshot=prepareBlankTemplate();
+  ensureReceiptWorkspaceActive();
   const baseName='ALSSAEDY_Clinic_Blank_Template_'+getSelectedSize().toUpperCase();
   const oldTitle=document.title;
   document.title=baseName;

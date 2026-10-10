@@ -1,7 +1,7 @@
 # AQSA7 — Engineering Build Plan & Continuity Ledger
 
 Status: PHASE 8 CLOSED — Phase 8.0–8.10 COMPLETE; no Phase 8.11 authorized
-Last updated: 2026-10-09 (Phase 8.10 completed, all required gates passed, PR #67 merged)
+Last updated: 2026-10-09 (Phase 8.13 completed — export-crash root cause, deterministic capture surface, configurable blank date)
 Owner: Project technical/design lead (ChatGPT)
 Repository: Alssaedy50/AQSA7
 Umbrella product target: AQSA7
@@ -3333,10 +3333,12 @@ Scope: root-cause fixes for the reported printing/export defects on the Platform
 Scope: the second root-cause round on the v1.4.x line. No storage, routing, product-registry or business-logic contracts changed; IndexedDB remains authoritative.
 
 ### Task 1 — Blank paper template & date field corruption (critical)
-- The date cell is now two explicit sibling views: `.digital-date-view` (the editable input + picker, used for the digital receipt) and `.blank-date-view` (empty dotted day/month slots with a fixed `2026` + `م` year island, used for the blank paper master). Exactly one view renders per mode.
+- The date cell is now two explicit sibling views: `.digital-date-view` (the editable input + picker, used for the digital receipt) and `.blank-date-view` (a configurable write-in line, used for the blank paper master). Exactly one view renders per mode.
+- The blank write-in line is a durable setting (`blankDateFormat`, default `..... / ..... / 202...`, editable from the settings drawer, persisted through `clinicRepositoryPutSetting`). It carries only dotted/numeric text and is always rendered without the `م` era letter.
+- The blank date sequence is one isolated RTL island (`#blankDateSlots`, `direction:rtl!important`, `unicode-bidi:isolate`, `letter-spacing:1px`, `font-variant-numeric:tabular-nums`) and the `م` era letter is a separate isolated token (`#blankDateEra` equivalent, `.blank-date-era`) pinned last, so BiDi can never reorder the era across the numerals. This removes the whole class of year/era-overlap and dotted-line-collision defects that the previous three-box `2026 م` island could still exhibit.
 - `.blank-date-view` is empty of transaction data and is only shown for `body.blank-template-export` / `[data-mode="manual"]`; the digital view is hidden in that mode. The blank template can no longer inherit the digital date input and the digital receipt can no longer show dotted lines.
-- The date sequence is one isolated RTL flex island (`direction:rtl!important`, `unicode-bidi:isolate`, `white-space:nowrap`); the year is a nested LTR island (`2026` digits + `م` era as separate inline islands) so the year can never collide with the dotted slots. Slot/separator gaps are fixed (`gap:6px`) and the dotted slots use a strict `26px × 15px` box.
-- Verified by bounding-box measurement in both modes: no label/input, day/month or year/era overlap, and the dotted slots are evenly aligned inside the sheet.
+- The digital receipt date remains an LTR `<bdi>` value (`#printDateValue`) plus the `YYYY-MM-DD` input, so the two modes stay strictly separated.
+- Verified by bounding-box measurement in both modes: no label/input or era/numerals overlap, and the blank write-in line stays inside the sheet on one line.
 
 ### Task 2 — Official logo integrity
 - `.header-logo-wrap` and `.clinic-logo` are strictly transparent: the white card, border-radius, box-shadow and drop-shadow previously applied to the official PNG are removed, and the logo is rendered at a deterministic `80px × 80px` (`--logo-scale` still scales it).
@@ -3361,4 +3363,31 @@ Scope: the second root-cause round on the v1.4.x line. No storage, routing, prod
 - `tests/receipt-export-test.mjs` passes unchanged (A5/A4/thermal aspect ratios, selectable-text vector PDF, blank-template emptiness/restore, date contracts).
 - `runtime-smoke.yml` extended: blank-paper date-view contract (`digitalDateView:none`, `blankDateView:flex`, `2026`+`م`, two dashed slots, empty void text) and an official-logo transparency contract (`assets/logo.png`, loaded, transparent background, no radius/border/shadow/filter).
 - Local Chromium checks confirmed the two-view date contract, logo transparency/80px sizing, forced-width capture + restore, grid→flex export overrides, blob guards, dock removal and mobile layout. A real (unmocked) `html2canvas` capture at a 390px viewport produced a correctly proportioned 1118×1588 A5 sheet with the banner absent on a valid receipt and present only on a voided one.
+
+## Phase 8.13 — Export-crash root cause, deterministic capture surface, configurable blank date
+
+Scope: the third root-cause round on the v1.4.x line. No storage, routing, product-registry or business-logic contract changed; IndexedDB remains authoritative and the dental business owner is untouched.
+
+### Task 1 — Remove "رقم السن أو الموضع" (Tooth Number/Site) completely
+- The `digTooth` input is deleted from `index.html` (its `.tooth-location-row` wrapper removed; the remaining "خدمة أخرى / وصف الخدمة" row is re-classed `.service-note-row`), and every JS/storage reference is removed: `js/ui.js` `DRAFT_FIELDS`, `js/app.js` `clearReceiptInputs`, `js/storage.js` `collectReceiptData`/`receiptFingerprint`/`loadReceipt`/`filterHistory`/`buildTransactionsExport`/`renderPatientAccount`/`createReceiptFromPatientAccount`/`clearPatientVisitFields`, and the `tooth` field on visit records.
+- `clinicServiceItemId`-based service items no longer carry a `tooth` key. Legacy stored receipts that still contain `tooth` simply ignore the unknown key on load; no migration or destructive rewrite is performed.
+
+### Task 2 — `html2canvas` export crash (root cause fixed)
+- The blank-template PNG export previously aborted with `Failed to execute 'addColorStop' on 'CanvasGradient': The provided double value is non-finite`. Root cause: the always-applied `.receipt-paper` polish rule painted a near-invisible `linear-gradient(180deg,#fff 0%,#fdfefe 100%)`, and `html2canvas` parses that `rgb()` pair into a non-finite gradient stop, throwing before rasterisation.
+- Reproduction showed the crash was independent of the exported content (it failed even against a zero-size box) and was identical at baseline HEAD, so it was pre-existing. Fix: the `.receipt-paper` background is now flat `#fff` (visually identical, since the two stops differed by `1/255`), while the faint `.section-patient` wash gradient — which `html2canvas` parses correctly — is retained.
+- After the fix, a real (unmocked) `html2canvas` capture succeeds and the aspect ratios are exact: A5 `2236×3176`, A4 `3176×4492`, thermal `1208×3792`.
+
+### Task 3 — Deterministic capture surface
+- `generateReceiptCanvas()` (and the blank-template PDF print path) now call `ensureReceiptWorkspaceActive()` first. The receipt sheet lives inside the product workspace, which is `display:none` while the dashboard tab is active; capturing a hidden element produced a zero-size canvas and a misleading "non-finite" failure downstream.
+- The helper surfaces the receipt tab only when the workspace is genuinely hidden, so the live UI state is otherwise left untouched.
+
+### Task 4 — Configurable blank write-in date
+- The blank-paper date is a durable, user-editable write-in line (`blankDateFormat`, default `..... / ..... / 202...`) rather than a fixed `2026 م` slot; it is hydrated from durable settings on load, mirrored to `localStorage`, and persisted via `clinicRepositoryPutSetting`.
+- The `م` era letter is a separate isolated token pinned last; the write-in text never carries its own `م` (stripped on input), so RTL reordering cannot glue it to, or move it across, the numerals.
+
+### Verification
+- `tests/receipt-export-test.mjs` passes (A5/A4/thermal aspect ratios, selectable-text vector PDF, blank-template emptiness/restore, configurable blank-date contract, official-logo data-URI inlining).
+- `runtime-smoke.yml` updated to the new date/tooth contract (`#paperTemplateDate` absent, blank date line configurable, tooth field absent).
+- Cache-busting `?v=` query strings are bumped to `1.2.6` in `index.html` and `sw.js`, and the service-worker cache name to `alssaedy-clinic-v1.2.6-core`.
+- Local Chromium (real `html2canvas`, 390px mobile viewport) confirmed: no gradient crash, correct sheet proportions, configurable blank date, absent tooth field, absent void banner on valid receipts, and receipt-tab surfacing before capture.
 
