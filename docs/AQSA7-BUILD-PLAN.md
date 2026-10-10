@@ -3327,3 +3327,38 @@ Scope: root-cause fixes for the reported printing/export defects on the Platform
 - Receipt export regression (`tests/receipt-export-test.mjs`) expectations remain compatible: aspect ratios, `scale: 4` override, date fields and blank-template contracts are preserved.
 - Runtime smoke (`runtime-smoke.yml`) updated: void notice asserted hidden by default, and the dock assertion now requires the removed dock to be absent on product surfaces.
 - Local Chromium checks confirmed void-notice gating, `<bdi>` date structure, logo inlining (1,574,942-char data URI from a 1330×1182 PNG), forced-width capture + restore, blob guards, dock removal and mobile layout. Live `html2canvas` pixel capture is exercised by the existing CI receipt-export gate; headless environments without the CI rendering stack cannot execute it locally.
+
+## Phase 8.12 — Blank-paper/date integrity, logo transparency and export fidelity
+
+Scope: the second root-cause round on the v1.4.x line. No storage, routing, product-registry or business-logic contracts changed; IndexedDB remains authoritative.
+
+### Task 1 — Blank paper template & date field corruption (critical)
+- The date cell is now two explicit sibling views: `.digital-date-view` (the editable input + picker, used for the digital receipt) and `.blank-date-view` (empty dotted day/month slots with a fixed `2026` + `م` year island, used for the blank paper master). Exactly one view renders per mode.
+- `.blank-date-view` is empty of transaction data and is only shown for `body.blank-template-export` / `[data-mode="manual"]`; the digital view is hidden in that mode. The blank template can no longer inherit the digital date input and the digital receipt can no longer show dotted lines.
+- The date sequence is one isolated RTL flex island (`direction:rtl!important`, `unicode-bidi:isolate`, `white-space:nowrap`); the year is a nested LTR island (`2026` digits + `م` era as separate inline islands) so the year can never collide with the dotted slots. Slot/separator gaps are fixed (`gap:6px`) and the dotted slots use a strict `26px × 15px` box.
+- Verified by bounding-box measurement in both modes: no label/input, day/month or year/era overlap, and the dotted slots are evenly aligned inside the sheet.
+
+### Task 2 — Official logo integrity
+- `.header-logo-wrap` and `.clinic-logo` are strictly transparent: the white card, border-radius, box-shadow and drop-shadow previously applied to the official PNG are removed, and the logo is rendered at a deterministic `80px × 80px` (`--logo-scale` still scales it).
+- The header grid column and all mobile/print/export logo rules were re-based from 62/72px to 80px, and the unpredictable mobile `transform:scale(.94)` on the logo wrapper was deleted so the rendered size matches the requested size.
+- `assets/logo.png` (1,181,189 bytes, 1330×1182) is the single official logo; export inlines it as a Base64 data URI so `html2canvas` never fails on a relative path or CORS.
+
+### Task 3 — Canvas export fidelity on mobile
+- `js/export.js` `onclone` now pins the cloned `#receiptPrintArea` to the physical desktop capture width (`width`/`min-width`/`max-width` in px, `display:block`, `transform:none`) before rasterising, so the mobile viewport can no longer collapse the exported sheet into a narrow column.
+- Because `html2canvas` mis-renders CSS Grid, the clone's header, `.services-grid-matrix` and `.ledger-grid-wrap` are re-expressed as Flexbox with explicit column percentages mirroring the original grid tracks (3 columns for A5/A4, a single column for 80mm thermal). The live UI keeps its responsive grids.
+- The whole clone-preparation block is wrapped in try/catch; a malformed clone degrades to a warning instead of aborting the export.
+
+### Task 4 — Export/blob error handling
+- `downloadBlob()` rejects empty/`null`/non-`Blob` values and wraps `URL.createObjectURL()` in try/catch; `canvasToPngBlob()` rejects a failed or empty conversion. No invalid blob URL can be created.
+- The void notice element ships empty in `index.html`; `js/storage.js` injects the banner text only for a genuinely voided document, and CSS keeps it `display:none` unless the owning `.receipt-paper` carries `.is-void`. The banner can therefore never leak into a valid print/export.
+
+### Task 5 — Mobile UX / button unification
+- The floating bottom dock remains removed from markup and CSS.
+- `.tool-btn` (the shared control across Dashboard, Patient Workspace, Receipt Issuance, the settings drawer and the preview modal) is now a unified ≥48px touch target with consistent `8px 10px` padding, `12px` radius and centred icon+label, matching `.dashboard-action`, `.workspace-action` and `.issuance-action`.
+- Verified no horizontal overflow at 360px and 390px viewports; the mobile receipt keeps its multi-column services/ledger grids.
+
+### Verification
+- `tests/receipt-export-test.mjs` passes unchanged (A5/A4/thermal aspect ratios, selectable-text vector PDF, blank-template emptiness/restore, date contracts).
+- `runtime-smoke.yml` extended: blank-paper date-view contract (`digitalDateView:none`, `blankDateView:flex`, `2026`+`م`, two dashed slots, empty void text) and an official-logo transparency contract (`assets/logo.png`, loaded, transparent background, no radius/border/shadow/filter).
+- Local Chromium checks confirmed the two-view date contract, logo transparency/80px sizing, forced-width capture + restore, grid→flex export overrides, blob guards, dock removal and mobile layout. A real (unmocked) `html2canvas` capture at a 390px viewport produced a correctly proportioned 1118×1588 A5 sheet with the banner absent on a valid receipt and present only on a voided one.
+

@@ -1414,7 +1414,13 @@ jobs:
               total:document.getElementById('digTotal')?.value||'',
               date:document.getElementById('digDate')?.value||'',
               manualFields:document.querySelectorAll('.manual-only').length,
-              digitalFields:document.querySelectorAll('.digital-only').length
+              digitalFields:document.querySelectorAll('.digital-only').length,
+              digitalDateView:getComputedStyle(document.querySelector('.digital-date-view')).display,
+              blankDateView:getComputedStyle(document.querySelector('.blank-date-view')).display,
+              blankYearDigits:document.getElementById('paperYearDigits')?.textContent||'',
+              blankYearEra:document.getElementById('paperYearEra')?.textContent||'',
+              blankDateSlots:[...document.querySelectorAll('.blank-date-view .date-slot')].map(s=>getComputedStyle(s).borderBottomStyle).join(','),
+              voidNoticeText:document.getElementById('receiptVoidNotice')?.textContent||''
             };
             if(typeof finishBlankTemplate==='function') finishBlankTemplate(snapshot);
             return {
@@ -1436,9 +1442,26 @@ jobs:
           const a5Ratio=parseFloat(printQa.a5Paper.height)/parseFloat(printQa.a5Paper.width); if (!Number.isFinite(a5Ratio) || Math.abs(a5Ratio-(210/148))>0.03) fail('Phase 8.8 A5 rendered sheet geometry failed', printQa.a5Paper);
           if (!printQa.printCss.includes('148mm') || !printQa.printCss.includes('210mm') || !/margin:\s*0(?:px)?/.test(printQa.printCss)) fail('Phase 8.8 print CSS contract failed', printQa.printCss);
           if (printQa.blank.mode!=='manual' || !printQa.blank.classPresent || printQa.blank.rec || printQa.blank.name || printQa.blank.phone || printQa.blank.paid || printQa.blank.total || printQa.blank.date) fail('Phase 8.8 blank voucher leaked digital transaction data', printQa.blank);
+          if (printQa.blank.digitalDateView!=='none' || printQa.blank.blankDateView!=='flex' || printQa.blank.blankYearDigits!=='2026' || printQa.blank.blankYearEra!=='م' || printQa.blank.blankDateSlots!=='dashed,dashed' || printQa.blank.voidNoticeText) fail('Blank paper date/void contract failed', printQa.blank);
           if (printQa.restored.rec!==printQa.original.rec || printQa.restored.name!==printQa.original.name || printQa.restored.phone!==printQa.original.phone || printQa.restored.paid!==printQa.original.paid || printQa.restored.total!==printQa.original.total || printQa.restored.mode!==printQa.original.mode || printQa.restored.size!==printQa.original.size) fail('Phase 8.8 blank voucher did not restore digital state', printQa.restored);
           const bidi = await page.evaluate(() => ({dir:document.documentElement.dir,arabic:document.querySelector('.main-voucher-title')?.textContent||'',bdi:typeof bidiIsolate==='function' ? bidiIsolate('PH5-001') : ''}));
           if (bidi.dir!=='rtl' || !bidi.arabic.includes('سند') || !bidi.bdi.includes('PH5-001')) fail('Arabic RTL/BiDi regression failed', bidi);
+
+          // Official logo contract: real PNG, transparent container, no white card.
+          const logoContract = await page.evaluate(() => {
+            const img = document.getElementById('clinicLogoImg');
+            const wrap = img?.closest('.header-logo-wrap');
+            if (!img || !wrap) return null;
+            const cs = getComputedStyle(img), ws = getComputedStyle(wrap);
+            return {
+              src: img.getAttribute('src') || '',
+              loaded: img.complete && img.naturalWidth > 100,
+              imgBg: cs.backgroundColor, imgRadius: cs.borderRadius, imgBorder: cs.borderTopWidth,
+              wrapBg: ws.backgroundColor, wrapRadius: ws.borderRadius, wrapShadow: ws.boxShadow, wrapFilter: ws.filter
+            };
+          });
+          const transparent = v => v === 'rgba(0, 0, 0, 0)' || v === 'transparent';
+          if (!logoContract || !logoContract.src.endsWith('assets/logo.png') || !logoContract.loaded || !transparent(logoContract.imgBg) || !transparent(logoContract.wrapBg) || logoContract.imgRadius !== '0px' || logoContract.wrapRadius !== '0px' || logoContract.imgBorder !== '0px' || logoContract.wrapShadow !== 'none' || logoContract.wrapFilter !== 'none') fail('Official logo transparency contract failed', logoContract);
 
           // 11) Offline/cache upgrade: service worker controls the app and cached navigation survives network loss.
           await page.evaluate(async () => { if (navigator.serviceWorker) await navigator.serviceWorker.ready; });
