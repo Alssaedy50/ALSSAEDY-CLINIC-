@@ -2,14 +2,14 @@
 
 AQSA7 is a reusable, local-first multi-product platform. The first configured product is **ALSSAEDY CLINIC / Dental Clinic**, presented inside the AQSA7 platform shell rather than defining the platform itself.
 
-## Current release
+## Current Android release
 
-- **Version:** v1.4.0
-- **Android:** versionCode 19, signed production APK
+- **Version:** v1.4.1
+- **Android:** versionCode 20; production APK build/signature verification is defined in GitHub Actions.
 - **Platform hierarchy:** AQSA7 Platform → Products / Projects → Dental Clinic → ALSSAEDY CLINIC workspace
 - **Receipt profiles:** A5 Portrait (148 × 210 mm), A4 and 80mm thermal
 - **Typography:** RTL Arabic primary + LTR English identity
-- **Official logo:** `assets/Saedy_Dental_Logo.svg`
+- **Clinic logo asset:** `assets/logo.png`
 
 ## Architecture
 
@@ -35,7 +35,7 @@ The platform is intentionally structured so additional products can be added thr
 
 ## Verification and release
 
-The v1.4.0 release candidate must pass the existing Runtime Smoke, Android production build/signature, Pages source, and receipt-export gates before publication. The historical **v1.3.0** release remains unchanged as the prior released artifact.
+The v1.4.1 Android release metadata is recorded in `docs/releases/v1.4.1.md`. Before publishing any new build, require the Runtime Smoke, Android production build/signature, Pages source, and receipt-export gates to pass. The historical **v1.3.0** release remains unchanged as the prior released artifact.
 
 Known release limitations:
 - Live Google production OAuth upload/download/restore requires an authorized production OAuth client/account and is not covered by CI.
