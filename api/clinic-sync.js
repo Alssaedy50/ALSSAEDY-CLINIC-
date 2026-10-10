@@ -21,10 +21,6 @@ function keyFrom(req) {
   return String(req.headers?.['x-clinic-key'] || '').trim();
 }
 
-function pathFor(key) {
-  return 'sync/clinic-' + keyHash(key) + '.json';
-}
-
 async function readPath(path) {
   try {
     const result = await get(path, { access: 'private', token: process.env.BLOB_READ_WRITE_TOKEN, useCache: false });
