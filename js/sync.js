@@ -106,6 +106,11 @@ function syncValidateSnapshot(snapshot) {
     if (snapshot.app && snapshot.app !== 'ALSSAEDY_CLINIC') throw new Error('هذه النسخة لا تخص تطبيق العيادة.');
     if (snapshot.receipts !== undefined && !Array.isArray(snapshot.receipts)) throw new Error('قائمة السندات السحابية غير صالحة.');
     if (snapshot.patients !== undefined && !Array.isArray(snapshot.patients)) throw new Error('قائمة المرضى السحابية غير صالحة.');
+    const expected = typeof window.aqsa7GetInstanceIdentity === 'function' ? window.aqsa7GetInstanceIdentity() : null;
+    if (snapshot.identity && expected && ['productId','tenantId','instanceId'].some(key =>
+        snapshot.identity[key] && snapshot.identity[key] !== expected[key])) {
+        throw new Error('هذه النسخة تخص عيادة أو مساحة عمل مختلفة.');
+    }
     return snapshot;
 }
 function mergeSyncSnapshots(localSnapshot, remoteSnapshot) {
