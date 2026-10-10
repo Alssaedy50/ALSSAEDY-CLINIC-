@@ -67,11 +67,19 @@ export default async function handler(req, res) {
     if (!body || !body.payload || typeof body.payload !== 'object') {
       return res.status(400).json({ error: 'invalid_payload' });
     }
+    if (body.payload.app !== 'ALSSAEDY_CLINIC' ||
+        !Array.isArray(body.payload.receipts) ||
+        !Array.isArray(body.payload.patients) ||
+        (body.payload.tombstones !== undefined && !Array.isArray(body.payload.tombstones)) ||
+        (body.payload.settingsRecords !== undefined && !Array.isArray(body.payload.settingsRecords))) {
+      return res.status(400).json({ error: 'invalid_snapshot_schema' });
+    }
     if (JSON.stringify(body.payload).length > MAX_BODY) return res.status(413).json({ error: 'payload_too_large' });
 
     const current = await readRecord(key);
     const currentVersion = Number(current?.version || 0);
-    const baseVersion = Number(body.baseVersion || 0);
+    const baseVersion = Number(body.baseVersion ?? 0);
+    if (!Number.isSafeInteger(baseVersion) || baseVersion < 0) return res.status(400).json({ error: 'invalid_base_version' });
     if (current && baseVersion !== currentVersion) {
       return res.status(409).json({ error: 'sync_conflict', record: current });
     }
@@ -92,6 +100,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, record });
   } catch (error) {
     console.error('clinic sync error', error);
-    return res.status(500).json({ error: 'sync_failed', message: error?.message || 'Unknown error' });
+    return res.status(500).json({ error: 'sync_failed' });
   }
 }
