@@ -60,9 +60,9 @@ const remote = {
   settingsRecords:[{id:'currency',value:'USD',updatedAt:'2026-10-10T09:00:00.000Z'}]
 };
 const merged = engine.mergeSnapshots(local, remote);
-assert.deepEqual(merged.patients.map(x=>x.id).sort(), ['p-cloud','p-keep'], 'adds remote-only records and respects deletion tombstones');
+assert.deepEqual(Array.from(merged.patients, x=>x.id).sort(), ['p-cloud','p-keep'], 'adds remote-only records and respects deletion tombstones');
 assert.equal(merged.patients.find(x=>x.id==='p-keep').name, 'Local edit', 'newer local edits win');
-assert.deepEqual(merged.receipts.map(x=>x.id).sort(), ['r-cloud','r-local'], 'receipt records merge without duplicates');
+assert.deepEqual(Array.from(merged.receipts, x=>x.id).sort(), ['r-cloud','r-local'], 'receipt records merge without duplicates');
 assert.equal(merged.settingsRecords.find(x=>x.id==='currency').value, 'YER', 'newer setting wins');
 
 const revived = engine.mergeSnapshots(
