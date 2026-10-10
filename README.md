@@ -23,7 +23,7 @@ AQSA7 is a reusable, local-first multi-product platform. The first configured pr
 - **Dental business behavior:** `js/storage.js` owns receipt, patient, history and settings behavior.
 - **Export/print/share:** `js/export.js` and the existing Android bridge remain the authoritative boundary.
 - **Backup/recovery/security:** existing backup, migration, provider, Google Drive and cloud-recovery modules remain authoritative; no parallel persistence or provider path is used.
-- **Local-first:** IndexedDB remains the durable local data authority. The existing cloud feature is backup/recovery, not a claim of continuous bidirectional multi-device synchronization.
+- **Local-first + cloud sync:** IndexedDB remains the durable local authority. The current source implements bidirectional snapshot merging by stable record ID, `updatedAt`, per-setting timestamps, and scoped deletion tombstones; conflicts returned by the endpoint are merged and retried. Live two-device production acceptance is still required. Vercel Blob does not provide atomic compare-and-swap for this read/merge/write flow, so a strict no-lost-update guarantee for writes arriving at exactly the same time is not claimed.
 - **Cross-platform:** Web/PWA/Desktop browser and Android share the same application core; Android remains a thin WebView wrapper.
 - **PWA/offline:** the service worker caches the production app shell.
 

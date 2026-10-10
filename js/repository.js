@@ -5,6 +5,30 @@ const CLINIC_DB_NAME = typeof window.aqsa7GetInstanceStorageConfig === 'function
 const CLINIC_DB_VERSION = 3;
 const CLINIC_DB_STORES = ['receipts','patients','settings'];
 const TENANT_SCOPED_STORES = new Set(['receipts','patients']);
+const AQSA7_SYNC_TOMBSTONES = 'aqsa7_sync_tombstones_v1';
+
+function clinicRepositoryReadSyncTombstones(){
+  try { const value=JSON.parse(localStorage.getItem(AQSA7_SYNC_TOMBSTONES)||'[]'); return Array.isArray(value)?value:[]; } catch(_){ return []; }
+}
+function clinicRepositoryRecordSyncTombstone(store,id){
+  if(!TENANT_SCOPED_STORES.has(store)||id===undefined||id===null)return;
+  const identity=typeof window.aqsa7GetInstanceIdentity==='function'?window.aqsa7GetInstanceIdentity():{};
+  const tombstone={store,id:String(id),deletedAt:new Date().toISOString(),productId:identity.productId||'',tenantId:identity.tenantId||'',instanceId:identity.instanceId||''};
+  const all=clinicRepositoryReadSyncTombstones().filter(x=>!(x.store===store&&String(x.id)===String(id)));
+  all.push(tombstone); localStorage.setItem(AQSA7_SYNC_TOMBSTONES,JSON.stringify(all));
+}
+function clinicRepositoryGetSyncTombstones(){ return clinicRepositoryReadSyncTombstones(); }
+function clinicRepositoryMergeSyncTombstones(items){
+  const map=new Map();
+  const identity=typeof window.aqsa7GetInstanceIdentity==='function'?window.aqsa7GetInstanceIdentity():{};
+  for(const item of [...clinicRepositoryReadSyncTombstones(),...(Array.isArray(items)?items:[])]){
+    if(!item||!TENANT_SCOPED_STORES.has(item.store)||item.id===undefined||!Number.isFinite(Date.parse(item.deletedAt||'')))continue;
+    if((item.productId&&item.productId!==identity.productId)||(item.tenantId&&item.tenantId!==identity.tenantId)||(item.instanceId&&item.instanceId!==identity.instanceId))continue;
+    const key=item.store+':'+String(item.id), prior=map.get(key);
+    if(!prior||Date.parse(item.deletedAt)>Date.parse(prior.deletedAt))map.set(key,{...item,id:String(item.id)});
+  }
+  const merged=[...map.values()]; localStorage.setItem(AQSA7_SYNC_TOMBSTONES,JSON.stringify(merged)); return merged;
+}
 
 function assertOwnedRecord(item, options){
   if (!TENANT_SCOPED_STORES.has(options?.store || '')) return item;
@@ -166,32 +190,38 @@ function clinicRepositoryPatients(){
   return window.__clinicRepository.patients.slice();
 }
 async function clinicRepositoryPutReceipt(item){
-  item = assertOwnedRecord(item, {store:'receipts', allowUnscoped:true});
+  item = assertOwnedRecord({...item,updatedAt:new Date().toISOString()}, {store:'receipts', allowUnscoped:true});
   await clinicDBPut('receipts',item);
   const repo=window.__clinicRepository;
   const index=repo.receipts.findIndex(x=>x.id===item.id);
   if(index>=0) repo.receipts[index]=item; else repo.receipts.push(item);
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
   return item;
 }
 async function clinicRepositoryDeleteReceipt(id){
+  clinicRepositoryRecordSyncTombstone('receipts',id);
   await clinicDBDelete('receipts',id);
   window.__clinicRepository.receipts=window.__clinicRepository.receipts.filter(x=>String(x.id)!==String(id));
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
 }
 async function clinicRepositoryClearReceipts(){
   await clinicDBClear('receipts');
   window.__clinicRepository.receipts=[];
 }
 async function clinicRepositoryPutPatient(item){
-  item = assertOwnedRecord(item, {store:'patients', allowUnscoped:true});
+  item = assertOwnedRecord({...item,updatedAt:new Date().toISOString()}, {store:'patients', allowUnscoped:true});
   await clinicDBPut('patients',item);
   const repo=window.__clinicRepository;
   const index=repo.patients.findIndex(x=>x.id===item.id);
   if(index>=0) repo.patients[index]=item; else repo.patients.push(item);
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
   return item;
 }
 async function clinicRepositoryDeletePatient(id){
+  clinicRepositoryRecordSyncTombstone('patients',id);
   await clinicDBDelete('patients',id);
   window.__clinicRepository.patients=window.__clinicRepository.patients.filter(x=>String(x.id)!==String(id));
+  if(typeof autoSyncIfEnabled==='function') autoSyncIfEnabled(false);
 }
 
 async function hydrateDurableReceipts(){ return clinicRepositoryHydrate(); }
