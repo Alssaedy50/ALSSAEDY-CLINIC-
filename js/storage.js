@@ -13,6 +13,10 @@ function syncReceiptEditorState(){
   if(save){ save.textContent=current ? (status==='voided' ? '🔒 سند ملغى' : '💾 تحديث السند') : '💾 حفظ السند'; save.disabled=status==='voided'; }
   if(cancel)cancel.hidden=!current || status==='voided';
   if(badge){ badge.textContent=current ? (status==='voided' ? 'ملغى' : 'سند محفوظ — قابل للتحديث') : 'سند جديد'; badge.classList.toggle('is-voided',status==='voided'); badge.classList.toggle('is-issued',status!=='voided'); }
+  // The notice element ships empty so a valid receipt can never leak the banner.
+  // Text is injected only for a genuinely voided document; CSS owns visibility.
+  const notice=document.getElementById('receiptVoidNotice');
+  if(notice){ notice.textContent = status==='voided' ? 'سند ملغى — لا يمثل مطالبة مالية سارية' : ''; }
   document.getElementById('receiptPrintArea')?.classList.toggle('is-void', status==='voided');
 }
 

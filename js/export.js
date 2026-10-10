@@ -219,6 +219,17 @@ async function generateReceiptCanvas(options = {}) {
                 receipt.offsetHeight || 0
             );
 
+            // Thermal (80mm) has a single logical column, so the matrix overrides
+            // must not force three columns onto it.
+            const captureProfileKey = typeof getSelectedSize === 'function' ? getSelectedSize() : 'a5';
+            const matrixFlexCss = captureProfileKey === 'thermal'
+                ? `#receiptPrintArea .services-grid-matrix > * { flex: 0 0 100% !important; min-width: 0 !important; }
+                   #receiptPrintArea .ledger-grid-wrap { display: flex !important; flex-direction: column !important; gap: 5px !important; }
+                   #receiptPrintArea .ledger-grid-wrap > * { flex: 1 1 auto !important; min-width: 0 !important; }`
+                : `#receiptPrintArea .services-grid-matrix > * { flex: 0 0 32% !important; min-width: 0 !important; }
+                   #receiptPrintArea .ledger-grid-wrap { display: flex !important; flex-wrap: nowrap !important; align-items: stretch !important; gap: 6px !important; }
+                   #receiptPrintArea .ledger-grid-wrap > * { flex: 1 1 32% !important; min-width: 0 !important; }`;
+
             return await html2canvas(receipt, {
                 scale: options.scale || 2,
                 useCORS: true,
@@ -233,64 +244,105 @@ async function generateReceiptCanvas(options = {}) {
                 windowWidth: captureWindowWidth,
                 windowHeight: captureWindowHeight,
                 onclone: (clonedDocument) => {
-                    const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
-                    if (!clonedReceipt) return;
+                    try {
+                        const clonedReceipt = clonedDocument.getElementById('receiptPrintArea');
+                        if (!clonedReceipt) return;
 
-                    // Freeze typography/layout for Canvas. The live UI may use
-                    // responsive transforms, flex sizing and editable controls;
-                    // the exported sheet must not inherit those behaviours.
-                    const style = clonedDocument.createElement('style');
-                    style.textContent = `
-                        #receiptPrintArea, #receiptPrintArea * {
-                            font-family: "Cairo", "Noto Kufi Arabic", "Tajawal", sans-serif !important;
-                            letter-spacing: normal !important;
-                            font-feature-settings: "liga" 1, "calt" 1 !important;
-                            -webkit-font-feature-settings: "liga" 1, "calt" 1 !important;
-                            text-rendering: geometricPrecision !important;
-                        }
-                        #receiptPrintArea .main-voucher-title,
-                        #receiptPrintArea .row-label,
-                        #receiptPrintArea .meta-label,
-                        #receiptPrintArea .paid-title,
-                        #receiptPrintArea .paid-unit,
-                        #receiptPrintArea .tafqeet-text,
-                        #receiptPrintArea .tafqeet-closing,
-                        #receiptPrintArea .services-banner,
-                        #receiptPrintArea .custom-check-item,
-                        #receiptPrintArea .ledger-header,
-                        #receiptPrintArea .sig-title,
-                        #receiptPrintArea .footer-blessing,
-                        #receiptPrintArea .footer-address {
-                            direction: rtl !important;
-                            unicode-bidi: isolate !important;
-                            letter-spacing: normal !important;
-                        }
-                        #receiptPrintArea .receipt-header,
-                        #receiptPrintArea .title-strip,
-                        #receiptPrintArea .meta-data-strip,
-                        #receiptPrintArea .row-flex,
-                        #receiptPrintArea .paid-hero-bar,
-                        #receiptPrintArea .pay-opts-row,
-                        #receiptPrintArea .section-signatures {
-                            transform: none !important;
-                        }
-                        #receiptPrintArea .receipt-header { display: grid !important; }
-                        #receiptPrintArea .main-voucher-title { display: inline-block !important; white-space: nowrap !important; }
-                        #receiptPrintArea .title-strip { display: flex !important; }
-                        #receiptPrintArea .row-label { flex: 0 0 auto !important; }
-                    `;
-                    clonedDocument.head.appendChild(style);
+                        // html2canvas captures the cloned document at the mobile
+                        // viewport width, which collapses the sheet. Pin the clone
+                        // to the exact physical desktop width before rasterising.
+                        clonedReceipt.style.setProperty('width', forcedWidth + 'px', 'important');
+                        clonedReceipt.style.setProperty('min-width', forcedWidth + 'px', 'important');
+                        clonedReceipt.style.setProperty('max-width', forcedWidth + 'px', 'important');
+                        clonedReceipt.style.setProperty('display', 'block', 'important');
+                        clonedReceipt.style.setProperty('margin', '0 auto', 'important');
+                        clonedReceipt.style.setProperty('transform', 'none', 'important');
 
-                    materializeReceiptDate(receipt, clonedReceipt);
-                    materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
-                    const logo = clonedReceipt.querySelector('#clinicLogoImg');
-                    if (logo) {
-                        if (logoDataUrl) logo.setAttribute('src', logoDataUrl);
-                        logo.style.opacity = '1';
-                        logo.style.filter = 'none';
-                        logo.style.imageRendering = 'auto';
-                        logo.removeAttribute('width');
-                        logo.removeAttribute('height');
+                        // Freeze typography/layout for Canvas. The live UI may use
+                        // responsive transforms, flex sizing and editable controls;
+                        // the exported sheet must not inherit those behaviours.
+                        // html2canvas mis-renders CSS Grid, so the header and the
+                        // two multi-column matrices are re-expressed as Flexbox with
+                        // explicit column percentages that mirror the grid tracks.
+                        const style = clonedDocument.createElement('style');
+                        style.textContent = `
+                            #receiptPrintArea, #receiptPrintArea * {
+                                font-family: "Cairo", "Noto Kufi Arabic", "Tajawal", sans-serif !important;
+                                letter-spacing: normal !important;
+                                font-feature-settings: "liga" 1, "calt" 1 !important;
+                                -webkit-font-feature-settings: "liga" 1, "calt" 1 !important;
+                                text-rendering: geometricPrecision !important;
+                            }
+                            #receiptPrintArea .main-voucher-title,
+                            #receiptPrintArea .row-label,
+                            #receiptPrintArea .meta-label,
+                            #receiptPrintArea .paid-title,
+                            #receiptPrintArea .paid-unit,
+                            #receiptPrintArea .tafqeet-text,
+                            #receiptPrintArea .tafqeet-closing,
+                            #receiptPrintArea .services-banner,
+                            #receiptPrintArea .custom-check-item,
+                            #receiptPrintArea .ledger-header,
+                            #receiptPrintArea .sig-title,
+                            #receiptPrintArea .footer-blessing,
+                            #receiptPrintArea .footer-address {
+                                direction: rtl !important;
+                                unicode-bidi: isolate !important;
+                                letter-spacing: normal !important;
+                            }
+                            #receiptPrintArea .receipt-header,
+                            #receiptPrintArea .title-strip,
+                            #receiptPrintArea .meta-data-strip,
+                            #receiptPrintArea .row-flex,
+                            #receiptPrintArea .paid-hero-bar,
+                            #receiptPrintArea .pay-opts-row,
+                            #receiptPrintArea .section-signatures {
+                                transform: none !important;
+                            }
+                            /* Grid → Flexbox, mirroring the original track sizes. */
+                            #receiptPrintArea .receipt-header {
+                                display: flex !important;
+                                flex-direction: row !important;
+                                flex-wrap: nowrap !important;
+                                align-items: center !important;
+                                justify-content: space-between !important;
+                                gap: 8px !important;
+                            }
+                            #receiptPrintArea .receipt-header > .header-doc { flex: 1 1 0 !important; min-width: 0 !important; }
+                            #receiptPrintArea .receipt-header > .header-logo-wrap { flex: 0 0 auto !important; }
+                            #receiptPrintArea .receipt-header > .header-clinic { flex: 1 1 0 !important; min-width: 0 !important; }
+                            #receiptPrintArea .services-grid-matrix {
+                                display: flex !important;
+                                flex-wrap: wrap !important;
+                                align-items: center !important;
+                                gap: 3px 6px !important;
+                            }
+                            ${matrixFlexCss}
+                            #receiptPrintArea .main-voucher-title { display: inline-block !important; white-space: nowrap !important; }
+                            #receiptPrintArea .title-strip { display: flex !important; }
+                            #receiptPrintArea .row-label { flex: 0 0 auto !important; }
+                        `;
+                        clonedDocument.head.appendChild(style);
+
+                        materializeReceiptDate(receipt, clonedReceipt);
+                        materializeReceiptControls(receipt, clonedReceipt, clonedDocument);
+                        const logo = clonedReceipt.querySelector('#clinicLogoImg');
+                        if (logo) {
+                            if (logoDataUrl) logo.setAttribute('src', logoDataUrl);
+                            logo.style.opacity = '1';
+                            logo.style.filter = 'none';
+                            logo.style.imageRendering = 'auto';
+                            logo.style.background = 'transparent';
+                            logo.style.border = '0';
+                            logo.style.borderRadius = '0';
+                            logo.style.boxShadow = 'none';
+                            logo.style.padding = '0';
+                            logo.removeAttribute('width');
+                            logo.removeAttribute('height');
+                        }
+                    } catch (error) {
+                        // A malformed clone must never abort the whole export.
+                        if (window.console && console.warn) console.warn('receipt clone preparation failed', error);
                     }
                 }
             });
