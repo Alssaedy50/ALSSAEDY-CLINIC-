@@ -94,10 +94,10 @@ function syncMergeTombstones(localItems, remoteItems) {
     }
     return [...map.values()];
 }
-function syncApplyTombstones(items, tombstones) {
-    const latest = new Map((tombstones || []).map(t => [t.store + ':' + String(t.id), Date.parse(t.deletedAt)]));
+function syncApplyTombstones(items, tombstones, store) {
+    const latest = new Map((tombstones || []).map(t => [String(t.id), Date.parse(t.deletedAt)]));
     return (items || []).filter(item => {
-        const deletedAt = latest.get(item.store + ':' + String(item.id));
+        const deletedAt = latest.get(String(item.id));
         return deletedAt === undefined || syncTimestamp(item) > deletedAt;
     });
 }
@@ -112,8 +112,8 @@ function mergeSyncSnapshots(localSnapshot, remoteSnapshot) {
     const local = syncValidateSnapshot(localSnapshot || {});
     const remote = syncValidateSnapshot(remoteSnapshot || {});
     const tombstones = syncMergeTombstones(local.tombstones, remote.tombstones);
-    const receipts = syncApplyTombstones(syncMergeRecords(local.receipts, remote.receipts), tombstones.filter(t => t.store === 'receipts').map(t => ({...t,store:'receipts'})));
-    const patients = syncApplyTombstones(syncMergeRecords(local.patients, remote.patients), tombstones.filter(t => t.store === 'patients').map(t => ({...t,store:'patients'})));
+    const receipts = syncApplyTombstones(syncMergeRecords(local.receipts, remote.receipts), tombstones.filter(t => t.store === 'receipts'),'receipts');
+    const patients = syncApplyTombstones(syncMergeRecords(local.patients, remote.patients), tombstones.filter(t => t.store === 'patients'),'patients');
     const settingsRecords = syncMergeRecords(local.settingsRecords, remote.settingsRecords);
     const identity = typeof window.aqsa7GetInstanceIdentity === 'function' ? window.aqsa7GetInstanceIdentity() : {};
     const localSettingsTime = Math.max(0, ...(local.settingsRecords || []).map(syncTimestamp));
